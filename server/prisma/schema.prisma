@@ -1,0 +1,158 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
+}
+
+// --- Enums ---
+
+enum StoryStatus {
+  fetched
+  pre_analyzed
+  analyzed
+  selected
+  published
+  rejected
+  trashed
+}
+
+enum EmotionTag {
+  uplifting
+  surprising
+  frustrating
+  scary
+  calm
+}
+
+enum ContentStatus {
+  draft
+  published
+}
+
+enum UserRole {
+  admin
+  editor
+  viewer
+}
+
+// --- Core Tables ---
+
+model Story {
+  id                     String       @id @default(uuid())
+  url                    String       @unique
+  title                  String
+  content                String
+  datePublished          DateTime?    @map("date_published")
+  dateCrawled            DateTime     @default(now()) @map("date_crawled")
+  feedId                 String       @map("feed_id")
+  feed                   Feed         @relation(fields: [feedId], references: [id])
+  status                 StoryStatus  @default(fetched)
+  relevanceRatingLow     Int?         @map("relevance_rating_low")
+  relevanceRatingHigh    Int?         @map("relevance_rating_high")
+  emotionTag             EmotionTag?  @map("emotion_tag")
+  aiResponse             Json?        @map("ai_response")
+  aiSummary              String?      @map("ai_summary")
+  aiQuote                String?      @map("ai_quote")
+  aiKeywords             String[]     @map("ai_keywords")
+  aiMarketingBlurb       String?      @map("ai_marketing_blurb")
+  aiRelevanceReasons     String?      @map("ai_relevance_reasons")
+  aiAntifactors          String?      @map("ai_antifactors")
+  aiRelevanceCalculation String?      @map("ai_relevance_calculation")
+  aiScenarios            String?      @map("ai_scenarios")
+  crawlMethod            String?      @map("crawl_method")
+  // pgvector embedding for future semantic search
+  // embedding           Unsupported("vector(1536)")?
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt @map("updated_at")
+
+  @@map("stories")
+}
+
+model Feed {
+  id                 String    @id @default(uuid())
+  title              String
+  url                String    @unique
+  language           String    @default("en")
+  issueId            String    @map("issue_id")
+  issue              Issue     @relation(fields: [issueId], references: [id])
+  active             Boolean   @default(true)
+  crawlIntervalHours Int       @default(24) @map("crawl_interval_hours")
+  lastCrawledAt      DateTime? @map("last_crawled_at")
+  htmlSelector       String?   @map("html_selector")
+  stories            Story[]
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@map("feeds")
+}
+
+model Issue {
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  description      String   @default("")
+  promptFactors    String   @default("") @map("prompt_factors")
+  promptAntifactors String  @default("") @map("prompt_antifactors")
+  promptRatings    String   @default("") @map("prompt_ratings")
+  feeds            Feed[]
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("issues")
+}
+
+model Newsletter {
+  id        String        @id @default(uuid())
+  title     String
+  content   String        @default("")
+  storyIds  String[]      @map("story_ids")
+  status    ContentStatus @default(draft)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@map("newsletters")
+}
+
+model Podcast {
+  id        String        @id @default(uuid())
+  title     String
+  script    String        @default("")
+  storyIds  String[]      @map("story_ids")
+  status    ContentStatus @default(draft)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@map("podcasts")
+}
+
+model JobRun {
+  id              String    @id @default(uuid())
+  jobName         String    @unique @map("job_name")
+  lastStartedAt   DateTime? @map("last_started_at")
+  lastCompletedAt DateTime? @map("last_completed_at")
+  lastError       String?   @map("last_error")
+  enabled         Boolean   @default(true)
+  cronExpression  String    @map("cron_expression")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("job_runs")
+}
+
+// --- Future Tables (skeleton) ---
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(viewer)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}

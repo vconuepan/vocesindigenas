@@ -1,0 +1,15 @@
+{
+  "name": "actually-relevant",
+  "private": true,
+  "version": "0.1.0",
+  "description": "News curation platform that evaluates article relevance to humanity using LLM analysis",
+  "scripts": {
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "test:client": "npm run test --prefix client",
+    "test:server": "npm run test --prefix server",
+    "test": "npm run test:client && npm run test:server"
+  }
+}

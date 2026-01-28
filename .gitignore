@@ -1,0 +1,17 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# Environment files with secrets
+server/.env
+client/.env
+
+# Prisma
+server/prisma/*.db
+
+# Build artifacts
+*.tsbuildinfo
+
+# Test coverage
+coverage

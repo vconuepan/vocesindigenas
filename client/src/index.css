@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-neutral-900 antialiased;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+
+  .prose a {
+    @apply text-brand-700 hover:text-brand-800 underline underline-offset-2 transition-colors;
+  }
+}
+
+@layer components {
+  .page-section {
+    @apply max-w-3xl mx-auto py-8 md:py-16 px-4;
+  }
+
+  .page-section-wide {
+    @apply max-w-4xl mx-auto py-8 md:py-16 px-4;
+  }
+
+  .page-title {
+    @apply text-4xl md:text-5xl font-bold mb-6 text-center;
+  }
+
+  .page-intro {
+    @apply text-xl text-neutral-600 text-center mb-12 max-w-2xl mx-auto;
+  }
+
+  .prose {
+    @apply text-lg text-neutral-600 leading-relaxed;
+  }
+
+  .prose p {
+    @apply mb-6;
+  }
+
+  .prose p:last-child {
+    @apply mb-0;
+  }
+
+  .section-heading {
+    @apply text-2xl font-bold mb-4;
+  }
+
+  .section-heading-lg {
+    @apply text-3xl font-bold mb-8;
+  }
+}

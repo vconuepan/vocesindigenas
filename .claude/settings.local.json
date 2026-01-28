@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "WebFetch(domain:render.com)",
+      "Bash(wc:*)",
+      "Bash(npx prisma validate:*)"
+    ]
+  }
+}

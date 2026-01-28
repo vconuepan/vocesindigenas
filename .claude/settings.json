@@ -1,0 +1,9 @@
+{
+  "plansDirectory": ".plans",
+  "permissions": {
+    "allow": [
+      "Bash(npm run images:*)",
+      "WebFetch(domain:actuallyrelevant.news)"
+    ]
+  }
+}
