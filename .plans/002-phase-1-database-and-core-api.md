@@ -1,6 +1,6 @@
 # Phase 1: Database & Core Backend API
 
-**Status:** Ready for implementation
+**Status:** Implemented (code complete, tests passing — migration + seed require running PostgreSQL)
 **Depends on:** Phase 0 (completed, commit `3ca26fe`)
 **Goal:** Build the data layer and full CRUD API so later phases have a working backend to wire into.
 

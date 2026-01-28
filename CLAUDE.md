@@ -80,10 +80,14 @@ npm run db:seed      # Seed database with sample data
   npm run test --prefix server
   ```
 
-- Run commands directly without `cd` prefix (working directory is repo root):
+- **Never use `cd`** — run all commands from the project root. Use `--prefix` for npm or full relative paths for other tools:
   ```bash
-  git status          # Good
-  cd /d ... && git status  # Bad
+  npm run test --prefix server        # Good
+  npx prisma generate --schema server/prisma/schema.prisma  # Good
+  git status                          # Good
+
+  cd server && npx vitest run         # Bad — triggers confirmation prompts
+  cd D:/projects/... && npm run test  # Bad
   ```
 
 ## Story Pipeline
