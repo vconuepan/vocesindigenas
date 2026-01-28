@@ -18,14 +18,19 @@
   "dependencies": {
     "@langchain/core": "^0.3.0",
     "@langchain/openai": "^0.3.0",
+    "@mozilla/readability": "^0.6.0",
     "@prisma/client": "^6.0.0",
+    "axios": "^1.13.4",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-rate-limit": "^7.4.0",
     "helmet": "^8.1.0",
+    "jsdom": "^27.4.0",
     "langchain": "^0.3.0",
     "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0",
     "zod": "^3.23.8"
   },
   "prisma": {
@@ -34,6 +39,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jsdom": "^27.0.0",
     "@types/node": "^22.5.0",
     "@types/node-cron": "^3.0.11",
     "@types/supertest": "^6.0.2",

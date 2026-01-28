@@ -21,6 +21,11 @@ const mockPrisma = vi.hoisted(() => ({
 }))
 
 vi.mock('../../lib/prisma.js', () => ({ default: mockPrisma }))
+vi.mock('../../services/crawler.js', () => ({
+  crawlFeed: vi.fn(),
+  crawlAllDueFeeds: vi.fn(),
+  crawlUrl: vi.fn(),
+}))
 
 process.env.ADMIN_API_KEY = TEST_API_KEY
 

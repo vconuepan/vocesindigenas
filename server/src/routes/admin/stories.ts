@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import * as storyService from '../../services/story.js'
+import { crawlUrl } from '../../services/crawler.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
 import {
   createStorySchema,
@@ -8,6 +9,7 @@ import {
   bulkUpdateStatusSchema,
   storyQuerySchema,
 } from '../../schemas/story.js'
+import { crawlUrlSchema } from '../../schemas/job.js'
 
 const router = Router()
 
@@ -92,6 +94,27 @@ router.post('/bulk-status', validateBody(bulkUpdateStatusSchema), async (req, re
     res.json({ updated: result.count })
   } catch (err) {
     res.status(500).json({ error: 'Failed to bulk update story status' })
+  }
+})
+
+router.post('/crawl-url', validateBody(crawlUrlSchema), async (req, res) => {
+  try {
+    const result = await crawlUrl(req.body.url, req.body.feedId)
+    if (!result) {
+      res.status(422).json({ error: 'Could not extract content from URL' })
+      return
+    }
+    res.status(201).json(result)
+  } catch (err: any) {
+    if (err.message === 'Feed not found') {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    if (err.message === 'URL already crawled') {
+      res.status(409).json({ error: err.message })
+      return
+    }
+    res.status(500).json({ error: 'Failed to crawl URL' })
   }
 })
 

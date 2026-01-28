@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import * as feedService from '../../services/feed.js'
+import { crawlFeed, crawlAllDueFeeds } from '../../services/crawler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { createFeedSchema, updateFeedSchema } from '../../schemas/feed.js'
 
@@ -82,6 +83,29 @@ router.delete('/:id', async (req, res) => {
       return
     }
     res.status(500).json({ error: 'Failed to delete feed' })
+  }
+})
+
+router.post('/:id/crawl', async (req, res) => {
+  try {
+    const feed = await feedService.getFeedById(req.params.id)
+    if (!feed) {
+      res.status(404).json({ error: 'Feed not found' })
+      return
+    }
+    const result = await crawlFeed(req.params.id)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to crawl feed' })
+  }
+})
+
+router.post('/crawl-all', async (_req, res) => {
+  try {
+    const results = await crawlAllDueFeeds()
+    res.json(results)
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to crawl feeds' })
   }
 })
 

@@ -108,6 +108,15 @@ export async function createStory(data: {
   })
 }
 
+export async function getExistingUrls(urls: string[]): Promise<Set<string>> {
+  if (urls.length === 0) return new Set()
+  const existing = await prisma.story.findMany({
+    where: { url: { in: urls } },
+    select: { url: true },
+  })
+  return new Set(existing.map(s => s.url))
+}
+
 export async function updateStory(id: string, data: Record<string, any>): Promise<Story> {
   // Convert datePublished string to Date if present
   const updateData = { ...data }

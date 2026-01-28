@@ -58,6 +58,37 @@ export async function updateFeed(id: string, data: Partial<{
   return prisma.feed.update({ where: { id }, data })
 }
 
+export async function getDueFeeds() {
+  const now = new Date()
+  return prisma.feed.findMany({
+    where: {
+      active: true,
+      OR: [
+        { lastCrawledAt: null },
+        {
+          lastCrawledAt: {
+            lt: new Date(now.getTime() - 1000 * 60 * 60), // at least 1 hour ago (actual interval checked below)
+          },
+        },
+      ],
+    },
+    include: { issue: true },
+  }).then(feeds =>
+    feeds.filter(f => {
+      if (!f.lastCrawledAt) return true
+      const intervalMs = f.crawlIntervalHours * 60 * 60 * 1000
+      return now.getTime() - f.lastCrawledAt.getTime() >= intervalMs
+    })
+  )
+}
+
+export async function updateLastCrawled(id: string): Promise<void> {
+  await prisma.feed.update({
+    where: { id },
+    data: { lastCrawledAt: new Date() },
+  })
+}
+
 export async function deleteFeed(id: string): Promise<void> {
   const storyCount = await prisma.story.count({ where: { feedId: id } })
   if (storyCount > 0) {
