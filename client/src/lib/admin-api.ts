@@ -5,12 +5,15 @@ import type {
   Newsletter,
   Podcast,
   JobRun,
+  User,
   StoryFilters,
   PaginatedResponse,
   StoryStatus,
 } from '@shared/types'
 
-const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api/admin'
+const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
+const ADMIN_BASE = `${API_BASE}/admin`
+const AUTH_BASE = `${API_BASE}/auth`
 
 export class ApiError extends Error {
   constructor(
@@ -22,22 +25,79 @@ export class ApiError extends Error {
   }
 }
 
+// In-memory access token (not localStorage — XSS-safe)
+let accessToken: string | null = null
+
+export function setAccessToken(token: string | null) {
+  accessToken = token
+}
+
+export function getAccessToken(): string | null {
+  return accessToken
+}
+
 function getAuthHeaders(): HeadersInit {
-  const key = localStorage.getItem('admin_api_key')
   return {
     'Content-Type': 'application/json',
-    ...(key ? { Authorization: `Bearer ${key}` } : {}),
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   }
 }
 
+let isRefreshing = false
+let refreshPromise: Promise<string | null> | null = null
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (isRefreshing && refreshPromise) return refreshPromise
+
+  isRefreshing = true
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${AUTH_BASE}/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) return null
+      const data = await res.json()
+      accessToken = data.accessToken
+      return data.accessToken as string
+    } catch {
+      return null
+    } finally {
+      isRefreshing = false
+      refreshPromise = null
+    }
+  })()
+
+  return refreshPromise
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const url = path.startsWith('/auth') ? `${API_BASE}${path}` : `${ADMIN_BASE}${path}`
+
+  let res = await fetch(url, {
     ...options,
+    credentials: 'include',
     headers: {
       ...getAuthHeaders(),
       ...(options.headers || {}),
     },
   })
+
+  // On 401, try refreshing the access token
+  if (res.status === 401 && accessToken) {
+    const newToken = await refreshAccessToken()
+    if (newToken) {
+      res = await fetch(url, {
+        ...options,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${newToken}`,
+          ...(options.headers || {}),
+        },
+      })
+    }
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }))
@@ -49,13 +109,29 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 async function requestBlob(path: string, options: RequestInit = {}): Promise<Blob> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  let res = await fetch(`${ADMIN_BASE}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       ...getAuthHeaders(),
       ...(options.headers || {}),
     },
   })
+
+  // On 401, try refreshing the access token
+  if (res.status === 401 && accessToken) {
+    const newToken = await refreshAccessToken()
+    if (newToken) {
+      res = await fetch(`${ADMIN_BASE}${path}`, {
+        ...options,
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${newToken}`,
+          ...(options.headers || {}),
+        },
+      })
+    }
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }))
@@ -76,10 +152,43 @@ function toQueryString(params: Record<string, unknown>): string {
   return qs ? `?${qs}` : ''
 }
 
-export const adminApi = {
-  // Auth
-  validateKey: () => request<Record<string, number>>('/stories/stats'),
+// Auth API (public routes, no admin middleware)
+export const authApi = {
+  login: async (email: string, password: string) => {
+    const res = await fetch(`${AUTH_BASE}/login`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: 'Login failed' }))
+      throw new ApiError(res.status, body.error || 'Login failed')
+    }
+    return res.json() as Promise<{
+      accessToken: string
+      user: { id: string; email: string; name: string; role: string }
+    }>
+  },
 
+  refresh: refreshAccessToken,
+
+  logout: async () => {
+    try {
+      await fetch(`${AUTH_BASE}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch {
+      // Ignore network errors on logout
+    }
+    accessToken = null
+  },
+
+  me: () => request<User>('/auth/me'),
+}
+
+export const adminApi = {
   // Stories
   stories: {
     stats: () => request<Record<string, number>>('/stories/stats'),
@@ -164,5 +273,15 @@ export const adminApi = {
       request<JobRun>(`/jobs/${jobName}`, { method: 'PUT', body: JSON.stringify(data) }),
     run: (jobName: string) =>
       request<{ message: string }>(`/jobs/${jobName}/run`, { method: 'POST' }),
+  },
+
+  // Users
+  users: {
+    list: () => request<User[]>('/users'),
+    create: (data: { email: string; name: string; password: string; role?: string }) =>
+      request<User>('/users', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: { name?: string; role?: string }) =>
+      request<User>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: string) => request<void>(`/users/${id}`, { method: 'DELETE' }),
   },
 }

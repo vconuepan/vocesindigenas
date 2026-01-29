@@ -1,8 +1,10 @@
 import 'dotenv/config'
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import helmet from 'helmet'
 import healthRouter from './routes/health.js'
+import authRouter from './routes/auth.js'
 import adminRouter from './routes/admin/index.js'
 import publicRouter from './routes/public/index.js'
 
@@ -39,10 +41,12 @@ app.use(cors({
       return callback(null, true)
     }
     return callback(new Error('Not allowed by CORS'))
-  }
+  },
+  credentials: true,
 }))
 
-app.use(express.json())
+app.use(express.json({ limit: '100kb' }))
+app.use(cookieParser())
 
 // Request logging
 app.use((req, res, next) => {
@@ -57,6 +61,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/health', healthRouter)
+app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api', publicRouter)
 

@@ -2,6 +2,7 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { Readability } from '@mozilla/readability'
 import { JSDOM } from 'jsdom'
+import { isAllowedUrl } from '../utils/urlValidation.js'
 
 const HTTP_TIMEOUT = 10000
 const USER_AGENT = 'ActuallyRelevant/1.0 (news curation bot; +https://actuallyrelevant.news)'
@@ -20,6 +21,13 @@ async function fetchPage(url: string): Promise<string | null> {
       headers: { 'User-Agent': USER_AGENT },
       maxRedirects: 5,
       responseType: 'text',
+      beforeRedirect: (options: Record<string, any>) => {
+        const redirectUrl = typeof options.href === 'string' ? options.href
+          : `${options.protocol}//${options.hostname}${options.path}`
+        if (!isAllowedUrl(redirectUrl)) {
+          throw new Error(`Blocked redirect to disallowed URL: ${redirectUrl}`)
+        }
+      },
     })
     return response.data
   } catch (err) {
@@ -104,6 +112,11 @@ export async function extractContent(
   url: string,
   options?: { htmlSelector?: string | null }
 ): Promise<ExtractionResult | null> {
+  if (!isAllowedUrl(url)) {
+    console.warn(`[extractor] Blocked disallowed URL: ${url}`)
+    return null
+  }
+
   const html = await fetchPage(url)
   if (!html) return null
 

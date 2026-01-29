@@ -3,6 +3,7 @@ import { existsSync, createReadStream, unlinkSync } from 'fs'
 import * as newsletterService from '../../services/newsletter.js'
 import { generateCarouselForNewsletter } from '../../services/newsletter.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
+import { expensiveOpLimiter } from '../../middleware/rateLimit.js'
 import {
   createNewsletterSchema,
   updateNewsletterSchema,
@@ -88,7 +89,7 @@ router.post('/:id/assign', async (req, res) => {
   }
 })
 
-router.post('/:id/generate', async (req, res) => {
+router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
   try {
     const newsletter = await newsletterService.generateContent(req.params.id)
     res.json(newsletter)

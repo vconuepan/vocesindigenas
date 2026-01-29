@@ -3,6 +3,7 @@ import * as storyService from '../../services/story.js'
 import * as analysisService from '../../services/analysis.js'
 import { crawlUrl } from '../../services/crawler.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
+import { expensiveOpLimiter } from '../../middleware/rateLimit.js'
 import {
   createStorySchema,
   updateStorySchema,
@@ -107,7 +108,7 @@ router.post('/bulk-status', validateBody(bulkUpdateStatusSchema), async (req, re
   }
 })
 
-router.post('/preassess', validateBody(preassessBodySchema), async (req, res) => {
+router.post('/preassess', expensiveOpLimiter, validateBody(preassessBodySchema), async (req, res) => {
   try {
     let storyIds: string[]
     if (req.body.storyIds && req.body.storyIds.length > 0) {
@@ -130,7 +131,7 @@ router.post('/preassess', validateBody(preassessBodySchema), async (req, res) =>
   }
 })
 
-router.post('/:id/assess', async (req, res) => {
+router.post('/:id/assess', expensiveOpLimiter, async (req, res) => {
   try {
     await analysisService.assessStory(req.params.id)
     const story = await storyService.getStoryById(req.params.id)
@@ -145,7 +146,7 @@ router.post('/:id/assess', async (req, res) => {
   }
 })
 
-router.post('/select', validateBody(selectBodySchema), async (req, res) => {
+router.post('/select', expensiveOpLimiter, validateBody(selectBodySchema), async (req, res) => {
   try {
     const result = await analysisService.selectStories(req.body.storyIds)
     res.json(result)

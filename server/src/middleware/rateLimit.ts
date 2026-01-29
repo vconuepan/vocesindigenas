@@ -15,14 +15,18 @@ export const apiLimiter = rateLimit({
 })
 
 /**
- * Stricter rate limiter for expensive operations (e.g. LLM calls).
+ * Operational rate limiter for LLM-triggering endpoints.
+ * Not a security measure — admins are trusted. This prevents runaway
+ * costs by capping the number of LLM operations per hour.
+ * Each endpoint tracks its own budget via keyGenerator.
  */
 export const expensiveOpLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => `${req.ip}-${req.baseUrl}${req.path}`,
   message: {
-    error: 'Rate limit exceeded for this operation. Please try again in a bit.'
+    error: 'Operational limit reached for this endpoint. Please try again later.'
   }
 })

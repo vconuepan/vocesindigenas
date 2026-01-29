@@ -11,6 +11,7 @@ import {
   EnvelopeIcon,
   MicrophoneIcon,
   ClockIcon,
+  UsersIcon,
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Newsletters', href: '/admin/newsletters', icon: EnvelopeIcon },
   { name: 'Podcasts', href: '/admin/podcasts', icon: MicrophoneIcon },
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
+  { name: 'Users', href: '/admin/users', icon: UsersIcon },
 ]
 
 function NavItems({ onClick }: { onClick?: () => void }) {
@@ -54,7 +56,7 @@ function NavItems({ onClick }: { onClick?: () => void }) {
 }
 
 function Sidebar() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
 
   return (
     <div className="flex h-full flex-col">
@@ -65,6 +67,12 @@ function Sidebar() {
         <NavItems />
       </nav>
       <div className="border-t border-neutral-200 px-3 py-3">
+        {user && (
+          <div className="px-3 py-2 mb-1">
+            <p className="text-sm font-medium text-neutral-900 truncate">{user.name}</p>
+            <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+          </div>
+        )}
         <button
           onClick={logout}
           className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"

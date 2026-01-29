@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as podcastService from '../../services/podcast.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
+import { expensiveOpLimiter } from '../../middleware/rateLimit.js'
 import {
   createPodcastSchema,
   updatePodcastSchema,
@@ -86,7 +87,7 @@ router.post('/:id/assign', async (req, res) => {
   }
 })
 
-router.post('/:id/generate', async (req, res) => {
+router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
   try {
     const podcast = await podcastService.generateScript(req.params.id)
     res.json(podcast)

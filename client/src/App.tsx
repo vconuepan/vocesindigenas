@@ -21,6 +21,7 @@ import NewsletterDetailPage from './pages/admin/NewsletterDetailPage'
 import PodcastsPage from './pages/admin/PodcastsPage'
 import PodcastDetailPage from './pages/admin/PodcastDetailPage'
 import JobsPage from './pages/admin/JobsPage'
+import UsersPage from './pages/admin/UsersPage'
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="podcasts" element={<PodcastsPage />} />
         <Route path="podcasts/:id" element={<PodcastDetailPage />} />
         <Route path="jobs" element={<JobsPage />} />
+        <Route path="users" element={<UsersPage />} />
       </Route>
 
       {/* Catch-all */}

@@ -1,57 +1,81 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { adminApi, ApiError } from './admin-api'
+import type { UserRole } from '@shared/types'
+import { authApi, setAccessToken, ApiError } from './admin-api'
+
+interface AuthUser {
+  id: string
+  email: string
+  name: string
+  role: UserRole
+}
 
 interface AuthContextValue {
+  user: AuthUser | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (apiKey: string) => Promise<void>
+  login: (email: string, password: string) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // On mount, try to restore session via refresh token cookie
   useEffect(() => {
-    const key = localStorage.getItem('admin_api_key')
-    if (!key) {
-      setIsLoading(false)
-      return
-    }
+    // Clean up old localStorage-based auth
+    localStorage.removeItem('admin_api_key')
 
-    adminApi.validateKey()
-      .then(() => setIsAuthenticated(true))
+    authApi.refresh()
+      .then(token => {
+        if (token) {
+          return authApi.me()
+        }
+        return null
+      })
+      .then(userData => {
+        if (userData) {
+          setUser(userData as AuthUser)
+        }
+      })
       .catch(() => {
-        localStorage.removeItem('admin_api_key')
-        setIsAuthenticated(false)
+        setUser(null)
+        setAccessToken(null)
       })
       .finally(() => setIsLoading(false))
   }, [])
 
-  const login = useCallback(async (apiKey: string) => {
-    localStorage.setItem('admin_api_key', apiKey)
+  const login = useCallback(async (email: string, password: string) => {
     try {
-      await adminApi.validateKey()
-      setIsAuthenticated(true)
+      const result = await authApi.login(email, password)
+      setAccessToken(result.accessToken)
+      setUser(result.user as AuthUser)
     } catch (err) {
-      localStorage.removeItem('admin_api_key')
+      setAccessToken(null)
+      setUser(null)
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        throw new Error('Invalid API key')
+        throw new Error('Invalid email or password')
       }
       throw new Error('Could not connect to server')
     }
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('admin_api_key')
-    setIsAuthenticated(false)
+  const logout = useCallback(async () => {
+    await authApi.logout()
+    setUser(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      logout,
+    }}>
       {children}
     </AuthContext.Provider>
   )

@@ -43,7 +43,7 @@ AI-curated news platform that evaluates article relevance to humanity using LLM 
 4. Configure environment variables:
    ```bash
    cp server/.env.sample server/.env
-   # Edit server/.env with your DATABASE_URL, OPENAI_API_KEY, and ADMIN_API_KEY
+   # Edit server/.env with your DATABASE_URL, OPENAI_API_KEY, JWT_SECRET, and PUBLIC_API_KEY
    ```
 
 5. Run database migrations:
@@ -86,7 +86,8 @@ This project requires **three services** on Render:
 | `OPENAI_API_KEY` | Yes | OpenAI API key |
 | `FRONTEND_URL` | Yes (prod) | Frontend URL for CORS |
 | `PORT` | No | Defaults to 10000 (Render) / 3001 (local) |
-| `ADMIN_API_KEY` | Yes | Secret key for admin API access |
+| `JWT_SECRET` | Yes | Random string (32+ chars) for signing JWTs |
+| `PUBLIC_API_KEY` | No | API key for public content access (mobile apps, etc.) |
 
 ### 3. Frontend (Static Site)
 

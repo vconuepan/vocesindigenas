@@ -1,29 +1,114 @@
 import type { Request, Response, NextFunction } from 'express'
+import { timingSafeEqual } from 'crypto'
+import { verifyAccessToken, type AccessTokenPayload } from '../services/auth.js'
+
+export interface AuthUser {
+  userId: string
+  email: string
+  role: string
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthUser
+    }
+  }
+}
 
 /**
- * Admin authentication middleware.
- * For v1, checks a static API key from environment.
- * Will be expanded to JWT/session-based auth when user accounts are added.
+ * Try to authenticate via JWT access token.
+ * Returns the payload if valid, null otherwise.
  */
-export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization
-  const apiKey = process.env.ADMIN_API_KEY
-
-  if (!apiKey) {
-    res.status(500).json({ error: 'Server misconfiguration: ADMIN_API_KEY not set' })
-    return
+function tryJwtAuth(token: string): AccessTokenPayload | null {
+  try {
+    return verifyAccessToken(token)
+  } catch {
+    return null
   }
+}
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+/**
+ * Try to authenticate via static API key.
+ * Returns true if the token matches the PUBLIC_API_KEY env var.
+ */
+function tryApiKeyAuth(token: string): boolean {
+  const apiKey = process.env.PUBLIC_API_KEY
+  if (!apiKey) return false
+
+  const tokenBuf = Buffer.from(token)
+  const keyBuf = Buffer.from(apiKey)
+  if (tokenBuf.length !== keyBuf.length) return false
+  return timingSafeEqual(tokenBuf, keyBuf)
+}
+
+function extractBearerToken(req: Request): string | null {
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null
+  return authHeader.slice(7)
+}
+
+/**
+ * Admin authentication middleware (JWT only).
+ * Used for admin routes — API key is not accepted.
+ */
+export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  const token = extractBearerToken(req)
+
+  if (!token) {
     res.status(401).json({ error: 'Missing authorization header' })
     return
   }
 
-  const token = authHeader.slice(7)
-  if (token !== apiKey) {
-    res.status(403).json({ error: 'Invalid credentials' })
+  const jwtPayload = tryJwtAuth(token)
+  if (jwtPayload) {
+    req.user = {
+      userId: jwtPayload.userId,
+      email: jwtPayload.email,
+      role: jwtPayload.role,
+    }
+    next()
     return
   }
 
-  next()
+  res.status(403).json({ error: 'Invalid credentials' })
+}
+
+/**
+ * API key authentication middleware.
+ * Used for public API routes that need authenticated access (mobile apps, etc.).
+ * Accepts the static PUBLIC_API_KEY as a Bearer token.
+ */
+export function requireApiKey(req: Request, res: Response, next: NextFunction): void {
+  const token = extractBearerToken(req)
+
+  if (!token) {
+    res.status(401).json({ error: 'Missing authorization header' })
+    return
+  }
+
+  if (tryApiKeyAuth(token)) {
+    req.user = {
+      userId: 'api-key',
+      email: 'api-key@system',
+      role: 'api-client',
+    }
+    next()
+    return
+  }
+
+  res.status(403).json({ error: 'Invalid API key' })
+}
+
+/**
+ * Role check middleware. Use after requireAuth.
+ */
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403).json({ error: 'Insufficient permissions' })
+      return
+    }
+    next()
+  }
 }

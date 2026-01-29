@@ -17,6 +17,15 @@ export type EmotionTag =
 
 export type UserRole = 'admin' | 'editor' | 'viewer'
 
+export interface User {
+  id: string
+  email: string
+  name: string
+  role: UserRole
+  createdAt: string
+  updatedAt: string
+}
+
 export type JobName =
   | 'crawl_feeds'
   | 'preassess_stories'
