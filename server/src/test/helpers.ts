@@ -38,6 +38,32 @@ export function sampleFeed(overrides: Record<string, any> = {}) {
   }
 }
 
+export function sampleNewsletter(overrides: Record<string, any> = {}) {
+  return {
+    id: 'newsletter-1',
+    title: 'Weekly Roundup #1',
+    content: '',
+    storyIds: [],
+    status: 'draft' as const,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    ...overrides,
+  }
+}
+
+export function samplePodcast(overrides: Record<string, any> = {}) {
+  return {
+    id: 'podcast-1',
+    title: 'Episode #1',
+    script: '',
+    storyIds: [],
+    status: 'draft' as const,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    ...overrides,
+  }
+}
+
 export function sampleStory(overrides: Record<string, any> = {}) {
   return {
     id: 'story-1',

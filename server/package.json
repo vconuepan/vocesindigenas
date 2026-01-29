@@ -19,7 +19,9 @@
     "@langchain/core": "^1.1.17",
     "@langchain/openai": "^1.2.3",
     "@mozilla/readability": "^0.6.0",
+    "@napi-rs/canvas": "^0.1.89",
     "@prisma/client": "^6.0.0",
+    "archiver": "^7.0.1",
     "axios": "^1.13.4",
     "cheerio": "^1.2.0",
     "cors": "^2.8.5",
@@ -30,6 +32,7 @@
     "jsdom": "^27.4.0",
     "langchain": "^1.2.15",
     "node-cron": "^3.0.3",
+    "pdfkit": "^0.17.2",
     "rss-parser": "^3.13.0",
     "zod": "^3.23.8"
   },
@@ -37,11 +40,13 @@
     "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^22.5.0",
     "@types/node-cron": "^3.0.11",
+    "@types/pdfkit": "^0.17.4",
     "@types/supertest": "^6.0.2",
     "prisma": "^6.0.0",
     "supertest": "^7.0.0",

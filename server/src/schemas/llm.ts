@@ -30,6 +30,11 @@ export const selectResultSchema = z.object({
   selectedIds: z.array(z.string()),
 })
 
+export const podcastScriptSchema = z.object({
+  script: z.string().describe('Full podcast script text ready for text-to-speech'),
+})
+
 export type PreAssessResult = z.infer<typeof preAssessResultSchema>
 export type AssessResult = z.infer<typeof assessResultSchema>
 export type SelectResult = z.infer<typeof selectResultSchema>
+export type PodcastScript = z.infer<typeof podcastScriptSchema>

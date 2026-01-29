@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from './prompts.js'
+import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt } from './prompts.js'
 
 const guidelines = {
   factors: 'Technology advancement\nScientific discovery',
@@ -143,5 +143,61 @@ describe('buildSelectPrompt', () => {
     const prompt = buildSelectPrompt(storiesWithSpecial, 1)
     expect(prompt).toContain('&amp;')
     expect(prompt).toContain('&lt;special&gt;')
+  })
+})
+
+describe('buildPodcastPrompt', () => {
+  const stories = [
+    {
+      category: 'AI & Technology',
+      title: 'AI Breakthrough',
+      summary: 'Major AI advancement in reasoning',
+      publisher: 'Nature',
+      relevanceReasons: 'Technology factor\nScientific discovery',
+      antifactors: 'Early stage technology',
+    },
+    {
+      category: 'Climate',
+      title: 'Climate Report',
+      summary: 'New climate data released',
+      publisher: 'Guardian',
+      relevanceReasons: 'Environmental impact',
+      antifactors: 'Report only',
+    },
+  ]
+
+  it('includes STORY XML blocks with all fields', () => {
+    const prompt = buildPodcastPrompt(stories)
+    expect(prompt).toContain('<STORY>')
+    expect(prompt).toContain('Category: AI & Technology')
+    expect(prompt).toContain('Title: AI Breakthrough')
+    expect(prompt).toContain('Summary of original article: Major AI advancement in reasoning')
+    expect(prompt).toContain('Publisher of original article: Nature')
+    expect(prompt).toContain('</STORY>')
+  })
+
+  it('formats relevance reasons as bullet points', () => {
+    const prompt = buildPodcastPrompt(stories)
+    expect(prompt).toContain('Relevance of the article\n- Technology factor\n- Scientific discovery')
+  })
+
+  it('formats antifactors as bullet points', () => {
+    const prompt = buildPodcastPrompt(stories)
+    expect(prompt).toContain('Limiting factors for the relevance\n- Early stage technology')
+  })
+
+  it('includes podcast instructions', () => {
+    const prompt = buildPodcastPrompt(stories)
+    expect(prompt).toContain('Actually Relevant Podcast')
+    expect(prompt).toContain('AI-generated voice')
+    expect(prompt).toContain('Existential Risks')
+    expect(prompt).toContain('text-to-voice service')
+  })
+
+  it('includes all required sections', () => {
+    const prompt = buildPodcastPrompt(stories)
+    expect(prompt).toContain('Intro')
+    expect(prompt).toContain('Sections')
+    expect(prompt).toContain('Outro')
   })
 })
