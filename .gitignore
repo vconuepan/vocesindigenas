@@ -15,3 +15,6 @@ server/prisma/*.db
 
 # Test coverage
 coverage
+
+# Windows NUL device artifact
+nul
