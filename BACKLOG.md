@@ -1,22 +1,26 @@
 # Backlog
 
-## Migration
+## To implement before public deployment
 
 - Copy issues and feeds, including their custom relevance evaluation prompts
 - Copy existing stories
 
-## To implement before public deployment
-
-- **LLM job queue system** — Server-side queue with concurrency limits to prevent OpenAI rate limit issues; client fires requests and shows progress indicators (e.g. "3/20 assessed") without blocking the UI, allowing the user to navigate and do other work while batch jobs run in the background
+- Implement security plans
+- **Server job queue system** — Server-side queue with concurrency limits to prevent OpenAI rate limit issues; client fires requests and shows progress indicators (e.g. "3/20 assessed") without blocking the UI, allowing the user to navigate and do other work while batch jobs run in the background
 - **Optimize prompts** now that we're in the gpt-5.2 era
+- Test bulk actions via admin panel
+- Automate final selection of articles
+- Article UI: link to original source at the top; show source in preview card, emotion only in emotion mode, render md (from LLM), don't show keywords
+- Improve overall site design
 - **Automated publishing schedule** — Auto-publish selected stories on a schedule (e.g., daily digest)
-- **Search function** - syntactic first is OK
 
 ## After public deployment
 
-- **Email newsletter delivery** — v1 generates newsletters; add actual email sending (SendGrid/Resend)
-- **Podcast audio generation** — v1 generates scripts; add text-to-speech for actual audio files
+- **Syntactic Search**
 - **RSS feed output** — Generate custom RSS feeds for published stories (by issue, all, etc.)
+- Try generating "Symbolbilder" for published articles
+
+- Simplify rating_low / rating_high to just rating?
 
 - **Social media auto-posting** — Auto-post published stories to Twitter/LinkedIn/Mastodon
 - **Semantic search** — pgvector infrastructure is in place; build search UI and query endpoint for similarity search over story content/embeddings
