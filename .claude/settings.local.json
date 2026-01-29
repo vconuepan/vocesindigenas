@@ -8,6 +8,7 @@
       "Bash(git status:*)",
       "Bash(npm list:*)",
       "Bash(npm view:*)",
+      "Bash(tree :*)",
       "WebFetch(domain:platform.openai.com)",
       "WebFetch(domain:cookbook.openai.com)"
     ]

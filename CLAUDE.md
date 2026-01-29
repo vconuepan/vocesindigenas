@@ -11,8 +11,7 @@ actually-relevant/
 ├── shared/          # Shared types and constants
 ├── .context/        # Context documentation
 ├── .plans/          # Development planning documents
-├── .to-migrate/     # PHP reference files from original WordPress plugin
-├── backlog.md       # Deferred features
+├── BACKLOG.md       # Deferred features
 ├── CLAUDE.md        # This file
 └── README.md        # Project documentation
 ```
@@ -20,12 +19,14 @@ actually-relevant/
 ## Tech Stack
 
 **Frontend:**
+
 - **Framework:** Vite + React 18 + TypeScript
 - **Styling:** Tailwind CSS
 - **SEO:** react-helmet-async + @prerenderer for static HTML generation
 - **Testing:** Vitest + React Testing Library
 
 **Backend:**
+
 - **Framework:** Express + TypeScript
 - **Database:** PostgreSQL + pgvector (Prisma ORM)
 - **AI:** LangChain + OpenAI (structured output with Zod)
@@ -72,6 +73,7 @@ npm run db:seed      # Seed database with sample data
 - **Prefer file tools over bash:** Use Read, Write, Edit, Glob, and Grep tools instead of bash commands for file operations.
 
 - Use `--prefix` for npm commands:
+
   ```bash
   npm run build --prefix client
   npm run test --prefix client -- --run
@@ -81,6 +83,7 @@ npm run db:seed      # Seed database with sample data
   ```
 
 - **Never use `cd`** — run all commands from the project root. Use `--prefix` for npm or full relative paths for other tools:
+
   ```bash
   npm run test --prefix server        # Good
   npx prisma generate --schema server/prisma/schema.prisma  # Good
@@ -108,35 +111,10 @@ fetched → pre_analyzed → analyzed → selected → published
 - **rejected** — Manually or automatically rejected
 - **trashed** — Soft-deleted
 
-## Deployment (Render.com)
-
-Three services:
-
-### 1. Frontend (Static Site)
-- **Build Command:** `cd client && npm install && npm run build`
-- **Publish Directory:** `client/dist`
-- **Environment Variables:** `VITE_API_URL`
-
-### 2. Backend (Web Service)
-- **Build Command:** `cd server && npm install && npx prisma generate && npm run build`
-- **Start Command:** `cd server && npm start`
-- **Environment Variables:** `DATABASE_URL`, `OPENAI_API_KEY`, `FRONTEND_URL`, `PORT`, `ADMIN_API_KEY`
-
-### 3. PostgreSQL Database
-- Enable pgvector extension
-
-### Local Development
-
-1. Install PostgreSQL locally, create database `actually_relevant`
-2. Copy `server/.env.sample` to `server/.env` and fill in values
-3. Run migrations: `npm run db:migrate --prefix server`
-4. Start servers:
-   - Frontend: `npm run dev --prefix client` (localhost:5173)
-   - Backend: `npm run dev --prefix server` (localhost:3001)
-
 ## SEO Checklist
 
 Each page should:
+
 - [ ] Use Helmet with title, description
 - [ ] Have unique, descriptive title
 - [ ] Have unique meta description (150-160 chars)
@@ -147,10 +125,12 @@ Each page should:
 Defined in `client/src/index.css`:
 
 **Layout:**
+
 - `.page-section` — Standard page wrapper (max-w-3xl, responsive padding)
 - `.page-section-wide` — Wider page wrapper (max-w-4xl)
 
 **Typography:**
+
 - `.page-title` — Page headings (text-4xl/5xl, bold, centered)
 - `.page-intro` — Subtitle text below page title
 - `.prose` — Body text container (text-neutral-600, relaxed leading, auto-styled links)
@@ -162,6 +142,7 @@ Defined in `client/src/index.css`:
 See `.context/accessibility.md` for full details.
 
 **Common requirements:**
+
 - **Links/buttons**: `focus-visible:ring-2 focus-visible:ring-brand-500`
 - **Link color**: Use `text-brand-700` (not brand-600) for AA contrast
 - **Images**: Always include `alt` text (use `alt=""` for decorative)
@@ -187,9 +168,9 @@ Follow these steps for every implementation task:
 
 1. **Plan** — Use `/everything-claude-code:plan` to create a plan document. Save it as a `.md` file in `.plans/`.
 
-2. **Implement** — Use TDD via `/everything-claude-code:tdd` for logic-heavy code using the project's test infrastructure. For UI or data-related work, implement step by step without TDD.
+2. **Implement** — Use TDD via `/everything-claude-code:tdd` for logic using the project's test infrastructure. For UI or data-related work, implement step by step without TDD.
 
-3. **Check** — Run `npm run build --prefix server` and `npm run test --prefix server -- --run` (and/or the client equivalents). Fix any failures before proceeding.
+3. **Check** — Run `npm run build --prefix server` and `npm run test --prefix server -- --run` (and/or the client equivalents). Fix any failures before proceeding. For larger UI changes, use playwright tools.
 
 4. **Review** (for non-trivial work) — Use `/everything-claude-code:code-review` and implement the most important improvement suggestions.
 
