@@ -12,15 +12,15 @@ vi.mock('axios', () => ({
 }))
 
 vi.mock('jsdom', () => ({
-  JSDOM: vi.fn().mockImplementation(() => ({
-    window: { document: {} },
-  })),
+  JSDOM: class MockJSDOM {
+    window = { document: {} }
+  },
 }))
 
 vi.mock('@mozilla/readability', () => ({
-  Readability: vi.fn().mockImplementation(() => ({
-    parse: mockReadabilityParse,
-  })),
+  Readability: class MockReadability {
+    parse = mockReadabilityParse
+  },
 }))
 
 const { extractContent } = await import('./extractor.js')

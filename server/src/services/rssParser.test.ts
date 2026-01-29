@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockParseURL = vi.fn()
+const mockParseURL = vi.hoisted(() => vi.fn())
 
 vi.mock('rss-parser', () => {
   return {
-    default: vi.fn().mockImplementation(() => ({
-      parseURL: mockParseURL,
-    })),
+    default: class MockParser {
+      parseURL = mockParseURL
+    },
   }
 })
 

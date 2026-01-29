@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { adminApi, ApiError } from './admin-api'
+import { adminApi, ApiError, setAccessToken } from './admin-api'
 
 const mockFetch = vi.fn()
 
 beforeEach(() => {
   mockFetch.mockReset()
   vi.stubGlobal('fetch', mockFetch)
-  localStorage.clear()
-  localStorage.setItem('admin_api_key', 'test-key')
+  setAccessToken('test-key')
 })
 
 function jsonResponse(data: unknown, status = 200) {

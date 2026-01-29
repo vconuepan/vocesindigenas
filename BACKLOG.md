@@ -6,7 +6,7 @@
 - Copy existing stories
 
 - ~~Implement security plans~~ (priority fixes 1-6 done: timing-safe auth, admin rate limiting, SSRF protection, error sanitization, body size limit, expensive op rate limiting; remaining: path param validation, error log sanitization — see `.plans/security.md`)
-- GitHub flagged 2 moderate Dependabot vulnerabilities on the repo — worth checking at https://github.com/OdinMB/actually-relevant/security/dependabot.
+- ~~GitHub flagged 2 moderate Dependabot vulnerabilities on the repo~~ (fixed: upgraded vite 5→7, vitest 2→4, @vitejs/plugin-react 4→5)
 - **Server job queue system** — Server-side queue with concurrency limits to prevent OpenAI rate limit issues; client fires requests and shows progress indicators (e.g. "3/20 assessed") without blocking the UI, allowing the user to navigate and do other work while batch jobs run in the background
 - **Optimize prompts** now that we're in the gpt-5.2 era
 - Test bulk actions via admin panel
