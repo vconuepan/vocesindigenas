@@ -44,6 +44,17 @@ app.use(cors({
 
 app.use(express.json())
 
+// Request logging
+app.use((req, res, next) => {
+  const start = Date.now()
+  console.log(`→ ${req.method} ${req.originalUrl}`)
+  res.on('finish', () => {
+    const ms = Date.now() - start
+    console.log(`← ${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms`)
+  })
+  next()
+})
+
 // Routes
 app.use('/health', healthRouter)
 app.use('/api/admin', adminRouter)

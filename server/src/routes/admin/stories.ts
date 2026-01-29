@@ -21,6 +21,7 @@ router.get('/stats', async (_req, res) => {
     const stats = await storyService.getStoryStats()
     res.json(stats)
   } catch (err) {
+    console.error('[stories] Failed to fetch story stats:', err)
     res.status(500).json({ error: 'Failed to fetch story stats' })
   }
 })
@@ -31,6 +32,7 @@ router.get('/', validateQuery(storyQuerySchema), async (req, res) => {
     const result = await storyService.getStories(filters)
     res.json(result)
   } catch (err) {
+    console.error('[stories] Failed to fetch stories:', err)
     res.status(500).json({ error: 'Failed to fetch stories' })
   }
 })
@@ -44,6 +46,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(story)
   } catch (err) {
+    console.error('[stories] Failed to fetch story:', err)
     res.status(500).json({ error: 'Failed to fetch story' })
   }
 })
@@ -61,6 +64,7 @@ router.post('/', validateBody(createStorySchema), async (req, res) => {
       res.status(409).json({ error: 'A story with this URL already exists' })
       return
     }
+    console.error('[stories] Failed to create story:', err)
     res.status(500).json({ error: 'Failed to create story' })
   }
 })
@@ -74,6 +78,7 @@ router.put('/:id', validateBody(updateStorySchema), async (req, res) => {
       res.status(404).json({ error: 'Story not found' })
       return
     }
+    console.error('[stories] Failed to update story:', err)
     res.status(500).json({ error: 'Failed to update story' })
   }
 })
@@ -87,6 +92,7 @@ router.put('/:id/status', validateBody(updateStoryStatusSchema), async (req, res
       res.status(404).json({ error: 'Story not found' })
       return
     }
+    console.error('[stories] Failed to update story status:', err)
     res.status(500).json({ error: 'Failed to update story status' })
   }
 })
@@ -96,6 +102,7 @@ router.post('/bulk-status', validateBody(bulkUpdateStatusSchema), async (req, re
     const result = await storyService.bulkUpdateStatus(req.body.ids, req.body.status)
     res.json({ updated: result.count })
   } catch (err) {
+    console.error('[stories] Failed to bulk update story status:', err)
     res.status(500).json({ error: 'Failed to bulk update story status' })
   }
 })
@@ -118,6 +125,7 @@ router.post('/preassess', validateBody(preassessBodySchema), async (req, res) =>
     const results = await analysisService.preAssessStories(storyIds)
     res.json({ processed: results.length, results })
   } catch (err) {
+    console.error('[stories] Failed to pre-assess stories:', err)
     res.status(500).json({ error: 'Failed to pre-assess stories' })
   }
 })
@@ -132,6 +140,7 @@ router.post('/:id/assess', async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
+    console.error('[stories] Failed to assess story:', err)
     res.status(500).json({ error: 'Failed to assess story' })
   }
 })
@@ -141,6 +150,7 @@ router.post('/select', validateBody(selectBodySchema), async (req, res) => {
     const result = await analysisService.selectStories(req.body.storyIds)
     res.json(result)
   } catch (err) {
+    console.error('[stories] Failed to select stories:', err)
     res.status(500).json({ error: 'Failed to select stories' })
   }
 })
@@ -154,6 +164,7 @@ router.post('/:id/publish', async (req, res) => {
       res.status(404).json({ error: 'Story not found' })
       return
     }
+    console.error('[stories] Failed to publish story:', err)
     res.status(500).json({ error: 'Failed to publish story' })
   }
 })
@@ -167,6 +178,7 @@ router.post('/:id/reject', async (req, res) => {
       res.status(404).json({ error: 'Story not found' })
       return
     }
+    console.error('[stories] Failed to reject story:', err)
     res.status(500).json({ error: 'Failed to reject story' })
   }
 })
@@ -188,6 +200,7 @@ router.post('/crawl-url', validateBody(crawlUrlSchema), async (req, res) => {
       res.status(409).json({ error: err.message })
       return
     }
+    console.error('[stories] Failed to crawl URL:', err)
     res.status(500).json({ error: 'Failed to crawl URL' })
   }
 })
@@ -201,6 +214,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Story not found' })
       return
     }
+    console.error('[stories] Failed to delete story:', err)
     res.status(500).json({ error: 'Failed to delete story' })
   }
 })

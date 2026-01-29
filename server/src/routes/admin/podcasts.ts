@@ -15,6 +15,7 @@ router.get('/', validateQuery(podcastQuerySchema), async (req, res) => {
     const result = await podcastService.getPodcasts(filters)
     res.json(result)
   } catch (err) {
+    console.error('[podcasts] Failed to fetch podcasts:', err)
     res.status(500).json({ error: 'Failed to fetch podcasts' })
   }
 })
@@ -28,6 +29,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(podcast)
   } catch (err) {
+    console.error('[podcasts] Failed to fetch podcast:', err)
     res.status(500).json({ error: 'Failed to fetch podcast' })
   }
 })
@@ -37,6 +39,7 @@ router.post('/', validateBody(createPodcastSchema), async (req, res) => {
     const podcast = await podcastService.createPodcast(req.body)
     res.status(201).json(podcast)
   } catch (err) {
+    console.error('[podcasts] Failed to create podcast:', err)
     res.status(500).json({ error: 'Failed to create podcast' })
   }
 })
@@ -50,6 +53,7 @@ router.put('/:id', validateBody(updatePodcastSchema), async (req, res) => {
       res.status(404).json({ error: 'Podcast not found' })
       return
     }
+    console.error('[podcasts] Failed to update podcast:', err)
     res.status(500).json({ error: 'Failed to update podcast' })
   }
 })
@@ -63,6 +67,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Podcast not found' })
       return
     }
+    console.error('[podcasts] Failed to delete podcast:', err)
     res.status(500).json({ error: 'Failed to delete podcast' })
   }
 })
@@ -76,6 +81,7 @@ router.post('/:id/assign', async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
+    console.error('[podcasts] Failed to assign stories:', err)
     res.status(500).json({ error: 'Failed to assign stories' })
   }
 })
@@ -93,6 +99,7 @@ router.post('/:id/generate', async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
+    console.error('[podcasts] Failed to generate podcast script:', err)
     res.status(500).json({ error: 'Failed to generate podcast script' })
   }
 })

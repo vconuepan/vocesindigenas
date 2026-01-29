@@ -10,6 +10,7 @@ router.get('/', async (_req, res) => {
     const issues = await issueService.getAllIssues()
     res.json(issues)
   } catch (err) {
+    console.error('[issues] Failed to fetch issues:', err)
     res.status(500).json({ error: 'Failed to fetch issues' })
   }
 })
@@ -23,6 +24,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(issue)
   } catch (err) {
+    console.error('[issues] Failed to fetch issue:', err)
     res.status(500).json({ error: 'Failed to fetch issue' })
   }
 })
@@ -36,6 +38,7 @@ router.post('/', validateBody(createIssueSchema), async (req, res) => {
       res.status(409).json({ error: 'An issue with this slug already exists' })
       return
     }
+    console.error('[issues] Failed to create issue:', err)
     res.status(500).json({ error: 'Failed to create issue' })
   }
 })
@@ -53,6 +56,7 @@ router.put('/:id', validateBody(updateIssueSchema), async (req, res) => {
       res.status(409).json({ error: 'An issue with this slug already exists' })
       return
     }
+    console.error('[issues] Failed to update issue:', err)
     res.status(500).json({ error: 'Failed to update issue' })
   }
 })
@@ -70,6 +74,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Issue not found' })
       return
     }
+    console.error('[issues] Failed to delete issue:', err)
     res.status(500).json({ error: 'Failed to delete issue' })
   }
 })

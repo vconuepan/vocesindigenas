@@ -6,6 +6,9 @@ Features and ideas to implement after v1.
 
 ## Deferred Features
 
+- **Admin settings page** — UI for managing OpenAI API key, model selection, and other server config (currently env vars only)
+- **LLM job queue system** — Server-side queue with concurrency limits to prevent OpenAI rate limit issues; client fires requests and shows progress indicators (e.g. "3/20 assessed") without blocking the UI, allowing the user to navigate and do other work while batch jobs run in the background
+
 - **RSS feed output** — Generate custom RSS feeds for published stories (by issue, all, etc.)
 - **Semantic search** — pgvector infrastructure is in place; build search UI and query endpoint for similarity search over story content/embeddings
 - **Public user accounts** — Allow users to create accounts, save preferences, follow topics

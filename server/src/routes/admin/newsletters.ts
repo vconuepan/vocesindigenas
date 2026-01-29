@@ -17,6 +17,7 @@ router.get('/', validateQuery(newsletterQuerySchema), async (req, res) => {
     const result = await newsletterService.getNewsletters(filters)
     res.json(result)
   } catch (err) {
+    console.error('[newsletters] Failed to fetch newsletters:', err)
     res.status(500).json({ error: 'Failed to fetch newsletters' })
   }
 })
@@ -30,6 +31,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(newsletter)
   } catch (err) {
+    console.error('[newsletters] Failed to fetch newsletter:', err)
     res.status(500).json({ error: 'Failed to fetch newsletter' })
   }
 })
@@ -39,6 +41,7 @@ router.post('/', validateBody(createNewsletterSchema), async (req, res) => {
     const newsletter = await newsletterService.createNewsletter(req.body)
     res.status(201).json(newsletter)
   } catch (err) {
+    console.error('[newsletters] Failed to create newsletter:', err)
     res.status(500).json({ error: 'Failed to create newsletter' })
   }
 })
@@ -52,6 +55,7 @@ router.put('/:id', validateBody(updateNewsletterSchema), async (req, res) => {
       res.status(404).json({ error: 'Newsletter not found' })
       return
     }
+    console.error('[newsletters] Failed to update newsletter:', err)
     res.status(500).json({ error: 'Failed to update newsletter' })
   }
 })
@@ -65,6 +69,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Newsletter not found' })
       return
     }
+    console.error('[newsletters] Failed to delete newsletter:', err)
     res.status(500).json({ error: 'Failed to delete newsletter' })
   }
 })
@@ -78,6 +83,7 @@ router.post('/:id/assign', async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
+    console.error('[newsletters] Failed to assign stories:', err)
     res.status(500).json({ error: 'Failed to assign stories' })
   }
 })
@@ -95,6 +101,7 @@ router.post('/:id/generate', async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
+    console.error('[newsletters] Failed to generate newsletter content:', err)
     res.status(500).json({ error: 'Failed to generate newsletter content' })
   }
 })
@@ -118,6 +125,7 @@ router.post('/:id/carousel', async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
+    console.error('[newsletters] Failed to generate carousel images:', err)
     res.status(500).json({ error: 'Failed to generate carousel images' })
   }
 })

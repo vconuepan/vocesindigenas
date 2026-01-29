@@ -23,6 +23,7 @@ router.get('/', async (_req, res) => {
     const jobs = await prisma.jobRun.findMany({ orderBy: { jobName: 'asc' } })
     res.json(jobs)
   } catch (err) {
+    console.error('[jobs] Failed to fetch jobs:', err)
     res.status(500).json({ error: 'Failed to fetch jobs' })
   }
 })
@@ -44,6 +45,7 @@ router.put('/:jobName', validateBody(updateJobSchema), async (req, res) => {
       res.status(404).json({ error: 'Job not found' })
       return
     }
+    console.error('[jobs] Failed to update job:', err)
     res.status(500).json({ error: 'Failed to update job' })
   }
 })

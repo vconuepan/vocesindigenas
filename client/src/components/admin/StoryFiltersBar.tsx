@@ -1,0 +1,77 @@
+import { useSearchParams } from 'react-router-dom'
+import { STORY_STATUSES, EMOTION_TAGS } from '@shared/constants'
+import { Select } from '../ui/Select'
+import { formatStatus } from '../../lib/constants'
+import type { Issue, Feed } from '@shared/types'
+
+interface StoryFiltersBarProps {
+  issues: Issue[]
+  feeds: Feed[]
+}
+
+export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const setFilter = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams)
+    if (value) {
+      next.set(key, value)
+    } else {
+      next.delete(key)
+    }
+    // Reset to page 1 on filter change
+    next.delete('page')
+    setSearchParams(next)
+  }
+
+  return (
+    <div className="flex flex-wrap gap-3 mb-4">
+      <Select
+        id="filter-status"
+        label="Status"
+        placeholder="All statuses"
+        value={searchParams.get('status') || ''}
+        onChange={e => setFilter('status', e.target.value)}
+        options={STORY_STATUSES.map(s => ({ value: s, label: formatStatus(s) }))}
+      />
+      <Select
+        id="filter-issue"
+        label="Issue"
+        placeholder="All issues"
+        value={searchParams.get('issueId') || ''}
+        onChange={e => setFilter('issueId', e.target.value)}
+        options={issues.map(i => ({ value: i.id, label: i.name }))}
+      />
+      <Select
+        id="filter-feed"
+        label="Feed"
+        placeholder="All feeds"
+        value={searchParams.get('feedId') || ''}
+        onChange={e => setFilter('feedId', e.target.value)}
+        options={feeds.map(f => ({ value: f.id, label: f.title }))}
+      />
+      <Select
+        id="filter-emotion"
+        label="Emotion"
+        placeholder="All emotions"
+        value={searchParams.get('emotionTag') || ''}
+        onChange={e => setFilter('emotionTag', e.target.value)}
+        options={EMOTION_TAGS.map(e => ({ value: e, label: e.charAt(0).toUpperCase() + e.slice(1) }))}
+      />
+      <Select
+        id="filter-sort"
+        label="Sort"
+        value={searchParams.get('sort') || 'date_desc'}
+        onChange={e => setFilter('sort', e.target.value)}
+        options={[
+          { value: 'date_desc', label: 'Newest first' },
+          { value: 'date_asc', label: 'Oldest first' },
+          { value: 'rating_desc', label: 'Highest rating' },
+          { value: 'rating_asc', label: 'Lowest rating' },
+          { value: 'title_asc', label: 'Title A-Z' },
+          { value: 'title_desc', label: 'Title Z-A' },
+        ]}
+      />
+    </div>
+  )
+}
