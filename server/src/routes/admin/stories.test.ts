@@ -30,6 +30,16 @@ vi.mock('../../services/crawler.js', () => ({
   crawlUrl: vi.fn(),
 }))
 
+const mockPreAssessStories = vi.hoisted(() => vi.fn())
+const mockAssessStory = vi.hoisted(() => vi.fn())
+const mockSelectStories = vi.hoisted(() => vi.fn())
+
+vi.mock('../../services/analysis.js', () => ({
+  preAssessStories: mockPreAssessStories,
+  assessStory: mockAssessStory,
+  selectStories: mockSelectStories,
+}))
+
 process.env.ADMIN_API_KEY = TEST_API_KEY
 
 const { default: app } = await import('../../app.js')
@@ -267,6 +277,141 @@ describe('Admin Stories API', () => {
         .set(authHeader())
         .send({ ids: [], status: 'published' })
       expect(res.status).toBe(400)
+    })
+  })
+
+  describe('POST /api/admin/stories/preassess', () => {
+    it('pre-assesses stories with given IDs', async () => {
+      mockPreAssessStories.mockResolvedValue([
+        { storyId: '00000000-0000-0000-0000-000000000001', rating: 4, emotionTag: 'surprising' },
+      ])
+
+      const res = await request(app)
+        .post('/api/admin/stories/preassess')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
+      expect(res.status).toBe(200)
+      expect(res.body.processed).toBe(1)
+      expect(res.body.results[0].rating).toBe(4)
+    })
+
+    it('pre-assesses all fetched stories when no IDs given', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([
+        { ...sampleStory({ id: 'story-1' }), feed: { ...sampleFeed(), issue: sampleIssue() } },
+      ])
+      mockPreAssessStories.mockResolvedValue([
+        { storyId: 'story-1', rating: 3, emotionTag: 'calm' },
+      ])
+
+      const res = await request(app)
+        .post('/api/admin/stories/preassess')
+        .set(authHeader())
+        .send({})
+      expect(res.status).toBe(200)
+      expect(res.body.processed).toBe(1)
+    })
+
+    it('returns empty results when no fetched stories', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([])
+
+      const res = await request(app)
+        .post('/api/admin/stories/preassess')
+        .set(authHeader())
+        .send({})
+      expect(res.status).toBe(200)
+      expect(res.body.processed).toBe(0)
+    })
+  })
+
+  describe('POST /api/admin/stories/:id/assess', () => {
+    it('assesses a single story', async () => {
+      mockAssessStory.mockResolvedValue(undefined)
+      mockPrisma.story.findUnique.mockResolvedValue(storyWithRelations)
+
+      const res = await request(app)
+        .post('/api/admin/stories/story-1/assess')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(mockAssessStory).toHaveBeenCalledWith('story-1')
+    })
+
+    it('returns 404 when story not found', async () => {
+      mockAssessStory.mockRejectedValue(new Error('Story not found'))
+
+      const res = await request(app)
+        .post('/api/admin/stories/unknown/assess')
+        .set(authHeader())
+      expect(res.status).toBe(404)
+    })
+  })
+
+  describe('POST /api/admin/stories/select', () => {
+    it('selects stories from given IDs', async () => {
+      mockSelectStories.mockResolvedValue({
+        selected: ['00000000-0000-0000-0000-000000000001'],
+        rejected: ['00000000-0000-0000-0000-000000000002'],
+      })
+
+      const res = await request(app)
+        .post('/api/admin/stories/select')
+        .set(authHeader())
+        .send({
+          storyIds: [
+            '00000000-0000-0000-0000-000000000001',
+            '00000000-0000-0000-0000-000000000002',
+          ],
+        })
+      expect(res.status).toBe(200)
+      expect(res.body.selected).toHaveLength(1)
+      expect(res.body.rejected).toHaveLength(1)
+    })
+
+    it('rejects empty storyIds', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/select')
+        .set(authHeader())
+        .send({ storyIds: [] })
+      expect(res.status).toBe(400)
+    })
+  })
+
+  describe('POST /api/admin/stories/:id/publish', () => {
+    it('publishes a story', async () => {
+      mockPrisma.story.update.mockResolvedValue(sampleStory({ status: 'published' }))
+
+      const res = await request(app)
+        .post('/api/admin/stories/story-1/publish')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+    })
+
+    it('returns 404 for unknown story', async () => {
+      mockPrisma.story.update.mockRejectedValue({ code: 'P2025' })
+
+      const res = await request(app)
+        .post('/api/admin/stories/unknown/publish')
+        .set(authHeader())
+      expect(res.status).toBe(404)
+    })
+  })
+
+  describe('POST /api/admin/stories/:id/reject', () => {
+    it('rejects a story', async () => {
+      mockPrisma.story.update.mockResolvedValue(sampleStory({ status: 'rejected' }))
+
+      const res = await request(app)
+        .post('/api/admin/stories/story-1/reject')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+    })
+
+    it('returns 404 for unknown story', async () => {
+      mockPrisma.story.update.mockRejectedValue({ code: 'P2025' })
+
+      const res = await request(app)
+        .post('/api/admin/stories/unknown/reject')
+        .set(authHeader())
+      expect(res.status).toBe(404)
     })
   })
 

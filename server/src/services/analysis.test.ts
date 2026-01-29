@@ -1,0 +1,175 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { sampleStory, sampleFeed, sampleIssue } from '../test/helpers.js'
+
+const mockPrisma = vi.hoisted(() => ({
+  story: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    update: vi.fn(),
+    updateMany: vi.fn(),
+  },
+}))
+
+const mockGetSmallLLM = vi.hoisted(() => vi.fn())
+const mockGetLargeLLM = vi.hoisted(() => vi.fn())
+const mockRateLimitDelay = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+
+vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
+vi.mock('./llm.js', () => ({
+  getSmallLLM: mockGetSmallLLM,
+  getLargeLLM: mockGetLargeLLM,
+  rateLimitDelay: mockRateLimitDelay,
+}))
+
+const { preAssessStories, assessStory, selectStories } = await import('./analysis.js')
+
+function storyWithRelations(overrides: Record<string, any> = {}) {
+  return {
+    ...sampleStory(overrides),
+    feed: {
+      ...sampleFeed(),
+      issue: sampleIssue(),
+    },
+  }
+}
+
+describe('preAssessStories', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls LLM with structured output and updates stories', async () => {
+    const story1 = storyWithRelations({ id: 'story-1' })
+    const story2 = storyWithRelations({ id: 'story-2' })
+    mockPrisma.story.findMany.mockResolvedValue([story1, story2])
+    mockPrisma.story.update.mockResolvedValue({})
+
+    const mockStructuredLlm = {
+      invoke: vi.fn().mockResolvedValue({
+        articles: [
+          { articleId: 'story-1', rating: 4, emotionTag: 'surprising' },
+          { articleId: 'story-2', rating: 2, emotionTag: 'calm' },
+        ],
+      }),
+    }
+    mockGetSmallLLM.mockReturnValue({
+      withStructuredOutput: () => mockStructuredLlm,
+    })
+
+    const results = await preAssessStories(['story-1', 'story-2'])
+
+    expect(results).toHaveLength(2)
+    expect(results[0]).toEqual({ storyId: 'story-1', rating: 4, emotionTag: 'surprising' })
+    expect(results[1]).toEqual({ storyId: 'story-2', rating: 2, emotionTag: 'calm' })
+
+    expect(mockPrisma.story.update).toHaveBeenCalledTimes(2)
+    expect(mockPrisma.story.update).toHaveBeenCalledWith({
+      where: { id: 'story-1' },
+      data: { relevanceRatingLow: 4, emotionTag: 'surprising', status: 'pre_analyzed' },
+    })
+  })
+})
+
+describe('assessStory', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls LLM with structured output and updates story fields', async () => {
+    const story = storyWithRelations({ id: 'story-1' })
+    mockPrisma.story.findUnique.mockResolvedValue(story)
+    mockPrisma.story.update.mockResolvedValue({})
+
+    const structuredResponse = {
+      publicationDate: '2024-01-15 00:00:00',
+      quote: '"Test quote" said Expert',
+      keywords: ['keyword1', 'keyword2', 'keyword3'],
+      summary: 'Test summary with key information.',
+      factors: ['Factor one: Detailed explanation.', 'Factor two: Detailed explanation.'],
+      limitingFactors: ['Limiting factor: Explanation of limitation.'],
+      relevanceCalculation: ['Key factor: 5', 'Limitation: -2'],
+      conservativeRating: 3,
+      scenarios: ['Higher scenario: Description.', 'Lower scenario: Description.'],
+      speculativeRating: 5,
+      relevanceSummary: 'Test relevance summary explaining the rating.',
+      relevanceTitle: 'Test title: subtitle here',
+      marketingBlurb: 'Publisher reports on test topic with assessment.',
+    }
+
+    const mockStructuredLlm = {
+      invoke: vi.fn().mockResolvedValue(structuredResponse),
+    }
+    mockGetLargeLLM.mockReturnValue({
+      withStructuredOutput: () => mockStructuredLlm,
+    })
+
+    await assessStory('story-1')
+
+    expect(mockPrisma.story.update).toHaveBeenCalledWith({
+      where: { id: 'story-1' },
+      data: expect.objectContaining({
+        aiSummary: 'Test summary with key information.',
+        aiQuote: '"Test quote" said Expert',
+        aiKeywords: ['keyword1', 'keyword2', 'keyword3'],
+        aiRelevanceReasons: 'Factor one: Detailed explanation.\nFactor two: Detailed explanation.',
+        aiAntifactors: 'Limiting factor: Explanation of limitation.',
+        aiRelevanceCalculation: 'Key factor: 5\nLimitation: -2',
+        aiScenarios: 'Higher scenario: Description.\nLower scenario: Description.',
+        relevanceRatingLow: 3,
+        relevanceRatingHigh: 5,
+        status: 'analyzed',
+      }),
+    })
+  })
+
+  it('throws when story not found', async () => {
+    mockPrisma.story.findUnique.mockResolvedValue(null)
+    await expect(assessStory('nonexistent')).rejects.toThrow('Story not found')
+  })
+})
+
+describe('selectStories', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls LLM and updates selected/rejected statuses', async () => {
+    const stories = [
+      sampleStory({ id: 'story-1', aiSummary: 'Summary 1', status: 'analyzed' }),
+      sampleStory({ id: 'story-2', aiSummary: 'Summary 2', status: 'analyzed' }),
+      sampleStory({ id: 'story-3', aiSummary: 'Summary 3', status: 'analyzed' }),
+      sampleStory({ id: 'story-4', aiSummary: 'Summary 4', status: 'analyzed' }),
+    ]
+    mockPrisma.story.findMany.mockResolvedValue(stories)
+    mockPrisma.story.updateMany.mockResolvedValue({ count: 2 })
+
+    const mockStructuredLlm = {
+      invoke: vi.fn().mockResolvedValue({
+        selectedIds: ['story-1', 'story-3'],
+      }),
+    }
+    mockGetSmallLLM.mockReturnValue({
+      withStructuredOutput: () => mockStructuredLlm,
+    })
+
+    const result = await selectStories(['story-1', 'story-2', 'story-3', 'story-4'])
+
+    expect(result.selected).toEqual(['story-1', 'story-3'])
+    expect(result.rejected).toEqual(['story-2', 'story-4'])
+
+    expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['story-1', 'story-3'] } },
+      data: { status: 'selected' },
+    })
+    expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['story-2', 'story-4'] } },
+      data: { status: 'rejected' },
+    })
+  })
+
+  it('returns empty arrays when no stories found', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+    const result = await selectStories(['nonexistent'])
+    expect(result).toEqual({ selected: [], rejected: [] })
+  })
+})

@@ -170,9 +170,33 @@ See `.context/accessibility.md` for full details.
 
 ## Context Files
 
-- **`.context/images.md`** — Image optimization system: CLI commands, size presets, directory structure. **Read before adding images.**
-- **`.context/accessibility.md`** — WCAG 2.2 AA compliance: ARIA patterns, color contrast, keyboard navigation.
-- **`.context/seo.md`** — Sitemap and robots.txt: generation, priority guidelines.
+- **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; only stories with pre-assessment rating >= 3 proceed to full analysis. Covers status transitions, automated jobs, manual admin endpoints, and all AI-generated story fields.
+- **`.context/content-extraction.md`** — Content extraction uses a 3-tier fallback chain (CSS selector → Readability → PipFeed API); set `htmlSelector` on a feed when Readability produces noisy output. Covers the crawl flow, deduplication, and how to add new feeds.
+- **`.context/llm-analysis.md`** — All three LLM stages use `withStructuredOutput` + Zod schemas; to change output format, update both the prompt in `prompts.ts` AND the schema in `schemas/llm.ts`. Covers model configuration, the three analysis stages, issue-specific guidelines, and prompt modification.
+- **`.context/scheduler.md`** — Jobs run in-process via node-cron with config in the `job_runs` DB table; add new jobs by creating a handler, registering it in `scheduler.ts`, and adding a DB row. Covers overlap prevention, overdue detection, error tracking, and the admin API.
+- **`.context/images.md`** — Run `npm run images:optimize --prefix client` to generate WebP variants before committing new images. Covers size presets, directory structure, retina support, and CLI commands.
+- **`.context/accessibility.md`** — Use `focus-visible:ring-2 focus-visible:ring-brand-500` on all interactive elements and `text-brand-700` (not brand-600) for link contrast. Covers WCAG 2.2 AA patterns, ARIA, forms, navigation, and testing checklist.
+- **`.context/seo.md`** — Add sitemap metadata to `client/src/routes.ts` for every new page; the sitemap is auto-generated during build. Covers robots.txt, priority guidelines, and change frequency options.
+
+## Implementation Workflow
+
+Follow these steps for every implementation task:
+
+1. **Plan** — Use `/everything-claude-code:plan` to create a plan document. Save it as a `.md` file in `.plans/`.
+
+2. **Implement** — Use TDD via `/everything-claude-code:tdd` for logic-heavy code using the project's test infrastructure. For UI or data-related work, implement step by step without TDD.
+
+3. **Check** — Run `npm run build --prefix server` and `npm run test --prefix server -- --run` (and/or the client equivalents). Fix any failures before proceeding.
+
+4. **Review** (for non-trivial work) — Use `/everything-claude-code:code-review` and implement the most important improvement suggestions.
+
+5. **Document** — Create or update `.context/` files for any important components, systems, or mechanics that were added or changed. Update the Context Files section in this `CLAUDE.md` if new context files were added. Each context file entry needs:
+   - One sentence with the most actionable information for a coding assistant
+   - One sentence summarizing additional information found in the context file
+
+6. **Update Tracking** — Update any plans, backlog files, or other tracking documents that referenced this work to mark it as completed.
+
+A task is **not done** until steps 3, 5, and 6 are complete.
 
 ## Migration Reference
 

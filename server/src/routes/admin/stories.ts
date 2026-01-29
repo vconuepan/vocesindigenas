@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import * as storyService from '../../services/story.js'
+import * as analysisService from '../../services/analysis.js'
 import { crawlUrl } from '../../services/crawler.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
 import {
@@ -8,6 +9,8 @@ import {
   updateStoryStatusSchema,
   bulkUpdateStatusSchema,
   storyQuerySchema,
+  preassessBodySchema,
+  selectBodySchema,
 } from '../../schemas/story.js'
 import { crawlUrlSchema } from '../../schemas/job.js'
 
@@ -94,6 +97,77 @@ router.post('/bulk-status', validateBody(bulkUpdateStatusSchema), async (req, re
     res.json({ updated: result.count })
   } catch (err) {
     res.status(500).json({ error: 'Failed to bulk update story status' })
+  }
+})
+
+router.post('/preassess', validateBody(preassessBodySchema), async (req, res) => {
+  try {
+    let storyIds: string[]
+    if (req.body.storyIds && req.body.storyIds.length > 0) {
+      storyIds = req.body.storyIds
+    } else {
+      const fetched = await storyService.getStoriesByStatus('fetched')
+      storyIds = fetched.map(s => s.id)
+    }
+
+    if (storyIds.length === 0) {
+      res.json({ processed: 0, results: [] })
+      return
+    }
+
+    const results = await analysisService.preAssessStories(storyIds)
+    res.json({ processed: results.length, results })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to pre-assess stories' })
+  }
+})
+
+router.post('/:id/assess', async (req, res) => {
+  try {
+    await analysisService.assessStory(req.params.id)
+    const story = await storyService.getStoryById(req.params.id)
+    res.json(story)
+  } catch (err: any) {
+    if (err.message === 'Story not found') {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    res.status(500).json({ error: 'Failed to assess story' })
+  }
+})
+
+router.post('/select', validateBody(selectBodySchema), async (req, res) => {
+  try {
+    const result = await analysisService.selectStories(req.body.storyIds)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to select stories' })
+  }
+})
+
+router.post('/:id/publish', async (req, res) => {
+  try {
+    const story = await storyService.publishStory(req.params.id)
+    res.json(story)
+  } catch (err: any) {
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: 'Story not found' })
+      return
+    }
+    res.status(500).json({ error: 'Failed to publish story' })
+  }
+})
+
+router.post('/:id/reject', async (req, res) => {
+  try {
+    const story = await storyService.rejectStory(req.params.id)
+    res.json(story)
+  } catch (err: any) {
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: 'Story not found' })
+      return
+    }
+    res.status(500).json({ error: 'Failed to reject story' })
   }
 })
 

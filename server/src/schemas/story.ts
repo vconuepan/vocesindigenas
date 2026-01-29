@@ -62,6 +62,14 @@ export const storyQuerySchema = z.object({
   pageSize: z.coerce.number().int().positive().max(100).optional().default(25),
 })
 
+export const preassessBodySchema = z.object({
+  storyIds: z.array(z.string().uuid()).optional(),
+})
+
+export const selectBodySchema = z.object({
+  storyIds: z.array(z.string().uuid()).min(1, 'At least one story ID is required'),
+})
+
 export const publicStoryQuerySchema = z.object({
   issueSlug: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),

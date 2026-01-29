@@ -218,6 +218,38 @@ export async function getPublishedStories(options: {
   }
 }
 
+export async function getStoriesByStatus(
+  status: string,
+  options: { ratingMin?: number; hoursAgo?: number } = {},
+) {
+  const where: Prisma.StoryWhereInput = { status: status as any }
+  if (options.ratingMin !== undefined) {
+    where.relevanceRatingLow = { gte: options.ratingMin }
+  }
+  if (options.hoursAgo !== undefined) {
+    where.dateCrawled = { gte: new Date(Date.now() - options.hoursAgo * 60 * 60 * 1000) }
+  }
+  return prisma.story.findMany({
+    where,
+    include: { feed: { include: { issue: true } } },
+    orderBy: { dateCrawled: 'desc' },
+  })
+}
+
+export async function publishStory(id: string): Promise<Story> {
+  return prisma.story.update({
+    where: { id },
+    data: { status: 'published' as any },
+  })
+}
+
+export async function rejectStory(id: string): Promise<Story> {
+  return prisma.story.update({
+    where: { id },
+    data: { status: 'rejected' as any },
+  })
+}
+
 export async function getPublishedStoryById(id: string) {
   return prisma.story.findFirst({
     where: { id, status: 'published' },
