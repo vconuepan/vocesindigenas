@@ -179,6 +179,7 @@ See `.context/accessibility.md` for full details.
 - **`.context/seo.md`** — Add sitemap metadata to `client/src/routes.ts` for every new page; the sitemap is auto-generated during build. Covers robots.txt, priority guidelines, and change frequency options.
 - **`.context/newsletter-podcast.md`** — Newsletters use template-based formatting and carousel image generation; podcasts use LLM script generation via `buildPodcastPrompt`. Covers the create-assign-generate workflow, all API endpoints, carousel image/PDF/ZIP pipeline, and file locations for modification.
 - **`.context/admin-dashboard.md`** — Admin dashboard uses TanStack Query + Headless UI at `/admin/*` with auth via API key in localStorage; add new pages by creating a page component, hook file, and route in `App.tsx`. Covers route structure, key patterns (URL-persisted filters, bulk actions, LLM loading states), and file locations.
+- **`.context/public-website.md`** — Public site uses `PublicLayout` with hardcoded nav links; add new nav items in `NAV_LINKS` array in `PublicLayout.tsx`. Covers routes, public API, shared components, static content data file, design system (Nexa/Roboto fonts, pink brand), and key file locations.
 
 ## Implementation Workflow
 

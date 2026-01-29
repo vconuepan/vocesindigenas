@@ -2,6 +2,12 @@ import { Routes, Route } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout'
 import AdminLayout from './layouts/AdminLayout'
 import HomePage from './pages/HomePage'
+import StoryPage from './pages/StoryPage'
+import IssuePage from './pages/IssuePage'
+import IssuesIndexPage from './pages/IssuesPage'
+import MethodologyPage from './pages/MethodologyPage'
+import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
 import NotFoundPage from './pages/NotFoundPage'
 import LoginPage from './pages/admin/LoginPage'
 import DashboardPage from './pages/admin/DashboardPage'
@@ -22,6 +28,12 @@ export default function App() {
       {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/stories/:id" element={<StoryPage />} />
+        <Route path="/issues" element={<IssuesIndexPage />} />
+        <Route path="/issues/:slug" element={<IssuePage />} />
+        <Route path="/methodology" element={<MethodologyPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Route>
 
       {/* Admin routes */}

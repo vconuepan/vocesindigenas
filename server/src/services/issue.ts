@@ -35,6 +35,27 @@ export async function updateIssue(id: string, data: Partial<{
   return prisma.issue.update({ where: { id }, data })
 }
 
+const PUBLIC_ISSUE_SELECT = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+} as const
+
+export async function getPublicIssues() {
+  return prisma.issue.findMany({
+    select: PUBLIC_ISSUE_SELECT,
+    orderBy: { name: 'asc' },
+  })
+}
+
+export async function getPublicIssueBySlug(slug: string) {
+  return prisma.issue.findFirst({
+    where: { slug },
+    select: PUBLIC_ISSUE_SELECT,
+  })
+}
+
 export async function deleteIssue(id: string): Promise<void> {
   const feedCount = await prisma.feed.count({ where: { issueId: id } })
   if (feedCount > 0) {

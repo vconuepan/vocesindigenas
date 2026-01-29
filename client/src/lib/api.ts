@@ -1,0 +1,55 @@
+import type { Story, PaginatedResponse } from '@shared/types'
+
+const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
+async function request<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`)
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }))
+    throw new ApiError(res.status, body.error || res.statusText)
+  }
+
+  return res.json()
+}
+
+function toQueryString(params: Record<string, unknown>): string {
+  const searchParams = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.set(key, String(value))
+    }
+  }
+  const qs = searchParams.toString()
+  return qs ? `?${qs}` : ''
+}
+
+export interface PublicIssue {
+  id: string
+  name: string
+  slug: string
+  description: string
+}
+
+export const publicApi = {
+  stories: {
+    list: (params?: { page?: number; pageSize?: number; issueSlug?: string }) =>
+      request<PaginatedResponse<Story>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),
+    get: (id: string) => request<Story>(`/stories/${id}`),
+  },
+
+  issues: {
+    list: () => request<PublicIssue[]>(`/issues`),
+    get: (slug: string) => request<PublicIssue>(`/issues/${slug}`),
+  },
+}

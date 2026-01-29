@@ -19,10 +19,15 @@ export interface RouteConfig {
 
 export const routes: RouteConfig[] = [
   { path: '/', priority: 1.0, changefreq: 'daily' },
-  { path: '/methodology', priority: 0.8, changefreq: 'monthly' },
+  { path: '/issues', priority: 0.8, changefreq: 'monthly' },
+  { path: '/issues/existential-threats', priority: 0.8, changefreq: 'weekly' },
+  { path: '/issues/planet-climate', priority: 0.8, changefreq: 'weekly' },
+  { path: '/issues/human-development', priority: 0.8, changefreq: 'weekly' },
+  { path: '/issues/science-technology', priority: 0.8, changefreq: 'weekly' },
+  { path: '/methodology', priority: 0.7, changefreq: 'monthly' },
   { path: '/about', priority: 0.7, changefreq: 'monthly' },
   { path: '/contact', priority: 0.5, changefreq: 'yearly' },
-  // Dynamic routes (/stories/:slug, /issues/:slug) are added at build time
+  // Dynamic routes (/stories/:id) are added at build time
   // via generate-sitemap.ts which queries the database for published stories
 ]
 

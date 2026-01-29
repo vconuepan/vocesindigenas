@@ -1,7 +1,6 @@
 import { Fragment, useState } from 'react'
 import { NavLink, Outlet, Navigate } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
-import { QueryClientProvider } from '@tanstack/react-query'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -15,7 +14,6 @@ import {
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
-import { queryClient } from '../lib/query'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ToastProvider } from '../components/ui/Toast'
 
@@ -96,8 +94,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
+    <ToastProvider>
       <div className="flex h-screen bg-neutral-50">
         {/* Desktop sidebar */}
         <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-neutral-200 lg:bg-white">
@@ -141,6 +138,5 @@ export default function AdminLayout() {
         </div>
       </div>
       </ToastProvider>
-    </QueryClientProvider>
   )
 }

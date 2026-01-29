@@ -414,7 +414,7 @@ Build the management interface for the editorial pipeline.
 
 ---
 
-### Phase 6: Public Website (Frontend)
+### Phase 6: Public Website (Frontend) ✅ COMPLETED
 
 Build the public-facing news site.
 
