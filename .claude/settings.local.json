@@ -4,7 +4,12 @@
       "Bash(git add:*)",
       "WebFetch(domain:render.com)",
       "Bash(wc:*)",
-      "Bash(npx prisma validate:*)"
+      "Bash(npx prisma validate:*)",
+      "Bash(git status:*)",
+      "Bash(npm list:*)",
+      "Bash(npm view:*)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:cookbook.openai.com)"
     ]
   }
 }

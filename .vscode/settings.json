@@ -3,7 +3,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "boiler": "vitest.config.ts, .env.sample, render.yaml, index.html, package.json, package-lock.json, postcss.config.js, tailwind.config.js, tsconfig.json, tsconfig.tsbuildinfo, vite.config.ts, .gitignore, .env, .env.local, .env.*.local"
+    "boiler": "vitest.config.ts, docker-compose.yml, .env.sample, render.yaml, index.html, package.json, package-lock.json, postcss.config.js, tailwind.config.js, tsconfig.json, tsconfig.tsbuildinfo, vite.config.ts, .gitignore, .env, .env.local, .env.*.local"
   },
   "files.exclude": {
     "**/dist": true,

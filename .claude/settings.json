@@ -5,5 +5,8 @@
       "Bash(npm run images:*)",
       "WebFetch(domain:actuallyrelevant.news)"
     ]
+  },
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": false
   }
 }
