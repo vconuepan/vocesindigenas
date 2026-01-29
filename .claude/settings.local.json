@@ -11,7 +11,9 @@
       "Bash(tree :*)",
       "WebFetch(domain:platform.openai.com)",
       "WebFetch(domain:cookbook.openai.com)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }

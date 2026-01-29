@@ -1,11 +1,11 @@
 # Admin Dashboard
 
-The admin dashboard is a React SPA at `/admin/*` with 8 pages, auth via API key in localStorage, and TanStack Query for data fetching.
+The admin dashboard is a React SPA at `/admin/*` with 9 pages, JWT-based auth with httpOnly refresh cookies, and TanStack Query for data fetching.
 
 ## Architecture
 
-- **Auth**: `AuthProvider` wraps the app; stores API key in localStorage, validates via `GET /stories/stats`, redirects to `/admin/login` on 401
-- **API Client**: `admin-api.ts` provides typed `adminApi.*` methods organized by resource with Bearer auth headers
+- **Auth**: `AuthProvider` wraps the app; stores JWT access token in memory (not localStorage), uses httpOnly cookie for session refresh, redirects to `/admin/login` on auth failure. See `.context/authentication.md` for details.
+- **API Client**: `admin-api.ts` provides typed `adminApi.*` methods organized by resource with Bearer auth headers. Auto-refreshes expired tokens via `/api/auth/refresh`.
 - **Data Fetching**: TanStack Query with 30s stale time, hooks in `hooks/use*.ts` per resource
 - **UI Components**: Headless UI + Tailwind in `components/ui/` (Button, Badge, Card, Pagination, etc.)
 - **Admin Components**: Resource-specific in `components/admin/` (tables, forms, detail views)
@@ -28,6 +28,7 @@ The admin dashboard is a React SPA at `/admin/*` with 8 pages, auth via API key 
   /admin/podcasts     → PodcastsPage
   /admin/podcasts/:id → PodcastDetailPage
   /admin/jobs         → JobsPage (auto-refreshes every 10s)
+  /admin/users        → UsersPage (admin-only user management)
 ```
 
 ## Key Patterns

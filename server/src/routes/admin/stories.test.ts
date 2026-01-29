@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { authHeader, sampleStory, sampleFeed, sampleIssue, TEST_API_KEY } from '../../test/helpers.js'
 
+vi.mock('express-rate-limit', () => ({
+  default: () => (_req: any, _res: any, next: any) => next(),
+}))
+
 const mockPrisma = vi.hoisted(() => ({
   issue: {
     findUnique: vi.fn(),
@@ -40,7 +44,7 @@ vi.mock('../../services/analysis.js', () => ({
   selectStories: mockSelectStories,
 }))
 
-process.env.ADMIN_API_KEY = TEST_API_KEY
+process.env.PUBLIC_API_KEY = TEST_API_KEY
 
 const { default: app } = await import('../../app.js')
 

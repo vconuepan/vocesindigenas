@@ -1,6 +1,21 @@
+import jwt from 'jsonwebtoken'
+
 export const TEST_API_KEY = 'test-admin-key-12345'
+export const TEST_JWT_SECRET = 'test-jwt-secret-for-helpers'
+
+// Set JWT_SECRET early so auth middleware can verify tokens
+process.env.JWT_SECRET = TEST_JWT_SECRET
 
 export function authHeader() {
+  const token = jwt.sign(
+    { userId: 'test-admin-id', email: 'admin@test.com', role: 'admin' },
+    TEST_JWT_SECRET,
+    { expiresIn: '15m' },
+  )
+  return { Authorization: `Bearer ${token}` }
+}
+
+export function apiKeyHeader() {
   return { Authorization: `Bearer ${TEST_API_KEY}` }
 }
 
@@ -58,6 +73,19 @@ export function samplePodcast(overrides: Record<string, any> = {}) {
     script: '',
     storyIds: [],
     status: 'draft' as const,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    ...overrides,
+  }
+}
+
+export function sampleUser(overrides: Record<string, any> = {}) {
+  return {
+    id: 'user-1',
+    email: 'admin@test.com',
+    name: 'Test Admin',
+    role: 'admin',
+    passwordHash: '$2a$12$fakehashfortest',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     ...overrides,
