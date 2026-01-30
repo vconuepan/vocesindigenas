@@ -1,4 +1,4 @@
-import type { Story, PaginatedResponse } from '@shared/types'
+import type { PublicStory, PaginatedResponse } from '@shared/types'
 
 const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
 
@@ -39,13 +39,21 @@ export interface PublicIssue {
   name: string
   slug: string
   description: string
+  intro: string
+  evaluationIntro: string
+  evaluationCriteria: string[]
+  sourceNames: string[]
+  makeADifference: { label: string; url: string }[]
+  parentId: string | null
+  children?: PublicIssue[]
+  parent?: { id: string; name: string; slug: string } | null
 }
 
 export const publicApi = {
   stories: {
     list: (params?: { page?: number; pageSize?: number; issueSlug?: string }) =>
-      request<PaginatedResponse<Story>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),
-    get: (id: string) => request<Story>(`/stories/${id}`),
+      request<PaginatedResponse<PublicStory>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),
+    get: (id: string) => request<PublicStory>(`/stories/${id}`),
   },
 
   issues: {

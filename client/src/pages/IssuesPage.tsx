@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
-import { issuesContent, type IssueStaticContent } from '../data/issues-content'
+import { usePublicIssues } from '../hooks/usePublicIssues'
+import type { PublicIssue } from '../lib/api'
 
-function IssueCard({ issue }: { issue: IssueStaticContent }) {
+function IssueCard({ issue }: { issue: PublicIssue }) {
   return (
     <section className="border border-neutral-200 rounded-lg overflow-hidden">
       {/* Header with link */}
@@ -15,38 +16,62 @@ function IssueCard({ issue }: { issue: IssueStaticContent }) {
             {issue.name}
           </h2>
         </Link>
-        <p className="text-neutral-700 leading-relaxed mt-3">{issue.intro}</p>
+        <p className="text-neutral-700 leading-relaxed mt-3">{issue.intro || issue.description}</p>
       </div>
 
       <div className="px-6 py-5 md:px-8 md:py-6 space-y-6">
+        {/* Child issues */}
+        {issue.children && issue.children.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold mb-2">Sub-topics</h3>
+            <div className="flex flex-wrap gap-2">
+              {issue.children.map(child => (
+                <Link
+                  key={child.slug}
+                  to={`/issues/${child.slug}`}
+                  className="bg-brand-50 text-brand-700 hover:bg-brand-100 text-sm font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  {child.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* How we evaluate */}
-        <div>
-          <h3 className="text-lg font-bold mb-2">How We Evaluate</h3>
-          <p className="text-sm text-neutral-500 mb-3">{issue.evaluationIntro}</p>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-neutral-600">
-            {issue.evaluationCriteria.map((criterion, i) => (
-              <li key={i} className="leading-relaxed">{criterion}</li>
-            ))}
-          </ol>
-        </div>
+        {issue.evaluationCriteria?.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold mb-2">How We Evaluate</h3>
+            {issue.evaluationIntro && (
+              <p className="text-sm text-neutral-500 mb-3">{issue.evaluationIntro}</p>
+            )}
+            <ol className="list-decimal list-inside space-y-2 text-sm text-neutral-600">
+              {issue.evaluationCriteria.map((criterion, i) => (
+                <li key={i} className="leading-relaxed">{criterion}</li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {/* Sources */}
-        <div>
-          <h3 className="text-lg font-bold mb-2">Sample Sources We Cover</h3>
-          <div className="flex flex-wrap gap-1.5">
-            {issue.sources.map((source) => (
-              <span
-                key={source}
-                className="bg-neutral-100 text-neutral-600 text-xs px-2.5 py-1 rounded-full"
-              >
-                {source}
-              </span>
-            ))}
+        {issue.sourceNames?.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold mb-2">Sample Sources We Cover</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {issue.sourceNames.map((source) => (
+                <span
+                  key={source}
+                  className="bg-neutral-100 text-neutral-600 text-xs px-2.5 py-1 rounded-full"
+                >
+                  {source}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Make a difference */}
-        {issue.makeADifference.length > 0 && (
+        {issue.makeADifference?.length > 0 && (
           <div>
             <h3 className="text-lg font-bold mb-2">Make a Difference</h3>
             <ul className="flex flex-wrap gap-x-4 gap-y-1">
@@ -81,16 +106,18 @@ function IssueCard({ issue }: { issue: IssueStaticContent }) {
 }
 
 export default function IssuesPage() {
+  const { data: issues, isLoading } = usePublicIssues()
+
   return (
     <>
       <Helmet>
         <title>Issues - Actually Relevant</title>
         <meta
           name="description"
-          content="We cover four issue areas: Existential Threats, Planet & Climate, Human Development, and Science & Technology. Each evaluated with a rigorous three-criteria framework."
+          content="We cover issue areas critical to humanity's future, each evaluated with a rigorous framework."
         />
         <meta property="og:title" content="Issues - Actually Relevant" />
-        <meta property="og:description" content="We cover four issue areas critical to humanity's future." />
+        <meta property="og:description" content="We cover issue areas critical to humanity's future." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://actuallyrelevant.news/issues" />
         <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
@@ -104,8 +131,10 @@ export default function IssuesPage() {
           90% of the stories in your daily newspaper.
         </p>
 
+        {isLoading && <p className="text-center text-neutral-500 py-12">Loading...</p>}
+
         <div className="space-y-8">
-          {issuesContent.map((issue) => (
+          {(issues ?? []).map((issue) => (
             <IssueCard key={issue.slug} issue={issue} />
           ))}
         </div>

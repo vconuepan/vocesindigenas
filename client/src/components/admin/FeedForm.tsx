@@ -7,6 +7,29 @@ import { Button } from '../ui/Button'
 import { useCreateFeed, useUpdateFeed } from '../../hooks/useFeeds'
 import { useToast } from '../ui/Toast'
 
+/** Build hierarchical issue options: parents first, children indented under their parent. */
+function buildIssueOptions(issues: Issue[]): { value: string; label: string }[] {
+  const parents = issues.filter(i => !i.parentId).sort((a, b) => a.name.localeCompare(b.name))
+  const childrenByParent = new Map<string, Issue[]>()
+  for (const issue of issues) {
+    if (issue.parentId) {
+      const list = childrenByParent.get(issue.parentId) || []
+      list.push(issue)
+      childrenByParent.set(issue.parentId, list)
+    }
+  }
+  const options: { value: string; label: string }[] = []
+  for (const parent of parents) {
+    options.push({ value: parent.id, label: parent.name })
+    const children = childrenByParent.get(parent.id) || []
+    children.sort((a, b) => a.name.localeCompare(b.name))
+    for (const child of children) {
+      options.push({ value: child.id, label: `\u00A0\u00A0└ ${child.name}` })
+    }
+  }
+  return options
+}
+
 interface FeedFormProps {
   open: boolean
   onClose: () => void
@@ -93,7 +116,7 @@ export function FeedForm({ open, onClose, feed, issues }: FeedFormProps) {
               placeholder="Select issue"
               value={form.issueId}
               onChange={e => set('issueId', e.target.value)}
-              options={issues.map(i => ({ value: i.id, label: i.name }))}
+              options={buildIssueOptions(issues)}
             />
             <div className="grid grid-cols-2 gap-3">
               <Input id="feed-lang" label="Language" value={form.language} onChange={e => set('language', e.target.value)} />

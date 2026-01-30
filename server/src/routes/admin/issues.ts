@@ -38,6 +38,10 @@ router.post('/', validateBody(createIssueSchema), async (req, res) => {
       res.status(409).json({ error: 'An issue with this slug already exists' })
       return
     }
+    if (err.message === 'Parent issue not found' || err.message === 'Cannot nest more than one level deep') {
+      res.status(400).json({ error: err.message })
+      return
+    }
     console.error('[issues] Failed to create issue:', err)
     res.status(500).json({ error: 'Failed to create issue' })
   }
@@ -56,6 +60,16 @@ router.put('/:id', validateBody(updateIssueSchema), async (req, res) => {
       res.status(409).json({ error: 'An issue with this slug already exists' })
       return
     }
+    const validationErrors = [
+      'Parent issue not found',
+      'Cannot nest more than one level deep',
+      'An issue cannot be its own parent',
+      'Cannot set parent on an issue that has children',
+    ]
+    if (validationErrors.includes(err.message)) {
+      res.status(400).json({ error: err.message })
+      return
+    }
     console.error('[issues] Failed to update issue:', err)
     res.status(500).json({ error: 'Failed to update issue' })
   }
@@ -66,7 +80,7 @@ router.delete('/:id', async (req, res) => {
     await issueService.deleteIssue(req.params.id)
     res.status(204).send()
   } catch (err: any) {
-    if (err.message === 'Cannot delete issue with existing feeds') {
+    if (err.message === 'Cannot delete issue with existing feeds' || err.message === 'Cannot delete issue with child issues') {
       res.status(409).json({ error: err.message })
       return
     }
