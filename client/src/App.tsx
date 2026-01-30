@@ -7,7 +7,7 @@ import IssuePage from './pages/IssuePage'
 import IssuesIndexPage from './pages/IssuesPage'
 import MethodologyPage from './pages/MethodologyPage'
 import AboutPage from './pages/AboutPage'
-import ContactPage from './pages/ContactPage'
+import ImprintPage from './pages/ImprintPage'
 import NotFoundPage from './pages/NotFoundPage'
 import LoginPage from './pages/admin/LoginPage'
 import DashboardPage from './pages/admin/DashboardPage'
@@ -29,12 +29,12 @@ export default function App() {
       {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/stories/:id" element={<StoryPage />} />
+        <Route path="/stories/:slug" element={<StoryPage />} />
         <Route path="/issues" element={<IssuesIndexPage />} />
         <Route path="/issues/:slug" element={<IssuePage />} />
         <Route path="/methodology" element={<MethodologyPage />} />
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/imprint" element={<ImprintPage />} />
       </Route>
 
       {/* Admin routes */}

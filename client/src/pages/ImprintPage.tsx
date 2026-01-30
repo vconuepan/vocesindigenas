@@ -1,23 +1,23 @@
 import { Helmet } from 'react-helmet-async'
 
-export default function ContactPage() {
+export default function ImprintPage() {
   return (
     <>
       <Helmet>
-        <title>Contact - Actually Relevant</title>
+        <title>Imprint - Actually Relevant</title>
         <meta
           name="description"
-          content="Contact Actually Relevant. Get in touch with questions, feedback, or source suggestions."
+          content="Imprint and contact information for Actually Relevant."
         />
-        <meta property="og:title" content="Contact - Actually Relevant" />
-        <meta property="og:description" content="Get in touch with questions, feedback, or source suggestions." />
+        <meta property="og:title" content="Imprint - Actually Relevant" />
+        <meta property="og:description" content="Imprint and contact information for Actually Relevant." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/contact" />
+        <meta property="og:url" content="https://actuallyrelevant.news/imprint" />
         <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
       </Helmet>
 
       <div className="page-section">
-        <h1 className="page-title">Contact</h1>
+        <h1 className="page-title">Imprint</h1>
         <p className="page-intro">
           Questions, feedback, or source suggestions? We'd love to hear from you.
         </p>

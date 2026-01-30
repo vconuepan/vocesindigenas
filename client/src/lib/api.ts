@@ -1,6 +1,6 @@
 import type { PublicStory, PaginatedResponse } from '@shared/types'
 
-const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
+export const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
 
 export class ApiError extends Error {
   constructor(
@@ -45,6 +45,7 @@ export interface PublicIssue {
   sourceNames: string[]
   makeADifference: { label: string; url: string }[]
   parentId: string | null
+  publishedStoryCount?: number
   children?: PublicIssue[]
   parent?: { id: string; name: string; slug: string } | null
 }
@@ -53,7 +54,7 @@ export const publicApi = {
   stories: {
     list: (params?: { page?: number; pageSize?: number; issueSlug?: string }) =>
       request<PaginatedResponse<PublicStory>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),
-    get: (id: string) => request<PublicStory>(`/stories/${id}`),
+    get: (slug: string) => request<PublicStory>(`/stories/${slug}`),
   },
 
   issues: {

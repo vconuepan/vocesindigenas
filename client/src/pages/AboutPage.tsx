@@ -85,7 +85,7 @@ export default function AboutPage() {
               our methodology
             </Link>{' '}
             to understand how we evaluate relevance, or{' '}
-            <Link to="/contact" className="text-brand-700 hover:text-brand-800 font-medium">
+            <Link to="/imprint" className="text-brand-700 hover:text-brand-800 font-medium">
               get in touch
             </Link>{' '}
             if you have questions or suggestions.

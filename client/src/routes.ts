@@ -26,9 +26,9 @@ export const routes: RouteConfig[] = [
   { path: '/issues/science-technology', priority: 0.8, changefreq: 'weekly' },
   { path: '/methodology', priority: 0.7, changefreq: 'monthly' },
   { path: '/about', priority: 0.7, changefreq: 'monthly' },
-  { path: '/contact', priority: 0.5, changefreq: 'yearly' },
-  // Dynamic routes (/stories/:id) are added at build time
-  // via generate-sitemap.ts which queries the database for published stories
+  { path: '/imprint', priority: 0.5, changefreq: 'yearly' },
+  // Dynamic story routes are added at build time by generate-sitemap.ts
+  // which fetches published story slugs from the API
 ]
 
 export const routePaths = routes.map((r) => r.path)

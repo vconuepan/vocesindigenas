@@ -107,4 +107,49 @@
   .section-heading-lg {
     @apply text-3xl font-bold mb-8;
   }
+
+  /* Editorial magazine elements */
+
+  .hero-section {
+    @apply relative py-12 md:py-20 px-4 overflow-hidden;
+    background-color: #fdf2f8;
+    background-image: radial-gradient(circle, #f9a8d4 0.8px, transparent 0.8px);
+    background-size: 24px 24px;
+  }
+
+  .hero-section-inner {
+    @apply max-w-4xl mx-auto relative z-10;
+  }
+
+  .pull-quote {
+    @apply border-l-4 border-brand-300 pl-5 py-3 my-6 bg-brand-50 rounded-r-lg;
+  }
+
+  .pull-quote p {
+    @apply text-lg md:text-xl italic text-neutral-700 leading-relaxed;
+  }
+
+  .section-divider {
+    @apply border-0 my-10 md:my-14 relative;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      #e5e5e5 20%,
+      #e5e5e5 80%,
+      transparent
+    );
+  }
+
+  .section-divider::before {
+    content: '◆';
+    @apply absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-brand-300 text-xs;
+    background: white;
+    padding: 0 12px;
+  }
+
+  .category-dot {
+    @apply inline-block w-2.5 h-2.5 rounded-full mr-2.5 flex-shrink-0;
+    vertical-align: middle;
+  }
 }

@@ -1,141 +1,173 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { usePublicIssues } from '../hooks/usePublicIssues'
+import { getCategoryColor } from '../lib/category-colors'
 import type { PublicIssue } from '../lib/api'
 
-function IssueCard({ issue }: { issue: PublicIssue }) {
-  return (
-    <section className="border border-neutral-200 rounded-lg overflow-hidden">
-      {/* Header with link */}
-      <div className="bg-brand-50 px-6 py-5 md:px-8 md:py-6">
-        <Link
-          to={`/issues/${issue.slug}`}
-          className="group focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-        >
-          <h2 className="text-2xl md:text-3xl font-bold group-hover:text-brand-700 transition-colors">
-            {issue.name}
-          </h2>
-        </Link>
-        <p className="text-neutral-700 leading-relaxed mt-3">{issue.intro || issue.description}</p>
-      </div>
+function IssueAccordion({ issue }: { issue: PublicIssue }) {
+  const colors = getCategoryColor(issue.slug)
 
-      <div className="px-6 py-5 md:px-8 md:py-6 space-y-6">
-        {/* Child issues */}
+  const hasDetails =
+    (issue.evaluationCriteria?.length ?? 0) > 0 ||
+    (issue.sourceNames?.length ?? 0) > 0 ||
+    (issue.makeADifference?.length ?? 0) > 0
+
+  return (
+    <details className="group">
+      <summary className="cursor-pointer select-none list-none flex items-center gap-3 py-4 hover:bg-neutral-50 -mx-4 px-4 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500">
+        <svg
+          className="w-4 h-4 shrink-0 text-neutral-400 transition-transform group-open:rotate-90"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
+        <span className="text-lg font-bold text-neutral-900">{issue.name}</span>
+      </summary>
+
+      <div className="pl-11 pb-4 space-y-4">
+        {/* Intro */}
+        {(issue.intro || issue.description) && (
+          <p className="text-neutral-600 text-sm leading-relaxed">
+            {issue.intro || issue.description}
+          </p>
+        )}
+
+        {/* Sub-topics */}
         {issue.children && issue.children.length > 0 && (
-          <div>
-            <h3 className="text-lg font-bold mb-2">Sub-topics</h3>
-            <div className="flex flex-wrap gap-2">
-              {issue.children.map(child => (
+          <div className="flex flex-wrap gap-2">
+            {issue.children.map((child) => {
+              const childColors = getCategoryColor(child.slug)
+              return (
                 <Link
                   key={child.slug}
                   to={`/issues/${child.slug}`}
-                  className="bg-brand-50 text-brand-700 hover:bg-brand-100 text-sm font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
+                  <span className={`w-1.5 h-1.5 rounded-full ${childColors.dotBg}`} aria-hidden="true" />
                   {child.name}
                 </Link>
-              ))}
-            </div>
+              )
+            })}
           </div>
         )}
 
-        {/* How we evaluate */}
-        {issue.evaluationCriteria?.length > 0 && (
-          <div>
-            <h3 className="text-lg font-bold mb-2">How We Evaluate</h3>
-            {issue.evaluationIntro && (
-              <p className="text-sm text-neutral-500 mb-3">{issue.evaluationIntro}</p>
+        {/* Details grid */}
+        {hasDetails && (
+          <div className="grid gap-4 md:grid-cols-3 text-sm">
+            {issue.evaluationCriteria?.length > 0 && (
+              <div>
+                <h3 className="font-bold text-neutral-700 mb-1.5">How We Evaluate</h3>
+                {issue.evaluationIntro && (
+                  <p className="text-neutral-500 mb-1.5">{issue.evaluationIntro}</p>
+                )}
+                <ol className="list-decimal list-inside space-y-0.5 text-neutral-600">
+                  {issue.evaluationCriteria.map((criterion, i) => (
+                    <li key={i}>{criterion}</li>
+                  ))}
+                </ol>
+              </div>
             )}
-            <ol className="list-decimal list-inside space-y-2 text-sm text-neutral-600">
-              {issue.evaluationCriteria.map((criterion, i) => (
-                <li key={i} className="leading-relaxed">{criterion}</li>
-              ))}
-            </ol>
-          </div>
-        )}
 
-        {/* Sources */}
-        {issue.sourceNames?.length > 0 && (
-          <div>
-            <h3 className="text-lg font-bold mb-2">Sample Sources We Cover</h3>
-            <div className="flex flex-wrap gap-1.5">
-              {issue.sourceNames.map((source) => (
-                <span
-                  key={source}
-                  className="bg-neutral-100 text-neutral-600 text-xs px-2.5 py-1 rounded-full"
-                >
-                  {source}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+            {issue.sourceNames?.length > 0 && (
+              <div>
+                <h3 className="font-bold text-neutral-700 mb-1.5">Our Sources</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {issue.sourceNames.map((source) => (
+                    <span
+                      key={source}
+                      className="bg-neutral-100 text-neutral-600 text-xs px-2 py-0.5 rounded-full"
+                    >
+                      {source}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Make a difference */}
-        {issue.makeADifference?.length > 0 && (
-          <div>
-            <h3 className="text-lg font-bold mb-2">Make a Difference</h3>
-            <ul className="flex flex-wrap gap-x-4 gap-y-1">
-              {issue.makeADifference.map((link) => (
-                <li key={link.url}>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-brand-700 hover:text-brand-800 font-medium underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {issue.makeADifference?.length > 0 && (
+              <div>
+                <h3 className="font-bold text-neutral-700 mb-1.5">Make a Difference</h3>
+                <ul className="space-y-1">
+                  {issue.makeADifference.map((link) => (
+                    <li key={link.url}>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                      >
+                        {link.label}
+                        <span className="sr-only"> (opens in new tab)</span>
+                        {' '}&rarr;
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
         {/* View stories link */}
-        <div className="pt-2 border-t border-neutral-100">
+        <div>
           <Link
             to={`/issues/${issue.slug}`}
-            className="text-brand-700 hover:text-brand-800 font-medium text-sm focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+            className={`inline-flex items-center gap-2 text-sm font-medium ${colors.dot} hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5`}
           >
-            View {issue.name} stories &rarr;
+            View stories &rarr;
           </Link>
         </div>
       </div>
-    </section>
+    </details>
   )
 }
 
+const ISSUE_ORDER = [
+  'human-development',
+  'planet-climate',
+  'existential-threats',
+  'science-technology',
+  'general-news',
+]
+
 export default function IssuesPage() {
   const { data: issues, isLoading } = usePublicIssues()
+  const sorted = [...(issues ?? [])].sort(
+    (a, b) => ISSUE_ORDER.indexOf(a.slug) - ISSUE_ORDER.indexOf(b.slug),
+  )
 
   return (
     <>
       <Helmet>
-        <title>Issues - Actually Relevant</title>
+        <title>All Issues - Actually Relevant</title>
         <meta
           name="description"
-          content="We cover issue areas critical to humanity's future, each evaluated with a rigorous framework."
+          content="We cover issue areas critical to humanity, each evaluated with a rigorous framework."
         />
-        <meta property="og:title" content="Issues - Actually Relevant" />
-        <meta property="og:description" content="We cover issue areas critical to humanity's future." />
+        <meta property="og:title" content="All Issues - Actually Relevant" />
+        <meta property="og:description" content="We cover issue areas critical to humanity." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://actuallyrelevant.news/issues" />
         <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
       </Helmet>
 
       <div className="page-section-wide">
-        <h1 className="page-title">Our Issues</h1>
-        <p className="page-intro">
-          We only feature stories that are important for humanity and its long-term future.
-          We believe that every story on our website will be more relevant to humanity than
-          90% of the stories in your daily newspaper.
-        </p>
+        <header className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">All Issues</h1>
+          <p className="text-sm text-neutral-500">
+            We cover the topics most relevant to humanity. Click an issue to explore.
+          </p>
+        </header>
 
         {isLoading && <p className="text-center text-neutral-500 py-12">Loading...</p>}
 
-        <div className="space-y-8">
-          {(issues ?? []).map((issue) => (
-            <IssueCard key={issue.slug} issue={issue} />
+        <div className="divide-y divide-neutral-200">
+          {sorted.map((issue) => (
+            <IssueAccordion key={issue.slug} issue={issue} />
           ))}
         </div>
       </div>

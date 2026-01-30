@@ -12,10 +12,10 @@ export function usePublicStories(params?: {
   })
 }
 
-export function usePublicStory(id: string) {
+export function usePublicStory(slug: string) {
   return useQuery({
-    queryKey: ['public-story', id],
-    queryFn: () => publicApi.stories.get(id),
-    enabled: !!id,
+    queryKey: ['public-story', slug],
+    queryFn: () => publicApi.stories.get(slug),
+    enabled: !!slug,
   })
 }
