@@ -293,7 +293,8 @@ describe('Admin Stories API', () => {
 
   describe('POST /api/admin/stories/bulk-status', () => {
     it('bulk updates story statuses', async () => {
-      mockPrisma.story.updateMany.mockResolvedValue({ count: 3 })
+      mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 1 })
+      mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 2 })
 
       const res = await request(app)
         .post('/api/admin/stories/bulk-status')

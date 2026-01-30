@@ -28,7 +28,7 @@ describe('runSelectStories', () => {
 
     await runSelectStories()
 
-    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('analyzed', { hoursAgo: 48 })
+    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('analyzed', { relevanceMin: 5 })
     expect(mockSelectStories).toHaveBeenCalledWith(['story-1', 'story-2'])
   })
 
@@ -37,7 +37,7 @@ describe('runSelectStories', () => {
 
     await runSelectStories()
 
-    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('analyzed', { hoursAgo: 48 })
+    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('analyzed', { relevanceMin: 5 })
     expect(mockSelectStories).not.toHaveBeenCalled()
   })
 })

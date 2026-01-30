@@ -33,7 +33,7 @@ export const assessResultSchema = z.object({
   ),
   factors: z.array(z.string()).describe(
     '4 Markdown bullet points explaining why the article is relevant for humanity. '
-    + 'Each bullet: "**[Factor name from article context]:** [1 sentence: assessment.] '
+    + 'Each bullet: "- **[Factor name from article context]:** [1 sentence: assessment.] '
     + '[1 sentence: classification based on rating criteria with quantification if possible.] '
     + '[1 sentence: mechanism / context of the impact.] '
     + '[1 sentence: example or further details.]" '
@@ -41,7 +41,7 @@ export const assessResultSchema = z.object({
   ),
   limitingFactors: z.array(z.string()).describe(
     'Markdown bullet points on why the article might not be so relevant. '
-    + 'Each bullet: "**[Limiting factor]:** [1 sentence: assessment.] '
+    + 'Each bullet: "- **[Limiting factor]:** [1 sentence: assessment.] '
     + '[1 sentence: specific mechanism or context.] '
     + '[1 sentence: example or further details.]" '
     + 'Include applicable generic limiting factors (opinion piece, click-bait, early-stage tech, etc.) '
@@ -49,9 +49,9 @@ export const assessResultSchema = z.object({
   ),
   relevanceCalculation: z.array(z.string()).describe(
     'Markdown bullet points showing the rating calculation steps. '
-    + 'Format: "**[Key factor]:** [rating 1-10]", '
-    + '"**[Generic limiting factor]:** [modifier +0 to -4]", '
-    + '"**[Other factors combined]:** [modifier +/- 0-2]".',
+    + 'Format: "- **[Key factor]:** [rating 1-10]", '
+    + '"- **[Generic limiting factor]:** [modifier +0 to -4]", '
+    + '"- **[Other factors combined]:** [modifier +/- 0-2]".',
   ),
   conservativeRating: z.number().int().min(1).max(10).describe(
     'Conservative relevance rating 1-10 based on the relevance calculation',

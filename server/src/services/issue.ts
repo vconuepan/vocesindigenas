@@ -184,7 +184,14 @@ export async function getPublicIssueBySlug(slug: string) {
     select: {
       ...PUBLIC_ISSUE_SELECT,
       children: {
-        select: PUBLIC_ISSUE_SELECT,
+        select: {
+          ...PUBLIC_ISSUE_SELECT,
+          feeds: {
+            select: {
+              _count: { select: { stories: { where: { status: 'published' } } } },
+            },
+          },
+        },
         orderBy: { name: 'asc' },
       },
       parent: {
@@ -195,7 +202,10 @@ export async function getPublicIssueBySlug(slug: string) {
   if (!issue) return null
   return {
     ...parsePublicIssueJson(issue),
-    children: issue.children?.map(parsePublicIssueJson) ?? [],
+    children: issue.children?.map(({ feeds, ...child }) => ({
+      ...parsePublicIssueJson(child),
+      publishedStoryCount: feeds.reduce((sum, f) => sum + f._count.stories, 0),
+    })) ?? [],
     parent: issue.parent,
   }
 }
