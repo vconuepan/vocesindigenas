@@ -11,9 +11,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:create": "prisma migrate dev --create-only",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:resolve": "prisma migrate resolve",
+    "db:migrate:status": "prisma migrate status",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:populate-issue-content": "tsx src/scripts/migrate/populate-issue-content.ts"
   },
   "dependencies": {
     "@langchain/core": "^1.1.17",

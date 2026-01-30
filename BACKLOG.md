@@ -2,26 +2,18 @@
 
 ## To implement before public deployment
 
-- Copy issues and feeds, including their custom relevance evaluation prompts
-- Copy existing stories
-
-- ~~Implement security plans~~ (priority fixes 1-6 done: timing-safe auth, admin rate limiting, SSRF protection, error sanitization, body size limit, expensive op rate limiting; remaining: path param validation, error log sanitization — see `.plans/security.md`)
-- ~~GitHub flagged 2 moderate Dependabot vulnerabilities on the repo~~ (fixed: upgraded vite 5→7, vitest 2→4, @vitejs/plugin-react 4→5)
-- **Server job queue system** — Server-side queue with concurrency limits to prevent OpenAI rate limit issues; client fires requests and shows progress indicators (e.g. "3/20 assessed") without blocking the UI, allowing the user to navigate and do other work while batch jobs run in the background
-- **Optimize prompts** now that we're in the gpt-5.2 era
 - Test bulk actions via admin panel
 - Automate final selection of articles
-- Article UI: link to original source at the top; show source in preview card, emotion only in emotion mode, render md (from LLM), don't show keywords
 - Improve overall site design
 - **Automated publishing schedule** — Auto-publish selected stories on a schedule (e.g., daily digest)
+- SEO-friendly URLs for stories
 
 ## After public deployment
 
 - **Syntactic Search**
 - **RSS feed output** — Generate custom RSS feeds for published stories (by issue, all, etc.)
 - Try generating "Symbolbilder" for published articles
-
-- Simplify rating_low / rating_high to just rating?
+- Emotion mode
 
 - **Social media auto-posting** — Auto-post published stories to Twitter/LinkedIn/Mastodon
 - **Semantic search** — pgvector infrastructure is in place; build search UI and query endpoint for similarity search over story content/embeddings
@@ -30,3 +22,7 @@
 - **Public user accounts** — Allow users to create accounts, save preferences, follow topics
 - **Reader comments / feedback** — Allow public feedback
 - **Data export** — Export stories, analyses, newsletters as CSV/JSON
+
+## Orga
+
+- Download full Flywheel backup to desktop PC

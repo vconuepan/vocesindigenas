@@ -71,7 +71,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     return
   }
 
-  res.status(403).json({ error: 'Invalid credentials' })
+  res.status(401).json({ error: 'Invalid credentials' })
 }
 
 /**

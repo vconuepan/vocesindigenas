@@ -9,7 +9,8 @@ The admin dashboard is a React SPA at `/admin/*` with 9 pages, JWT-based auth wi
 - **Data Fetching**: TanStack Query with 30s stale time, hooks in `hooks/use*.ts` per resource
 - **UI Components**: Headless UI + Tailwind in `components/ui/` (Button, Badge, Card, Pagination, etc.)
 - **Admin Components**: Resource-specific in `components/admin/` (tables, forms, detail views)
-- **Toast Notifications**: `ToastProvider` in AdminLayout, `useToast()` hook for success/error messages
+- **Toast Notifications**: `ToastProvider` in AdminLayout, `useToast()` hook for success/error/progress messages
+- **Background Tasks**: `BackgroundTaskProvider` in AdminLayout, `useBackgroundTasks()` hook for fire-and-forget async operations with progress tracking via persistent toasts
 
 ## Route Structure
 
@@ -35,10 +36,12 @@ The admin dashboard is a React SPA at `/admin/*` with 9 pages, JWT-based auth wi
 
 - **Story filters** persist in URL search params via `useSearchParams()`
 - **Bulk actions** use selection state (resets on filter/page change) with confirmation dialogs
+- **Bulk LLM operations** (preassess, assess, select) run as background tasks via `useBackgroundTasks()` — dialog closes immediately, progress toasts persist across navigation, query invalidation fires on completion
 - **LLM operations** (newsletter/podcast generation) show persistent loading state with "may take a minute" message
 - **Carousel ZIP download** uses `response.blob()` + `URL.createObjectURL` + auto-click download
 - **Cron editing** is inline in the jobs table with save/cancel
 - **Issue slug** auto-generates from name in create mode
+- **Issue hierarchy** supports one level of nesting (parent/child). Issues table shows children indented under parents. Edit form has optional parent selector and static content editors (evaluation criteria, sources, make-a-difference links). Feed selector shows hierarchical issue dropdown.
 
 ## File Locations
 

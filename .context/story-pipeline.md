@@ -25,7 +25,7 @@ fetched → pre_analyzed → analyzed → selected → published
 ### Transition Rules
 
 - **fetched → pre_analyzed**: Pre-assess job processes all `fetched` stories in batches of ~10.
-- **pre_analyzed → analyzed**: Assess job picks stories with `relevanceRatingLow >= 3`. Stories rated 1-2 stay as `pre_analyzed` and are effectively filtered out.
+- **pre_analyzed → analyzed**: Assess job picks stories with `relevancePre >= 3`. Stories rated 1-2 stay as `pre_analyzed` and are effectively filtered out.
 - **analyzed → selected/rejected**: Select job takes stories analyzed in the last 48 hours and selects ~50% (rounded up). The rest become `rejected`.
 - **selected → published**: Manual admin action only. No auto-publish.
 - **Any → trashed**: Admin can trash any story at any time.
@@ -65,17 +65,19 @@ fetched → pre_analyzed → analyzed → selected → published
 
 Stories carry both crawled data and AI-generated analysis:
 
-**Crawled data**: `url`, `title`, `content`, `datePublished`, `dateCrawled`, `feedId`, `crawlMethod`
+**Source data** (set during crawl): `sourceUrl`, `sourceTitle`, `sourceContent`, `sourceDatePublished`, `dateCrawled`, `feedId`, `crawlMethod`
 
-**AI fields** (populated during assessment):
-- `relevanceRatingLow` / `relevanceRatingHigh` — conservative and speculative ratings (1-10)
+**Platform data**: `title` (AI-generated, nullable), `datePublished` (set on first publish)
+
+**Pre-assessment fields** (set during batch LLM screening):
+- `relevancePre` — conservative rating (1-10), immutable after set
 - `emotionTag` — one of: uplifting, surprising, frustrating, scary, calm
-- `aiResponse` — full structured LLM response (JSON)
-- `aiSummary` — 40-70 word summary
-- `aiQuote` — key quote with attribution
-- `aiKeywords` — array of 3-5 SEO keywords
-- `aiMarketingBlurb` — up to 230 chars, starts with publisher name
-- `aiRelevanceReasons` — detailed factor bullet points (newline-separated)
-- `aiAntifactors` — limiting factor bullet points (newline-separated)
-- `aiRelevanceCalculation` — rating calculation steps (newline-separated)
-- `aiScenarios` — higher/lower rating scenarios (newline-separated)
+
+**Full assessment fields** (set during in-depth LLM analysis):
+- `relevance` — single relevance rating (1-10)
+- `summary` — 40-70 word summary
+- `quote` — key quote with attribution
+- `marketingBlurb` — up to 230 chars, starts with publisher name
+- `relevanceReasons` — detailed factor bullet points (newline-separated)
+- `antifactors` — limiting factor bullet points (newline-separated)
+- `relevanceCalculation` — rating calculation steps (newline-separated)

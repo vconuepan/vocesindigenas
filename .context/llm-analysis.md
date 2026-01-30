@@ -1,47 +1,67 @@
 # LLM Analysis Pipeline
 
-The analysis pipeline uses LangChain + OpenAI to evaluate story relevance through three stages. All stages use `withStructuredOutput` + Zod schemas for reliable parsing.
+The analysis pipeline uses LangChain + OpenAI to evaluate story relevance through three stages. All stages use `withStructuredOutput` + Zod schemas for reliable parsing. Schema `.describe()` annotations carry format guidance (including Markdown instructions for longer text fields), so prompts use declarative constraints rather than procedural step-by-step instructions.
 
 ## Model Configuration
 
-| Stage | Model | Reasoning Effort | Purpose |
-|-------|-------|-----------------|---------|
-| Pre-assessment | `gpt-5-mini` | `low` | Batch screening: conservative rating + emotion tag |
-| Full assessment | `gpt-5.2` | `medium` | Detailed analysis: factors, ratings, summary, blurb |
-| Selection | `gpt-5-mini` | `low` | Comparative ranking to pick top 50% |
+Configuration is centralized in `server/src/config.ts`. Three model tiers are available:
 
-Models are configurable via environment variables:
-- `OPENAI_MODEL_SMALL` — default `gpt-5-mini` (pre-assess, select)
-- `OPENAI_MODEL_LARGE` — default `gpt-5.2` (full assess)
+| Tier | Default Model | Reasoning Effort | Used By |
+|------|--------------|-----------------|---------|
+| Small | `gpt-5-mini` | `medium` | Pre-assessment |
+| Medium | `gpt-5-mini` | `medium` | (Available, not yet assigned) |
+| Large | `gpt-5.2` | `medium` | Full assessment, selection |
+
+Environment variables:
+- `OPENAI_MODEL_SMALL` — default `gpt-5-mini`
+- `OPENAI_MODEL_MEDIUM` — default `gpt-5-mini`
+- `OPENAI_MODEL_LARGE` — default `gpt-5.2`
 - `LLM_DELAY_MS` — rate limit delay between calls (default 1000ms)
+
+## Prompts Directory
+
+Prompt templates live in `server/src/prompts/`:
+
+| File | Contents |
+|------|----------|
+| `shared.ts` | `Guidelines` interface, `buildGuidelinesXml()`, `escapeXml()`, `containsChineseCharacters()` |
+| `preassess.ts` | `buildPreassessPrompt()` — batch screening |
+| `assess.ts` | `buildAssessPrompt()` — full analysis |
+| `select.ts` | `buildSelectPrompt()` — editorial curation |
+| `podcast.ts` | `buildPodcastPrompt()` — podcast script generation |
+| `index.ts` | Barrel re-exports all builders and types |
+
+`server/src/services/prompts.ts` re-exports from the prompts directory for backward compatibility.
+
+## Schema-Driven Format Guidance
+
+The Zod schemas in `server/src/schemas/llm.ts` use `.describe()` to tell the LLM how to format each field. Key format decisions:
+
+- **Markdown output**: `factors`, `limitingFactors`, `relevanceCalculation`, and `relevanceSummary` use Markdown with bold labels (e.g., `**Factor name:** explanation`)
+- **Plain text**: `summary`, `quote`, `relevanceTitle`, `marketingBlurb` remain plain text
+- **Emotion tags**: The five emotion definitions are embedded in the schema description
 
 ## Three Stages
 
 ### 1. Pre-assessment (Batch)
 
-Screens multiple stories per LLM call (~10 per batch, fewer for Chinese text). Produces a conservative rating (1-10) and emotion tag per story.
+Screens multiple stories per LLM call (~10 per batch, fewer for Chinese text). Produces a conservative rating (1-10) and emotion tag per story. Uses the small model with medium reasoning effort.
 
 **Zod schema**: `preAssessResultSchema` — array of `{ articleId, rating, emotionTag }`
-
-**Emotion tags**: uplifting, surprising, frustrating, scary, calm
 
 **Threshold**: Only stories rated >= 3 proceed to full assessment.
 
 ### 2. Full Assessment (Individual)
 
-Detailed analysis of a single story. Produces 13 structured fields covering relevance factors, limiting factors, ratings, scenarios, summary, title, and marketing blurb.
+Detailed analysis of a single story. Produces structured fields covering relevance factors, limiting factors, ratings, summary, title, and marketing blurb. Uses the large model with medium reasoning effort.
 
-**Zod schema**: `assessResultSchema` — the largest schema, with `.describe()` annotations guiding the LLM on field formats and constraints.
-
-**Prompt**: ~500 lines, ported from the PHP reference (`chatgpt.php`). Includes the full rating algorithm, generic limiting factors (opinion pieces, click-bait, early-stage tech, etc.), and detailed output structure specifications.
+**Zod schema**: `assessResultSchema` — the largest schema, with detailed `.describe()` annotations guiding Markdown format for analytical fields.
 
 ### 3. Selection (Batch)
 
-Takes all recently analyzed stories, formats them as XML with their AI metadata, and asks the LLM to select the top 50% through pairwise comparison rounds.
+Takes all recently analyzed stories, formats them as XML with their AI metadata, and asks the LLM to select the top 50% by comparing articles directly. Uses the large model (important final curation step) with medium reasoning effort.
 
 **Zod schema**: `selectResultSchema` — `{ selectedIds: string[] }`
-
-**Method**: The prompt instructs the LLM to go through rounds, selecting the most relevant and discarding the least relevant in each round, until the target count is reached.
 
 ## Issue-Specific Guidelines
 
@@ -50,23 +70,21 @@ Each Issue (topic category) has three prompt sections stored in the database:
 - `promptAntifactors` — topic-specific limiting factors
 - `promptRatings` — rating criteria (1-10 scale definitions)
 
-These are injected into all three prompt templates as `<FACTORS>`, `<TOPIC-SPECIFIC LIMITING FACTORS>`, and `<CRITERIA>` XML sections.
+These are injected into prompt templates as `<FACTORS>`, `<TOPIC-SPECIFIC LIMITING FACTORS>`, and `<CRITERIA>` XML sections.
 
-## Modifying Prompts
+## Modifying Prompts or Output Format
 
-Prompt templates live in `server/src/services/prompts.ts`. The three builders are:
-- `buildPreassessPrompt(stories, guidelines)` — batch screening
-- `buildAssessPrompt(title, content, publisher, url, guidelines)` — full analysis
-- `buildSelectPrompt(stories, toSelect)` — pairwise selection
+To change prompts: edit the relevant file in `server/src/prompts/`. To change output format: update both the prompt AND the Zod schema in `server/src/schemas/llm.ts`. The schema `.describe()` annotations directly affect LLM output format.
 
-To change the output format, update both the prompt template AND the corresponding Zod schema in `server/src/schemas/llm.ts`. The schema field names and descriptions directly affect what the LLM produces.
+See `.context/prompting.md` for GPT-5 prompt design principles that must be followed when modifying prompts.
 
 ## Key Files
 
 | File | Role |
 |------|------|
-| `server/src/services/llm.ts` | LLM client: `getSmallLLM()`, `getLargeLLM()`, rate limiting |
-| `server/src/services/prompts.ts` | Three prompt builders |
+| `server/src/config.ts` | Centralized config: model names, reasoning effort, rate limits, batch sizes |
+| `server/src/services/llm.ts` | LLM client: `getSmallLLM()`, `getMediumLLM()`, `getLargeLLM()`, rate limiting |
+| `server/src/prompts/` | Prompt builders (shared, preassess, assess, select, podcast) |
+| `server/src/services/prompts.ts` | Re-export barrel for backward compatibility |
 | `server/src/services/analysis.ts` | Orchestration: preAssessStories, assessStory, selectStories |
-| `server/src/schemas/llm.ts` | Zod schemas for all three LLM output formats |
-| `.to-migrate/models/chatgpt.php` | Original PHP prompts (reference only) |
+| `server/src/schemas/llm.ts` | Zod schemas with `.describe()` format guidance for all LLM output |

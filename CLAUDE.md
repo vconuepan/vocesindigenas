@@ -70,6 +70,31 @@ npm run db:seed      # Seed database with sample data
 
 **Tips for Claude:**
 
+- **`.env` files are not accessible** — Claude cannot read `.env` files (they are in `.gitignore`). Do not attempt to read or access them. Database commands that need env vars must be run via npm scripts defined in `package.json`, which load `.env` automatically.
+
+- **Ask the user to stop the dev server before running any Prisma/database commands** — The dev server holds a database connection and can interfere with migrations, seeding, and other Prisma operations. Always ask the user to stop `npm run dev --prefix server` before running `db:migrate`, `db:seed`, or any other database command.
+
+- **Never run `db:migrate` without `--name`** — `npm run db:migrate` (which runs `prisma migrate dev`) is interactive and will prompt for a migration name. This blocks the terminal and leaves a PostgreSQL advisory lock that prevents all subsequent migration commands. Use these non-interactive alternatives instead:
+
+  ```bash
+  # Create migration file only (does NOT apply it):
+  npm run db:migrate:create --prefix server -- --name migration_name
+
+  # Apply all pending migrations (non-interactive, safe for CI):
+  npm run db:migrate:deploy --prefix server
+
+  # Mark a migration as already applied (e.g. after manual SQL):
+  npm run db:migrate:resolve --prefix server -- --applied MIGRATION_NAME
+
+  # Check migration status:
+  npm run db:migrate:status --prefix server
+
+  # Or use db:migrate with --name to avoid the interactive prompt:
+  npm run db:migrate --prefix server -- --name migration_name
+  ```
+
+  If a migration gets stuck with an advisory lock, the user must release it via pgAdmin: `SELECT pg_advisory_unlock(72707369);`
+
 - **Prefer file tools over bash:** Use Read, Write, Edit, Glob, and Grep tools instead of bash commands for file operations.
 
 - Use `--prefix` for npm commands:
@@ -151,17 +176,18 @@ See `.context/accessibility.md` for full details.
 
 ## Context Files
 
-- **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; only stories with pre-assessment rating >= 3 proceed to full analysis. Covers status transitions, automated jobs, manual admin endpoints, and all AI-generated story fields.
+- **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; only stories with `relevancePre >= 3` proceed to full analysis. Issues support one-level nesting; public queries for a parent issue slug also return stories from child issues. Covers status transitions, automated jobs, manual admin endpoints, source fields, and AI-generated fields.
 - **`.context/content-extraction.md`** — Content extraction uses a 3-tier fallback chain (CSS selector → Readability → PipFeed API); set `htmlSelector` on a feed when Readability produces noisy output. Covers the crawl flow, deduplication, and how to add new feeds.
-- **`.context/llm-analysis.md`** — All three LLM stages use `withStructuredOutput` + Zod schemas; to change output format, update both the prompt in `prompts.ts` AND the schema in `schemas/llm.ts`. Covers model configuration, the three analysis stages, issue-specific guidelines, and prompt modification.
+- **`.context/llm-analysis.md`** — LLM config is in `server/src/config.ts`; prompts are in `server/src/prompts/`; to change output format update both the prompt and the Zod schema in `schemas/llm.ts`. Covers model tiers, prompt directory structure, schema-driven format guidance, and the three analysis stages.
+- **`.context/prompting.md`** — Read before modifying any prompt in `server/src/prompts/`; prompts use GPT-5 conventions (declarative constraints, XML scaffolding, no CoT triggers). Covers structure, key principles, what belongs in prompts vs schemas, and reference links to OpenAI guides.
 - **`.context/scheduler.md`** — Jobs run in-process via node-cron with config in the `job_runs` DB table; add new jobs by creating a handler, registering it in `scheduler.ts`, and adding a DB row. Covers overlap prevention, overdue detection, error tracking, and the admin API.
 - **`.context/images.md`** — Run `npm run images:optimize --prefix client` to generate WebP variants before committing new images. Covers size presets, directory structure, retina support, and CLI commands.
 - **`.context/accessibility.md`** — Use `focus-visible:ring-2 focus-visible:ring-brand-500` on all interactive elements and `text-brand-700` (not brand-600) for link contrast. Covers WCAG 2.2 AA patterns, ARIA, forms, navigation, and testing checklist.
 - **`.context/seo.md`** — Add sitemap metadata to `client/src/routes.ts` for every new page; the sitemap is auto-generated during build. Covers robots.txt, priority guidelines, and change frequency options.
 - **`.context/newsletter-podcast.md`** — Newsletters use template-based formatting and carousel image generation; podcasts use LLM script generation via `buildPodcastPrompt`. Covers the create-assign-generate workflow, all API endpoints, carousel image/PDF/ZIP pipeline, and file locations for modification.
-- **`.context/admin-dashboard.md`** — Admin dashboard uses TanStack Query + Headless UI at `/admin/*` with JWT auth; add new pages by creating a page component, hook file, and route in `App.tsx`. Covers route structure, key patterns (URL-persisted filters, bulk actions, LLM loading states), and file locations.
+- **`.context/admin-dashboard.md`** — Admin dashboard uses TanStack Query + Headless UI at `/admin/*` with JWT auth; issues support one-level nesting with parent selector, indented table rows, and static content editors (evaluation criteria, sources, links). Covers route structure, key patterns (URL-persisted filters, bulk actions, LLM loading states), and file locations.
 - **`.context/authentication.md`** — Auth uses dual-mode middleware (JWT access tokens + static API key fallback); set `JWT_SECRET` env var and create the first admin via `npx tsx server/src/scripts/create-admin.ts`. Covers token flow, cookie config, refresh rotation, user management, roles, and all auth-related file locations.
-- **`.context/public-website.md`** — Public site uses `PublicLayout` with hardcoded nav links; add new nav items in `NAV_LINKS` array in `PublicLayout.tsx`. Covers routes, public API, shared components, static content data file, design system (Nexa/Roboto fonts, pink brand), and key file locations.
+- **`.context/public-website.md`** — Public site uses `PublicLayout` with hardcoded nav links; issue page content (intro, evaluation criteria, sources, links) comes from the API, not hardcoded. Covers routes, public API, shared components, design system (Nexa/Roboto fonts, pink brand), and key file locations.
 
 ## Implementation Workflow
 
