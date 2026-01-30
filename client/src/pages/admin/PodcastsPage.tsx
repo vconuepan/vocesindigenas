@@ -80,10 +80,10 @@ export default function PodcastsPage() {
 
       {podcastsQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
       {podcastsQuery.error && <ErrorState message="Failed to load podcasts" onRetry={() => podcastsQuery.refetch()} />}
-      {podcastsQuery.data && podcastsQuery.data.length === 0 && <EmptyState title="No podcasts yet" description="Create your first podcast." />}
-      {podcastsQuery.data && podcastsQuery.data.length > 0 && (
+      {podcastsQuery.data && podcastsQuery.data.data.length === 0 && <EmptyState title="No podcasts yet" description="Create your first podcast." />}
+      {podcastsQuery.data && podcastsQuery.data.data.length > 0 && (
         <PodcastTable
-          podcasts={podcastsQuery.data}
+          podcasts={podcastsQuery.data.data}
           onView={id => navigate(`/admin/podcasts/${id}`)}
           onDelete={setDeleteId}
         />

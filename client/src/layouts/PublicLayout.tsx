@@ -17,6 +17,7 @@ const ISSUE_LINKS = [
   { label: 'Planet & Climate', href: '/issues/planet-climate' },
   { label: 'Existential Threats', href: '/issues/existential-threats' },
   { label: 'Science & Technology', href: '/issues/science-technology' },
+  { label: 'General News', href: '/issues/general-news' },
 ]
 
 const FOOTER_LINKS = [
@@ -42,7 +43,7 @@ export default function PublicLayout() {
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-40">
+      <header className="sticky top-0 z-40 lg:static">
         {/* Top bar — logo centered, nav links left and right */}
         <div className="bg-white border-b border-neutral-200">
           <nav

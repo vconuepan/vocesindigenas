@@ -80,10 +80,10 @@ export default function NewslettersPage() {
 
       {newslettersQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
       {newslettersQuery.error && <ErrorState message="Failed to load newsletters" onRetry={() => newslettersQuery.refetch()} />}
-      {newslettersQuery.data && newslettersQuery.data.length === 0 && <EmptyState title="No newsletters yet" description="Create your first newsletter." />}
-      {newslettersQuery.data && newslettersQuery.data.length > 0 && (
+      {newslettersQuery.data && newslettersQuery.data.data.length === 0 && <EmptyState title="No newsletters yet" description="Create your first newsletter." />}
+      {newslettersQuery.data && newslettersQuery.data.data.length > 0 && (
         <NewsletterTable
-          newsletters={newslettersQuery.data}
+          newsletters={newslettersQuery.data.data}
           onView={id => navigate(`/admin/newsletters/${id}`)}
           onDelete={setDeleteId}
         />
