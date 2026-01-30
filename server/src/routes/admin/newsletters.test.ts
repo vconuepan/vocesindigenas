@@ -188,9 +188,9 @@ describe('Admin Newsletters API', () => {
       const newsletter = sampleNewsletter({ storyIds: ['story-1'] })
       const story = sampleStory({
         status: 'published',
-        aiSummary: 'Test summary',
-        aiMarketingBlurb: 'Test blurb',
-        aiRelevanceReasons: 'Test reasons',
+        summary: 'Test summary',
+        marketingBlurb: 'Test blurb',
+        relevanceReasons: 'Test reasons',
         feed: { title: 'BBC', issue: { name: 'AI & Technology' } },
       })
       mockPrisma.newsletter.findUnique.mockResolvedValue(newsletter)

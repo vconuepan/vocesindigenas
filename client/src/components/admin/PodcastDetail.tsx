@@ -6,6 +6,7 @@ import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
 import { useUpdatePodcast, useAssignPodcastStories, useGeneratePodcast } from '../../hooks/usePodcasts'
 import { useToast } from '../ui/Toast'
+import { AssignedStoriesList } from './AssignedStoriesList'
 
 interface PodcastDetailProps {
   podcast: Podcast
@@ -85,11 +86,8 @@ export function PodcastDetail({ podcast }: PodcastDetailProps) {
         </Button>
       </div>
 
-      {/* Story count */}
-      <div className="bg-white rounded-lg border border-neutral-200 p-4">
-        <h3 className="text-sm font-semibold text-neutral-900 mb-1">Assigned Stories</h3>
-        <p className="text-sm text-neutral-600">{podcast.storyIds.length} stories assigned</p>
-      </div>
+      {/* Assigned stories */}
+      <AssignedStoriesList storyIds={podcast.storyIds} />
 
       {/* Script */}
       <div className="bg-white rounded-lg border border-neutral-200 p-4">

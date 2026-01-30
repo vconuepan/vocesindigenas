@@ -65,7 +65,7 @@ describe('preAssessStories', () => {
     expect(mockPrisma.story.update).toHaveBeenCalledTimes(2)
     expect(mockPrisma.story.update).toHaveBeenCalledWith({
       where: { id: 'story-1' },
-      data: { relevanceRatingLow: 4, emotionTag: 'surprising', status: 'pre_analyzed' },
+      data: { relevancePre: 4, emotionTag: 'surprising', status: 'pre_analyzed' },
     })
   })
 })
@@ -83,14 +83,11 @@ describe('assessStory', () => {
     const structuredResponse = {
       publicationDate: '2024-01-15 00:00:00',
       quote: '"Test quote" said Expert',
-      keywords: ['keyword1', 'keyword2', 'keyword3'],
       summary: 'Test summary with key information.',
       factors: ['Factor one: Detailed explanation.', 'Factor two: Detailed explanation.'],
       limitingFactors: ['Limiting factor: Explanation of limitation.'],
       relevanceCalculation: ['Key factor: 5', 'Limitation: -2'],
       conservativeRating: 3,
-      scenarios: ['Higher scenario: Description.', 'Lower scenario: Description.'],
-      speculativeRating: 5,
       relevanceSummary: 'Test relevance summary explaining the rating.',
       relevanceTitle: 'Test title: subtitle here',
       marketingBlurb: 'Publisher reports on test topic with assessment.',
@@ -108,15 +105,12 @@ describe('assessStory', () => {
     expect(mockPrisma.story.update).toHaveBeenCalledWith({
       where: { id: 'story-1' },
       data: expect.objectContaining({
-        aiSummary: 'Test summary with key information.',
-        aiQuote: '"Test quote" said Expert',
-        aiKeywords: ['keyword1', 'keyword2', 'keyword3'],
-        aiRelevanceReasons: 'Factor one: Detailed explanation.\nFactor two: Detailed explanation.',
-        aiAntifactors: 'Limiting factor: Explanation of limitation.',
-        aiRelevanceCalculation: 'Key factor: 5\nLimitation: -2',
-        aiScenarios: 'Higher scenario: Description.\nLower scenario: Description.',
-        relevanceRatingLow: 3,
-        relevanceRatingHigh: 5,
+        summary: 'Test summary with key information.',
+        quote: '"Test quote" said Expert',
+        relevanceReasons: 'Factor one: Detailed explanation.\nFactor two: Detailed explanation.',
+        antifactors: 'Limiting factor: Explanation of limitation.',
+        relevanceCalculation: 'Key factor: 5\nLimitation: -2',
+        relevance: 3,
         status: 'analyzed',
       }),
     })
@@ -135,10 +129,10 @@ describe('selectStories', () => {
 
   it('calls LLM and updates selected/rejected statuses', async () => {
     const stories = [
-      sampleStory({ id: 'story-1', aiSummary: 'Summary 1', status: 'analyzed' }),
-      sampleStory({ id: 'story-2', aiSummary: 'Summary 2', status: 'analyzed' }),
-      sampleStory({ id: 'story-3', aiSummary: 'Summary 3', status: 'analyzed' }),
-      sampleStory({ id: 'story-4', aiSummary: 'Summary 4', status: 'analyzed' }),
+      sampleStory({ id: 'story-1', summary: 'Summary 1', status: 'analyzed' }),
+      sampleStory({ id: 'story-2', summary: 'Summary 2', status: 'analyzed' }),
+      sampleStory({ id: 'story-3', summary: 'Summary 3', status: 'analyzed' }),
+      sampleStory({ id: 'story-4', summary: 'Summary 4', status: 'analyzed' }),
     ]
     mockPrisma.story.findMany.mockResolvedValue(stories)
     mockPrisma.story.updateMany.mockResolvedValue({ count: 2 })
@@ -148,7 +142,7 @@ describe('selectStories', () => {
         selectedIds: ['story-1', 'story-3'],
       }),
     }
-    mockGetSmallLLM.mockReturnValue({
+    mockGetLargeLLM.mockReturnValue({
       withStructuredOutput: () => mockStructuredLlm,
     })
 

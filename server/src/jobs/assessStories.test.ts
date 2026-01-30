@@ -20,15 +20,15 @@ describe('runAssessStories', () => {
 
   it('assesses pre-analyzed stories above threshold', async () => {
     const stories = [
-      { ...sampleStory({ id: 'story-1', relevanceRatingLow: 4 }), feed: { ...sampleFeed(), issue: sampleIssue() } },
-      { ...sampleStory({ id: 'story-2', relevanceRatingLow: 5 }), feed: { ...sampleFeed(), issue: sampleIssue() } },
+      { ...sampleStory({ id: 'story-1', relevancePre: 4 }), feed: { ...sampleFeed(), issue: sampleIssue() } },
+      { ...sampleStory({ id: 'story-2', relevancePre: 5 }), feed: { ...sampleFeed(), issue: sampleIssue() } },
     ]
     mockGetStoriesByStatus.mockResolvedValue(stories)
     mockAssessStory.mockResolvedValue(undefined)
 
     await runAssessStories()
 
-    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 3 })
+    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 4 })
     expect(mockAssessStory).toHaveBeenCalledTimes(2)
     expect(mockAssessStory).toHaveBeenCalledWith('story-1')
     expect(mockAssessStory).toHaveBeenCalledWith('story-2')
@@ -39,7 +39,7 @@ describe('runAssessStories', () => {
 
     await runAssessStories()
 
-    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 3 })
+    expect(mockGetStoriesByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 4 })
     expect(mockAssessStory).not.toHaveBeenCalled()
   })
 

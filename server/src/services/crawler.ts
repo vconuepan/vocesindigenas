@@ -50,11 +50,11 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
       }
 
       await createStory({
-        url: item.url,
-        title: extracted.title || item.title,
-        content: extracted.content,
+        sourceUrl: item.url,
+        sourceTitle: extracted.title || item.title,
+        sourceContent: extracted.content,
         feedId,
-        datePublished: extracted.datePublished || item.datePublished || undefined,
+        sourceDatePublished: extracted.datePublished || item.datePublished || undefined,
       })
 
       result.newStories++
@@ -110,11 +110,11 @@ export async function crawlUrl(url: string, feedId: string): Promise<{ storyId: 
   if (!extracted) return null
 
   const story = await createStory({
-    url,
-    title: extracted.title || 'Untitled',
-    content: extracted.content,
+    sourceUrl: url,
+    sourceTitle: extracted.title || 'Untitled',
+    sourceContent: extracted.content,
     feedId,
-    datePublished: extracted.datePublished || undefined,
+    sourceDatePublished: extracted.datePublished || undefined,
   })
 
   return { storyId: story.id }

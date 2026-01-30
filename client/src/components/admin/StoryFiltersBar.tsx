@@ -29,10 +29,13 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
       <Select
         id="filter-status"
         label="Status"
-        placeholder="All statuses"
+        placeholder="All (excl. trashed)"
         value={searchParams.get('status') || ''}
         onChange={e => setFilter('status', e.target.value)}
-        options={STORY_STATUSES.map(s => ({ value: s, label: formatStatus(s) }))}
+        options={[
+          ...STORY_STATUSES.map(s => ({ value: s, label: formatStatus(s) })),
+          { value: 'all', label: 'All (incl. trashed)' },
+        ]}
       />
       <Select
         id="filter-issue"

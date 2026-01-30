@@ -194,9 +194,9 @@ describe('Admin Podcasts API', () => {
       const podcast = samplePodcast({ storyIds: ['story-1'] })
       const story = sampleStory({
         status: 'published',
-        aiSummary: 'Test summary',
-        aiRelevanceReasons: 'Test reasons',
-        aiAntifactors: 'Test antifactors',
+        summary: 'Test summary',
+        relevanceReasons: 'Test reasons',
+        antifactors: 'Test antifactors',
         feed: { title: 'BBC', issue: { name: 'AI & Technology' } },
       })
       mockPrisma.podcast.findUnique.mockResolvedValue(podcast)

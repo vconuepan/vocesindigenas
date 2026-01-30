@@ -93,16 +93,16 @@ export async function generateContent(newsletterId: string) {
   for (const story of stories) {
     const category = story.feed?.issue?.name || 'General'
     const publisher = story.feed?.title || 'Unknown'
-    const blurb = story.aiMarketingBlurb || ''
-    const summary = story.aiSummary || ''
-    const relevanceSummary = story.aiRelevanceReasons || ''
+    const blurb = story.marketingBlurb || ''
+    const summary = story.summary || ''
+    const relevanceSummary = story.relevanceReasons || ''
 
-    content += `## ${story.title}\n`
+    content += `## ${story.title || story.sourceTitle}\n`
     content += `**${category}** | ${publisher}\n\n`
     if (blurb) content += `${blurb}\n\n`
     if (summary) content += `${summary}\n\n`
     if (relevanceSummary) content += `**Why it matters:** ${relevanceSummary}\n\n`
-    content += `[Read original](${story.url})\n\n---\n\n`
+    content += `[Read original](${story.sourceUrl})\n\n---\n\n`
   }
 
   return prisma.newsletter.update({
@@ -130,11 +130,11 @@ export async function generateCarouselForNewsletter(newsletterId: string): Promi
   })
 
   const carouselStories: CarouselStory[] = stories.map(s => ({
-    title: s.title,
+    title: s.title || s.sourceTitle,
     category: s.feed?.issue?.name || 'General',
-    summary: s.aiSummary || '',
+    summary: s.summary || '',
     publisher: s.feed?.title || 'Unknown',
-    date: s.datePublished?.toISOString() || null,
+    date: s.sourceDatePublished?.toISOString() || null,
   }))
 
   const outputDir = join(tmpdir(), `carousel_${newsletterId}_${Date.now()}`)

@@ -82,21 +82,19 @@ function StoryFullDetail({ story }: { story: Story }) {
           {story.emotionTag && <Badge variant={EMOTION_VARIANTS[story.emotionTag]}>{story.emotionTag}</Badge>}
         </div>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <dt className="text-neutral-500">Pre-rating</dt>
+          <dd>{story.relevancePre != null ? String(story.relevancePre) : '—'}</dd>
           <dt className="text-neutral-500">Rating</dt>
-          <dd>{story.relevanceRatingLow != null && story.relevanceRatingHigh != null
-                ? `${story.relevanceRatingLow}–${story.relevanceRatingHigh}`
-                : story.relevanceRatingLow != null
-                  ? String(story.relevanceRatingLow)
-                  : '—'}</dd>
+          <dd>{story.relevance != null ? String(story.relevance) : '—'}</dd>
           <dt className="text-neutral-500">Crawled</dt>
           <dd>{formatDate(story.dateCrawled)}</dd>
           <dt className="text-neutral-500">Published</dt>
           <dd>{formatDate(story.datePublished)}</dd>
           <dt className="text-neutral-500">Crawl Method</dt>
           <dd>{story.crawlMethod || '—'}</dd>
-          <dt className="text-neutral-500">URL</dt>
+          <dt className="text-neutral-500">Source URL</dt>
           <dd className="col-span-1 truncate">
-            <a href={story.url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">{story.url}</a>
+            <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">{story.sourceUrl}</a>
           </dd>
         </dl>
       </div>
@@ -104,26 +102,24 @@ function StoryFullDetail({ story }: { story: Story }) {
       {/* AI Analysis */}
       <div className="bg-white rounded-lg border border-neutral-200 p-4">
         <h3 className="text-sm font-semibold text-neutral-900 mb-3">AI Analysis</h3>
-        <AIField label="Summary" value={story.aiSummary} />
-        <AIField label="Quote" value={story.aiQuote} />
-        <AIField label="Keywords" value={story.aiKeywords} />
-        <AIField label="Marketing Blurb" value={story.aiMarketingBlurb} />
-        <AIField label="Relevance Reasons" value={story.aiRelevanceReasons} />
-        <AIField label="Antifactors" value={story.aiAntifactors} />
-        <AIField label="Relevance Calculation" value={story.aiRelevanceCalculation} />
-        <AIField label="Future Scenarios" value={story.aiScenarios} />
+        <AIField label="Summary" value={story.summary} />
+        <AIField label="Quote" value={story.quote} />
+        <AIField label="Marketing Blurb" value={story.marketingBlurb} />
+        <AIField label="Relevance Reasons" value={story.relevanceReasons} />
+        <AIField label="Antifactors" value={story.antifactors} />
+        <AIField label="Relevance Calculation" value={story.relevanceCalculation} />
       </div>
 
       {/* Content */}
       <div className="bg-white rounded-lg border border-neutral-200 p-4">
         <h3 className="text-sm font-semibold text-neutral-900 mb-2">Content</h3>
         <div className={`text-sm text-neutral-700 ${!contentExpanded ? 'max-h-60 overflow-hidden relative' : ''}`}>
-          <div className="whitespace-pre-wrap">{story.content}</div>
-          {!contentExpanded && story.content?.length > 500 && (
+          <div className="whitespace-pre-wrap">{story.sourceContent}</div>
+          {!contentExpanded && story.sourceContent?.length > 500 && (
             <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white" />
           )}
         </div>
-        {story.content?.length > 500 && (
+        {story.sourceContent?.length > 500 && (
           <Button variant="ghost" size="sm" onClick={() => setContentExpanded(!contentExpanded)} className="mt-1">
             {contentExpanded ? 'Show less' : 'Show more'}
           </Button>
@@ -156,7 +152,7 @@ export default function StoryDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{story?.title || 'Story'} — Admin — Actually Relevant</title>
+        <title>{story?.title || story?.sourceTitle || 'Story'} — Admin — Actually Relevant</title>
       </Helmet>
 
       <div className="mb-4">
@@ -170,7 +166,7 @@ export default function StoryDetailPage() {
 
       {story && (
         <>
-          <PageHeader title={story.title} />
+          <PageHeader title={story.title || story.sourceTitle} />
           <StoryFullDetail story={story} />
         </>
       )}

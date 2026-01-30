@@ -78,6 +78,21 @@ describe('Admin Stories API', () => {
       expect(res.body.totalPages).toBe(1)
     })
 
+    it('excludes trashed stories by default', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([storyWithRelations])
+      mockPrisma.story.count.mockResolvedValue(1)
+
+      const res = await request(app)
+        .get('/api/admin/stories')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(mockPrisma.story.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: { not: 'trashed' } }),
+        })
+      )
+    })
+
     it('supports status filter', async () => {
       mockPrisma.story.findMany.mockResolvedValue([])
       mockPrisma.story.count.mockResolvedValue(0)
@@ -86,6 +101,26 @@ describe('Admin Stories API', () => {
         .get('/api/admin/stories?status=fetched')
         .set(authHeader())
       expect(res.status).toBe(200)
+      expect(mockPrisma.story.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: 'fetched' }),
+        })
+      )
+    })
+
+    it('returns all stories including trashed with status=all', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([])
+      mockPrisma.story.count.mockResolvedValue(0)
+
+      const res = await request(app)
+        .get('/api/admin/stories?status=all')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(mockPrisma.story.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.not.objectContaining({ status: expect.anything() }),
+        })
+      )
     })
 
     it('supports pagination', async () => {
@@ -142,7 +177,7 @@ describe('Admin Stories API', () => {
         .get('/api/admin/stories/story-1')
         .set(authHeader())
       expect(res.status).toBe(200)
-      expect(res.body.title).toBe('Test Article')
+      expect(res.body.sourceTitle).toBe('Test Article')
       expect(res.body.feed).toBeDefined()
     })
 
@@ -165,9 +200,9 @@ describe('Admin Stories API', () => {
         .post('/api/admin/stories')
         .set(authHeader())
         .send({
-          url: 'https://example.com/article',
-          title: 'Test Article',
-          content: 'Test content',
+          sourceUrl: 'https://example.com/article',
+          sourceTitle: 'Test Article',
+          sourceContent: 'Test content',
           feedId: '00000000-0000-0000-0000-000000000001',
         })
       expect(res.status).toBe(201)
@@ -188,9 +223,9 @@ describe('Admin Stories API', () => {
         .post('/api/admin/stories')
         .set(authHeader())
         .send({
-          url: 'https://example.com/article',
-          title: 'Test',
-          content: 'Content',
+          sourceUrl: 'https://example.com/article',
+          sourceTitle: 'Test',
+          sourceContent: 'Content',
           feedId: '00000000-0000-0000-0000-000000000000',
         })
       expect(res.status).toBe(400)
@@ -205,9 +240,9 @@ describe('Admin Stories API', () => {
         .post('/api/admin/stories')
         .set(authHeader())
         .send({
-          url: 'https://example.com/article',
-          title: 'Test',
-          content: 'Content',
+          sourceUrl: 'https://example.com/article',
+          sourceTitle: 'Test',
+          sourceContent: 'Content',
           feedId: '00000000-0000-0000-0000-000000000001',
         })
       expect(res.status).toBe(409)

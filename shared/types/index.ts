@@ -38,27 +38,37 @@ export type JobStatus = 'idle' | 'running' | 'failed'
 
 export interface Story {
   id: string
-  url: string
-  title: string
-  content: string
-  datePublished: string | null
-  dateCrawled: string
+  sourceUrl: string
+  sourceTitle: string
+  sourceContent: string
+  sourceDatePublished: string | null
   feedId: string
   status: StoryStatus
-  relevanceRatingLow: number | null
-  relevanceRatingHigh: number | null
+  dateCrawled: string
+  datePublished: string | null
+  relevancePre: number | null
+  relevance: number | null
   emotionTag: EmotionTag | null
-  aiSummary: string | null
-  aiQuote: string | null
-  aiKeywords: string[] | null
-  aiMarketingBlurb: string | null
-  aiRelevanceReasons: string | null
-  aiAntifactors: string | null
-  aiRelevanceCalculation: string | null
-  aiScenarios: string | null
+  title: string | null
+  summary: string | null
+  quote: string | null
+  marketingBlurb: string | null
+  relevanceReasons: string | null
+  antifactors: string | null
+  relevanceCalculation: string | null
   crawlMethod: string | null
   createdAt: string
   updatedAt: string
+}
+
+export interface PublicStory extends Story {
+  feed: {
+    title: string
+    issue: {
+      name: string
+      slug: string
+    }
+  }
 }
 
 export interface Feed {
@@ -75,6 +85,14 @@ export interface Feed {
   updatedAt: string
 }
 
+export interface CrawlResult {
+  feedId: string
+  feedTitle: string
+  newStories: number
+  skipped: number
+  errors: number
+}
+
 export interface Issue {
   id: string
   name: string
@@ -83,6 +101,15 @@ export interface Issue {
   promptFactors: string
   promptAntifactors: string
   promptRatings: string
+  parentId: string | null
+  parent?: { id: string; name: string; slug: string } | null
+  children?: Issue[]
+  intro: string
+  evaluationIntro: string
+  evaluationCriteria: string[]
+  sourceNames: string[]
+  makeADifference: { label: string; url: string }[]
+  publishedStoryCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -122,7 +149,7 @@ export interface JobRun {
 // --- Query/filter types ---
 
 export interface StoryFilters {
-  status?: StoryStatus
+  status?: StoryStatus | 'all'
   issueId?: string
   feedId?: string
   crawledAfter?: string

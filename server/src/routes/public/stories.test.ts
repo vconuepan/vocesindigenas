@@ -28,21 +28,19 @@ const { default: app } = await import('../../app.js')
 
 const publicStory = {
   id: 'story-1',
-  url: 'https://example.com/article',
+  sourceUrl: 'https://example.com/article',
   title: 'Published Article',
   datePublished: new Date('2024-01-15'),
   dateCrawled: new Date('2024-01-14'),
   status: 'published',
-  relevanceRatingLow: 7,
-  relevanceRatingHigh: 9,
+  relevancePre: 7,
+  relevance: 9,
   emotionTag: 'uplifting',
-  aiSummary: 'A test summary',
-  aiQuote: 'A notable quote',
-  aiKeywords: ['test', 'article'],
-  aiMarketingBlurb: 'Read this article',
-  aiRelevanceReasons: 'Very relevant',
-  aiAntifactors: 'None',
-  aiScenarios: 'Scenario A',
+  summary: 'A test summary',
+  quote: 'A notable quote',
+  marketingBlurb: 'Read this article',
+  relevanceReasons: 'Very relevant',
+  antifactors: 'None',
   feed: {
     title: 'Test Feed',
     issue: { name: 'AI & Technology', slug: 'ai-technology' },
@@ -92,9 +90,8 @@ describe('Public Stories API', () => {
       const res = await request(app).get('/api/stories')
       expect(res.status).toBe(200)
       // These internal fields should not be present
-      expect(res.body.data[0].aiResponse).toBeUndefined()
-      expect(res.body.data[0].aiRelevanceCalculation).toBeUndefined()
-      expect(res.body.data[0].content).toBeUndefined()
+      expect(res.body.data[0].relevanceCalculation).toBeUndefined()
+      expect(res.body.data[0].sourceContent).toBeUndefined()
     })
   })
 

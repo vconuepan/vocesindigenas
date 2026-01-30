@@ -23,13 +23,12 @@ describe('buildPreassessPrompt', () => {
     const longContent = 'x'.repeat(2000)
     const stories = [{ id: 's1', title: 'Test', content: longContent }]
     const prompt = buildPreassessPrompt(stories, guidelines)
-    // Content should be truncated — the prompt shouldn't contain the full 2000 chars
     const contentStart = prompt.indexOf('x'.repeat(100))
     expect(contentStart).toBeGreaterThan(-1)
     expect(prompt).not.toContain('x'.repeat(1500))
   })
 
-  it('includes guidelines', () => {
+  it('injects issue-specific guidelines', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
     const prompt = buildPreassessPrompt(stories, guidelines)
     expect(prompt).toContain('Technology advancement')
@@ -37,20 +36,22 @@ describe('buildPreassessPrompt', () => {
     expect(prompt).toContain('Moderate impact')
   })
 
-  it('includes emotion tag options', () => {
+  it('uses XML scaffolding structure', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
     const prompt = buildPreassessPrompt(stories, guidelines)
-    expect(prompt).toContain('Uplifting')
-    expect(prompt).toContain('Surprising')
-    expect(prompt).toContain('Frustrating')
-    expect(prompt).toContain('Scary')
-    expect(prompt).toContain('Calm')
+    expect(prompt).toContain('<ROLE>')
+    expect(prompt).toContain('<GOAL>')
+    expect(prompt).toContain('<ARTICLES>')
+    expect(prompt).toContain('</ARTICLES>')
   })
 
-  it('includes structure template', () => {
+  it('does not contain legacy prompting patterns', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
     const prompt = buildPreassessPrompt(stories, guidelines)
-    expect(prompt).toContain('Article #[ID]: [rating], [emotion tag]')
+    expect(prompt).not.toContain('<STRUCTURE>')
+    expect(prompt).not.toContain('Follow this prompt exactly')
+    expect(prompt).not.toContain('Take a deep breath')
+    expect(prompt).not.toContain('step by step')
   })
 })
 
@@ -69,25 +70,35 @@ describe('buildAssessPrompt', () => {
     expect(prompt).not.toContain('y'.repeat(4500))
   })
 
-  it('includes guidelines', () => {
+  it('injects issue-specific guidelines', () => {
     const prompt = buildAssessPrompt('Title', 'Content', 'Pub', 'https://example.com', guidelines)
     expect(prompt).toContain('Technology advancement')
     expect(prompt).toContain('<CRITERIA>')
   })
 
-  it('includes generic limiting factors', () => {
+  it('includes generic limiting factors section', () => {
     const prompt = buildAssessPrompt('Title', 'Content', 'Pub', 'https://example.com', guidelines)
-    expect(prompt).toContain('<GENERIC LIMITING FACTORS>')
-    expect(prompt).toContain('opinion piece')
-    expect(prompt).toContain('click-baity')
+    expect(prompt).toContain('<GENERIC_LIMITING_FACTORS>')
+    expect(prompt).toContain('</GENERIC_LIMITING_FACTORS>')
   })
 
-  it('includes output structure', () => {
+  it('uses XML scaffolding structure', () => {
     const prompt = buildAssessPrompt('Title', 'Content', 'Pub', 'https://example.com', guidelines)
-    expect(prompt).toContain('Publication date:')
-    expect(prompt).toContain('Conservative rating:')
-    expect(prompt).toContain('Speculative rating:')
-    expect(prompt).toContain('Marketing blurb:')
+    expect(prompt).toContain('<ROLE>')
+    expect(prompt).toContain('<GOAL>')
+    expect(prompt).toContain('<ARTICLE>')
+    expect(prompt).toContain('<ANALYSIS_REQUIREMENTS>')
+    expect(prompt).toContain('<GUIDELINES>')
+  })
+
+  it('does not contain legacy prompting patterns', () => {
+    const prompt = buildAssessPrompt('Title', 'Content', 'Pub', 'https://example.com', guidelines)
+    expect(prompt).not.toContain('<STRUCTURE>')
+    expect(prompt).not.toContain('<STEPS>')
+    expect(prompt).not.toContain('Follow this prompt exactly')
+    expect(prompt).not.toContain('Take a deep breath')
+    expect(prompt).not.toContain('Go through these steps one by one')
+    expect(prompt).not.toContain('incredibly detailed')
   })
 })
 
@@ -96,18 +107,18 @@ describe('buildSelectPrompt', () => {
     {
       id: 'story-1',
       title: 'AI Progress',
-      aiSummary: 'Summary of AI article',
-      aiRelevanceReasons: 'Factor 1\nFactor 2',
-      aiAntifactors: 'Limiting factor 1',
-      aiRelevanceCalculation: 'Key factor: 6',
+      summary: 'Summary of AI article',
+      relevanceReasons: 'Factor 1\nFactor 2',
+      antifactors: 'Limiting factor 1',
+      relevanceCalculation: 'Key factor: 6',
     },
     {
       id: 'story-2',
       title: 'Climate Update',
-      aiSummary: 'Summary of climate article',
-      aiRelevanceReasons: 'Factor A',
-      aiAntifactors: 'Limiting factor A',
-      aiRelevanceCalculation: 'Key factor: 4',
+      summary: 'Summary of climate article',
+      relevanceReasons: 'Factor A',
+      antifactors: 'Limiting factor A',
+      relevanceCalculation: 'Key factor: 4',
     },
   ]
 
@@ -119,26 +130,36 @@ describe('buildSelectPrompt', () => {
     expect(prompt).toContain('<Summary>Summary of AI article</Summary>')
   })
 
-  it('includes selection count', () => {
+  it('includes selection count in goal', () => {
     const prompt = buildSelectPrompt(stories, 1)
-    expect(prompt).toContain('Select a total of 1 articles out of the original list of 2')
+    expect(prompt).toContain('1 articles from the 2 candidates')
   })
 
-  it('includes round-based structure', () => {
+  it('uses XML scaffolding structure', () => {
     const prompt = buildSelectPrompt(stories, 1)
-    expect(prompt).toContain('<THINKING>')
-    expect(prompt).toContain('<ROUND 1>')
-    expect(prompt).toContain('<SELECTED ARTICLES>')
+    expect(prompt).toContain('<ROLE>')
+    expect(prompt).toContain('<GOAL>')
+    expect(prompt).toContain('<SELECTION_CRITERIA>')
+  })
+
+  it('does not contain legacy prompting patterns', () => {
+    const prompt = buildSelectPrompt(stories, 1)
+    expect(prompt).not.toContain('<STRUCTURE>')
+    expect(prompt).not.toContain('<STEPS>')
+    expect(prompt).not.toContain('Follow this prompt exactly')
+    expect(prompt).not.toContain('Take a deep breath')
+    expect(prompt).not.toContain('Go through as many rounds')
+    expect(prompt).not.toContain('step by step')
   })
 
   it('escapes XML characters in content', () => {
     const storiesWithSpecial = [{
       id: 's1',
       title: 'Test & <special>',
-      aiSummary: 'Summary with "quotes"',
-      aiRelevanceReasons: null,
-      aiAntifactors: null,
-      aiRelevanceCalculation: null,
+      summary: 'Summary with "quotes"',
+      relevanceReasons: null,
+      antifactors: null,
+      relevanceCalculation: null,
     }]
     const prompt = buildSelectPrompt(storiesWithSpecial, 1)
     expect(prompt).toContain('&amp;')
@@ -184,20 +205,5 @@ describe('buildPodcastPrompt', () => {
   it('formats antifactors as bullet points', () => {
     const prompt = buildPodcastPrompt(stories)
     expect(prompt).toContain('Limiting factors for the relevance\n- Early stage technology')
-  })
-
-  it('includes podcast instructions', () => {
-    const prompt = buildPodcastPrompt(stories)
-    expect(prompt).toContain('Actually Relevant Podcast')
-    expect(prompt).toContain('AI-generated voice')
-    expect(prompt).toContain('Existential Risks')
-    expect(prompt).toContain('text-to-voice service')
-  })
-
-  it('includes all required sections', () => {
-    const prompt = buildPodcastPrompt(stories)
-    expect(prompt).toContain('Intro')
-    expect(prompt).toContain('Sections')
-    expect(prompt).toContain('Outro')
   })
 })

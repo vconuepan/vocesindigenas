@@ -44,26 +44,25 @@ enum UserRole {
 
 model Story {
   id                     String       @id @default(uuid())
-  url                    String       @unique
-  title                  String
-  content                String
-  datePublished          DateTime?    @map("date_published")
-  dateCrawled            DateTime     @default(now()) @map("date_crawled")
+  sourceUrl              String       @unique @map("source_url")
+  sourceTitle            String       @map("source_title")
+  sourceContent          String       @map("source_content")
+  sourceDatePublished    DateTime?    @map("source_date_published")
   feedId                 String       @map("feed_id")
   feed                   Feed         @relation(fields: [feedId], references: [id])
   status                 StoryStatus  @default(fetched)
-  relevanceRatingLow     Int?         @map("relevance_rating_low")
-  relevanceRatingHigh    Int?         @map("relevance_rating_high")
+  dateCrawled            DateTime     @default(now()) @map("date_crawled")
+  datePublished          DateTime?    @map("date_published")
+  relevancePre           Int?         @map("relevance_pre")
+  relevance              Int?
   emotionTag             EmotionTag?  @map("emotion_tag")
-  aiResponse             Json?        @map("ai_response")
-  aiSummary              String?      @map("ai_summary")
-  aiQuote                String?      @map("ai_quote")
-  aiKeywords             String[]     @map("ai_keywords")
-  aiMarketingBlurb       String?      @map("ai_marketing_blurb")
-  aiRelevanceReasons     String?      @map("ai_relevance_reasons")
-  aiAntifactors          String?      @map("ai_antifactors")
-  aiRelevanceCalculation String?      @map("ai_relevance_calculation")
-  aiScenarios            String?      @map("ai_scenarios")
+  title                  String?
+  summary                String?
+  quote                  String?
+  marketingBlurb         String?      @map("marketing_blurb")
+  relevanceReasons       String?      @map("relevance_reasons")
+  antifactors            String?
+  relevanceCalculation   String?      @map("relevance_calculation")
   crawlMethod            String?      @map("crawl_method")
   // pgvector embedding for future semantic search
   // embedding           Unsupported("vector(1536)")?
@@ -92,16 +91,24 @@ model Feed {
 }
 
 model Issue {
-  id               String   @id @default(uuid())
-  name             String
-  slug             String   @unique
-  description      String   @default("")
-  promptFactors    String   @default("") @map("prompt_factors")
-  promptAntifactors String  @default("") @map("prompt_antifactors")
-  promptRatings    String   @default("") @map("prompt_ratings")
-  feeds            Feed[]
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid())
+  name               String
+  slug               String   @unique
+  description        String   @default("")
+  promptFactors      String   @default("") @map("prompt_factors")
+  promptAntifactors  String   @default("") @map("prompt_antifactors")
+  promptRatings      String   @default("") @map("prompt_ratings")
+  parentId           String?  @map("parent_id")
+  parent             Issue?   @relation("IssueHierarchy", fields: [parentId], references: [id])
+  children           Issue[]  @relation("IssueHierarchy")
+  intro              String   @default("")
+  evaluationIntro    String   @default("") @map("evaluation_intro")
+  evaluationCriteria String   @default("") @map("evaluation_criteria")
+  sourceNames        String   @default("") @map("source_names")
+  makeADifference    String   @default("") @map("make_a_difference")
+  feeds              Feed[]
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("issues")
 }

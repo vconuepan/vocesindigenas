@@ -1,18 +1,18 @@
 import { getStoriesByStatus } from '../services/story.js'
 import { assessStory } from '../services/analysis.js'
-
-const FULL_ASSESSMENT_THRESHOLD = 3
+import { config } from '../config.js'
 
 export async function runAssessStories(): Promise<void> {
   console.log('[assess_stories] Starting full assessment job')
 
-  const stories = await getStoriesByStatus('pre_analyzed', { ratingMin: FULL_ASSESSMENT_THRESHOLD })
+  const threshold = config.llm.fullAssessmentThreshold
+  const stories = await getStoriesByStatus('pre_analyzed', { ratingMin: threshold })
   if (stories.length === 0) {
     console.log('[assess_stories] No pre-analyzed stories above threshold')
     return
   }
 
-  console.log(`[assess_stories] Assessing ${stories.length} stories (rating >= ${FULL_ASSESSMENT_THRESHOLD})`)
+  console.log(`[assess_stories] Assessing ${stories.length} stories (rating >= ${threshold})`)
 
   let completed = 0
   let errors = 0

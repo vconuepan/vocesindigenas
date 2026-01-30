@@ -13,30 +13,29 @@ const storySortEnum = z.enum([
 ])
 
 export const createStorySchema = z.object({
-  url: z.string().url('Must be a valid URL'),
-  title: z.string().min(1, 'Title is required'),
-  content: z.string().min(1, 'Content is required'),
+  sourceUrl: z.string().url('Must be a valid URL'),
+  sourceTitle: z.string().min(1, 'Source title is required'),
+  sourceContent: z.string().min(1, 'Source content is required'),
   feedId: z.string().uuid('Must be a valid feed ID'),
-  datePublished: z.string().datetime().optional(),
+  sourceDatePublished: z.string().datetime().optional(),
 })
 
 export const updateStorySchema = z.object({
-  url: z.string().url().optional(),
-  title: z.string().min(1).optional(),
-  content: z.string().optional(),
-  datePublished: z.string().datetime().nullable().optional(),
+  sourceUrl: z.string().url().optional(),
+  sourceTitle: z.string().min(1).optional(),
+  sourceContent: z.string().optional(),
+  sourceDatePublished: z.string().datetime().nullable().optional(),
+  title: z.string().min(1).nullable().optional(),
   status: storyStatusEnum.optional(),
-  relevanceRatingLow: z.number().int().min(0).max(10).nullable().optional(),
-  relevanceRatingHigh: z.number().int().min(0).max(10).nullable().optional(),
+  relevancePre: z.number().int().min(0).max(10).nullable().optional(),
+  relevance: z.number().int().min(0).max(10).nullable().optional(),
   emotionTag: emotionTagEnum.nullable().optional(),
-  aiSummary: z.string().nullable().optional(),
-  aiQuote: z.string().nullable().optional(),
-  aiKeywords: z.array(z.string()).nullable().optional(),
-  aiMarketingBlurb: z.string().nullable().optional(),
-  aiRelevanceReasons: z.string().nullable().optional(),
-  aiAntifactors: z.string().nullable().optional(),
-  aiRelevanceCalculation: z.string().nullable().optional(),
-  aiScenarios: z.string().nullable().optional(),
+  summary: z.string().nullable().optional(),
+  quote: z.string().nullable().optional(),
+  marketingBlurb: z.string().nullable().optional(),
+  relevanceReasons: z.string().nullable().optional(),
+  antifactors: z.string().nullable().optional(),
+  relevanceCalculation: z.string().nullable().optional(),
 })
 
 export const updateStoryStatusSchema = z.object({
@@ -49,7 +48,7 @@ export const bulkUpdateStatusSchema = z.object({
 })
 
 export const storyQuerySchema = z.object({
-  status: storyStatusEnum.optional(),
+  status: z.union([storyStatusEnum, z.literal('all')]).optional(),
   issueId: z.string().uuid().optional(),
   feedId: z.string().uuid().optional(),
   crawledAfter: z.string().datetime().optional(),
@@ -68,6 +67,19 @@ export const preassessBodySchema = z.object({
 
 export const selectBodySchema = z.object({
   storyIds: z.array(z.string().uuid()).min(1, 'At least one story ID is required'),
+})
+
+export const batchStoriesQuerySchema = z.object({
+  ids: z.string().min(1, 'At least one ID is required')
+    .transform(str => str.split(',').map(s => s.trim()).filter(Boolean))
+    .refine(
+      arr => arr.length <= 100,
+      { message: 'Maximum 100 IDs allowed' },
+    )
+    .refine(
+      arr => arr.every(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)),
+      { message: 'All IDs must be valid UUIDs' },
+    ),
 })
 
 export const publicStoryQuerySchema = z.object({

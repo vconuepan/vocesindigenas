@@ -75,13 +75,12 @@ router.put('/:id', validateBody(updateFeedSchema), async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await feedService.deleteFeed(req.params.id)
-    res.status(204).send()
+    const result = await feedService.deleteFeed(req.params.id)
+    const message = result.action === 'deleted'
+      ? 'Feed deleted'
+      : 'Feed deactivated (has linked stories)'
+    res.json({ action: result.action, message })
   } catch (err: any) {
-    if (err.message === 'Cannot delete feed with existing stories') {
-      res.status(409).json({ error: err.message })
-      return
-    }
     if (err.code === 'P2025') {
       res.status(404).json({ error: 'Feed not found' })
       return

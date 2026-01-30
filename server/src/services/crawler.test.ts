@@ -105,7 +105,7 @@ describe('crawlFeed', () => {
     await crawlFeed('feed-1')
 
     expect(mockCreateStory).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Better Title' })
+      expect.objectContaining({ sourceTitle: 'Better Title' })
     )
   })
 
@@ -207,9 +207,9 @@ describe('crawlUrl', () => {
     expect(result).toEqual({ storyId: 'new-story-id' })
     expect(mockCreateStory).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: 'https://example.com/article',
-        title: 'Article Title',
-        content: 'Article content',
+        sourceUrl: 'https://example.com/article',
+        sourceTitle: 'Article Title',
+        sourceContent: 'Article content',
         feedId: 'feed-1',
       })
     )

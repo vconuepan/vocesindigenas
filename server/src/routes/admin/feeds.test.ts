@@ -185,23 +185,31 @@ describe('Admin Feeds API', () => {
   })
 
   describe('DELETE /api/admin/feeds/:id', () => {
-    it('deletes a feed', async () => {
+    it('deletes a feed with no stories', async () => {
       mockPrisma.story.count.mockResolvedValue(0)
       mockPrisma.feed.delete.mockResolvedValue(sampleFeed())
 
       const res = await request(app)
         .delete('/api/admin/feeds/feed-1')
         .set(authHeader())
-      expect(res.status).toBe(204)
+      expect(res.status).toBe(200)
+      expect(res.body.action).toBe('deleted')
+      expect(res.body.message).toBe('Feed deleted')
     })
 
-    it('returns 409 when feed has stories', async () => {
+    it('deactivates a feed that has stories', async () => {
       mockPrisma.story.count.mockResolvedValue(5)
+      mockPrisma.feed.update.mockResolvedValue(sampleFeed({ active: false }))
 
       const res = await request(app)
         .delete('/api/admin/feeds/feed-1')
         .set(authHeader())
-      expect(res.status).toBe(409)
+      expect(res.status).toBe(200)
+      expect(res.body.action).toBe('deactivated')
+      expect(mockPrisma.feed.update).toHaveBeenCalledWith({
+        where: { id: 'feed-1' },
+        data: { active: false },
+      })
     })
   })
 })

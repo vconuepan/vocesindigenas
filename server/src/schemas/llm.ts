@@ -1,33 +1,81 @@
 import { z } from 'zod'
 
 export const preAssessItemSchema = z.object({
-  articleId: z.string(),
-  rating: z.number().int().min(1).max(10),
-  emotionTag: z.enum(['uplifting', 'surprising', 'frustrating', 'scary', 'calm']),
+  articleId: z.string().describe('The article ID exactly as provided in the input'),
+  rating: z.number().int().min(1).max(10).describe(
+    'Conservative relevance rating 1-10. Only about 20% (one in five) of articles should get a rating of 5 or higher.',
+  ),
+  emotionTag: z.enum(['uplifting', 'surprising', 'frustrating', 'scary', 'calm']).describe(
+    'Emotion tag based on how the article affects readers. '
+    + 'uplifting: positive or inspiring stories (e.g. a positive trend or useful new technology). '
+    + 'surprising: unexpected or counterintuitive stories (e.g. an effect opposite to expectations). '
+    + 'frustrating: negative or disappointing stories (e.g. a policy change that harms the environment). '
+    + 'scary: frightening stories (e.g. increased existential risks, wars). '
+    + 'calm: stories without a strong association with any other emotion tag.',
+  ),
 })
 
 export const preAssessResultSchema = z.object({
-  articles: z.array(preAssessItemSchema),
+  articles: z.array(preAssessItemSchema).describe('One entry per article in the input batch'),
 })
 
 export const assessResultSchema = z.object({
-  publicationDate: z.string().describe('Publication date in YYYY-MM-DD 00:00:00 format, or 1970-01-01 00:00:00 if unknown'),
-  quote: z.string().describe('Key quote from the article, translated to English if needed, with attribution'),
-  keywords: z.array(z.string()).describe('3-5 lowercase SEO keywords, focus keyword first'),
-  summary: z.string().describe('40-70 word summary including focus keyword and key quote'),
-  factors: z.array(z.string()).describe('4 detailed bullet points explaining why the article is relevant for humanity'),
-  limitingFactors: z.array(z.string()).describe('Detailed bullet points on why the article might not be so relevant'),
-  relevanceCalculation: z.array(z.string()).describe('Bullet points showing the rating calculation steps'),
-  conservativeRating: z.number().int().min(1).max(10).describe('Conservative relevance rating 1-10'),
-  scenarios: z.array(z.string()).describe('2 bullet points outlining scenarios for higher or lower ratings'),
-  speculativeRating: z.number().int().min(1).max(10).describe('Speculative rating, higher but plausible'),
-  relevanceSummary: z.string().describe('75-100 word summary explaining the relevance rating'),
-  relevanceTitle: z.string().describe('Title in two parts separated by colon, sentence case'),
-  marketingBlurb: z.string().describe('Up to 230 chars, starting with publisher name'),
+  publicationDate: z.string().describe(
+    'Publication date in YYYY-MM-DD 00:00:00 format, or 1970-01-01 00:00:00 if unknown',
+  ),
+  quote: z.string().describe(
+    'Key quote from the article translated to English if needed, with attribution. '
+    + 'Use quotation marks and name the speaker or publication.',
+  ),
+  summary: z.string().describe(
+    'Plain text summary of the article, 40-70 words. '
+    + 'Include the key quote with attribution. Avoid redundancy with the title.',
+  ),
+  factors: z.array(z.string()).describe(
+    '4 Markdown bullet points explaining why the article is relevant for humanity. '
+    + 'Each bullet: "**[Factor name from article context]:** [1 sentence: assessment.] '
+    + '[1 sentence: classification based on rating criteria with quantification if possible.] '
+    + '[1 sentence: mechanism / context of the impact.] '
+    + '[1 sentence: example or further details.]" '
+    + 'Order by importance, key factor first.',
+  ),
+  limitingFactors: z.array(z.string()).describe(
+    'Markdown bullet points on why the article might not be so relevant. '
+    + 'Each bullet: "**[Limiting factor]:** [1 sentence: assessment.] '
+    + '[1 sentence: specific mechanism or context.] '
+    + '[1 sentence: example or further details.]" '
+    + 'Include applicable generic limiting factors (opinion piece, click-bait, early-stage tech, etc.) '
+    + 'and topic-specific limiting factors.',
+  ),
+  relevanceCalculation: z.array(z.string()).describe(
+    'Markdown bullet points showing the rating calculation steps. '
+    + 'Format: "**[Key factor]:** [rating 1-10]", '
+    + '"**[Generic limiting factor]:** [modifier +0 to -4]", '
+    + '"**[Other factors combined]:** [modifier +/- 0-2]".',
+  ),
+  conservativeRating: z.number().int().min(1).max(10).describe(
+    'Conservative relevance rating 1-10 based on the relevance calculation',
+  ),
+  relevanceSummary: z.string().describe(
+    'Markdown-formatted summary explaining the relevance rating, 75-100 words. '
+    + 'Reference the key factor and most important factors and limiting factors. '
+    + 'Do not refer to "the article"; focus on the subject matter. '
+    + 'End with an overall high-level assessment.',
+  ),
+  relevanceTitle: z.string().describe(
+    'Plain text title in two parts separated by a colon, sentence case '
+    + '(capitalize first word and proper nouns only). Be descriptive and avoid sensationalist language.',
+  ),
+  marketingBlurb: z.string().describe(
+    'Plain text, up to 230 characters. Start with the publisher name. '
+    + 'Mention the key point of the article and key point of the assessment.',
+  ),
 })
 
 export const selectResultSchema = z.object({
-  selectedIds: z.array(z.string()),
+  selectedIds: z.array(z.string()).describe(
+    'IDs of the selected articles. Must contain exactly the number of articles requested.',
+  ),
 })
 
 export const podcastScriptSchema = z.object({

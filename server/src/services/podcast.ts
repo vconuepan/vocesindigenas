@@ -84,11 +84,11 @@ export async function generateScript(podcastId: string) {
 
   const storyData = stories.map(s => ({
     category: s.feed?.issue?.name || 'General',
-    title: s.title,
-    summary: s.aiSummary || '',
+    title: s.title || s.sourceTitle,
+    summary: s.summary || '',
     publisher: s.feed?.title || 'Unknown',
-    relevanceReasons: s.aiRelevanceReasons || '',
-    antifactors: s.aiAntifactors || '',
+    relevanceReasons: s.relevanceReasons || '',
+    antifactors: s.antifactors || '',
   }))
 
   const prompt = buildPodcastPrompt(storyData)
@@ -103,9 +103,9 @@ export async function generateScript(podcastId: string) {
   script += '\n\n---\n\nLast week, our RelevanceAI evaluated hundreds of news items from around the world. These are the most relevant for humanity:\n\n'
   for (const story of stories) {
     const publisher = story.feed?.title || 'Unknown'
-    script += `- ${story.title}\n`
+    script += `- ${story.title || story.sourceTitle}\n`
     script += `${publisher} | AI analysis\n`
-    script += `${story.url}\n`
+    script += `${story.sourceUrl}\n`
   }
 
   return prisma.podcast.update({

@@ -44,22 +44,18 @@ function StoryContent({ story }: { story: Story }) {
           )}
         </div>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-3">
+          <dt className="text-neutral-500">Pre-rating</dt>
+          <dd className="text-neutral-900">{story.relevancePre != null ? String(story.relevancePre) : '—'}</dd>
           <dt className="text-neutral-500">Rating</dt>
-          <dd className="text-neutral-900">
-            {story.relevanceRatingLow != null && story.relevanceRatingHigh != null
-              ? `${story.relevanceRatingLow}–${story.relevanceRatingHigh}`
-              : story.relevanceRatingLow != null
-                ? String(story.relevanceRatingLow)
-                : '—'}
-          </dd>
+          <dd className="text-neutral-900">{story.relevance != null ? String(story.relevance) : '—'}</dd>
           <dt className="text-neutral-500">Crawled</dt>
           <dd className="text-neutral-900">{formatDate(story.dateCrawled)}</dd>
           <dt className="text-neutral-500">Published</dt>
           <dd className="text-neutral-900">{formatDate(story.datePublished)}</dd>
-          <dt className="text-neutral-500">URL</dt>
+          <dt className="text-neutral-500">Source URL</dt>
           <dd className="text-neutral-900 truncate">
-            <a href={story.url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-              {story.url}
+            <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+              {story.sourceUrl}
             </a>
           </dd>
         </dl>
@@ -73,26 +69,24 @@ function StoryContent({ story }: { story: Story }) {
             Edit
           </Button>
         </div>
-        <AIField label="Summary" value={story.aiSummary} />
-        <AIField label="Quote" value={story.aiQuote} />
-        <AIField label="Keywords" value={story.aiKeywords} />
-        <AIField label="Marketing Blurb" value={story.aiMarketingBlurb} />
-        <AIField label="Relevance Reasons" value={story.aiRelevanceReasons} />
-        <AIField label="Antifactors" value={story.aiAntifactors} />
-        <AIField label="Relevance Calculation" value={story.aiRelevanceCalculation} />
-        <AIField label="Future Scenarios" value={story.aiScenarios} />
+        <AIField label="Summary" value={story.summary} />
+        <AIField label="Quote" value={story.quote} />
+        <AIField label="Marketing Blurb" value={story.marketingBlurb} />
+        <AIField label="Relevance Reasons" value={story.relevanceReasons} />
+        <AIField label="Antifactors" value={story.antifactors} />
+        <AIField label="Relevance Calculation" value={story.relevanceCalculation} />
       </div>
 
       {/* Content */}
       <div>
         <h3 className="text-sm font-semibold text-neutral-900 mb-2">Content</h3>
         <div className={`text-sm text-neutral-700 ${!contentExpanded ? 'max-h-40 overflow-hidden relative' : ''}`}>
-          <div className="whitespace-pre-wrap">{story.content}</div>
-          {!contentExpanded && story.content && story.content.length > 500 && (
+          <div className="whitespace-pre-wrap">{story.sourceContent}</div>
+          {!contentExpanded && story.sourceContent && story.sourceContent.length > 500 && (
             <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white" />
           )}
         </div>
-        {story.content && story.content.length > 500 && (
+        {story.sourceContent && story.sourceContent.length > 500 && (
           <Button variant="ghost" size="sm" onClick={() => setContentExpanded(!contentExpanded)} className="mt-1">
             {contentExpanded ? 'Show less' : 'Show more'}
           </Button>
@@ -112,7 +106,7 @@ export function StoryDetail({ storyId, onClose }: StoryDetailProps) {
         <DialogPanel className="w-screen max-w-lg bg-white shadow-xl overflow-y-auto">
           <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200">
             <DialogTitle className="text-lg font-semibold text-neutral-900 truncate pr-4">
-              {story?.title || 'Story Detail'}
+              {story?.title || story?.sourceTitle || 'Story Detail'}
             </DialogTitle>
             <button
               onClick={onClose}

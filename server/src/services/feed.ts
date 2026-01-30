@@ -89,10 +89,12 @@ export async function updateLastCrawled(id: string): Promise<void> {
   })
 }
 
-export async function deleteFeed(id: string): Promise<void> {
+export async function deleteFeed(id: string): Promise<{ action: 'deleted' | 'deactivated' }> {
   const storyCount = await prisma.story.count({ where: { feedId: id } })
   if (storyCount > 0) {
-    throw new Error('Cannot delete feed with existing stories')
+    await prisma.feed.update({ where: { id }, data: { active: false } })
+    return { action: 'deactivated' }
   }
   await prisma.feed.delete({ where: { id } })
+  return { action: 'deleted' }
 }

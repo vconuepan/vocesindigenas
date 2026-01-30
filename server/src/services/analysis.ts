@@ -1,5 +1,6 @@
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
+import { config } from '../config.js'
 import { getSmallLLM, getLargeLLM, rateLimitDelay } from './llm.js'
 import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from './prompts.js'
 import { preAssessResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
@@ -40,11 +41,12 @@ export async function preAssessStories(storyIds: string[]): Promise<{ storyId: s
     const issue = issueStories[0].feed.issue
     const guidelines = getGuidelines(issue)
 
-    // Process in batches of ~10
-    for (let i = 0; i < issueStories.length; i += 10) {
-      const batch = issueStories.slice(i, i + 10)
+    // Process in batches
+    const batchSize = config.llm.preassessBatchSize
+    for (let i = 0; i < issueStories.length; i += batchSize) {
+      const batch = issueStories.slice(i, i + batchSize)
       const prompt = buildPreassessPrompt(
-        batch.map(s => ({ id: s.id, title: s.title, content: s.content })),
+        batch.map(s => ({ id: s.id, title: s.sourceTitle, content: s.sourceContent })),
         guidelines,
       )
 
@@ -58,7 +60,7 @@ export async function preAssessStories(storyIds: string[]): Promise<{ storyId: s
         await prisma.story.update({
           where: { id: story.id },
           data: {
-            relevanceRatingLow: item.rating,
+            relevancePre: item.rating,
             emotionTag: item.emotionTag as any,
             status: 'pre_analyzed',
           },
@@ -85,7 +87,7 @@ export async function assessStory(storyId: string): Promise<void> {
 
   const guidelines = getGuidelines(story.feed.issue)
   const publisher = story.feed.title
-  const prompt = buildAssessPrompt(story.title, story.content, publisher, story.url, guidelines)
+  const prompt = buildAssessPrompt(story.sourceTitle, story.sourceContent, publisher, story.sourceUrl, guidelines)
 
   await rateLimitDelay()
   const llm = getLargeLLM()
@@ -95,17 +97,14 @@ export async function assessStory(storyId: string): Promise<void> {
   await prisma.story.update({
     where: { id: storyId },
     data: {
-      aiResponse: parsed as any,
-      aiSummary: parsed.summary || null,
-      aiQuote: parsed.quote || null,
-      aiKeywords: parsed.keywords,
-      aiMarketingBlurb: parsed.marketingBlurb || null,
-      aiRelevanceReasons: parsed.factors.join('\n'),
-      aiAntifactors: parsed.limitingFactors.join('\n'),
-      aiRelevanceCalculation: parsed.relevanceCalculation.join('\n'),
-      aiScenarios: parsed.scenarios.join('\n'),
-      relevanceRatingLow: parsed.conservativeRating,
-      relevanceRatingHigh: parsed.speculativeRating,
+      title: parsed.relevanceTitle || null,
+      summary: parsed.summary || null,
+      quote: parsed.quote || null,
+      marketingBlurb: parsed.marketingBlurb || null,
+      relevanceReasons: parsed.factors.join('\n'),
+      antifactors: parsed.limitingFactors.join('\n'),
+      relevanceCalculation: parsed.relevanceCalculation.join('\n'),
+      relevance: parsed.conservativeRating,
       status: 'analyzed',
     },
   })
@@ -123,16 +122,16 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
     stories.map(s => ({
       id: s.id,
       title: s.title,
-      aiSummary: s.aiSummary,
-      aiRelevanceReasons: s.aiRelevanceReasons,
-      aiAntifactors: s.aiAntifactors,
-      aiRelevanceCalculation: s.aiRelevanceCalculation,
+      summary: s.summary,
+      relevanceReasons: s.relevanceReasons,
+      antifactors: s.antifactors,
+      relevanceCalculation: s.relevanceCalculation,
     })),
     toSelect,
   )
 
   await rateLimitDelay()
-  const llm = getSmallLLM()
+  const llm = getLargeLLM()
   const structuredLlm = llm.withStructuredOutput(selectResultSchema)
   const response = await structuredLlm.invoke([new HumanMessage(prompt)])
 

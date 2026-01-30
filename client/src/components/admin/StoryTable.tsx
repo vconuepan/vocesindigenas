@@ -59,7 +59,7 @@ export function StoryTable({
                   checked={selectedIds.has(story.id)}
                   onChange={() => onToggleSelect(story.id)}
                   className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
-                  aria-label={`Select ${story.title}`}
+                  aria-label={`Select ${story.title || story.sourceTitle}`}
                 />
               </td>
               <td className="px-3 py-2">
@@ -67,17 +67,17 @@ export function StoryTable({
                   onClick={() => onView(story.id)}
                   className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
-                  {story.title}
+                  {story.title || story.sourceTitle}
                 </button>
               </td>
               <td className="px-3 py-2">
                 <Badge variant={STATUS_VARIANTS[story.status]}>{formatStatus(story.status)}</Badge>
               </td>
               <td className="px-3 py-2 text-neutral-600">
-                {story.relevanceRatingLow != null && story.relevanceRatingHigh != null
-                  ? `${story.relevanceRatingLow}–${story.relevanceRatingHigh}`
-                  : story.relevanceRatingLow != null
-                    ? String(story.relevanceRatingLow)
+                {story.relevance != null
+                  ? String(story.relevance)
+                  : story.relevancePre != null
+                    ? `(${story.relevancePre})`
                     : '—'}
               </td>
               <td className="px-3 py-2">

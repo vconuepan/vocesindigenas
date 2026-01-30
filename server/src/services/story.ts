@@ -16,8 +16,8 @@ interface StoryFilters {
 }
 
 const SORT_MAP: Record<string, Prisma.StoryOrderByWithRelationInput> = {
-  rating_asc: { relevanceRatingLow: 'asc' },
-  rating_desc: { relevanceRatingLow: 'desc' },
+  rating_asc: { relevance: 'asc' },
+  rating_desc: { relevance: 'desc' },
   date_asc: { dateCrawled: 'asc' },
   date_desc: { dateCrawled: 'desc' },
   title_asc: { title: 'asc' },
@@ -27,14 +27,25 @@ const SORT_MAP: Record<string, Prisma.StoryOrderByWithRelationInput> = {
 function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   const where: Prisma.StoryWhereInput = {}
 
-  if (filters.status) {
+  if (filters.status === 'all') {
+    // No status filter — show everything including trashed
+  } else if (filters.status) {
     where.status = filters.status as any
+  } else {
+    where.status = { not: 'trashed' as any }
   }
   if (filters.feedId) {
     where.feedId = filters.feedId
   }
   if (filters.issueId) {
-    where.feed = { issueId: filters.issueId }
+    where.feed = {
+      issue: {
+        OR: [
+          { id: filters.issueId },
+          { parentId: filters.issueId },
+        ],
+      },
+    }
   }
   if (filters.crawledAfter || filters.crawledBefore) {
     where.dateCrawled = {}
@@ -42,9 +53,9 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
     if (filters.crawledBefore) where.dateCrawled.lte = new Date(filters.crawledBefore)
   }
   if (filters.ratingMin !== undefined || filters.ratingMax !== undefined) {
-    where.relevanceRatingLow = {}
-    if (filters.ratingMin !== undefined) where.relevanceRatingLow.gte = filters.ratingMin
-    if (filters.ratingMax !== undefined) where.relevanceRatingLow.lte = filters.ratingMax
+    where.relevance = {}
+    if (filters.ratingMin !== undefined) where.relevance.gte = filters.ratingMin
+    if (filters.ratingMax !== undefined) where.relevance.lte = filters.ratingMax
   }
   if (filters.emotionTag) {
     where.emotionTag = filters.emotionTag as any
@@ -79,6 +90,14 @@ export async function getStories(filters: StoryFilters) {
   }
 }
 
+export async function getStoriesByIds(ids: string[]) {
+  if (ids.length === 0) return []
+  return prisma.story.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, title: true },
+  })
+}
+
 export async function getStoryById(id: string) {
   return prisma.story.findUnique({
     where: { id },
@@ -87,11 +106,11 @@ export async function getStoryById(id: string) {
 }
 
 export async function createStory(data: {
-  url: string
-  title: string
-  content: string
+  sourceUrl: string
+  sourceTitle: string
+  sourceContent: string
   feedId: string
-  datePublished?: string
+  sourceDatePublished?: string
 }): Promise<Story> {
   const feed = await prisma.feed.findUnique({ where: { id: data.feedId } })
   if (!feed) {
@@ -99,11 +118,11 @@ export async function createStory(data: {
   }
   return prisma.story.create({
     data: {
-      url: data.url,
-      title: data.title,
-      content: data.content,
+      sourceUrl: data.sourceUrl,
+      sourceTitle: data.sourceTitle,
+      sourceContent: data.sourceContent,
       feedId: data.feedId,
-      datePublished: data.datePublished ? new Date(data.datePublished) : null,
+      sourceDatePublished: data.sourceDatePublished ? new Date(data.sourceDatePublished) : null,
     },
   })
 }
@@ -111,15 +130,18 @@ export async function createStory(data: {
 export async function getExistingUrls(urls: string[]): Promise<Set<string>> {
   if (urls.length === 0) return new Set()
   const existing = await prisma.story.findMany({
-    where: { url: { in: urls } },
-    select: { url: true },
+    where: { sourceUrl: { in: urls } },
+    select: { sourceUrl: true },
   })
-  return new Set(existing.map(s => s.url))
+  return new Set(existing.map(s => s.sourceUrl))
 }
 
 export async function updateStory(id: string, data: Record<string, any>): Promise<Story> {
-  // Convert datePublished string to Date if present
   const updateData = { ...data }
+  // Convert date strings to Date objects if present
+  if (updateData.sourceDatePublished !== undefined) {
+    updateData.sourceDatePublished = updateData.sourceDatePublished ? new Date(updateData.sourceDatePublished) : null
+  }
   if (updateData.datePublished !== undefined) {
     updateData.datePublished = updateData.datePublished ? new Date(updateData.datePublished) : null
   }
@@ -159,21 +181,20 @@ export async function getStoryStats() {
 
 const PUBLIC_STORY_SELECT = {
   id: true,
-  url: true,
+  sourceUrl: true,
+  sourceTitle: true,
   title: true,
-  datePublished: true,
   dateCrawled: true,
+  datePublished: true,
   status: true,
-  relevanceRatingLow: true,
-  relevanceRatingHigh: true,
+  relevancePre: true,
+  relevance: true,
   emotionTag: true,
-  aiSummary: true,
-  aiQuote: true,
-  aiKeywords: true,
-  aiMarketingBlurb: true,
-  aiRelevanceReasons: true,
-  aiAntifactors: true,
-  aiScenarios: true,
+  summary: true,
+  quote: true,
+  marketingBlurb: true,
+  relevanceReasons: true,
+  antifactors: true,
   feed: {
     select: {
       title: true,
@@ -195,7 +216,14 @@ export async function getPublishedStories(options: {
     status: 'published',
   }
   if (options.issueSlug) {
-    where.feed = { issue: { slug: options.issueSlug } }
+    where.feed = {
+      issue: {
+        OR: [
+          { slug: options.issueSlug },
+          { parent: { slug: options.issueSlug } },
+        ],
+      },
+    }
   }
 
   const [data, total] = await Promise.all([
@@ -224,7 +252,7 @@ export async function getStoriesByStatus(
 ) {
   const where: Prisma.StoryWhereInput = { status: status as any }
   if (options.ratingMin !== undefined) {
-    where.relevanceRatingLow = { gte: options.ratingMin }
+    where.relevancePre = { gte: options.ratingMin }
   }
   if (options.hoursAgo !== undefined) {
     where.dateCrawled = { gte: new Date(Date.now() - options.hoursAgo * 60 * 60 * 1000) }
@@ -237,9 +265,14 @@ export async function getStoriesByStatus(
 }
 
 export async function publishStory(id: string): Promise<Story> {
+  const story = await prisma.story.findUnique({ where: { id } })
   return prisma.story.update({
     where: { id },
-    data: { status: 'published' as any },
+    data: {
+      status: 'published' as any,
+      // Set datePublished only on first publish
+      ...(story && !story.datePublished ? { datePublished: new Date() } : {}),
+    },
   })
 }
 

@@ -10,6 +10,7 @@ import {
   updateStoryStatusSchema,
   bulkUpdateStatusSchema,
   storyQuerySchema,
+  batchStoriesQuerySchema,
   preassessBodySchema,
   selectBodySchema,
 } from '../../schemas/story.js'
@@ -35,6 +36,21 @@ router.get('/', validateQuery(storyQuerySchema), async (req, res) => {
   } catch (err) {
     console.error('[stories] Failed to fetch stories:', err)
     res.status(500).json({ error: 'Failed to fetch stories' })
+  }
+})
+
+router.get('/batch', validateQuery(batchStoriesQuerySchema), async (req, res) => {
+  try {
+    const { ids } = (req as any).parsedQuery
+    if (ids.length === 0) {
+      res.json([])
+      return
+    }
+    const stories = await storyService.getStoriesByIds(ids)
+    res.json(stories)
+  } catch (err) {
+    console.error('[stories] Failed to fetch batch stories:', err)
+    res.status(500).json({ error: 'Failed to fetch batch stories' })
   }
 })
 

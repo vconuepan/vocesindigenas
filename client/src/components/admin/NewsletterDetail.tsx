@@ -6,6 +6,7 @@ import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
 import { useUpdateNewsletter, useAssignNewsletterStories, useGenerateNewsletter, useGenerateCarousel } from '../../hooks/useNewsletters'
 import { useToast } from '../ui/Toast'
+import { AssignedStoriesList } from './AssignedStoriesList'
 
 interface NewsletterDetailProps {
   newsletter: Newsletter
@@ -92,11 +93,8 @@ export function NewsletterDetail({ newsletter }: NewsletterDetailProps) {
         </Button>
       </div>
 
-      {/* Story count */}
-      <div className="bg-white rounded-lg border border-neutral-200 p-4">
-        <h3 className="text-sm font-semibold text-neutral-900 mb-1">Assigned Stories</h3>
-        <p className="text-sm text-neutral-600">{newsletter.storyIds.length} stories assigned</p>
-      </div>
+      {/* Assigned stories */}
+      <AssignedStoriesList storyIds={newsletter.storyIds} />
 
       {/* Content */}
       <div className="bg-white rounded-lg border border-neutral-200 p-4">

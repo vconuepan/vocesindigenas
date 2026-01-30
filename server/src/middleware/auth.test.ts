@@ -66,17 +66,17 @@ describe('requireAuth (JWT only)', () => {
 
     requireAuth(req as Request, res as Response, next)
 
-    expect(statusFn).toHaveBeenCalledWith(403)
+    expect(statusFn).toHaveBeenCalledWith(401)
     expect(next).not.toHaveBeenCalled()
   })
 
-  it('returns 403 for invalid JWT', () => {
+  it('returns 401 for invalid JWT', () => {
     mockVerifyAccessToken.mockImplementation(() => { throw new Error('invalid') })
     req.headers = { authorization: 'Bearer bad-token' }
 
     requireAuth(req as Request, res as Response, next)
 
-    expect(statusFn).toHaveBeenCalledWith(403)
+    expect(statusFn).toHaveBeenCalledWith(401)
     expect(next).not.toHaveBeenCalled()
   })
 })
