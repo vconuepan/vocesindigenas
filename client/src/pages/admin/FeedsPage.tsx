@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useQueryClient } from '@tanstack/react-query'
-import type { Feed } from '@shared/types'
 import { useFeeds, useDeleteFeed } from '../../hooks/useFeeds'
 import { useIssues } from '../../hooks/useIssues'
 import { useBackgroundTasks } from '../../hooks/useBackgroundTasks'
@@ -13,7 +12,8 @@ import { ErrorState } from '../../components/ui/ErrorState'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { FeedTable } from '../../components/admin/FeedTable'
-import { FeedForm } from '../../components/admin/FeedForm'
+import { FeedCreateForm } from '../../components/admin/FeedForm'
+import { FeedEditPanel } from '../../components/admin/FeedEditPanel'
 import { useToast } from '../../components/ui/Toast'
 
 export default function FeedsPage() {
@@ -25,22 +25,12 @@ export default function FeedsPage() {
   const { launchTask } = useBackgroundTasks()
   const queryClient = useQueryClient()
 
-  const [formOpen, setFormOpen] = useState(false)
-  const [editingFeed, setEditingFeed] = useState<Feed | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editingFeedId, setEditingFeedId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const invalidateFeeds = () => {
     queryClient.invalidateQueries({ queryKey: ['feeds'] })
-  }
-
-  const handleEdit = (feed: Feed) => {
-    setEditingFeed(feed)
-    setFormOpen(true)
-  }
-
-  const handleAdd = () => {
-    setEditingFeed(null)
-    setFormOpen(true)
   }
 
   const handleCrawl = (id: string) => {
@@ -118,7 +108,7 @@ export default function FeedsPage() {
             <Button variant="secondary" onClick={handleCrawlAll}>
               Crawl All
             </Button>
-            <Button onClick={handleAdd}>Add Feed</Button>
+            <Button onClick={() => setCreateOpen(true)}>Add Feed</Button>
           </>
         }
       />
@@ -130,17 +120,22 @@ export default function FeedsPage() {
         <FeedTable
           feeds={feedsQuery.data}
           issues={issuesQuery.data || []}
-          onEdit={handleEdit}
+          onEdit={setEditingFeedId}
           onCrawl={handleCrawl}
           onDelete={setDeleteId}
         />
       )}
 
-      <FeedForm
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        feed={editingFeed}
+      <FeedCreateForm
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
         issues={issuesQuery.data || []}
+      />
+
+      <FeedEditPanel
+        feedId={editingFeedId}
+        issues={issuesQuery.data || []}
+        onClose={() => setEditingFeedId(null)}
       />
 
       <ConfirmDialog

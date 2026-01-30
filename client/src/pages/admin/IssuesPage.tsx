@@ -9,6 +9,7 @@ import { ErrorState } from '../../components/ui/ErrorState'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { IssueTable } from '../../components/admin/IssueTable'
+import { IssueEditPanel } from '../../components/admin/IssueEditPanel'
 import { useToast } from '../../components/ui/Toast'
 
 export default function IssuesPage() {
@@ -16,6 +17,7 @@ export default function IssuesPage() {
   const deleteIssue = useDeleteIssue()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [editingIssueId, setEditingIssueId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const handleDelete = async () => {
@@ -47,10 +49,15 @@ export default function IssuesPage() {
       {issuesQuery.data && issuesQuery.data.length > 0 && (
         <IssueTable
           issues={issuesQuery.data}
-          onEdit={issue => navigate(`/admin/issues/${issue.id}/edit`)}
+          onEdit={setEditingIssueId}
           onDelete={setDeleteId}
         />
       )}
+
+      <IssueEditPanel
+        issueId={editingIssueId}
+        onClose={() => setEditingIssueId(null)}
+      />
 
       <ConfirmDialog
         open={!!deleteId}

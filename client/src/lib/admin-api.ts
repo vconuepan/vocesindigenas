@@ -281,6 +281,7 @@ export const adminApi = {
   // Users
   users: {
     list: () => request<User[]>('/users'),
+    get: (id: string) => request<User>(`/users/${id}`),
     create: (data: { email: string; name: string; password: string; role?: string }) =>
       request<User>('/users', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: { name?: string; role?: string }) =>

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import type { Feed, Issue } from '@shared/types'
+import type { Issue } from '@shared/types'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
-import { useCreateFeed, useUpdateFeed } from '../../hooks/useFeeds'
+import { useCreateFeed } from '../../hooks/useFeeds'
 import { useToast } from '../ui/Toast'
 
 /** Build hierarchical issue options: parents first, children indented under their parent. */
@@ -30,14 +30,14 @@ function buildIssueOptions(issues: Issue[]): { value: string; label: string }[] 
   return options
 }
 
-interface FeedFormProps {
+interface FeedCreateFormProps {
   open: boolean
   onClose: () => void
-  feed?: Feed | null
   issues: Issue[]
 }
 
-export function FeedForm({ open, onClose, feed, issues }: FeedFormProps) {
+/** Create-only dialog for adding a new feed. */
+export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
   const [form, setForm] = useState({
     title: '',
     url: '',
@@ -49,55 +49,34 @@ export function FeedForm({ open, onClose, feed, issues }: FeedFormProps) {
   })
 
   const createFeed = useCreateFeed()
-  const updateFeed = useUpdateFeed()
   const { toast } = useToast()
-  const isEditing = !!feed
 
   useEffect(() => {
-    if (feed) {
-      setForm({
-        title: feed.title,
-        url: feed.url,
-        issueId: feed.issueId,
-        language: feed.language,
-        crawlIntervalHours: String(feed.crawlIntervalHours),
-        htmlSelector: feed.htmlSelector || '',
-        active: feed.active,
-      })
-    } else {
+    if (open) {
       setForm({ title: '', url: '', issueId: '', language: 'en', crawlIntervalHours: '6', htmlSelector: '', active: true })
     }
-  }, [feed, open])
+  }, [open])
 
   const set = (key: string, value: string | boolean) => setForm(f => ({ ...f, [key]: value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const data = {
-      title: form.title,
-      url: form.url,
-      issueId: form.issueId,
-      language: form.language,
-      crawlIntervalHours: Number(form.crawlIntervalHours),
-      htmlSelector: form.htmlSelector || null,
-      active: form.active,
-    }
-
     try {
-      if (isEditing) {
-        await updateFeed.mutateAsync({ id: feed.id, data })
-        toast('success', 'Feed updated')
-      } else {
-        await createFeed.mutateAsync(data)
-        toast('success', 'Feed created')
-      }
+      await createFeed.mutateAsync({
+        title: form.title,
+        url: form.url,
+        issueId: form.issueId,
+        language: form.language,
+        crawlIntervalHours: Number(form.crawlIntervalHours),
+        htmlSelector: form.htmlSelector || null,
+        active: form.active,
+      })
+      toast('success', 'Feed created')
       onClose()
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to save feed')
+      toast('error', err instanceof Error ? err.message : 'Failed to create feed')
     }
   }
-
-  const isPending = createFeed.isPending || updateFeed.isPending
 
   return (
     <Dialog open={open} onClose={onClose} className="relative z-50">
@@ -105,7 +84,7 @@ export function FeedForm({ open, onClose, feed, issues }: FeedFormProps) {
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="mx-auto max-w-md w-full rounded-lg bg-white p-6 shadow-xl">
           <DialogTitle className="text-base font-semibold text-neutral-900 mb-4">
-            {isEditing ? 'Edit Feed' : 'Add Feed'}
+            Add Feed
           </DialogTitle>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input id="feed-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} required />
@@ -134,7 +113,7 @@ export function FeedForm({ open, onClose, feed, issues }: FeedFormProps) {
             </label>
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-              <Button type="submit" loading={isPending}>{isEditing ? 'Save' : 'Create'}</Button>
+              <Button type="submit" loading={createFeed.isPending}>Create</Button>
             </div>
           </form>
         </DialogPanel>
@@ -142,3 +121,5 @@ export function FeedForm({ open, onClose, feed, issues }: FeedFormProps) {
     </Dialog>
   )
 }
+
+export { buildIssueOptions }

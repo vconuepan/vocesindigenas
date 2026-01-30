@@ -166,6 +166,54 @@ export default function StoriesPage() {
     })
   }
 
+  const handlePreassess = (id: string) => {
+    launchTask({
+      id: `preassess-${id}-${Date.now()}`,
+      label: 'Pre-assessing story',
+      executor: async () => {
+        await adminApi.stories.preassess([id])
+        return { succeeded: 1, failed: 0 }
+      },
+      onComplete: invalidateStories,
+    })
+  }
+
+  const handleAssess = (id: string) => {
+    launchTask({
+      id: `assess-${id}-${Date.now()}`,
+      label: 'Assessing story',
+      executor: async () => {
+        await adminApi.stories.assess(id)
+        return { succeeded: 1, failed: 0 }
+      },
+      onComplete: invalidateStories,
+    })
+  }
+
+  const handleSelect = (id: string) => {
+    launchTask({
+      id: `select-${id}-${Date.now()}`,
+      label: 'Selecting story',
+      executor: async () => {
+        await adminApi.stories.select([id])
+        return { succeeded: 1, failed: 0 }
+      },
+      onComplete: invalidateStories,
+    })
+  }
+
+  const handlePublish = (id: string) => {
+    launchTask({
+      id: `publish-${id}-${Date.now()}`,
+      label: 'Publishing story',
+      executor: async () => {
+        await adminApi.stories.publish(id)
+        return { succeeded: 1, failed: 0 }
+      },
+      onComplete: invalidateStories,
+    })
+  }
+
   const handleDelete = (id: string) => {
     setConfirmAction({
       title: 'Delete story?',
@@ -224,6 +272,10 @@ export default function StoriesPage() {
             onView={setDetailId}
             onStatusChange={handleSingleStatusChange}
             onDelete={handleDelete}
+            onPreassess={handlePreassess}
+            onAssess={handleAssess}
+            onSelect={handleSelect}
+            onPublish={handlePublish}
           />
 
           <Pagination

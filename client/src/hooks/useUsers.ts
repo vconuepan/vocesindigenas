@@ -8,6 +8,14 @@ export function useUsers() {
   })
 }
 
+export function useUser(id: string) {
+  return useQuery({
+    queryKey: ['user', id],
+    queryFn: () => adminApi.users.get(id),
+    enabled: !!id,
+  })
+}
+
 export function useCreateUser() {
   const queryClient = useQueryClient()
   return useMutation({

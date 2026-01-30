@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { PlayIcon } from '@heroicons/react/24/outline'
 import type { JobRun } from '@shared/types'
 import { Badge } from '../ui/Badge'
-import { Button } from '../ui/Button'
-import { JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER, formatDate } from '../../lib/constants'
+import { ActionIconButton } from '../ui/ActionIconButton'
+import { JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER, formatDateWithTime } from '../../lib/constants'
 import { useUpdateJob, useRunJob } from '../../hooks/useJobs'
 import { useToast } from '../ui/Toast'
 import { CronEditor } from './CronEditor'
@@ -64,7 +65,7 @@ export function JobsTable({ jobs }: JobsTableProps) {
             <th className="text-left px-3 py-2 font-medium text-neutral-500">Last Started</th>
             <th className="text-left px-3 py-2 font-medium text-neutral-500">Last Completed</th>
             <th className="text-left px-3 py-2 font-medium text-neutral-500">Error</th>
-            <th className="text-right px-3 py-2 font-medium text-neutral-500">Actions</th>
+            <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -90,8 +91,8 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 </button>
               </td>
               <td className="px-3 py-2"><JobStatusDot job={job} /></td>
-              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDate(job.lastStartedAt)}</td>
-              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDate(job.lastCompletedAt)}</td>
+              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDateWithTime(job.lastStartedAt)}</td>
+              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDateWithTime(job.lastCompletedAt)}</td>
               <td className="px-3 py-2 max-w-[200px]">
                 {job.lastError ? (
                   <button
@@ -105,14 +106,12 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 )}
               </td>
               <td className="px-3 py-2 text-right">
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <ActionIconButton
+                  icon={PlayIcon}
+                  label={`Run ${JOB_DISPLAY_NAMES[job.jobName] || job.jobName}`}
                   onClick={() => handleRun(job.jobName)}
-                  loading={runJob.isPending && runJob.variables === job.jobName}
-                >
-                  Run Now
-                </Button>
+                  disabled={runJob.isPending && runJob.variables === job.jobName}
+                />
               </td>
             </tr>
           ))}

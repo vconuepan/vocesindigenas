@@ -20,6 +20,20 @@ router.get('/', async (_req, res) => {
   }
 })
 
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await userService.getUserById(req.params.id)
+    if (!user) {
+      res.status(404).json({ error: 'User not found' })
+      return
+    }
+    res.json(user)
+  } catch (err) {
+    console.error('[users] Failed to get user:', err instanceof Error ? err.message : err)
+    res.status(500).json({ error: 'Failed to get user' })
+  }
+})
+
 router.post('/', validateBody(createUserSchema), async (req, res) => {
   try {
     const user = await userService.createUser(req.body)

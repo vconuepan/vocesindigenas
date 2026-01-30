@@ -1,12 +1,18 @@
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react'
+import {
+  EllipsisVerticalIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline'
 import type { Feed, Issue } from '@shared/types'
-import { Badge } from '../ui/Badge'
-import { Button } from '../ui/Button'
-import { formatDate } from '../../lib/constants'
+import { ActionIconButton } from '../ui/ActionIconButton'
+import { formatDateWithTime } from '../../lib/constants'
 
 interface FeedTableProps {
   feeds: Feed[]
   issues: Issue[]
-  onEdit: (feed: Feed) => void
+  onEdit: (id: string) => void
   onCrawl: (id: string) => void
   onDelete: (id: string) => void
 }
@@ -20,44 +26,96 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
             <th className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">URL</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Active</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Last Crawled</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Selector</th>
-            <th className="text-right px-3 py-2 font-medium text-neutral-500">Actions</th>
+            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">URL</th>
+            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
+            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
+            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
+            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Last Crawled</th>
+            <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>
           {feeds.map(feed => (
             <tr key={feed.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
-              <td className="px-3 py-2 font-medium text-neutral-900">{feed.title}</td>
-              <td className="px-3 py-2 text-neutral-500 max-w-[200px] truncate">
+              <td className="px-3 py-2">
+                <button
+                  onClick={() => onEdit(feed.id)}
+                  className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                >
+                  {feed.title}
+                </button>
+                {/* Mobile metadata */}
+                <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">
+                  <span className="text-neutral-500 text-xs">{issueMap.get(feed.issueId) || '—'}</span>
+                  <span className="text-neutral-400 text-xs">{formatDateWithTime(feed.lastCrawledAt)}</span>
+                </div>
+              </td>
+              <td className="hidden lg:table-cell px-3 py-2 text-neutral-500 max-w-[200px] truncate">
                 <a href={feed.url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
                   {feed.url}
                 </a>
               </td>
-              <td className="px-3 py-2 text-neutral-600">{issueMap.get(feed.issueId) || '—'}</td>
-              <td className="px-3 py-2 text-neutral-600">{feed.language}</td>
+              <td className="hidden md:table-cell px-3 py-2 text-neutral-600">{issueMap.get(feed.issueId) || '—'}</td>
+              <td className="hidden lg:table-cell px-3 py-2 text-neutral-600">{feed.language}</td>
+              <td className="hidden lg:table-cell px-3 py-2 text-neutral-600">{feed.crawlIntervalHours}h</td>
+              <td className="hidden md:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDateWithTime(feed.lastCrawledAt)}</td>
               <td className="px-3 py-2">
-                <Badge variant={feed.active ? 'green' : 'gray'}>
-                  {feed.active ? 'Active' : 'Inactive'}
-                </Badge>
-              </td>
-              <td className="px-3 py-2 text-neutral-600">{feed.crawlIntervalHours}h</td>
-              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDate(feed.lastCrawledAt)}</td>
-              <td className="px-3 py-2">
-                {feed.htmlSelector ? (
-                  <Badge variant="blue">CSS</Badge>
-                ) : null}
-              </td>
-              <td className="px-3 py-2 text-right">
-                <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(feed)}>Edit</Button>
-                  <Button variant="ghost" size="sm" onClick={() => onCrawl(feed.id)}>Crawl</Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDelete(feed.id)} className="text-red-600 hover:text-red-700">Delete</Button>
+                {/* Desktop actions */}
+                <div className="hidden md:flex items-center justify-end gap-0.5">
+                  <ActionIconButton
+                    icon={PencilSquareIcon}
+                    label="Edit"
+                    onClick={() => onEdit(feed.id)}
+                  />
+                  <ActionIconButton
+                    icon={ArrowPathIcon}
+                    label="Crawl"
+                    onClick={() => onCrawl(feed.id)}
+                  />
+                  <ActionIconButton
+                    icon={TrashIcon}
+                    label="Delete"
+                    variant="danger"
+                    onClick={() => onDelete(feed.id)}
+                  />
+                </div>
+
+                {/* Mobile overflow menu */}
+                <div className="md:hidden flex justify-end">
+                  <Menu as="div" className="relative">
+                    <MenuButton className="rounded p-1 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                      <EllipsisVerticalIcon className="h-5 w-5 text-neutral-400" />
+                    </MenuButton>
+                    <MenuItems className="absolute right-0 z-10 mt-1 w-40 rounded-md bg-white shadow-lg border border-neutral-200 py-1 focus:outline-none">
+                      <MenuItem>
+                        <button
+                          onClick={() => onEdit(feed.id)}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-neutral-700 data-[focus]:bg-neutral-100"
+                        >
+                          <PencilSquareIcon className="h-4 w-4 shrink-0" />
+                          Edit
+                        </button>
+                      </MenuItem>
+                      <MenuItem>
+                        <button
+                          onClick={() => onCrawl(feed.id)}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-neutral-700 data-[focus]:bg-neutral-100"
+                        >
+                          <ArrowPathIcon className="h-4 w-4 shrink-0" />
+                          Crawl
+                        </button>
+                      </MenuItem>
+                      <MenuItem>
+                        <button
+                          onClick={() => onDelete(feed.id)}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-red-600 data-[focus]:bg-red-50"
+                        >
+                          <TrashIcon className="h-4 w-4 shrink-0" />
+                          Delete
+                        </button>
+                      </MenuItem>
+                    </MenuItems>
+                  </Menu>
                 </div>
               </td>
             </tr>

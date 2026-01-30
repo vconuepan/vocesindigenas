@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { Story, StoryStatus, EmotionTag } from '@shared/types'
 import { STORY_STATUSES, EMOTION_TAGS } from '@shared/constants'
 import { Input } from '../ui/Input'
@@ -6,17 +6,21 @@ import { Textarea } from '../ui/Textarea'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { useUpdateStory } from '../../hooks/useStories'
-import { useToast } from '../ui/Toast'
-import { formatStatus } from '../../lib/constants'
+import { useEditForm } from '../../hooks/useEditForm'
+import { formatStatus, formatDate } from '../../lib/constants'
+import { PANEL_BODY } from './EditPanel'
+import { PanelFooter } from './PanelFooter'
 
 interface StoryEditFormProps {
   story: Story
   onDone: () => void
+  variant?: 'page' | 'panel'
 }
 
-export function StoryEditForm({ story, onDone }: StoryEditFormProps) {
-  const [form, setForm] = useState({
+function buildFormState(story: Story) {
+  return {
     title: story.title ?? '',
+    slug: story.slug ?? '',
     status: story.status,
     relevancePre: story.relevancePre ?? '',
     relevance: story.relevance ?? '',
@@ -27,48 +31,50 @@ export function StoryEditForm({ story, onDone }: StoryEditFormProps) {
     relevanceReasons: story.relevanceReasons ?? '',
     antifactors: story.antifactors ?? '',
     relevanceCalculation: story.relevanceCalculation ?? '',
+  }
+}
+
+export function StoryEditForm({ story, onDone, variant = 'page' }: StoryEditFormProps) {
+  const [contentExpanded, setContentExpanded] = useState(false)
+  const updateStory = useUpdateStory()
+
+  const initialState = useMemo(() => buildFormState(story), [story])
+
+  const { form, set, isDirty, isPending, handleSubmit } = useEditForm({
+    entityId: story.id,
+    initialState,
+    mutation: updateStory,
+    toPayload: (f) => ({
+      title: f.title || null,
+      slug: f.slug || undefined,
+      status: f.status as StoryStatus,
+      relevancePre: f.relevancePre === '' ? null : Number(f.relevancePre),
+      relevance: f.relevance === '' ? null : Number(f.relevance),
+      emotionTag: (f.emotionTag || null) as EmotionTag | null,
+      summary: f.summary || null,
+      quote: f.quote || null,
+      marketingBlurb: f.marketingBlurb || null,
+      relevanceReasons: f.relevanceReasons || null,
+      antifactors: f.antifactors || null,
+      relevanceCalculation: f.relevanceCalculation || null,
+    }),
+    successMessage: 'Story updated',
+    entityName: 'story',
+    onSuccess: onDone,
   })
 
-  const updateStory = useUpdateStory()
-  const { toast } = useToast()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await updateStory.mutateAsync({
-        id: story.id,
-        data: {
-          title: form.title || null,
-          status: form.status as StoryStatus,
-          relevancePre: form.relevancePre === '' ? null : Number(form.relevancePre),
-          relevance: form.relevance === '' ? null : Number(form.relevance),
-          emotionTag: (form.emotionTag || null) as EmotionTag | null,
-          summary: form.summary || null,
-          quote: form.quote || null,
-          marketingBlurb: form.marketingBlurb || null,
-          relevanceReasons: form.relevanceReasons || null,
-          antifactors: form.antifactors || null,
-          relevanceCalculation: form.relevanceCalculation || null,
-        },
-      })
-      toast('success', 'Story updated')
-      onDone()
-    } catch {
-      toast('error', 'Failed to update story')
-    }
-  }
-
-  const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+  const fields = (
+    <>
       <Input id="edit-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} />
+      {story.slug && (
+        <Input id="edit-slug" label="Slug" value={form.slug} onChange={e => set('slug', e.target.value)} placeholder="auto-generated-on-publish" />
+      )}
       <div className="grid grid-cols-2 gap-3">
         <Select
           id="edit-status"
           label="Status"
           value={form.status}
-          onChange={e => set('status', e.target.value)}
+          onChange={e => set('status', e.target.value as StoryStatus)}
           options={STORY_STATUSES.map(s => ({ value: s, label: formatStatus(s) }))}
         />
         <Select
@@ -91,8 +97,57 @@ export function StoryEditForm({ story, onDone }: StoryEditFormProps) {
       <Textarea id="edit-antifactors" label="Antifactors" rows={3} value={form.antifactors} onChange={e => set('antifactors', e.target.value)} />
       <Textarea id="edit-calculation" label="Relevance Calculation" rows={3} value={form.relevanceCalculation} onChange={e => set('relevanceCalculation', e.target.value)} />
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" loading={updateStory.isPending}>Save</Button>
+      {/* Source info (read-only) */}
+      <div className="border-t border-neutral-200 pt-4 space-y-2">
+        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Source</h3>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+          <dt className="text-neutral-500">Title</dt>
+          <dd className="text-neutral-900">{story.sourceTitle || '—'}</dd>
+          <dt className="text-neutral-500">Published</dt>
+          <dd className="text-neutral-900">{formatDate(story.sourceDatePublished)}</dd>
+          <dt className="text-neutral-500">Feed</dt>
+          <dd className="text-neutral-900">{story.feed?.title || '—'}</dd>
+          <dt className="text-neutral-500">URL</dt>
+          <dd className="text-neutral-900 truncate">
+            <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+              {story.sourceUrl}
+            </a>
+          </dd>
+        </dl>
+        {story.sourceContent && (
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setContentExpanded(!contentExpanded)}
+              className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+            >
+              {contentExpanded ? 'Hide content' : 'Show source content'}
+            </button>
+            {contentExpanded && (
+              <div className="mt-2 text-sm text-neutral-700 whitespace-pre-wrap max-h-80 overflow-y-auto border border-neutral-200 rounded p-3">
+                {story.sourceContent}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  )
+
+  if (variant === 'panel') {
+    return (
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <div className={PANEL_BODY}>{fields}</div>
+        <PanelFooter isPending={isPending} isDirty={isDirty} onCancel={onDone} />
+      </form>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 pb-16">
+      {fields}
+      <div className="fixed bottom-0 left-0 right-0 lg:left-60 bg-white border-t border-neutral-200 px-4 lg:px-6 py-3 flex gap-3 z-10">
+        <Button type="submit" loading={isPending} disabled={!isDirty}>Save</Button>
         <Button type="button" variant="secondary" onClick={onDone}>Cancel</Button>
       </div>
     </form>

@@ -8,7 +8,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { ErrorState } from '../../components/ui/ErrorState'
-import { formatStatus, formatDate, STATUS_VARIANTS, JOB_DISPLAY_NAMES } from '../../lib/constants'
+import { formatStatus, formatDateWithTime, STATUS_VARIANTS, JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER } from '../../lib/constants'
 
 function StatsGrid({ stats }: { stats: Record<string, number> }) {
   return (
@@ -72,7 +72,7 @@ export default function DashboardPage() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-neutral-900 mb-3">Quick Actions</h2>
         <div className="flex flex-wrap gap-2">
-          {(['crawl_feeds', 'preassess_stories', 'assess_stories', 'select_stories'] as const).map(jobName => (
+          {JOB_PIPELINE_ORDER.map(jobName => (
             <Button
               key={jobName}
               variant="secondary"
@@ -107,7 +107,11 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {jobsQuery.data.map(job => (
+                  {[...jobsQuery.data].sort((a, b) => {
+                    const ai = JOB_PIPELINE_ORDER.indexOf(a.jobName)
+                    const bi = JOB_PIPELINE_ORDER.indexOf(b.jobName)
+                    return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi)
+                  }).map(job => (
                     <tr key={job.jobName} className="border-b border-neutral-100 last:border-0">
                       <td className="py-2 px-4 font-medium text-neutral-900">
                         {JOB_DISPLAY_NAMES[job.jobName] || job.jobName}
@@ -116,7 +120,7 @@ export default function DashboardPage() {
                         <JobStatusDot job={job} />
                       </td>
                       <td className="py-2 px-4 text-neutral-500">
-                        {formatDate(job.lastCompletedAt)}
+                        {formatDateWithTime(job.lastCompletedAt)}
                       </td>
                       <td className="py-2 px-4 text-neutral-500 max-w-xs truncate">
                         {job.lastError ? (

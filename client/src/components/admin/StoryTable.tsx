@@ -1,8 +1,19 @@
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react'
-import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
+import {
+  EllipsisVerticalIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  AdjustmentsHorizontalIcon,
+  SparklesIcon,
+  CheckCircleIcon,
+  GlobeAltIcon,
+  XCircleIcon,
+  ArchiveBoxXMarkIcon,
+} from '@heroicons/react/24/outline'
 import type { Story, StoryStatus } from '@shared/types'
 import { Badge } from '../ui/Badge'
-import { STATUS_VARIANTS, EMOTION_VARIANTS, formatStatus, formatDate } from '../../lib/constants'
+import { ActionIconButton } from '../ui/ActionIconButton'
+import { STATUS_VARIANTS, EMOTION_VARIANTS, formatStatus, formatShortDate } from '../../lib/constants'
 
 interface StoryTableProps {
   stories: Story[]
@@ -13,6 +24,55 @@ interface StoryTableProps {
   onView: (id: string) => void
   onStatusChange: (id: string, status: StoryStatus) => void
   onDelete: (id: string) => void
+  onPreassess?: (id: string) => void
+  onAssess?: (id: string) => void
+  onSelect?: (id: string) => void
+  onPublish?: (id: string) => void
+}
+
+function getJobActions(story: Story) {
+  const actions: { label: string; icon: typeof SparklesIcon; handler: 'preassess' | 'assess' | 'select' | 'publish' }[] = []
+
+  switch (story.status) {
+    case 'fetched':
+      actions.push({ label: 'Pre-assess', icon: AdjustmentsHorizontalIcon, handler: 'preassess' })
+      break
+    case 'pre_analyzed':
+      actions.push({ label: 'Assess', icon: SparklesIcon, handler: 'assess' })
+      break
+    case 'analyzed':
+      actions.push({ label: 'Select', icon: CheckCircleIcon, handler: 'select' })
+      actions.push({ label: 'Publish', icon: GlobeAltIcon, handler: 'publish' })
+      break
+    case 'selected':
+      actions.push({ label: 'Publish', icon: GlobeAltIcon, handler: 'publish' })
+      break
+  }
+
+  return actions
+}
+
+function MenuItemWithIcon({ icon: Icon, label, onClick, danger }: {
+  icon: typeof SparklesIcon
+  label: string
+  onClick: () => void
+  danger?: boolean
+}) {
+  return (
+    <MenuItem>
+      <button
+        onClick={onClick}
+        className={`flex w-full items-center gap-2 px-3 py-1.5 text-sm ${
+          danger
+            ? 'text-red-600 data-[focus]:bg-red-50'
+            : 'text-neutral-700 data-[focus]:bg-neutral-100'
+        }`}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {label}
+      </button>
+    </MenuItem>
+  )
 }
 
 export function StoryTable({
@@ -24,7 +84,18 @@ export function StoryTable({
   onView,
   onStatusChange,
   onDelete,
+  onPreassess,
+  onAssess,
+  onSelect,
+  onPublish,
 }: StoryTableProps) {
+  const jobHandlers: Record<string, ((id: string) => void) | undefined> = {
+    preassess: onPreassess,
+    assess: onAssess,
+    select: onSelect,
+    publish: onPublish,
+  }
+
   return (
     <div className="overflow-x-auto bg-white rounded-lg border border-neutral-200 shadow-sm">
       <table className="min-w-full text-sm">
@@ -40,113 +111,164 @@ export function StoryTable({
               />
             </th>
             <th className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Status</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Rating</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Emotion</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Crawled</th>
-            <th className="w-10 px-3 py-2"></th>
+            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Status</th>
+            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Rating</th>
+            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Emotion</th>
+            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Crawled</th>
+            <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {stories.map(story => (
-            <tr
-              key={story.id}
-              className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50"
-            >
-              <td className="px-3 py-2">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.has(story.id)}
-                  onChange={() => onToggleSelect(story.id)}
-                  className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
-                  aria-label={`Select ${story.title || story.sourceTitle}`}
-                />
-              </td>
-              <td className="px-3 py-2">
-                <button
-                  onClick={() => onView(story.id)}
-                  className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                >
-                  {story.title || story.sourceTitle}
-                </button>
-              </td>
-              <td className="px-3 py-2">
-                <Badge variant={STATUS_VARIANTS[story.status]}>{formatStatus(story.status)}</Badge>
-              </td>
-              <td className="px-3 py-2 text-neutral-600">
-                {story.relevance != null
-                  ? String(story.relevance)
-                  : story.relevancePre != null
-                    ? `(${story.relevancePre})`
-                    : '—'}
-              </td>
-              <td className="px-3 py-2">
-                {story.emotionTag ? (
-                  <Badge variant={EMOTION_VARIANTS[story.emotionTag]}>
-                    {story.emotionTag}
-                  </Badge>
-                ) : '—'}
-              </td>
-              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">
-                {formatDate(story.dateCrawled)}
-              </td>
-              <td className="px-3 py-2">
-                <Menu as="div" className="relative">
-                  <MenuButton className="rounded p-1 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-                    <EllipsisVerticalIcon className="h-5 w-5 text-neutral-400" />
-                  </MenuButton>
-                  <MenuItems className="absolute right-0 z-10 mt-1 w-40 rounded-md bg-white shadow-lg border border-neutral-200 py-1 focus:outline-none">
-                    <MenuItem>
-                      <button
-                        onClick={() => onView(story.id)}
-                        className="block w-full text-left px-3 py-1.5 text-sm text-neutral-700 data-[focus]:bg-neutral-100"
-                      >
-                        View Details
-                      </button>
-                    </MenuItem>
-                    {story.status !== 'published' && (
-                      <MenuItem>
-                        <button
-                          onClick={() => onStatusChange(story.id, 'published')}
-                          className="block w-full text-left px-3 py-1.5 text-sm text-neutral-700 data-[focus]:bg-neutral-100"
-                        >
-                          Publish
-                        </button>
-                      </MenuItem>
+          {stories.map(story => {
+            const jobActions = getJobActions(story)
+            const hasJobActions = jobActions.some(a => jobHandlers[a.handler])
+
+            return (
+              <tr
+                key={story.id}
+                className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50"
+              >
+                <td className="px-3 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(story.id)}
+                    onChange={() => onToggleSelect(story.id)}
+                    className="rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                    aria-label={`Select ${story.title || story.sourceTitle}`}
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <button
+                    onClick={() => onView(story.id)}
+                    className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  >
+                    {story.title || story.sourceTitle}
+                  </button>
+                  {/* Mobile metadata */}
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">
+                    <Badge variant={STATUS_VARIANTS[story.status]}>{formatStatus(story.status)}</Badge>
+                    <span className="text-neutral-500 text-xs">
+                      {story.relevance != null
+                        ? String(story.relevance)
+                        : story.relevancePre != null
+                          ? `(${story.relevancePre})`
+                          : '—'}
+                    </span>
+                    {story.emotionTag && (
+                      <Badge variant={EMOTION_VARIANTS[story.emotionTag]}>
+                        {story.emotionTag}
+                      </Badge>
                     )}
-                    {story.status !== 'rejected' && (
-                      <MenuItem>
-                        <button
-                          onClick={() => onStatusChange(story.id, 'rejected')}
-                          className="block w-full text-left px-3 py-1.5 text-sm text-neutral-700 data-[focus]:bg-neutral-100"
-                        >
-                          Reject
-                        </button>
-                      </MenuItem>
+                    <span className="text-neutral-400 text-xs">{formatShortDate(story.dateCrawled)}</span>
+                  </div>
+                </td>
+                <td className="hidden md:table-cell px-3 py-2">
+                  <Badge variant={STATUS_VARIANTS[story.status]}>{formatStatus(story.status)}</Badge>
+                </td>
+                <td className="hidden md:table-cell px-3 py-2 text-neutral-600">
+                  {story.relevance != null
+                    ? String(story.relevance)
+                    : story.relevancePre != null
+                      ? `(${story.relevancePre})`
+                      : '—'}
+                </td>
+                <td className="hidden lg:table-cell px-3 py-2">
+                  {story.emotionTag ? (
+                    <Badge variant={EMOTION_VARIANTS[story.emotionTag]}>
+                      {story.emotionTag}
+                    </Badge>
+                  ) : '—'}
+                </td>
+                <td className="hidden lg:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap">
+                  {formatShortDate(story.dateCrawled)}
+                </td>
+                <td className="px-3 py-2">
+                  {/* Desktop actions */}
+                  <div className="hidden md:flex items-center justify-end gap-0.5">
+                    {jobActions.map(action => {
+                      const handler = jobHandlers[action.handler]
+                      return handler ? (
+                        <ActionIconButton
+                          key={action.handler}
+                          icon={action.icon}
+                          label={action.label}
+                          onClick={() => handler(story.id)}
+                        />
+                      ) : null
+                    })}
+                    {hasJobActions && (
+                      <span className="mx-0.5 h-4 w-px bg-neutral-200" aria-hidden="true" />
                     )}
-                    {story.status !== 'trashed' && (
-                      <MenuItem>
-                        <button
-                          onClick={() => onStatusChange(story.id, 'trashed')}
-                          className="block w-full text-left px-3 py-1.5 text-sm text-neutral-700 data-[focus]:bg-neutral-100"
-                        >
-                          Trash
-                        </button>
-                      </MenuItem>
-                    )}
-                    <MenuItem>
-                      <button
-                        onClick={() => onDelete(story.id)}
-                        className="block w-full text-left px-3 py-1.5 text-sm text-red-600 data-[focus]:bg-red-50"
-                      >
-                        Delete
-                      </button>
-                    </MenuItem>
-                  </MenuItems>
-                </Menu>
-              </td>
-            </tr>
-          ))}
+                    <ActionIconButton
+                      icon={PencilSquareIcon}
+                      label="Edit"
+                      onClick={() => onView(story.id)}
+                    />
+                    <ActionIconButton
+                      icon={TrashIcon}
+                      label="Delete"
+                      variant="danger"
+                      onClick={() => onDelete(story.id)}
+                    />
+                  </div>
+
+                  {/* Mobile overflow menu */}
+                  <div className="md:hidden flex justify-end">
+                    <Menu as="div" className="relative">
+                      <MenuButton className="rounded p-1 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                        <EllipsisVerticalIcon className="h-5 w-5 text-neutral-400" />
+                      </MenuButton>
+                      <MenuItems className="absolute right-0 z-10 mt-1 w-44 rounded-md bg-white shadow-lg border border-neutral-200 py-1 focus:outline-none">
+                        {jobActions.map(action => {
+                          const handler = jobHandlers[action.handler]
+                          return handler ? (
+                            <MenuItemWithIcon
+                              key={action.handler}
+                              icon={action.icon}
+                              label={action.label}
+                              onClick={() => handler(story.id)}
+                            />
+                          ) : null
+                        })}
+                        <MenuItemWithIcon
+                          icon={PencilSquareIcon}
+                          label="Edit"
+                          onClick={() => onView(story.id)}
+                        />
+                        {story.status !== 'published' && (
+                          <MenuItemWithIcon
+                            icon={GlobeAltIcon}
+                            label="Publish"
+                            onClick={() => onStatusChange(story.id, 'published')}
+                          />
+                        )}
+                        {story.status !== 'rejected' && (
+                          <MenuItemWithIcon
+                            icon={XCircleIcon}
+                            label="Reject"
+                            onClick={() => onStatusChange(story.id, 'rejected')}
+                          />
+                        )}
+                        {story.status !== 'trashed' && (
+                          <MenuItemWithIcon
+                            icon={ArchiveBoxXMarkIcon}
+                            label="Trash"
+                            onClick={() => onStatusChange(story.id, 'trashed')}
+                          />
+                        )}
+                        <MenuItemWithIcon
+                          icon={TrashIcon}
+                          label="Delete"
+                          onClick={() => onDelete(story.id)}
+                          danger
+                        />
+                      </MenuItems>
+                    </Menu>
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
