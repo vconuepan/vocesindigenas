@@ -8,12 +8,14 @@ import { runCrawlFeeds } from '../../jobs/crawlFeeds.js'
 import { runPreassessStories } from '../../jobs/preassessStories.js'
 import { runAssessStories } from '../../jobs/assessStories.js'
 import { runSelectStories } from '../../jobs/selectStories.js'
+import { runPublishStories } from '../../jobs/publishStories.js'
 
 const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   crawl_feeds: runCrawlFeeds,
   preassess_stories: runPreassessStories,
   assess_stories: runAssessStories,
   select_stories: runSelectStories,
+  publish_stories: runPublishStories,
 }
 
 const router = Router()

@@ -31,6 +31,7 @@ export type JobName =
   | 'preassess_stories'
   | 'assess_stories'
   | 'select_stories'
+  | 'publish_stories'
 
 export type JobStatus = 'idle' | 'running' | 'failed'
 
@@ -49,6 +50,7 @@ export interface Story {
   relevancePre: number | null
   relevance: number | null
   emotionTag: EmotionTag | null
+  slug: string | null
   title: string | null
   summary: string | null
   quote: string | null
@@ -59,6 +61,13 @@ export interface Story {
   crawlMethod: string | null
   createdAt: string
   updatedAt: string
+  feed?: {
+    title: string
+    issue?: {
+      name: string
+      slug: string
+    }
+  }
 }
 
 export interface PublicStory extends Story {

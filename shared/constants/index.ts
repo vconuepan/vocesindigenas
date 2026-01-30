@@ -23,6 +23,7 @@ export const JOB_NAMES: JobName[] = [
   'preassess_stories',
   'assess_stories',
   'select_stories',
+  'publish_stories',
 ]
 
 export const DEFAULT_PAGE_SIZE = 25
