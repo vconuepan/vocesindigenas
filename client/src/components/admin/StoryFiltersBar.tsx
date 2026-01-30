@@ -6,6 +6,30 @@ import { Select } from '../ui/Select'
 import { formatStatus } from '../../lib/constants'
 import type { Issue, Feed } from '@shared/types'
 
+/** Build a flat options list with children indented under their parent. */
+function buildIssueOptions(issues: Issue[]): { value: string; label: string }[] {
+  const parents = issues.filter(i => !i.parentId).sort((a, b) => a.name.localeCompare(b.name))
+  const childrenByParent = new Map<string, Issue[]>()
+  for (const issue of issues) {
+    if (issue.parentId) {
+      const list = childrenByParent.get(issue.parentId) || []
+      list.push(issue)
+      childrenByParent.set(issue.parentId, list)
+    }
+  }
+
+  const options: { value: string; label: string }[] = []
+  for (const parent of parents) {
+    options.push({ value: parent.id, label: parent.name })
+    const children = childrenByParent.get(parent.id) || []
+    children.sort((a, b) => a.name.localeCompare(b.name))
+    for (const child of children) {
+      options.push({ value: child.id, label: `└ ${child.name}` })
+    }
+  }
+  return options
+}
+
 interface StoryFiltersBarProps {
   issues: Issue[]
   feeds: Feed[]
@@ -68,7 +92,7 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
           placeholder="All issues"
           value={searchParams.get('issueId') || ''}
           onChange={e => setFilter('issueId', e.target.value)}
-          options={issues.map(i => ({ value: i.id, label: i.name }))}
+          options={buildIssueOptions(issues)}
         />
         <Select
           id="filter-feed"

@@ -16,5 +16,6 @@ server/prisma/*.db
 # Test coverage
 coverage
 
-# Windows NUL device artifact
+# AI development artifacts
 nul
+.playwright-mcp

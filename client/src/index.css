@@ -152,4 +152,50 @@
     @apply inline-block w-2.5 h-2.5 rounded-full mr-2.5 flex-shrink-0;
     vertical-align: middle;
   }
+
+  /* Decorative oversized open-quote behind pull quotes */
+  .decorative-quote {
+    @apply relative;
+  }
+
+  .decorative-quote::before {
+    content: '\201C';
+    @apply absolute -top-4 -left-2 text-brand-300 pointer-events-none select-none;
+    font-size: 8rem;
+    line-height: 1;
+    opacity: 0.12;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
+  /* Ruled heading: ——— TITLE ——— */
+  .ruled-heading {
+    @apply flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-neutral-400;
+  }
+
+  .ruled-heading::before,
+  .ruled-heading::after {
+    content: '';
+    @apply flex-1 border-t border-neutral-200;
+  }
+
+  /* Rank badge */
+  .rank-badge {
+    @apply w-8 h-8 rounded-full bg-neutral-900 text-white text-sm font-bold flex items-center justify-center shrink-0;
+  }
+
+  /* Issue nav link — uses CSS variable for category-colored hover/active */
+  .issue-nav-link {
+    @apply inline-flex items-center gap-1.5 px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors;
+    @apply focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 border-transparent text-neutral-400;
+  }
+
+  .issue-nav-link:hover {
+    color: var(--issue-color);
+    border-bottom-color: var(--issue-color);
+  }
+
+  .issue-nav-link[data-active='true'] {
+    color: var(--issue-color);
+    border-bottom-color: var(--issue-color);
+  }
 }

@@ -181,11 +181,9 @@ export default function PublicLayout() {
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className={`inline-flex items-center gap-1.5 px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 ${
-                      active
-                        ? `border-current text-neutral-900`
-                        : 'border-transparent text-neutral-400 hover:text-neutral-700 hover:border-neutral-300'
-                    }`}
+                    className="issue-nav-link"
+                    data-active={active}
+                    style={{ '--issue-color': colors.hex } as React.CSSProperties}
                   >
                     <span className={`w-2 h-2 rounded-full ${colors.dotBg} ${active ? 'opacity-100' : 'opacity-60'}`} aria-hidden="true" />
                     {link.label}
@@ -285,6 +283,15 @@ export default function PublicLayout() {
           </div>
         )}
       </header>
+
+      {/* Category color strip — mobile only */}
+      <div className="flex h-1 md:hidden" aria-hidden="true">
+        <div className="flex-1 bg-amber-400" />
+        <div className="flex-1 bg-teal-400" />
+        <div className="flex-1 bg-red-400" />
+        <div className="flex-1 bg-indigo-400" />
+        <div className="flex-1 bg-brand-400" />
+      </div>
 
       <main id="main-content" className="flex-1">
         <Outlet />

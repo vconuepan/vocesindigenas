@@ -8,6 +8,10 @@ import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
 import { formatDate } from '../lib/format'
 
+// ---------------------------------------------------------------------------
+// Hero
+// ---------------------------------------------------------------------------
+
 function HeroSection({ story }: { story: PublicStory }) {
   const issueSlug = story.feed?.issue?.slug ?? 'general-news'
   const issueName = story.feed?.issue?.name ?? 'News'
@@ -17,19 +21,20 @@ function HeroSection({ story }: { story: PublicStory }) {
   return (
     <section className="hero-section">
       <div className="hero-section-inner">
-        {/* Category label */}
-        <div className="flex items-center mb-4">
-          <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
-          <Link
-            to={`/issues/${issueSlug}`}
-            className="text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-          >
-            {issueName}
-          </Link>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="rank-badge" aria-label="Story #1">1</span>
+          <div className="flex items-center">
+            <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
+            <Link
+              to={`/issues/${issueSlug}`}
+              className="text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+            >
+              {issueName}
+            </Link>
+          </div>
         </div>
 
-        {/* Title */}
-        <h1 className="text-3xl md:text-5xl font-bold text-neutral-900 mb-4 leading-tight">
+        <h1 className="text-3xl md:text-5xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
           <Link
             to={`/stories/${story.slug}`}
             className="hover:text-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
@@ -38,7 +43,6 @@ function HeroSection({ story }: { story: PublicStory }) {
           </Link>
         </h1>
 
-        {/* Source and date */}
         <div className="text-sm text-neutral-500 mb-6">
           <a
             href={story.sourceUrl}
@@ -52,9 +56,8 @@ function HeroSection({ story }: { story: PublicStory }) {
           {dateStr && <> · {dateStr}</>}
         </div>
 
-        {/* Pull quote or summary */}
         {story.quote ? (
-          <blockquote className="border-l-4 border-brand-300 pl-5 py-2 max-w-2xl">
+          <blockquote className="decorative-quote max-w-2xl">
             <p className="text-lg md:text-xl italic text-neutral-700 leading-relaxed">
               "{story.quote}"
             </p>
@@ -69,14 +72,81 @@ function HeroSection({ story }: { story: PublicStory }) {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Standalone pull quote divider
+// ---------------------------------------------------------------------------
+
+function PullQuoteDivider({ stories }: { stories: PublicStory[] }) {
+  const storyWithQuote = stories.find((s) => s.quote)
+  if (!storyWithQuote) return null
+
+  return (
+    <div className="py-10 md:py-14 text-center max-w-2xl mx-auto">
+      <div className="decorative-quote inline-block text-left">
+        <blockquote>
+          <p className="text-xl md:text-2xl italic text-neutral-700 leading-relaxed">
+            "{storyWithQuote.quote}"
+          </p>
+        </blockquote>
+        <footer className="mt-3 text-sm text-neutral-500">
+          — from{' '}
+          <Link
+            to={`/stories/${storyWithQuote.slug}`}
+            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          >
+            {storyWithQuote.title || storyWithQuote.sourceTitle}
+          </Link>
+        </footer>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Section heading with rules
+// ---------------------------------------------------------------------------
+
+function RuledHeading({ issue }: { issue: PublicIssue }) {
+  const colors = getCategoryColor(issue.slug)
+  return (
+    <div className="flex items-center justify-between mb-5">
+      <div className="ruled-heading flex-1">
+        <Link
+          to={`/issues/${issue.slug}`}
+          className="flex items-center gap-2 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+        >
+          <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
+          {issue.name}
+        </Link>
+      </div>
+      <Link
+        to={`/issues/${issue.slug}`}
+        className="text-sm text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1 ml-4 shrink-0"
+      >
+        View all &rarr;
+      </Link>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Issue section with rotating layouts
+// ---------------------------------------------------------------------------
+
+type LayoutVariant = 'A' | 'B' | 'C'
+
 function IssueSection({
   issue,
   heroStoryId,
-  isLast,
+  layout,
+  rank,
+  divider,
 }: {
   issue: PublicIssue
   heroStoryId: string | null
-  isLast: boolean
+  layout: LayoutVariant
+  rank?: number
+  divider?: 'quote' | 'diamond' | 'none'
 }) {
   const { data } = usePublicStories({ issueSlug: issue.slug, pageSize: 5 })
   const allStories = data?.data ?? []
@@ -88,43 +158,72 @@ function IssueSection({
 
   if (stories.length === 0) return null
 
-  const [featured, ...compact] = stories
-  const colors = getCategoryColor(issue.slug)
+  const [featured, ...rest] = stories
 
   return (
     <>
       <section className="mb-8">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center">
-            <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
-            <h2 className="text-2xl font-bold">{issue.name}</h2>
-          </div>
-          <Link
-            to={`/issues/${issue.slug}`}
-            className="text-sm text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
-          >
-            View all &rarr;
-          </Link>
-        </div>
+        <RuledHeading issue={issue} />
 
-        <div className="grid gap-5 md:grid-cols-3">
-          {/* Featured story takes 2 columns */}
-          <div className="md:col-span-2">
-            <StoryCard story={featured} variant="featured" />
+        {/* Layout A: 2+3 grid (featured left, compacts right) */}
+        {layout === 'A' && (
+          <div className="grid gap-5 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <StoryCard story={featured} variant="featured" rank={rank} />
+            </div>
+            {rest.length > 0 && (
+              <div className="space-y-3">
+                {rest.slice(0, 3).map((story) => (
+                  <StoryCard key={story.id} story={story} variant="compact" />
+                ))}
+              </div>
+            )}
           </div>
-          {/* Compact stories stacked in the remaining column */}
-          <div className="space-y-3">
-            {compact.slice(0, 3).map((story) => (
-              <StoryCard key={story.id} story={story} variant="compact" />
-            ))}
+        )}
+
+        {/* Layout B: Full-width horizontal card + compact row below */}
+        {layout === 'B' && (
+          <div className="space-y-5">
+            <StoryCard story={featured} variant="horizontal" rank={rank} />
+            {rest.length > 0 && (
+              <div className="grid gap-5 md:grid-cols-3">
+                {rest.slice(0, 3).map((story) => (
+                  <StoryCard key={story.id} story={story} variant="compact" />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Layout C: Three equal columns + compact remainder */}
+        {layout === 'C' && (
+          <div className="space-y-5">
+            <div className="grid gap-5 md:grid-cols-3">
+              {stories.slice(0, 3).map((story) => (
+                <StoryCard key={story.id} story={story} variant="equal" />
+              ))}
+            </div>
+            {stories.length > 3 && (
+              <div className="grid gap-5 md:grid-cols-3">
+                {stories.slice(3).map((story) => (
+                  <StoryCard key={story.id} story={story} variant="compact" />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
-      {!isLast && <hr className="section-divider" />}
+      {/* Section divider */}
+      {divider === 'quote' && <PullQuoteDivider stories={allStories} />}
+      {divider === 'diamond' && <hr className="section-divider" />}
     </>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Home page
+// ---------------------------------------------------------------------------
 
 const ISSUE_ORDER = [
   'human-development',
@@ -133,6 +232,8 @@ const ISSUE_ORDER = [
   'science-technology',
   'general-news',
 ]
+
+const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
 
 export default function HomePage() {
   const { data: issues } = usePublicIssues()
@@ -150,12 +251,12 @@ export default function HomePage() {
         <title>Actually Relevant - News That Matters</title>
         <meta
           name="description"
-          content="AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity's future."
+          content="AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity."
         />
         <meta property="og:title" content="Actually Relevant - News That Matters" />
         <meta
           property="og:description"
-          content="AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity's future."
+          content="AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://actuallyrelevant.news/" />
@@ -165,16 +266,29 @@ export default function HomePage() {
       {/* Hero */}
       {heroStory && <HeroSection story={heroStory} />}
 
-      {/* Issue sections */}
+      {/* Issue sections with rotating layouts */}
       <div className="page-section-wide">
-        {sortedIssues.map((issue, idx) => (
-          <IssueSection
-            key={issue.id}
-            issue={issue}
-            heroStoryId={heroStory?.id ?? null}
-            isLast={idx === sortedIssues.length - 1}
-          />
-        ))}
+        {sortedIssues.map((issue, idx) => {
+          const layout = LAYOUTS[idx % LAYOUTS.length]
+          const rank = idx < 2 ? idx + 2 : undefined
+          const isLast = idx === sortedIssues.length - 1
+          const divider: 'quote' | 'diamond' | 'none' = isLast
+            ? 'none'
+            : idx % 2 === 0
+              ? 'quote'
+              : 'diamond'
+
+          return (
+            <IssueSection
+              key={issue.id}
+              issue={issue}
+              heroStoryId={heroStory?.id ?? null}
+              layout={layout}
+              rank={rank}
+              divider={divider}
+            />
+          )
+        })}
 
         {issues?.length === 0 && (
           <p className="text-center text-neutral-500 py-12">

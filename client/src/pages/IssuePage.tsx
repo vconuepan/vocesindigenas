@@ -7,6 +7,121 @@ import { usePublicStories } from '../hooks/usePublicStories'
 import { getCategoryColor } from '../lib/category-colors'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
+import type { PublicStory } from '@shared/types'
+
+// ---------------------------------------------------------------------------
+// Pull quote divider (reused from HomePage pattern)
+// ---------------------------------------------------------------------------
+
+function PullQuoteDivider({ stories }: { stories: PublicStory[] }) {
+  const storyWithQuote = stories.find((s) => s.quote)
+  if (!storyWithQuote) return null
+
+  return (
+    <div className="py-10 md:py-14 text-center max-w-2xl mx-auto">
+      <div className="decorative-quote inline-block text-left">
+        <blockquote>
+          <p className="text-xl md:text-2xl italic text-neutral-700 leading-relaxed">
+            "{storyWithQuote.quote}"
+          </p>
+        </blockquote>
+        <footer className="mt-3 text-sm text-neutral-500">
+          — from{' '}
+          <Link
+            to={`/stories/${storyWithQuote.slug}`}
+            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          >
+            {storyWithQuote.title || storyWithQuote.sourceTitle}
+          </Link>
+        </footer>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Story group with a specific layout variant
+// ---------------------------------------------------------------------------
+
+type LayoutVariant = 'A' | 'B' | 'C'
+const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
+
+function StoryGroup({
+  stories,
+  layout,
+}: {
+  stories: PublicStory[]
+  layout: LayoutVariant
+}) {
+  if (stories.length === 0) return null
+
+  const [first, ...rest] = stories
+
+  // Layout A: featured (2-col) + compact sidebar
+  if (layout === 'A') {
+    return (
+      <div className="grid gap-5 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <StoryCard story={first} variant="featured" />
+        </div>
+        {rest.length > 0 && (
+          <div className="space-y-3">
+            {rest.map((story) => (
+              <StoryCard key={story.id} story={story} variant="compact" />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Layout B: full-width horizontal card + compact row
+  if (layout === 'B') {
+    return (
+      <div className="space-y-5">
+        <StoryCard story={first} variant="horizontal" />
+        {rest.length > 0 && (
+          <div className="grid gap-5 md:grid-cols-3">
+            {rest.map((story) => (
+              <StoryCard key={story.id} story={story} variant="compact" />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Layout C: equal columns
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-5 md:grid-cols-3">
+        {stories.slice(0, 3).map((story) => (
+          <StoryCard key={story.id} story={story} variant="equal" />
+        ))}
+      </div>
+      {stories.length > 3 && (
+        <div className="grid gap-5 md:grid-cols-3">
+          {stories.slice(3).map((story) => (
+            <StoryCard key={story.id} story={story} variant="compact" />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Issue page
+// ---------------------------------------------------------------------------
+
+/** Split an array into chunks of a given size */
+function chunk<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size))
+  }
+  return chunks
+}
 
 export default function IssuePage() {
   const { slug } = useParams<{ slug: string }>()
@@ -45,12 +160,6 @@ export default function IssuePage() {
   const totalPages = storiesData?.totalPages ?? 1
   const colors = getCategoryColor(slug ?? 'general-news')
 
-  // Split stories into featured row (page 1) and remaining grid
-  const isFirstPage = page === 1
-  const featured = isFirstPage ? stories[0] ?? null : null
-  const sidebar = isFirstPage ? stories.slice(1, 4) : []
-  const gridStories = isFirstPage ? stories.slice(4) : stories
-
   // Only show children with published stories
   const activeChildren = (issue.children ?? []).filter(
     (child) => (child.publishedStoryCount ?? 0) > 0,
@@ -60,6 +169,9 @@ export default function IssuePage() {
     (issue.evaluationCriteria?.length ?? 0) > 0 ||
     (issue.sourceNames?.length ?? 0) > 0 ||
     (issue.makeADifference?.length ?? 0) > 0
+
+  // Break stories into groups of 4 for layout rotation
+  const storyGroups = chunk(stories, 4)
 
   return (
     <>
@@ -101,11 +213,6 @@ export default function IssuePage() {
               </svg>
             </a>
           </div>
-          {(issue.intro || issue.description) && (
-            <p className="hidden md:block text-sm text-neutral-500 mt-1 line-clamp-2">
-              {issue.intro || issue.description}
-            </p>
-          )}
         </header>
 
         {/* Sub-topics — only those with stories */}
@@ -127,33 +234,26 @@ export default function IssuePage() {
           </div>
         )}
 
-        {/* Stories — magazine layout */}
+        {/* Stories — rotating magazine layouts */}
         {stories.length > 0 ? (
           <>
-            {/* Featured row (first page only) */}
-            {isFirstPage && featured && (
-              <div className="grid gap-5 md:grid-cols-3 mb-5">
-                <div className="md:col-span-2">
-                  <StoryCard story={featured} variant="featured" />
-                </div>
-                {sidebar.length > 0 && (
-                  <div className="space-y-3">
-                    {sidebar.map((story) => (
-                      <StoryCard key={story.id} story={story} variant="compact" />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            {storyGroups.map((group, idx) => {
+              const layout = LAYOUTS[idx % LAYOUTS.length]
+              const isLast = idx === storyGroups.length - 1
 
-            {/* Remaining stories grid */}
-            {gridStories.length > 0 && (
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                {gridStories.map((story) => (
-                  <StoryCard key={story.id} story={story} variant="compact" />
-                ))}
-              </div>
-            )}
+              return (
+                <div key={idx}>
+                  <StoryGroup stories={group} layout={layout} />
+
+                  {/* Divider between groups */}
+                  {!isLast && (
+                    idx % 2 === 0
+                      ? <PullQuoteDivider stories={group} />
+                      : <hr className="section-divider" />
+                  )}
+                </div>
+              )
+            })}
 
             <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </>
