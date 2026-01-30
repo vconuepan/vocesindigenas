@@ -9,6 +9,7 @@ import type {
   StoryFilters,
   PaginatedResponse,
   StoryStatus,
+  CrawlResult,
 } from '@shared/types'
 
 const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
@@ -84,7 +85,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   })
 
   // On 401, try refreshing the access token
-  if (res.status === 401 && accessToken) {
+  if (res.status === 401) {
     const newToken = await refreshAccessToken()
     if (newToken) {
       res = await fetch(url, {
@@ -119,7 +120,7 @@ async function requestBlob(path: string, options: RequestInit = {}): Promise<Blo
   })
 
   // On 401, try refreshing the access token
-  if (res.status === 401 && accessToken) {
+  if (res.status === 401) {
     const newToken = await refreshAccessToken()
     if (newToken) {
       res = await fetch(`${ADMIN_BASE}${path}`, {
@@ -212,6 +213,8 @@ export const adminApi = {
     delete: (id: string) => request<void>(`/stories/${id}`, { method: 'DELETE' }),
     crawlUrl: (url: string, feedId: string) =>
       request<Story>('/stories/crawl-url', { method: 'POST', body: JSON.stringify({ url, feedId }) }),
+    batch: (ids: string[]) =>
+      request<{ id: string; title: string }[]>(`/stories/batch?ids=${ids.join(',')}`),
   },
 
   // Feeds
@@ -222,9 +225,9 @@ export const adminApi = {
     create: (data: Partial<Feed>) => request<Feed>('/feeds', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: Partial<Feed>) =>
       request<Feed>(`/feeds/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id: string) => request<void>(`/feeds/${id}`, { method: 'DELETE' }),
-    crawl: (id: string) => request<{ crawled: number }>(`/feeds/${id}/crawl`, { method: 'POST' }),
-    crawlAll: () => request<{ crawled: number }>('/feeds/crawl-all', { method: 'POST' }),
+    delete: (id: string) => request<{ action: string; message: string }>(`/feeds/${id}`, { method: 'DELETE' }),
+    crawl: (id: string) => request<CrawlResult>(`/feeds/${id}/crawl`, { method: 'POST' }),
+    crawlAll: () => request<CrawlResult[]>('/feeds/crawl-all', { method: 'POST' }),
   },
 
   // Issues
@@ -240,7 +243,7 @@ export const adminApi = {
   // Newsletters
   newsletters: {
     list: (params?: { status?: string }) =>
-      request<Newsletter[]>(`/newsletters${toQueryString((params || {}) as Record<string, unknown>)}`),
+      request<PaginatedResponse<Newsletter>>(`/newsletters${toQueryString((params || {}) as Record<string, unknown>)}`),
     get: (id: string) => request<Newsletter>(`/newsletters/${id}`),
     create: (data: { title: string }) =>
       request<Newsletter>('/newsletters', { method: 'POST', body: JSON.stringify(data) }),
@@ -255,7 +258,7 @@ export const adminApi = {
   // Podcasts
   podcasts: {
     list: (params?: { status?: string }) =>
-      request<Podcast[]>(`/podcasts${toQueryString((params || {}) as Record<string, unknown>)}`),
+      request<PaginatedResponse<Podcast>>(`/podcasts${toQueryString((params || {}) as Record<string, unknown>)}`),
     get: (id: string) => request<Podcast>(`/podcasts/${id}`),
     create: (data: { title: string }) =>
       request<Podcast>('/podcasts', { method: 'POST', body: JSON.stringify(data) }),
@@ -284,4 +287,14 @@ export const adminApi = {
       request<User>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/users/${id}`, { method: 'DELETE' }),
   },
+}
+
+// Preserve access token across Vite HMR (dev only, tree-shaken in production)
+if (import.meta.hot) {
+  if (import.meta.hot.data?.accessToken) {
+    accessToken = import.meta.hot.data.accessToken
+  }
+  import.meta.hot.dispose((data) => {
+    data.accessToken = accessToken
+  })
 }

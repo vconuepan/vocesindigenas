@@ -9,10 +9,9 @@ interface FeedTableProps {
   onEdit: (feed: Feed) => void
   onCrawl: (id: string) => void
   onDelete: (id: string) => void
-  crawlingId?: string
 }
 
-export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete, crawlingId }: FeedTableProps) {
+export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTableProps) {
   const issueMap = new Map(issues.map(i => [i.id, i.name]))
 
   return (
@@ -57,7 +56,7 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete, crawlingId
               <td className="px-3 py-2 text-right">
                 <div className="flex justify-end gap-1">
                   <Button variant="ghost" size="sm" onClick={() => onEdit(feed)}>Edit</Button>
-                  <Button variant="ghost" size="sm" onClick={() => onCrawl(feed.id)} loading={crawlingId === feed.id}>Crawl</Button>
+                  <Button variant="ghost" size="sm" onClick={() => onCrawl(feed.id)}>Crawl</Button>
                   <Button variant="ghost" size="sm" onClick={() => onDelete(feed.id)} className="text-red-600 hover:text-red-700">Delete</Button>
                 </div>
               </td>

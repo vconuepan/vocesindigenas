@@ -27,6 +27,14 @@ export const JOB_DISPLAY_NAMES: Record<JobName, string> = {
   select_stories: 'Select Stories',
 }
 
+/** Pipeline execution order for sorting jobs in the UI. */
+export const JOB_PIPELINE_ORDER: JobName[] = [
+  'crawl_feeds',
+  'preassess_stories',
+  'assess_stories',
+  'select_stories',
+]
+
 export function formatStatus(status: string): string {
   return status
     .split('_')

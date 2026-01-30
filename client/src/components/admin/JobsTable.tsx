@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { JobRun } from '@shared/types'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
-import { JOB_DISPLAY_NAMES, formatDate } from '../../lib/constants'
+import { JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER, formatDate } from '../../lib/constants'
 import { useUpdateJob, useRunJob } from '../../hooks/useJobs'
 import { useToast } from '../ui/Toast'
 import { CronEditor } from './CronEditor'
@@ -28,6 +28,12 @@ export function JobsTable({ jobs }: JobsTableProps) {
   const runJob = useRunJob()
   const { toast } = useToast()
   const [expandedError, setExpandedError] = useState<string | null>(null)
+
+  const sortedJobs = [...jobs].sort((a, b) => {
+    const ai = JOB_PIPELINE_ORDER.indexOf(a.jobName)
+    const bi = JOB_PIPELINE_ORDER.indexOf(b.jobName)
+    return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi)
+  })
 
   const handleToggleEnabled = (job: JobRun) => {
     updateJob.mutate(
@@ -62,7 +68,7 @@ export function JobsTable({ jobs }: JobsTableProps) {
           </tr>
         </thead>
         <tbody>
-          {jobs.map(job => (
+          {sortedJobs.map(job => (
             <tr key={job.jobName} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
               <td className="px-3 py-2 font-medium text-neutral-900">
                 {JOB_DISPLAY_NAMES[job.jobName] || job.jobName}

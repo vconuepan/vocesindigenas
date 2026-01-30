@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../lib/auth'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ToastProvider } from '../components/ui/Toast'
+import { BackgroundTaskProvider } from '../hooks/useBackgroundTasks'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: HomeIcon, end: true },
@@ -103,6 +104,7 @@ export default function AdminLayout() {
 
   return (
     <ToastProvider>
+    <BackgroundTaskProvider>
       <div className="flex h-screen bg-neutral-50">
         {/* Desktop sidebar */}
         <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-neutral-200 lg:bg-white">
@@ -145,6 +147,7 @@ export default function AdminLayout() {
           </main>
         </div>
       </div>
-      </ToastProvider>
+    </BackgroundTaskProvider>
+    </ToastProvider>
   )
 }

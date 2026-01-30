@@ -1,10 +1,14 @@
 import { useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import type { StoryStatus, StoryFilters, StorySort } from '@shared/types'
-import { useStories, useBulkUpdateStatus, usePreassessStories, useAssessStory, useSelectStories, useDeleteStory, useUpdateStoryStatus } from '../../hooks/useStories'
+import { useStories, useBulkUpdateStatus, useDeleteStory, useUpdateStoryStatus } from '../../hooks/useStories'
 import { useFeeds } from '../../hooks/useFeeds'
 import { useIssues } from '../../hooks/useIssues'
+import { useBackgroundTasks } from '../../hooks/useBackgroundTasks'
+import { adminApi } from '../../lib/admin-api'
+import { parallelMap } from '../../lib/async-utils'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
@@ -35,10 +39,12 @@ function useFiltersFromParams(): StoryFilters {
 export default function StoriesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const filters = useFiltersFromParams()
+  const queryClient = useQueryClient()
   const storiesQuery = useStories(filters)
   const feedsQuery = useFeeds()
   const issuesQuery = useIssues()
   const { toast } = useToast()
+  const { launchTask } = useBackgroundTasks()
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -46,11 +52,13 @@ export default function StoriesPage() {
   const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => Promise<void> } | null>(null)
 
   const bulkUpdate = useBulkUpdateStatus()
-  const preassess = usePreassessStories()
-  const assessStory = useAssessStory()
-  const selectStories = useSelectStories()
   const deleteStory = useDeleteStory()
   const updateStatus = useUpdateStoryStatus()
+
+  const invalidateStories = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['stories'] })
+    queryClient.invalidateQueries({ queryKey: ['storyStats'] })
+  }, [queryClient])
 
   const stories = storiesQuery.data?.data || []
 
@@ -85,32 +93,38 @@ export default function StoriesPage() {
         title: `Pre-assess ${ids.length} stories?`,
         description: 'This will run AI pre-assessment on the selected stories.',
         action: async () => {
-          await preassess.mutateAsync(ids)
-          toast('success', `Pre-assessed ${ids.length} stories`)
           setSelectedIds(new Set())
+          launchTask({
+            id: `preassess-${Date.now()}`,
+            label: `Pre-assessing ${ids.length} stories`,
+            executor: async () => {
+              await adminApi.stories.preassess(ids)
+              return { succeeded: ids.length, failed: 0 }
+            },
+            onComplete: invalidateStories,
+          })
         },
       })
     } else if (action === 'assess') {
       setConfirmAction({
         title: `Assess ${ids.length} stories?`,
-        description: 'This will run full AI assessment on each selected story. This may take a while.',
+        description: 'This will run full AI assessment on each selected story.',
         action: async () => {
-          let succeeded = 0
-          let failed = 0
-          for (const id of ids) {
-            try {
-              await assessStory.mutateAsync(id)
-              succeeded++
-            } catch {
-              failed++
-            }
-          }
-          if (failed > 0) {
-            toast('error', `Assessed ${succeeded}, failed ${failed}`)
-          } else {
-            toast('success', `Assessed ${succeeded} stories`)
-          }
           setSelectedIds(new Set())
+          launchTask({
+            id: `assess-${Date.now()}`,
+            label: `Assessing ${ids.length} stories`,
+            executor: async (reportProgress) => {
+              const { results, errors } = await parallelMap(
+                ids,
+                (id) => adminApi.stories.assess(id),
+                10,
+                (completed, total) => reportProgress(completed, total),
+              )
+              return { succeeded: results.length, failed: errors.length }
+            },
+            onComplete: invalidateStories,
+          })
         },
       })
     } else if (action === 'select') {
@@ -118,13 +132,20 @@ export default function StoriesPage() {
         title: `Select ${ids.length} stories for publication?`,
         description: 'Selected stories will be marked for publishing.',
         action: async () => {
-          await selectStories.mutateAsync(ids)
-          toast('success', `Selected ${ids.length} stories`)
           setSelectedIds(new Set())
+          launchTask({
+            id: `select-${Date.now()}`,
+            label: `Selecting ${ids.length} stories`,
+            executor: async () => {
+              await adminApi.stories.select(ids)
+              return { succeeded: ids.length, failed: 0 }
+            },
+            onComplete: invalidateStories,
+          })
         },
       })
     } else {
-      // Status change
+      // Status change — keep blocking (instant operation)
       const status = action as StoryStatus
       setConfirmAction({
         title: `Set ${ids.length} stories to "${status}"?`,
@@ -157,7 +178,7 @@ export default function StoriesPage() {
     })
   }
 
-  const confirmLoading = bulkUpdate.isPending || preassess.isPending || assessStory.isPending || selectStories.isPending || deleteStory.isPending
+  const confirmLoading = bulkUpdate.isPending || deleteStory.isPending
 
   return (
     <>

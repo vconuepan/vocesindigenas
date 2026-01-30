@@ -48,22 +48,3 @@ export function useDeleteFeed() {
   })
 }
 
-export function useCrawlFeed() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) => adminApi.feeds.crawl(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feeds'] })
-    },
-  })
-}
-
-export function useCrawlAllFeeds() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: () => adminApi.feeds.crawlAll(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feeds'] })
-    },
-  })
-}
