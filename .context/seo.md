@@ -20,16 +20,18 @@ Sitemap: https://actuallyrelevant.news/sitemap.xml
 
 ## sitemap.xml
 
-Generated automatically from `client/src/routes.ts` during build.
+Generated automatically from `client/src/routes.ts` + published story slugs during build.
 
 ### How It Works
 
-1. Route metadata (path, priority, changefreq) is defined in `routes.ts`
+1. Static route metadata (path, priority, changefreq) is defined in `routes.ts`
 2. `npm run build` runs `sitemap:generate` before building
-3. Script reads routes and generates `public/sitemap.xml`
-4. Sitemap is copied to `dist/` during build
+3. Script reads static routes and fetches published story slugs from the API (`/api/stories`)
+4. Story routes are added with priority 0.6 and changefreq `monthly`
+5. If the API is unavailable, the script gracefully falls back to static routes only
+6. Sitemap is written to `public/sitemap.xml` and copied to `dist/` during build
 
-In later phases, `generate-sitemap.ts` will also query the database for published story slugs and issue slugs to include as dynamic routes.
+The API URL defaults to `http://localhost:3001` but can be overridden via the `VITE_API_URL` environment variable.
 
 ### Manual Generation
 

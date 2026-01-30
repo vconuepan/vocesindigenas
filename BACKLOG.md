@@ -2,19 +2,14 @@
 
 ## To implement before public deployment
 
-- Test bulk actions via admin panel
-- Automate final selection of articles
-- Improve overall site design
-- **Automated publishing schedule** — Auto-publish selected stories on a schedule (e.g., daily digest)
-- SEO-friendly URLs for stories
+- Set up and test cron jobs
 
 ## After public deployment
 
 - **Syntactic Search**
-- **RSS feed output** — Generate custom RSS feeds for published stories (by issue, all, etc.)
-- Try generating "Symbolbilder" for published articles
 - Emotion mode
 
+- Try generating "Symbolbilder" for published articles
 - **Social media auto-posting** — Auto-post published stories to Twitter/LinkedIn/Mastodon
 - **Semantic search** — pgvector infrastructure is in place; build search UI and query endpoint for similarity search over story content/embeddings
 - **Story deduplication** — Detect and merge duplicate stories across different feeds covering the same event

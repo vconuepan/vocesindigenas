@@ -22,8 +22,28 @@ All routes are registered in both `App.tsx` and `routes.ts` (for sitemap generat
 - `GET /api/issues` — All issues (id, name, slug, description only)
 - `GET /api/issues/:slug` — Single issue by slug
 
-API client: `client/src/lib/api.ts` (exports `publicApi`)
+API client: `client/src/lib/api.ts` (exports `publicApi` and `API_BASE`)
 Hooks: `usePublicStories.ts`, `usePublicIssues.ts`
+
+### RSS Feeds
+
+Public RSS 2.0 feeds are available without authentication:
+
+- `GET /api/feed` — Global feed of the 50 most recent published stories
+- `GET /api/feed/:issueSlug` — Per-issue feed (e.g., `/api/feed/human-development`)
+
+Feed items include: title, link to story page, AI-generated summary, publish date, and issue category. Responses use `Content-Type: application/rss+xml` with a 15-minute cache (`Cache-Control: public, max-age=900`).
+
+**Discoverability:**
+- Global RSS autodiscovery `<link>` tag is added via Helmet in `PublicLayout.tsx`
+- Per-issue autodiscovery `<link>` tag is added via Helmet in `IssuePage.tsx`
+- Visible RSS icon/link appears on each issue page header and in the footer Subscribe section
+- All RSS hrefs use `API_BASE` (from `client/src/lib/api.ts`) so they resolve correctly in both dev (Vite proxy) and production (separate static site + API service on Render)
+
+**Key files:**
+- `server/src/routes/public/feed.ts` — RSS feed route handler (uses `feed` npm package)
+- `server/src/routes/public/index.ts` — Registers feed router at `/feed`
+- `client/vite.config.ts` — Dev proxy for `/api` to `localhost:3001`
 
 ## Shared Components
 
