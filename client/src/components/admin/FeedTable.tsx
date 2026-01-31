@@ -5,6 +5,8 @@ import {
   TrashIcon,
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
+  ExclamationTriangleIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline'
 import type { Feed, Issue } from '@shared/types'
 import { FeedFaviconPreview } from '../FeedFavicon'
@@ -56,6 +58,22 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
                   >
                     <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                   </a>
+                  {feed.lastCrawlError && (
+                    <span
+                      title={`${feed.lastCrawlError}${feed.lastCrawlErrorAt ? ` (${formatDateWithTime(feed.lastCrawlErrorAt)})` : ''}`}
+                      className="shrink-0 text-amber-500"
+                    >
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                    </span>
+                  )}
+                  {feed.consecutiveEmptyCrawls >= 5 && (
+                    <span
+                      title={`No new articles in last ${feed.consecutiveEmptyCrawls} crawls${feed.lastSuccessfulCrawlAt ? ` (last success: ${formatDateWithTime(feed.lastSuccessfulCrawlAt)})` : ''}`}
+                      className="shrink-0 text-neutral-400"
+                    >
+                      <ClockIcon className="h-4 w-4" />
+                    </span>
+                  )}
                 </div>
                 {/* Mobile metadata */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">

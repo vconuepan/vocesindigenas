@@ -90,6 +90,14 @@ export interface Feed {
   active: boolean
   crawlIntervalHours: number
   lastCrawledAt: string | null
+  lastCrawlError: string | null
+  lastCrawlErrorAt: string | null
+  consecutiveFailedCrawls: number
+  consecutiveEmptyCrawls: number
+  lastSuccessfulCrawlAt: string | null
+  lastEtag: string | null
+  lastModified: string | null
+  lastCrawlResult: string | null
   htmlSelector: string | null
   createdAt: string
   updatedAt: string
@@ -101,6 +109,7 @@ export interface CrawlResult {
   newStories: number
   skipped: number
   errors: number
+  errorMessage?: string
 }
 
 export interface Issue {

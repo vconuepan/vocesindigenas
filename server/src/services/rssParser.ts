@@ -1,14 +1,14 @@
 import Parser from 'rss-parser'
+import axios from 'axios'
 import { config } from '../config.js'
 import { createLogger } from '../lib/logger.js'
 import { withRetry } from '../lib/retry.js'
+import { normalizeUrl } from '../utils/urlNormalization.js'
+import { crawlLimiter } from '../lib/crawlLimiter.js'
 
 const log = createLogger('rssParser')
 
-const parser = new Parser({
-  timeout: config.crawl.httpTimeoutMs,
-  maxRedirects: 3,
-})
+const parser = new Parser()
 
 export interface RSSItem {
   url: string
@@ -17,9 +17,49 @@ export interface RSSItem {
   description: string | null
 }
 
-export async function parseFeed(feedUrl: string): Promise<RSSItem[]> {
+export interface FeedCacheHeaders {
+  etag?: string | null
+  lastModified?: string | null
+}
+
+export interface ParseFeedResult {
+  items: RSSItem[]
+  notModified: boolean
+  cacheHeaders: FeedCacheHeaders
+}
+
+export async function parseFeed(feedUrl: string, cacheHeaders?: FeedCacheHeaders): Promise<ParseFeedResult> {
   try {
-    const feed = await withRetry(() => parser.parseURL(feedUrl))
+    const headers: Record<string, string> = {}
+    if (cacheHeaders?.etag) {
+      headers['If-None-Match'] = cacheHeaders.etag
+    }
+    if (cacheHeaders?.lastModified) {
+      headers['If-Modified-Since'] = cacheHeaders.lastModified
+    }
+
+    const response = await crawlLimiter.run(feedUrl, () =>
+      withRetry(() => axios.get(feedUrl, {
+        timeout: config.crawl.httpTimeoutMs,
+        maxRedirects: 3,
+        headers,
+        validateStatus: (status) => status === 200 || status === 304,
+      }))
+    )
+
+    if (response.status === 304) {
+      log.debug({ feedUrl }, 'feed not modified (304)')
+      return {
+        items: [],
+        notModified: true,
+        cacheHeaders: {
+          etag: cacheHeaders?.etag || null,
+          lastModified: cacheHeaders?.lastModified || null,
+        },
+      }
+    }
+
+    const feed = await parser.parseString(response.data)
     const items: RSSItem[] = []
 
     for (const item of feed.items.slice(0, config.crawl.rssItemLimit)) {
@@ -27,16 +67,23 @@ export async function parseFeed(feedUrl: string): Promise<RSSItem[]> {
       if (!url) continue
 
       items.push({
-        url,
+        url: normalizeUrl(url),
         title: item.title || 'Untitled',
         datePublished: item.isoDate || item.pubDate || null,
         description: item.contentSnippet || item.content || null,
       })
     }
 
-    return items
+    return {
+      items,
+      notModified: false,
+      cacheHeaders: {
+        etag: response.headers['etag'] || null,
+        lastModified: response.headers['last-modified'] || null,
+      },
+    }
   } catch (err) {
     log.error({ feedUrl, err }, 'failed to parse feed')
-    return []
+    return { items: [], notModified: false, cacheHeaders: {} }
   }
 }

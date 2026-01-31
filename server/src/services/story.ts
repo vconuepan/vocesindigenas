@@ -2,6 +2,7 @@ import prisma from '../lib/prisma.js'
 import { type Story, type Prisma, StoryStatus, EmotionTag } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
+import { normalizeUrl } from '../utils/urlNormalization.js'
 
 interface StoryFilters {
   status?: string
@@ -202,8 +203,9 @@ export async function createStory(data: {
 
 export async function getExistingUrls(urls: string[]): Promise<Set<string>> {
   if (urls.length === 0) return new Set()
+  const normalized = urls.map(normalizeUrl)
   const existing = await prisma.story.findMany({
-    where: { sourceUrl: { in: urls } },
+    where: { sourceUrl: { in: normalized } },
     select: { sourceUrl: true },
   })
   return new Set(existing.map(s => s.sourceUrl))

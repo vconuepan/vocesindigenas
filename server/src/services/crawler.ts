@@ -1,10 +1,11 @@
 import { parseFeed } from './rssParser.js'
 import { extractContent } from './extractor.js'
 import { getExistingUrls, createStory } from './story.js'
-import { getFeedById, getDueFeeds, updateLastCrawled } from './feed.js'
+import { getFeedById, getDueFeeds, updateCrawlStatus, updateFeedCacheHeaders } from './feed.js'
 import { createLogger } from '../lib/logger.js'
 import { Semaphore } from '../lib/semaphore.js'
 import { config } from '../config.js'
+import { normalizeUrl } from '../utils/urlNormalization.js'
 
 const log = createLogger('crawler')
 
@@ -14,6 +15,7 @@ export interface CrawlResult {
   newStories: number
   skipped: number
   errors: number
+  errorMessage?: string
 }
 
 export async function crawlFeed(feedId: string): Promise<CrawlResult> {
@@ -28,10 +30,26 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
     errors: 0,
   }
 
-  // Parse RSS feed
-  const rssItems = await parseFeed(feed.url)
+  // Parse RSS feed with conditional headers
+  const rssResult = await parseFeed(feed.url, {
+    etag: feed.lastEtag,
+    lastModified: feed.lastModified,
+  })
+
+  // Persist cache headers if returned
+  if (rssResult.cacheHeaders.etag || rssResult.cacheHeaders.lastModified) {
+    await updateFeedCacheHeaders(feedId, rssResult.cacheHeaders)
+  }
+
+  // 304 Not Modified — nothing to do
+  if (rssResult.notModified) {
+    await updateCrawlStatus(feedId, { hadSuccess: true, newItemCount: 0, rssItemCount: 0, crawlResult: '304 not modified' })
+    return result
+  }
+
+  const rssItems = rssResult.items
   if (rssItems.length === 0) {
-    await updateLastCrawled(feedId)
+    await updateCrawlStatus(feedId, { hadSuccess: true, newItemCount: 0, rssItemCount: 0, crawlResult: 'No items in feed' })
     return result
   }
 
@@ -43,6 +61,7 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
 
   // Extract content and create stories (parallel with concurrency limit)
   const articleSemaphore = new Semaphore(config.concurrency.crawlArticles)
+  const totalArticles = newItems.length
   await Promise.allSettled(
     newItems.map(item => articleSemaphore.run(async () => {
       try {
@@ -72,7 +91,23 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
     }))
   )
 
-  await updateLastCrawled(feedId)
+  if (result.errors > 0) {
+    result.errorMessage = `${result.errors} of ${totalArticles} articles failed extraction`
+  }
+
+  const crawlResult = result.newStories > 0
+    ? `${result.newStories} new article${result.newStories > 1 ? 's' : ''}`
+    : result.errors > 0
+      ? result.errorMessage!
+      : 'No new articles'
+
+  await updateCrawlStatus(feedId, {
+    hadSuccess: result.newStories > 0,
+    errorMessage: result.errorMessage,
+    newItemCount: totalArticles,
+    rssItemCount: rssItems.length,
+    crawlResult,
+  })
   return result
 }
 
@@ -93,13 +128,16 @@ export async function crawlAllDueFeeds(): Promise<CrawlResult[]> {
         return result
       } catch (err) {
         completed++
+        const errorMessage = `RSS fetch failed: ${err instanceof Error ? err.message : String(err)}`
         log.error({ feed: feed.title, err }, 'failed to crawl feed')
+        await updateCrawlStatus(feed.id, { hadSuccess: false, errorMessage, newItemCount: 1, rssItemCount: 0 }).catch(() => {})
         return {
           feedId: feed.id,
           feedTitle: feed.title,
           newStories: 0,
           skipped: 0,
           errors: 1,
+          errorMessage,
         }
       }
     }))
@@ -111,12 +149,15 @@ export async function crawlAllDueFeeds(): Promise<CrawlResult[]> {
     newStories: 0,
     skipped: 0,
     errors: 1,
+    errorMessage: 'Feed crawl failed unexpectedly',
   })
 }
 
 export async function crawlUrl(url: string, feedId: string): Promise<{ storyId: string } | null> {
   const feed = await getFeedById(feedId)
   if (!feed) throw new Error('Feed not found')
+
+  url = normalizeUrl(url)
 
   // Check not already crawled
   const existing = await getExistingUrls([url])

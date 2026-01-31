@@ -26,9 +26,16 @@ export const config = {
     relevanceMin: parseInt(process.env.SELECT_RELEVANCE_MIN || '5', 10),
   },
   crawl: {
-    rssItemLimit: parseInt(process.env.RSS_ITEM_LIMIT || '20', 10),
+    rssItemLimit: parseInt(process.env.RSS_ITEM_LIMIT || '30', 10),
     httpTimeoutMs: parseInt(process.env.HTTP_TIMEOUT_MS || '10000', 10),
-    minContentLength: parseInt(process.env.MIN_CONTENT_LENGTH || '50', 10),
+    minContentLength: parseInt(process.env.MIN_CONTENT_LENGTH || '300', 10),
+    staleAfterEmptyCrawls: parseInt(process.env.STALE_AFTER_EMPTY_CRAWLS || '5', 10),
+    extractionApi: (process.env.EXTRACTION_API || 'diffbot') as 'diffbot' | 'pipfeed',
+    diffbotTimeoutMs: parseInt(process.env.DIFFBOT_TIMEOUT_MS || '15000', 10),
+    diffbotRateLimit: parseInt(process.env.DIFFBOT_RATE_LIMIT || '5', 10),
+    pipfeedTimeoutMs: parseInt(process.env.PIPFEED_TIMEOUT_MS || '15000', 10),
+    maxConcurrencyPerDomain: parseInt(process.env.MAX_CONCURRENCY_PER_DOMAIN || '2', 10),
+    minDelayPerDomainMs: parseInt(process.env.MIN_DELAY_PER_DOMAIN_MS || '200', 10),
   },
   content: {
     storyAssignmentDays: parseInt(process.env.STORY_ASSIGNMENT_DAYS || '7', 10),
