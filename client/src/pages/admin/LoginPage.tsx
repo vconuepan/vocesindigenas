@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../../lib/auth'
 import { Button } from '../../components/ui/Button'
+import { preloadAdminChunks } from '../../App'
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading, login } = useAuth()
@@ -11,6 +12,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Preload admin chunks while user types credentials
+  useEffect(() => {
+    preloadAdminChunks()
+  }, [])
 
   if (isLoading) return null
 

@@ -1,6 +1,6 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout'
-import AdminLayout from './layouts/AdminLayout'
 import HomePage from './pages/HomePage'
 import StoryPage from './pages/StoryPage'
 import IssuePage from './pages/IssuePage'
@@ -9,24 +9,43 @@ import MethodologyPage from './pages/MethodologyPage'
 import AboutPage from './pages/AboutPage'
 import ImprintPage from './pages/ImprintPage'
 import NotFoundPage from './pages/NotFoundPage'
-import LoginPage from './pages/admin/LoginPage'
-import DashboardPage from './pages/admin/DashboardPage'
-import StoriesPage from './pages/admin/StoriesPage'
-import StoryDetailPage from './pages/admin/StoryDetailPage'
-import FeedsPage from './pages/admin/FeedsPage'
-import IssuesPage from './pages/admin/IssuesPage'
-import IssueEditPage from './pages/admin/IssueEditPage'
-import NewslettersPage from './pages/admin/NewslettersPage'
-import NewsletterDetailPage from './pages/admin/NewsletterDetailPage'
-import PodcastsPage from './pages/admin/PodcastsPage'
-import PodcastDetailPage from './pages/admin/PodcastDetailPage'
-import JobsPage from './pages/admin/JobsPage'
-import UsersPage from './pages/admin/UsersPage'
+import { LoadingSpinner } from './components/ui/LoadingSpinner'
+import { ChunkErrorBoundary } from './components/ui/ChunkErrorBoundary'
+
+// Admin pages — lazy-loaded so public visitors never download admin code
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
+const LoginPage = lazy(() => import('./pages/admin/LoginPage'))
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'))
+const StoriesPage = lazy(() => import('./pages/admin/StoriesPage'))
+const StoryDetailPage = lazy(() => import('./pages/admin/StoryDetailPage'))
+const FeedsPage = lazy(() => import('./pages/admin/FeedsPage'))
+const IssuesPage = lazy(() => import('./pages/admin/IssuesPage'))
+const IssueEditPage = lazy(() => import('./pages/admin/IssueEditPage'))
+const NewslettersPage = lazy(() => import('./pages/admin/NewslettersPage'))
+const NewsletterDetailPage = lazy(() => import('./pages/admin/NewsletterDetailPage'))
+const PodcastsPage = lazy(() => import('./pages/admin/PodcastsPage'))
+const PodcastDetailPage = lazy(() => import('./pages/admin/PodcastDetailPage'))
+const JobsPage = lazy(() => import('./pages/admin/JobsPage'))
+const UsersPage = lazy(() => import('./pages/admin/UsersPage'))
+
+/** Preload the admin layout and dashboard chunks (call from LoginPage). */
+export function preloadAdminChunks() {
+  import('./layouts/AdminLayout')
+  import('./pages/admin/DashboardPage')
+}
+
+function AdminFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <LoadingSpinner size="lg" />
+    </div>
+  )
+}
 
 export default function App() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes — static imports for prerendering */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/stories/:slug" element={<StoryPage />} />
@@ -37,9 +56,23 @@ export default function App() {
         <Route path="/imprint" element={<ImprintPage />} />
       </Route>
 
-      {/* Admin routes */}
-      <Route path="/admin/login" element={<LoginPage />} />
-      <Route path="/admin" element={<AdminLayout />}>
+      {/* Admin routes — lazy-loaded with error boundary for chunk failures */}
+      <Route
+        path="/admin/login"
+        element={
+          <ChunkErrorBoundary>
+            <Suspense fallback={<AdminFallback />}><LoginPage /></Suspense>
+          </ChunkErrorBoundary>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ChunkErrorBoundary>
+            <Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense>
+          </ChunkErrorBoundary>
+        }
+      >
         <Route index element={<DashboardPage />} />
         <Route path="stories" element={<StoriesPage />} />
         <Route path="stories/:id" element={<StoryDetailPage />} />

@@ -36,6 +36,18 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/@headlessui/') ||
+            id.includes('node_modules/@heroicons/')
+          ) {
+            return 'admin-vendor'
+          }
+        },
+      },
+    },
   },
   test: {
     globals: true,
