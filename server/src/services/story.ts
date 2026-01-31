@@ -398,7 +398,7 @@ export async function getPublishedStories(options: {
       prisma.story.findMany({
         where,
         select: PUBLIC_STORY_SELECT,
-        orderBy: { dateCrawled: 'desc' },
+        orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
