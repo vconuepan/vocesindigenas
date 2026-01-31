@@ -1,23 +1,12 @@
 import cron from 'node-cron'
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
-import { runCrawlFeeds } from './crawlFeeds.js'
-import { runPreassessStories } from './preassessStories.js'
-import { runAssessStories } from './assessStories.js'
-import { runSelectStories } from './selectStories.js'
-import { runPublishStories } from './publishStories.js'
+import { notifyJobFailure } from '../lib/notify.js'
+import { JOB_HANDLERS } from './handlers.js'
 
 const log = createLogger('scheduler')
 
-const JOB_HANDLERS: Record<string, () => Promise<void>> = {
-  crawl_feeds: runCrawlFeeds,
-  preassess_stories: runPreassessStories,
-  assess_stories: runAssessStories,
-  select_stories: runSelectStories,
-  publish_stories: runPublishStories,
-}
-
-const registeredTasks: cron.ScheduledTask[] = []
+const tasksByName = new Map<string, cron.ScheduledTask>()
 const runningJobs = new Set<string>()
 
 export async function initScheduler(): Promise<void> {
@@ -46,7 +35,7 @@ export async function initScheduler(): Promise<void> {
     const task = cron.schedule(job.cronExpression, () => {
       runJob(job.jobName, handler)
     })
-    registeredTasks.push(task)
+    tasksByName.set(job.jobName, task)
     log.info({ jobName: job.jobName, cronExpression: job.cronExpression }, 'registered')
 
     // Check if overdue
@@ -56,7 +45,7 @@ export async function initScheduler(): Promise<void> {
     }
   }
 
-  log.info({ jobCount: registeredTasks.length }, 'ready')
+  log.info({ jobCount: tasksByName.size }, 'ready')
 }
 
 function isOverdue(job: { jobName: string; lastCompletedAt: Date | null; cronExpression: string }): boolean {
@@ -123,6 +112,7 @@ async function runJob(jobName: string, handler: () => Promise<void>): Promise<vo
       where: { jobName },
       data: { lastError: errorMsg, lastCompletedAt: new Date() },
     })
+    notifyJobFailure(jobName, errorMsg).catch(() => {})
   } finally {
     runningJobs.delete(jobName)
   }
@@ -131,9 +121,35 @@ async function runJob(jobName: string, handler: () => Promise<void>): Promise<vo
 // Exported for manual trigger via admin API
 export { runJob, runningJobs }
 
+export async function reloadJob(jobName: string): Promise<void> {
+  // Stop existing task if any
+  const existing = tasksByName.get(jobName)
+  if (existing) existing.stop()
+  tasksByName.delete(jobName)
+
+  // Read fresh config from DB
+  const job = await prisma.jobRun.findUnique({ where: { jobName } })
+  if (!job || !job.enabled) {
+    log.info({ jobName }, 'job disabled or not found, unregistered')
+    return
+  }
+
+  const handler = JOB_HANDLERS[jobName]
+  if (!handler || !cron.validate(job.cronExpression)) {
+    log.warn({ jobName }, 'no handler or invalid cron, not re-registering')
+    return
+  }
+
+  const task = cron.schedule(job.cronExpression, () => {
+    runJob(jobName, handler)
+  })
+  tasksByName.set(jobName, task)
+  log.info({ jobName, cronExpression: job.cronExpression }, 'reloaded')
+}
+
 export function stopScheduler(): void {
-  for (const task of registeredTasks) {
+  for (const task of tasksByName.values()) {
     task.stop()
   }
-  registeredTasks.length = 0
+  tasksByName.clear()
 }

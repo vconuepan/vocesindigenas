@@ -35,7 +35,7 @@ router.get('/stats', async (_req, res) => {
 
 router.get('/', validateQuery(storyQuerySchema), async (req, res) => {
   try {
-    const filters = (req as any).parsedQuery
+    const filters = req.parsedQuery!
     const result = await storyService.getStories(filters)
     res.json(result)
   } catch (err) {
@@ -46,7 +46,7 @@ router.get('/', validateQuery(storyQuerySchema), async (req, res) => {
 
 router.get('/batch', validateQuery(batchStoriesQuerySchema), async (req, res) => {
   try {
-    const { ids } = (req as any).parsedQuery
+    const { ids } = req.parsedQuery!
     if (ids.length === 0) {
       res.json([])
       return
@@ -61,13 +61,27 @@ router.get('/batch', validateQuery(batchStoriesQuerySchema), async (req, res) =>
 
 // --- Bulk task endpoints ---
 
+function filterProcessingIds(storyIds: string[]): { filtered: string[]; skipped: string[] } {
+  const processingIds = new Set(taskRegistry.getProcessingStoryIds())
+  const filtered: string[] = []
+  const skipped: string[] = []
+  for (const id of storyIds) {
+    if (processingIds.has(id)) skipped.push(id)
+    else filtered.push(id)
+  }
+  return { filtered, skipped }
+}
+
 router.post('/bulk-preassess', expensiveOpLimiter, validateBody(bulkStoryIdsSchema), async (req, res) => {
   try {
-    const { storyIds } = req.body
-    const taskId = taskRegistry.create('preassess', storyIds.length, storyIds)
-    // Fire and forget — progress tracked via task polling
-    analysisService.bulkPreAssess(storyIds, taskId)
-    res.status(202).json({ taskId })
+    const { filtered, skipped } = filterProcessingIds(req.body.storyIds)
+    if (filtered.length === 0) {
+      res.status(409).json({ error: 'All stories are already being processed', skipped })
+      return
+    }
+    const taskId = taskRegistry.create('preassess', filtered.length, filtered)
+    analysisService.bulkPreAssess(filtered, taskId)
+    res.status(202).json({ taskId, ...(skipped.length > 0 ? { skipped } : {}) })
   } catch (err) {
     log.error({ err }, 'failed to start bulk pre-assess')
     res.status(500).json({ error: 'Failed to start bulk pre-assess' })
@@ -76,10 +90,14 @@ router.post('/bulk-preassess', expensiveOpLimiter, validateBody(bulkStoryIdsSche
 
 router.post('/bulk-assess', expensiveOpLimiter, validateBody(bulkStoryIdsSchema), async (req, res) => {
   try {
-    const { storyIds } = req.body
-    const taskId = taskRegistry.create('assess', storyIds.length, storyIds)
-    analysisService.bulkAssess(storyIds, taskId)
-    res.status(202).json({ taskId })
+    const { filtered, skipped } = filterProcessingIds(req.body.storyIds)
+    if (filtered.length === 0) {
+      res.status(409).json({ error: 'All stories are already being processed', skipped })
+      return
+    }
+    const taskId = taskRegistry.create('assess', filtered.length, filtered)
+    analysisService.bulkAssess(filtered, taskId)
+    res.status(202).json({ taskId, ...(skipped.length > 0 ? { skipped } : {}) })
   } catch (err) {
     log.error({ err }, 'failed to start bulk assess')
     res.status(500).json({ error: 'Failed to start bulk assess' })
@@ -88,10 +106,18 @@ router.post('/bulk-assess', expensiveOpLimiter, validateBody(bulkStoryIdsSchema)
 
 router.post('/bulk-select', expensiveOpLimiter, validateBody(bulkSelectIdsSchema), async (req, res) => {
   try {
-    const { storyIds } = req.body
-    const taskId = taskRegistry.create('select', storyIds.length, storyIds)
-    analysisService.bulkSelect(storyIds, taskId)
-    res.status(202).json({ taskId })
+    const { filtered, skipped } = filterProcessingIds(req.body.storyIds)
+    if (filtered.length === 0) {
+      res.status(409).json({ error: 'All stories are already being processed', skipped })
+      return
+    }
+    if (filtered.length < 2) {
+      res.status(400).json({ error: 'At least 2 non-processing story IDs are required after filtering', skipped })
+      return
+    }
+    const taskId = taskRegistry.create('select', filtered.length, filtered)
+    analysisService.bulkSelect(filtered, taskId)
+    res.status(202).json({ taskId, ...(skipped.length > 0 ? { skipped } : {}) })
   } catch (err) {
     log.error({ err }, 'failed to start bulk select')
     res.status(500).json({ error: 'Failed to start bulk select' })
@@ -198,8 +224,7 @@ router.post('/preassess', expensiveOpLimiter, validateBody(preassessBodySchema),
     if (req.body.storyIds && req.body.storyIds.length > 0) {
       storyIds = req.body.storyIds
     } else {
-      const fetched = await storyService.getStoriesByStatus('fetched')
-      storyIds = fetched.map(s => s.id)
+      storyIds = await storyService.getStoryIdsByStatus('fetched')
     }
 
     if (storyIds.length === 0) {

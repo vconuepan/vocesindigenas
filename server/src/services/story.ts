@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js'
-import type { Story, Prisma } from '@prisma/client'
+import { type Story, type Prisma, StoryStatus, EmotionTag } from '@prisma/client'
+import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 
 interface StoryFilters {
@@ -12,6 +13,7 @@ interface StoryFilters {
   ratingMax?: number
   rating?: string
   emotionTag?: string
+  search?: string
   sort?: string
   page?: number
   pageSize?: number
@@ -51,9 +53,9 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   if (filters.status === 'all') {
     // No status filter — show everything including trashed
   } else if (filters.status) {
-    where.status = filters.status as any
+    where.status = filters.status as StoryStatus
   } else {
-    where.status = { not: 'trashed' as any }
+    where.status = { not: StoryStatus.trashed }
   }
   if (filters.feedId) {
     where.feedId = filters.feedId
@@ -91,11 +93,54 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
     }
   }
   if (filters.emotionTag) {
-    where.emotionTag = filters.emotionTag as any
+    where.emotionTag = filters.emotionTag as EmotionTag
+  }
+  if (filters.search) {
+    const searchCondition = {
+      OR: [
+        { title: { contains: filters.search, mode: 'insensitive' as const } },
+        { sourceTitle: { contains: filters.search, mode: 'insensitive' as const } },
+        { summary: { contains: filters.search, mode: 'insensitive' as const } },
+      ],
+    }
+    if (where.OR) {
+      // rating filter already set where.OR — combine via AND
+      const ratingCondition = { OR: where.OR }
+      delete where.OR
+      where.AND = [ratingCondition, searchCondition]
+    } else {
+      where.OR = searchCondition.OR
+    }
   }
 
   return where
 }
+
+const ADMIN_LIST_SELECT = {
+  id: true,
+  sourceUrl: true,
+  sourceTitle: true,
+  sourceDatePublished: true,
+  feedId: true,
+  status: true,
+  dateCrawled: true,
+  datePublished: true,
+  relevancePre: true,
+  relevance: true,
+  emotionTag: true,
+  slug: true,
+  title: true,
+  summary: true,
+  quote: true,
+  marketingBlurb: true,
+  relevanceReasons: true,
+  antifactors: true,
+  relevanceCalculation: true,
+  crawlMethod: true,
+  createdAt: true,
+  updatedAt: true,
+  feed: { select: { id: true, title: true, issue: { select: { id: true, name: true, slug: true } } } },
+} as const
 
 export async function getStories(filters: StoryFilters) {
   const page = filters.page || 1
@@ -103,24 +148,19 @@ export async function getStories(filters: StoryFilters) {
   const where = buildWhereClause(filters)
   const orderBy = filters.sort ? SORT_MAP[filters.sort] : { dateCrawled: 'desc' as const }
 
-  const [data, total] = await Promise.all([
-    prisma.story.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include: { feed: { include: { issue: true } } },
-    }),
-    prisma.story.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.story.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: ADMIN_LIST_SELECT,
+      }),
+    count: () => prisma.story.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
 export async function getStoriesByIds(ids: string[]) {
@@ -169,6 +209,18 @@ export async function getExistingUrls(urls: string[]): Promise<Set<string>> {
   return new Set(existing.map(s => s.sourceUrl))
 }
 
+async function preparePublishData(id: string): Promise<Record<string, any>> {
+  const story = await prisma.story.findUnique({
+    where: { id },
+    select: { datePublished: true, slug: true, title: true, sourceTitle: true },
+  })
+  if (!story) return {}
+  const data: Record<string, any> = {}
+  if (!story.datePublished) data.datePublished = new Date()
+  if (!story.slug) data.slug = await generateUniqueSlug(story.title || story.sourceTitle, id)
+  return data
+}
+
 export async function updateStory(id: string, data: Record<string, any>): Promise<Story> {
   const updateData = { ...data }
   // Convert date strings to Date objects if present
@@ -178,68 +230,126 @@ export async function updateStory(id: string, data: Record<string, any>): Promis
   if (updateData.datePublished !== undefined) {
     updateData.datePublished = updateData.datePublished ? new Date(updateData.datePublished) : null
   }
-  // Auto-set datePublished when status changes to published
+  // Auto-set datePublished and slug when status changes to published
   if (updateData.status === 'published' && updateData.datePublished === undefined) {
-    const story = await prisma.story.findUnique({ where: { id }, select: { datePublished: true, slug: true, title: true, sourceTitle: true } })
-    if (story && !story.datePublished) {
-      updateData.datePublished = new Date()
-    }
-    // Auto-generate slug on publish if not already set
-    if (story && !story.slug && !updateData.slug) {
-      updateData.slug = await generateUniqueSlug(story.title || story.sourceTitle, id)
-    }
+    const publishData = await preparePublishData(id)
+    if (!updateData.slug && publishData.slug) updateData.slug = publishData.slug
+    if (publishData.datePublished) updateData.datePublished = publishData.datePublished
   }
   return prisma.story.update({ where: { id }, data: updateData })
 }
 
 export async function updateStoryStatus(id: string, status: string): Promise<Story> {
-  const data: Record<string, any> = { status: status as any }
-  // Auto-set datePublished and slug when status changes to published
+  const data: Record<string, any> = { status: status as StoryStatus }
   if (status === 'published') {
-    const story = await prisma.story.findUnique({ where: { id }, select: { datePublished: true, slug: true, title: true, sourceTitle: true } })
-    if (story && !story.datePublished) {
-      data.datePublished = new Date()
-    }
-    if (story && !story.slug) {
-      data.slug = await generateUniqueSlug(story.title || story.sourceTitle, id)
-    }
+    Object.assign(data, await preparePublishData(id))
   }
   return prisma.story.update({ where: { id }, data })
 }
 
+export async function generateUniqueSlugs(
+  stories: { id: string; title: string | null; sourceTitle: string }[],
+): Promise<Map<string, string>> {
+  if (stories.length === 0) return new Map()
+
+  // Generate base slugs for all stories
+  const baseSlugs = stories.map(s => ({
+    id: s.id,
+    base: slugify(s.title || s.sourceTitle),
+  }))
+
+  // Find all existing slugs that could conflict (matching any base pattern)
+  const uniqueBases = [...new Set(baseSlugs.map(s => s.base))]
+  const existingStories = await prisma.story.findMany({
+    where: {
+      slug: { not: null },
+      id: { notIn: stories.map(s => s.id) },
+      OR: uniqueBases.map(base => ({
+        slug: { startsWith: base },
+      })),
+    },
+    select: { slug: true },
+  })
+  const existingSlugs = new Set(existingStories.map(s => s.slug!))
+
+  // Resolve conflicts: track slugs we're assigning in this batch too
+  const assignedSlugs = new Set<string>()
+  const result = new Map<string, string>()
+
+  for (const { id, base } of baseSlugs) {
+    let candidate = base
+    let suffix = 2
+    while (existingSlugs.has(candidate) || assignedSlugs.has(candidate)) {
+      candidate = `${base}-${suffix}`
+      suffix++
+    }
+    assignedSlugs.add(candidate)
+    result.set(id, candidate)
+  }
+
+  return result
+}
+
 export async function bulkUpdateStatus(ids: string[], status: string) {
   if (status === 'published') {
-    // Generate slugs for stories that don't have them yet
+    // Batch-generate slugs for stories that don't have them yet
     const storiesNeedingSlugs = await prisma.story.findMany({
       where: { id: { in: ids }, slug: null },
       select: { id: true, title: true, sourceTitle: true },
     })
-    for (const story of storiesNeedingSlugs) {
-      const slug = await generateUniqueSlug(story.title || story.sourceTitle, story.id)
-      await prisma.story.update({ where: { id: story.id }, data: { slug } })
-    }
 
-    // Auto-set datePublished when bulk-publishing stories that don't have one yet
-    const [withDate, withoutDate] = await Promise.all([
+    const slugMap = await generateUniqueSlugs(storiesNeedingSlugs)
+
+    // Apply slug updates + status updates in a transaction
+    const now = new Date()
+    await prisma.$transaction([
+      // Set slugs for stories that need them
+      ...Array.from(slugMap.entries()).map(([storyId, slug]) =>
+        prisma.story.update({ where: { id: storyId }, data: { slug } }),
+      ),
+      // Update status for stories that already have datePublished
       prisma.story.updateMany({
         where: { id: { in: ids }, datePublished: { not: null } },
-        data: { status: status as any },
+        data: { status: status as StoryStatus },
       }),
+      // Update status + set datePublished for stories without one
       prisma.story.updateMany({
         where: { id: { in: ids }, datePublished: null },
-        data: { status: status as any, datePublished: new Date() },
+        data: { status: status as StoryStatus, datePublished: now },
       }),
     ])
-    return { count: withDate.count + withoutDate.count }
+
+    return { count: ids.length }
   }
   return prisma.story.updateMany({
     where: { id: { in: ids } },
-    data: { status: status as any },
+    data: { status: status as StoryStatus },
   })
 }
 
 export async function deleteStory(id: string): Promise<void> {
   await prisma.story.delete({ where: { id } })
+
+  // Clean up dangling storyId references in newsletters and podcasts
+  const [newsletters, podcasts] = await Promise.all([
+    prisma.newsletter.findMany({ where: { storyIds: { has: id } }, select: { id: true, storyIds: true } }),
+    prisma.podcast.findMany({ where: { storyIds: { has: id } }, select: { id: true, storyIds: true } }),
+  ])
+
+  const updates: Promise<unknown>[] = []
+  for (const nl of newsletters) {
+    updates.push(prisma.newsletter.update({
+      where: { id: nl.id },
+      data: { storyIds: nl.storyIds.filter(sid => sid !== id) },
+    }))
+  }
+  for (const pod of podcasts) {
+    updates.push(prisma.podcast.update({
+      where: { id: pod.id },
+      data: { storyIds: pod.storyIds.filter(sid => sid !== id) },
+    }))
+  }
+  if (updates.length > 0) await Promise.all(updates)
 }
 
 export async function getStoryStats() {
@@ -304,31 +414,33 @@ export async function getPublishedStories(options: {
     }
   }
 
-  const [data, total] = await Promise.all([
-    prisma.story.findMany({
-      where,
-      select: PUBLIC_STORY_SELECT,
-      orderBy: { dateCrawled: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.story.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.story.findMany({
+        where,
+        select: PUBLIC_STORY_SELECT,
+        orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    count: () => prisma.story.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
-export async function getStoriesByStatus(
+interface StatusFilterOptions {
+  ratingMin?: number
+  relevanceMin?: number
+  hoursAgo?: number
+  limit?: number
+}
+
+function buildStatusWhereClause(
   status: string,
-  options: { ratingMin?: number; relevanceMin?: number; hoursAgo?: number } = {},
-) {
-  const where: Prisma.StoryWhereInput = { status: status as any }
+  options: StatusFilterOptions = {},
+): Prisma.StoryWhereInput {
+  const where: Prisma.StoryWhereInput = { status: status as StoryStatus }
   if (options.ratingMin !== undefined) {
     where.relevancePre = { gte: options.ratingMin }
   }
@@ -338,25 +450,43 @@ export async function getStoriesByStatus(
   if (options.hoursAgo !== undefined) {
     where.dateCrawled = { gte: new Date(Date.now() - options.hoursAgo * 60 * 60 * 1000) }
   }
+  return where
+}
+
+export async function getStoryIdsByStatus(
+  status: string,
+  options: StatusFilterOptions = {},
+): Promise<string[]> {
+  const where = buildStatusWhereClause(status, options)
+  const stories = await prisma.story.findMany({
+    where,
+    select: { id: true },
+    orderBy: { dateCrawled: 'desc' },
+    ...(options.limit ? { take: options.limit } : {}),
+  })
+  return stories.map(s => s.id)
+}
+
+export async function getStoriesByStatus(
+  status: string,
+  options: StatusFilterOptions = {},
+) {
+  const where = buildStatusWhereClause(status, options)
   return prisma.story.findMany({
     where,
     include: { feed: { include: { issue: true } } },
     orderBy: { dateCrawled: 'desc' },
+    take: options.limit ?? 1000,
   })
 }
 
 export async function publishStory(id: string): Promise<Story> {
-  const story = await prisma.story.findUnique({ where: { id } })
-  const slug = story && !story.slug
-    ? await generateUniqueSlug(story.title || story.sourceTitle, id)
-    : undefined
+  const publishData = await preparePublishData(id)
   return prisma.story.update({
     where: { id },
     data: {
-      status: 'published' as any,
-      // Set datePublished only on first publish
-      ...(story && !story.datePublished ? { datePublished: new Date() } : {}),
-      ...(slug ? { slug } : {}),
+      status: StoryStatus.published,
+      ...publishData,
     },
   })
 }
@@ -364,14 +494,7 @@ export async function publishStory(id: string): Promise<Story> {
 export async function rejectStory(id: string): Promise<Story> {
   return prisma.story.update({
     where: { id },
-    data: { status: 'rejected' as any },
-  })
-}
-
-export async function getPublishedStoryById(id: string) {
-  return prisma.story.findFirst({
-    where: { id, status: 'published' },
-    select: PUBLIC_STORY_SELECT,
+    data: { status: StoryStatus.rejected },
   })
 }
 

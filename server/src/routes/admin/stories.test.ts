@@ -24,7 +24,16 @@ const mockPrisma = vi.hoisted(() => ({
     count: vi.fn(),
     groupBy: vi.fn(),
   },
+  newsletter: {
+    findMany: vi.fn(),
+    update: vi.fn(),
+  },
+  podcast: {
+    findMany: vi.fn(),
+    update: vi.fn(),
+  },
   $disconnect: vi.fn(),
+  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
 }))
 
 vi.mock('../../lib/prisma.js', () => ({ default: mockPrisma }))
@@ -53,6 +62,7 @@ vi.mock('../../services/analysis.js', () => ({
 process.env.PUBLIC_API_KEY = TEST_API_KEY
 
 const { default: app } = await import('../../app.js')
+const { taskRegistry } = await import('../../lib/taskRegistry.js')
 
 const storyWithRelations = {
   ...sampleStory(),
@@ -62,6 +72,7 @@ const storyWithRelations = {
 describe('Admin Stories API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    taskRegistry.clear()
   })
 
   describe('GET /api/admin/stories', () => {
@@ -299,6 +310,9 @@ describe('Admin Stories API', () => {
 
   describe('POST /api/admin/stories/bulk-status', () => {
     it('bulk updates story statuses', async () => {
+      // findMany for stories needing slugs
+      mockPrisma.story.findMany.mockResolvedValueOnce([])
+      // findMany for existing slugs check (empty = no conflicts)
       mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 1 })
       mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 2 })
 
@@ -464,6 +478,8 @@ describe('Admin Stories API', () => {
   describe('DELETE /api/admin/stories/:id', () => {
     it('deletes a story', async () => {
       mockPrisma.story.delete.mockResolvedValue(sampleStory())
+      mockPrisma.newsletter.findMany.mockResolvedValue([])
+      mockPrisma.podcast.findMany.mockResolvedValue([])
 
       const res = await request(app)
         .delete('/api/admin/stories/story-1')
@@ -570,6 +586,50 @@ describe('Admin Stories API', () => {
         .set(authHeader())
         .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
       expect(res.status).toBe(400)
+    })
+  })
+
+  describe('bulk endpoint duplicate protection', () => {
+    it('returns 409 when all story IDs are already processing', async () => {
+      mockBulkPreAssess.mockResolvedValue(undefined)
+      const ids = ['00000000-0000-0000-0000-000000000001']
+
+      // First request: creates task
+      await request(app)
+        .post('/api/admin/stories/bulk-preassess')
+        .set(authHeader())
+        .send({ storyIds: ids })
+
+      // Second request: same IDs, should be rejected
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-preassess')
+        .set(authHeader())
+        .send({ storyIds: ids })
+      expect(res.status).toBe(409)
+      expect(res.body.error).toContain('already being processed')
+      expect(res.body.skipped).toEqual(ids)
+    })
+
+    it('filters out processing IDs and proceeds with remaining', async () => {
+      mockBulkAssess.mockResolvedValue(undefined)
+      const id1 = '00000000-0000-0000-0000-000000000001'
+      const id2 = '00000000-0000-0000-0000-000000000002'
+
+      // Create task with id1
+      await request(app)
+        .post('/api/admin/stories/bulk-assess')
+        .set(authHeader())
+        .send({ storyIds: [id1] })
+
+      // Submit both — id1 should be skipped, id2 should proceed
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-assess')
+        .set(authHeader())
+        .send({ storyIds: [id1, id2] })
+      expect(res.status).toBe(202)
+      expect(res.body.taskId).toBeTruthy()
+      expect(res.body.skipped).toEqual([id1])
+      expect(mockBulkAssess).toHaveBeenLastCalledWith([id2], res.body.taskId)
     })
   })
 

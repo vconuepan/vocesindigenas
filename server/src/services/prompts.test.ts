@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt } from './prompts.js'
+import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt } from '../prompts/index.js'
 
 const guidelines = {
   factors: 'Technology advancement\nScientific discovery',

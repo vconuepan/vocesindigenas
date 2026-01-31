@@ -1,7 +1,10 @@
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
+import { config } from '../config.js'
+import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
+import { paginate } from '../lib/paginate.js'
 import { getSmallLLM, rateLimitDelay } from './llm.js'
-import { buildPodcastPrompt } from './prompts.js'
+import { buildPodcastPrompt } from '../prompts/index.js'
 import { podcastScriptSchema } from '../schemas/llm.js'
 
 interface PodcastFilters {
@@ -13,26 +16,21 @@ interface PodcastFilters {
 export async function getPodcasts(filters: PodcastFilters) {
   const page = filters.page || 1
   const pageSize = filters.pageSize || 25
-  const where: Record<string, any> = {}
-  if (filters.status) where.status = filters.status
+  const where: Prisma.PodcastWhereInput = {}
+  if (filters.status) where.status = filters.status as ContentStatus
 
-  const [data, total] = await Promise.all([
-    prisma.podcast.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.podcast.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.podcast.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    count: () => prisma.podcast.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
 export async function getPodcastById(id: string) {
@@ -43,7 +41,7 @@ export async function createPodcast(data: { title: string }) {
   return prisma.podcast.create({ data: { title: data.title } })
 }
 
-export async function updatePodcast(id: string, data: Record<string, any>) {
+export async function updatePodcast(id: string, data: Prisma.PodcastUpdateInput) {
   return prisma.podcast.update({ where: { id }, data })
 }
 
@@ -57,14 +55,16 @@ export async function assignStories(podcastId: string) {
 
   const stories = await prisma.story.findMany({
     where: {
-      status: { in: ['published' as any, 'selected' as any] },
-      dateCrawled: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      status: { in: [StoryStatus.published, StoryStatus.selected] },
+      dateCrawled: { gte: new Date(Date.now() - config.content.storyAssignmentDays * 24 * 60 * 60 * 1000) },
     },
     orderBy: { dateCrawled: 'desc' },
     select: { id: true },
   })
 
   const storyIds = stories.map(s => s.id)
+  if (storyIds.length === 0) throw new Error('No recent stories to assign')
+
   return prisma.podcast.update({
     where: { id: podcastId },
     data: { storyIds },

@@ -1,31 +1,19 @@
 import { Router } from 'express'
 import { createLogger } from '../../lib/logger.js'
 import cron from 'node-cron'
-import prisma from '../../lib/prisma.js'
-import { runJob, runningJobs } from '../../jobs/scheduler.js'
+import { runJob, reloadJob } from '../../jobs/scheduler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { updateJobSchema } from '../../schemas/job.js'
-import { runCrawlFeeds } from '../../jobs/crawlFeeds.js'
-import { runPreassessStories } from '../../jobs/preassessStories.js'
-import { runAssessStories } from '../../jobs/assessStories.js'
-import { runSelectStories } from '../../jobs/selectStories.js'
-import { runPublishStories } from '../../jobs/publishStories.js'
-
-const JOB_HANDLERS: Record<string, () => Promise<void>> = {
-  crawl_feeds: runCrawlFeeds,
-  preassess_stories: runPreassessStories,
-  assess_stories: runAssessStories,
-  select_stories: runSelectStories,
-  publish_stories: runPublishStories,
-}
+import { JOB_HANDLERS } from '../../jobs/handlers.js'
+import { getJobs, updateJob } from '../../services/job.js'
 
 const router = Router()
 const log = createLogger('jobs')
 
 router.get('/', async (_req, res) => {
   try {
-    const jobs = await prisma.jobRun.findMany({ orderBy: { jobName: 'asc' } })
-    res.json(jobs.map(job => ({ ...job, running: runningJobs.has(job.jobName) })))
+    const jobs = await getJobs()
+    res.json(jobs)
   } catch (err) {
     log.error({ err }, 'failed to fetch jobs')
     res.status(500).json({ error: 'Failed to fetch jobs' })
@@ -39,10 +27,8 @@ router.put('/:jobName', validateBody(updateJobSchema), async (req, res) => {
       return
     }
 
-    const job = await prisma.jobRun.update({
-      where: { jobName: req.params.jobName },
-      data: req.body,
-    })
+    const job = await updateJob(req.params.jobName, req.body)
+    await reloadJob(req.params.jobName)
     res.json(job)
   } catch (err: any) {
     if (err.code === 'P2025') {

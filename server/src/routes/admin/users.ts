@@ -5,6 +5,7 @@ import { revokeAllUserTokens } from '../../services/auth.js'
 import { validateBody } from '../../middleware/validate.js'
 import { requireRole } from '../../middleware/auth.js'
 import { createUserSchema, updateUserSchema } from '../../schemas/user.js'
+import { resetPasswordSchema } from '../../schemas/auth.js'
 
 const router = Router()
 const log = createLogger('users')
@@ -61,6 +62,20 @@ router.put('/:id', validateBody(updateUserSchema), async (req, res) => {
     }
     log.error({ err }, 'failed to update user')
     res.status(500).json({ error: 'Failed to update user' })
+  }
+})
+
+router.put('/:id/password', validateBody(resetPasswordSchema), async (req, res) => {
+  try {
+    await userService.resetPassword(req.params.id, req.body.password)
+    res.json({ message: 'Password reset' })
+  } catch (err: any) {
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: 'User not found' })
+      return
+    }
+    log.error({ err }, 'failed to reset password')
+    res.status(500).json({ error: 'Failed to reset password' })
   }
 })
 

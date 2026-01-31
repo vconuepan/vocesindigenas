@@ -1,25 +1,21 @@
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
+import { EmotionTag } from '@prisma/client'
 import { config } from '../config.js'
 import { Semaphore } from '../lib/semaphore.js'
 import { splitIntoGroups } from '../lib/utils.js'
 import { createLogger } from '../lib/logger.js'
 import { taskRegistry } from '../lib/taskRegistry.js'
 import { getSmallLLM, getLargeLLM, rateLimitDelay } from './llm.js'
-import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from './prompts.js'
+import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
 import { preAssessResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
+import type { Guidelines } from '../prompts/shared.js'
 
 const log = createLogger('analysis')
 
 export type ProgressCallback = (
   event: { type: 'completed'; count: number } | { type: 'failed'; count: number; error: string }
 ) => void
-
-interface Guidelines {
-  factors: string
-  antifactors: string
-  ratings: string
-}
 
 function getGuidelines(issue: { promptFactors: string; promptAntifactors: string; promptRatings: string }): Guidelines {
   return {
@@ -97,28 +93,33 @@ export async function preAssessStories(
         batchesDone++
         log.info({ progress: `${batchesDone}/${totalBatches}`, resultCount: response.articles.length, batch: work.batchLabel }, 'batch complete')
 
+        const storyMap = new Map(work.batch.map(s => [s.id, s]))
         const batchResults: { storyId: string; rating: number; emotionTag: string }[] = []
+        const updates: ReturnType<typeof prisma.story.update>[] = []
         for (const item of response.articles) {
-          const story = work.batch.find(s => s.id === item.articleId)
+          const story = storyMap.get(item.articleId)
           if (!story) {
             log.warn({ articleId: item.articleId }, 'LLM returned unknown articleId')
             continue
           }
 
-          await prisma.story.update({
+          updates.push(prisma.story.update({
             where: { id: story.id },
             data: {
               relevancePre: item.rating,
-              emotionTag: item.emotionTag as any,
+              emotionTag: item.emotionTag as EmotionTag,
               status: 'pre_analyzed',
             },
-          })
+          }))
 
           batchResults.push({
             storyId: story.id,
             rating: item.rating,
             emotionTag: item.emotionTag,
           })
+        }
+        if (updates.length > 0) {
+          await prisma.$transaction(updates)
         }
         onProgress?.({ type: 'completed', count: batchResults.length })
         const missing = work.batch.length - batchResults.length
@@ -222,7 +223,7 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
 
   log.info({ storyCount: stories.length }, 'selecting from stories')
 
-  const toSelect = Math.ceil(stories.length * 0.5)
+  const toSelect = Math.ceil(stories.length * config.selection.ratio)
   const prompt = buildSelectPrompt(
     stories.map(s => ({
       id: s.id,

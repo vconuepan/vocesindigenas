@@ -183,4 +183,59 @@ describe('Admin Users API', () => {
       expect(res.body.error).toContain('Cannot delete your own account')
     })
   })
+
+  describe('PUT /api/admin/users/:id/password', () => {
+    it('resets a user password', async () => {
+      mockPrisma.user.update.mockResolvedValue({})
+      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 1 })
+
+      const res = await request(app)
+        .put('/api/admin/users/u1/password')
+        .set(authHeader())
+        .send({ password: 'newsecurepass123' })
+
+      expect(res.status).toBe(200)
+      expect(res.body.message).toBe('Password reset')
+    })
+
+    it('returns 400 for password too short', async () => {
+      const res = await request(app)
+        .put('/api/admin/users/u1/password')
+        .set(authHeader())
+        .send({ password: 'short' })
+
+      expect(res.status).toBe(400)
+    })
+
+    it('returns 400 for missing password', async () => {
+      const res = await request(app)
+        .put('/api/admin/users/u1/password')
+        .set(authHeader())
+        .send({})
+
+      expect(res.status).toBe(400)
+    })
+
+    it('returns 401 without auth', async () => {
+      const res = await request(app)
+        .put('/api/admin/users/u1/password')
+        .send({ password: 'newsecurepass123' })
+
+      expect(res.status).toBe(401)
+    })
+
+    it('revokes tokens after reset', async () => {
+      mockPrisma.user.update.mockResolvedValue({})
+      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
+
+      await request(app)
+        .put('/api/admin/users/u1/password')
+        .set(authHeader())
+        .send({ password: 'newsecurepass123' })
+
+      expect(mockPrisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'u1' },
+      })
+    })
+  })
 })

@@ -1,7 +1,9 @@
 import { Router } from 'express'
 import { validateBody } from '../middleware/validate.js'
-import { loginSchema } from '../schemas/auth.js'
-import { getUserByEmail } from '../services/user.js'
+import { requireAuth } from '../middleware/auth.js'
+import { authLimiter, refreshLimiter } from '../middleware/rateLimit.js'
+import { loginSchema, changePasswordSchema } from '../schemas/auth.js'
+import { getUserByEmail, changePassword } from '../services/user.js'
 import {
   verifyPassword,
   generateAccessToken,
@@ -28,7 +30,7 @@ function setRefreshCookie(res: any, token: string) {
   res.cookie(REFRESH_COOKIE, token, {
     httpOnly: true,
     secure: isSecureEnv(),
-    sameSite: 'strict' as const,
+    sameSite: isSecureEnv() ? 'none' as const : 'strict' as const,
     maxAge: COOKIE_MAX_AGE,
     path: '/api/auth',
   })
@@ -38,12 +40,12 @@ function clearRefreshCookie(res: any) {
   res.clearCookie(REFRESH_COOKIE, {
     httpOnly: true,
     secure: isSecureEnv(),
-    sameSite: 'strict' as const,
+    sameSite: isSecureEnv() ? 'none' as const : 'strict' as const,
     path: '/api/auth',
   })
 }
 
-router.post('/login', validateBody(loginSchema), async (req, res) => {
+router.post('/login', authLimiter, validateBody(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body
 
@@ -73,7 +75,7 @@ router.post('/login', validateBody(loginSchema), async (req, res) => {
   }
 })
 
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', refreshLimiter, async (req, res) => {
   try {
     const token = req.cookies?.[REFRESH_COOKIE]
     if (!token) {
@@ -86,7 +88,7 @@ router.post('/refresh', async (req, res) => {
     res.json({ accessToken: result.accessToken })
   } catch (err) {
     clearRefreshCookie(res)
-    if (err instanceof Error && (err.message === 'Invalid refresh token' || err.message === 'Refresh token expired')) {
+    if (err instanceof Error && (err.message === 'Invalid refresh token' || err.message === 'Refresh token expired' || err.message === 'Refresh token reuse detected')) {
       res.status(401).json({ error: err.message })
       return
     }
@@ -129,6 +131,20 @@ router.get('/me', async (req, res) => {
     res.json(user)
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' })
+  }
+})
+
+router.put('/password', requireAuth, validateBody(changePasswordSchema), async (req, res) => {
+  try {
+    await changePassword(req.user!.userId, req.body.currentPassword, req.body.newPassword)
+    res.json({ message: 'Password changed' })
+  } catch (err) {
+    if (err instanceof Error && err.message === 'Current password is incorrect') {
+      res.status(401).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'password change failed')
+    res.status(500).json({ error: 'Password change failed' })
   }
 })
 

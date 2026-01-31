@@ -62,6 +62,7 @@ export const storyQuerySchema = z.object({
   ratingMax: z.coerce.number().int().min(0).max(10).optional(),
   rating: ratingFilterEnum.optional(),
   emotionTag: emotionTagEnum.optional(),
+  search: z.string().max(200).optional(),
   sort: storySortEnum.optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   pageSize: z.coerce.number().int().positive().max(100).optional().default(25),

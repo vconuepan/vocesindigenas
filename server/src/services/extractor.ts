@@ -3,11 +3,11 @@ import * as cheerio from 'cheerio'
 import { Readability } from '@mozilla/readability'
 import { JSDOM } from 'jsdom'
 import { isAllowedUrl } from '../utils/urlValidation.js'
+import { config } from '../config.js'
 import { createLogger } from '../lib/logger.js'
+import { withRetry } from '../lib/retry.js'
 
 const log = createLogger('extractor')
-
-const HTTP_TIMEOUT = 10000
 const USER_AGENT = 'ActuallyRelevant/1.0 (news curation bot; +https://actuallyrelevant.news)'
 
 export interface ExtractionResult {
@@ -19,8 +19,8 @@ export interface ExtractionResult {
 
 async function fetchPage(url: string): Promise<string | null> {
   try {
-    const response = await axios.get(url, {
-      timeout: HTTP_TIMEOUT,
+    const response = await withRetry(() => axios.get(url, {
+      timeout: config.crawl.httpTimeoutMs,
       headers: { 'User-Agent': USER_AGENT },
       maxRedirects: 5,
       responseType: 'text',
@@ -31,7 +31,7 @@ async function fetchPage(url: string): Promise<string | null> {
           throw new Error(`Blocked redirect to disallowed URL: ${redirectUrl}`)
         }
       },
-    })
+    }))
     return response.data
   } catch (err) {
     log.error({ url, err }, 'failed to fetch page')
@@ -46,7 +46,7 @@ function extractBySelector(html: string, selector: string): ExtractionResult | n
     if (!container.length) return null
 
     const text = container.text().replace(/\s+/g, ' ').trim()
-    if (!text || text.length < 50) return null
+    if (!text || text.length < config.crawl.minContentLength) return null
 
     return {
       title: $('title').text().trim() || null,
@@ -64,7 +64,7 @@ function extractByReadability(html: string, url: string): ExtractionResult | nul
   try {
     const dom = new JSDOM(html, { url })
     const article = new Readability(dom.window.document).parse()
-    if (!article || !article.textContent || article.textContent.trim().length < 50) return null
+    if (!article || !article.textContent || article.textContent.trim().length < config.crawl.minContentLength) return null
 
     return {
       title: article.title || null,
@@ -83,7 +83,7 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
   if (!apiKey) return null
 
   try {
-    const response = await axios.post(
+    const response = await withRetry(() => axios.post(
       'https://news-article-data-extract-and-summarization1.p.rapidapi.com/extract/',
       { url },
       {
@@ -94,10 +94,10 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
           'X-RapidAPI-Host': 'news-article-data-extract-and-summarization1.p.rapidapi.com',
         },
       }
-    )
+    ))
 
     const data = response.data
-    if (!data?.text || data.text.length < 50) return null
+    if (!data?.text || data.text.length < config.crawl.minContentLength) return null
 
     return {
       title: data.title || null,

@@ -9,12 +9,14 @@ vi.mock('express-rate-limit', () => ({
 const mockPrisma = vi.hoisted(() => ({
   user: {
     findUnique: vi.fn(),
+    update: vi.fn(),
   },
   refreshToken: {
     create: vi.fn(),
     findUnique: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
+    update: vi.fn(),
   },
   $disconnect: vi.fn(),
 }))
@@ -91,7 +93,7 @@ describe('Auth Routes', () => {
       expect(res.status).toBe(400)
     })
 
-    it('sets refresh token cookie', async () => {
+    it('sets refresh token cookie with strict sameSite in dev', async () => {
       const user = sampleUser({ passwordHash: testPasswordHash })
       mockPrisma.user.findUnique.mockResolvedValue(user)
       mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-1', token: 'rt' })
@@ -106,6 +108,7 @@ describe('Auth Routes', () => {
       const cookieStr = Array.isArray(cookies) ? cookies.join('; ') : cookies
       expect(cookieStr).toContain('refresh_token')
       expect(cookieStr).toContain('HttpOnly')
+      expect(cookieStr).toContain('SameSite=Strict')
     })
   })
 
@@ -124,10 +127,12 @@ describe('Auth Routes', () => {
         id: 'rt-1',
         token: 'valid-refresh',
         userId: 'user-1',
+        familyId: 'family-abc',
+        rotatedAt: null,
         user,
         expiresAt: new Date(Date.now() + 1000 * 60 * 60),
       })
-      mockPrisma.refreshToken.delete.mockResolvedValue({})
+      mockPrisma.refreshToken.update.mockResolvedValue({})
       mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-2', token: 'new-refresh' })
 
       const res = await request(app)
@@ -146,6 +151,26 @@ describe('Auth Routes', () => {
         .set('Cookie', 'refresh_token=invalid-token')
 
       expect(res.status).toBe(401)
+    })
+
+    it('returns 401 on token reuse detection', async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({
+        id: 'rt-1',
+        token: 'reused-token',
+        userId: 'user-1',
+        familyId: 'family-abc',
+        rotatedAt: new Date(), // already rotated = reuse
+        user: { id: 'user-1', email: 'admin@test.com', role: 'admin' },
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+      })
+      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .set('Cookie', 'refresh_token=reused-token')
+
+      expect(res.status).toBe(401)
+      expect(res.body.error).toBe('Refresh token reuse detected')
     })
   })
 
@@ -203,6 +228,72 @@ describe('Auth Routes', () => {
         .set('Authorization', 'Bearer invalid-token')
 
       expect(res.status).toBe(401)
+    })
+  })
+
+  describe('PUT /api/auth/password', () => {
+    it('returns 200 when current password is correct', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        passwordHash: testPasswordHash,
+      })
+      mockPrisma.user.update.mockResolvedValue({})
+      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 1 })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'testpassword', newPassword: 'newpassword123' })
+
+      expect(res.status).toBe(200)
+      expect(res.body.message).toBe('Password changed')
+    })
+
+    it('returns 401 when current password is wrong', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        passwordHash: testPasswordHash,
+      })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'wrongpassword', newPassword: 'newpassword123' })
+
+      expect(res.status).toBe(401)
+      expect(res.body.error).toBe('Current password is incorrect')
+    })
+
+    it('returns 401 without auth', async () => {
+      const res = await request(app)
+        .put('/api/auth/password')
+        .send({ currentPassword: 'old', newPassword: 'newpassword123' })
+
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 400 for missing fields', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({})
+
+      expect(res.status).toBe(400)
+    })
+
+    it('returns 400 when new password is too short', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'testpassword', newPassword: 'short' })
+
+      expect(res.status).toBe(400)
     })
   })
 })

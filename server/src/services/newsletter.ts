@@ -1,6 +1,9 @@
 import { tmpdir } from 'os'
 import { join } from 'path'
 import prisma from '../lib/prisma.js'
+import { config } from '../config.js'
+import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
+import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 
 interface NewsletterFilters {
@@ -12,26 +15,21 @@ interface NewsletterFilters {
 export async function getNewsletters(filters: NewsletterFilters) {
   const page = filters.page || 1
   const pageSize = filters.pageSize || 25
-  const where: Record<string, any> = {}
-  if (filters.status) where.status = filters.status
+  const where: Prisma.NewsletterWhereInput = {}
+  if (filters.status) where.status = filters.status as ContentStatus
 
-  const [data, total] = await Promise.all([
-    prisma.newsletter.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.newsletter.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.newsletter.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    count: () => prisma.newsletter.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
 export async function getNewsletterById(id: string) {
@@ -42,7 +40,7 @@ export async function createNewsletter(data: { title: string }) {
   return prisma.newsletter.create({ data: { title: data.title } })
 }
 
-export async function updateNewsletter(id: string, data: Record<string, any>) {
+export async function updateNewsletter(id: string, data: Prisma.NewsletterUpdateInput) {
   return prisma.newsletter.update({ where: { id }, data })
 }
 
@@ -57,14 +55,16 @@ export async function assignStories(newsletterId: string) {
   // Find recently published/selected stories from the last 7 days
   const stories = await prisma.story.findMany({
     where: {
-      status: { in: ['published' as any, 'selected' as any] },
-      dateCrawled: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      status: { in: [StoryStatus.published, StoryStatus.selected] },
+      dateCrawled: { gte: new Date(Date.now() - config.content.storyAssignmentDays * 24 * 60 * 60 * 1000) },
     },
     orderBy: { dateCrawled: 'desc' },
     select: { id: true },
   })
 
   const storyIds = stories.map(s => s.id)
+  if (storyIds.length === 0) throw new Error('No recent stories to assign')
+
   return prisma.newsletter.update({
     where: { id: newsletterId },
     data: { storyIds },

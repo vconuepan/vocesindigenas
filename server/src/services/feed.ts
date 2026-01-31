@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js'
-import type { Feed } from '@prisma/client'
+import type { Feed, Prisma } from '@prisma/client'
 
 interface FeedFilters {
   issueId?: string
@@ -7,7 +7,7 @@ interface FeedFilters {
 }
 
 export async function getFeeds(filters?: FeedFilters) {
-  const where: any = {}
+  const where: Prisma.FeedWhereInput = {}
   if (filters?.issueId) where.issueId = filters.issueId
   if (filters?.active !== undefined) where.active = filters.active
   return prisma.feed.findMany({

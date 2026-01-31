@@ -18,7 +18,7 @@ If the feed has an `htmlSelector` configured (e.g., `article.post-content`), the
 
 **When to use**: Set `htmlSelector` on a feed when Readability fails or extracts too much noise (nav, sidebars, etc.).
 
-**Minimum length**: Content must be at least 200 characters to be accepted. If shorter, falls through to Readability.
+**Minimum length**: Content must be at least `config.crawl.minContentLength` characters (default 50) to be accepted. If shorter, falls through to Readability. This threshold applies to all three extraction tiers.
 
 ### Tier 2: Mozilla Readability
 
@@ -31,14 +31,16 @@ External paid service fallback. Only used when Readability also fails. Requires 
 ## Crawl Flow
 
 ```
-RSS Feed → Parse items (max 20)
+RSS Feed → Parse items (max config.crawl.rssItemLimit, default 20)
          → Deduplicate against existing story URLs
-         → For each new item:
-            → Fetch page HTML
+         → For each new item (parallel, up to config.concurrency.crawlArticles):
+            → Fetch page HTML (with retry, timeout config.crawl.httpTimeoutMs)
             → Extract content (3-tier chain)
             → Create story with status 'fetched'
          → Update feed's lastCrawledAt
 ```
+
+Feeds are crawled in parallel (up to `config.concurrency.crawlFeeds`, default 5). Article extraction within each feed also runs in parallel (up to `config.concurrency.crawlArticles`, default 3). All HTTP requests (RSS parsing, page fetching, PipFeed API) use `withRetry()` from `server/src/lib/retry.ts` (3 attempts with exponential backoff).
 
 ### Deduplication
 
@@ -56,7 +58,8 @@ Before extracting any content, the crawler batch-checks all RSS item URLs agains
 |------|------|
 | `server/src/services/crawler.ts` | Orchestration: RSS → deduplicate → extract → create stories |
 | `server/src/services/extractor.ts` | 3-tier extraction chain |
-| `server/src/services/rssParser.ts` | RSS/Atom feed parsing (max 20 items) |
+| `server/src/services/rssParser.ts` | RSS/Atom feed parsing (max `config.crawl.rssItemLimit` items) |
+| `server/src/lib/retry.ts` | Retry utility with exponential backoff (used by RSS parser, extractor) |
 | `server/src/jobs/crawlFeeds.ts` | Scheduled job handler |
 
 ## Adding a New Feed

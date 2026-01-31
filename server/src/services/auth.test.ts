@@ -6,6 +6,7 @@ const mockPrisma = vi.hoisted(() => ({
     findUnique: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
+    update: vi.fn(),
   },
   $disconnect: vi.fn(),
 }))
@@ -36,6 +37,7 @@ const {
   rotateRefreshToken,
   revokeRefreshToken,
   revokeAllUserTokens,
+  cleanupExpiredTokens,
 } = await import('./auth.js')
 
 describe('hashPassword / verifyPassword', () => {
@@ -87,28 +89,72 @@ describe('generateRefreshToken', () => {
         userId: 'user-1',
         token: expect.any(String),
         expiresAt: expect.any(Date),
+        familyId: expect.any(String),
+      }),
+    })
+  })
+
+  it('creates token with new familyId when none provided', async () => {
+    mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-1', token: 'abc' })
+
+    await generateRefreshToken('user-1')
+    const call1 = mockPrisma.refreshToken.create.mock.calls[0][0].data.familyId
+
+    mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-2', token: 'def' })
+    await generateRefreshToken('user-1')
+    const call2 = mockPrisma.refreshToken.create.mock.calls[1][0].data.familyId
+
+    // Each call should generate a unique familyId
+    expect(typeof call1).toBe('string')
+    expect(typeof call2).toBe('string')
+    expect(call1).not.toBe(call2)
+  })
+
+  it('creates token with provided familyId', async () => {
+    mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-1', token: 'abc' })
+
+    await generateRefreshToken('user-1', 'family-123')
+    expect(mockPrisma.refreshToken.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        familyId: 'family-123',
       }),
     })
   })
 })
 
 describe('rotateRefreshToken', () => {
-  it('rotates token and returns new pair', async () => {
+  it('soft-rotates old token and creates new with same familyId', async () => {
     const user = { id: 'user-1', email: 'a@b.com', role: 'admin' }
     mockPrisma.refreshToken.findUnique.mockResolvedValue({
       id: 'rt-1',
       token: 'old-token',
       userId: 'user-1',
+      familyId: 'family-abc',
+      rotatedAt: null,
       user,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60),
     })
-    mockPrisma.refreshToken.delete.mockResolvedValue({})
+    mockPrisma.refreshToken.update.mockResolvedValue({})
     mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-2', token: 'new-token' })
 
     const result = await rotateRefreshToken('old-token')
     expect(result.accessToken).toBeDefined()
     expect(result.refreshToken).toBeDefined()
-    expect(mockPrisma.refreshToken.delete).toHaveBeenCalledWith({ where: { id: 'rt-1' } })
+
+    // Should soft-rotate (update with rotatedAt) instead of hard delete
+    expect(mockPrisma.refreshToken.update).toHaveBeenCalledWith({
+      where: { id: 'rt-1' },
+      data: { rotatedAt: expect.any(Date) },
+    })
+    expect(mockPrisma.refreshToken.delete).not.toHaveBeenCalled()
+
+    // New token should use same familyId
+    expect(mockPrisma.refreshToken.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        familyId: 'family-abc',
+      }),
+    })
   })
 
   it('throws for invalid token', async () => {
@@ -121,6 +167,8 @@ describe('rotateRefreshToken', () => {
       id: 'rt-1',
       token: 'expired-token',
       userId: 'user-1',
+      familyId: 'family-abc',
+      rotatedAt: null,
       user: { id: 'user-1', email: 'a@b.com', role: 'admin' },
       expiresAt: new Date(Date.now() - 1000),
     })
@@ -128,6 +176,48 @@ describe('rotateRefreshToken', () => {
 
     await expect(rotateRefreshToken('expired-token')).rejects.toThrow('Refresh token expired')
     expect(mockPrisma.refreshToken.delete).toHaveBeenCalledWith({ where: { id: 'rt-1' } })
+  })
+
+  it('detects reuse when token has rotatedAt set and revokes entire family', async () => {
+    const user = { id: 'user-1', email: 'a@b.com', role: 'admin' }
+    mockPrisma.refreshToken.findUnique.mockResolvedValue({
+      id: 'rt-1',
+      token: 'reused-token',
+      userId: 'user-1',
+      familyId: 'family-abc',
+      rotatedAt: new Date(Date.now() - 5000), // already rotated
+      user,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+    })
+    mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
+
+    await expect(rotateRefreshToken('reused-token')).rejects.toThrow(
+      'Refresh token reuse detected'
+    )
+  })
+
+  it('reuse detection revokes all tokens in the family via deleteMany', async () => {
+    const user = { id: 'user-1', email: 'a@b.com', role: 'admin' }
+    mockPrisma.refreshToken.findUnique.mockResolvedValue({
+      id: 'rt-1',
+      token: 'reused-token',
+      userId: 'user-1',
+      familyId: 'family-abc',
+      rotatedAt: new Date(Date.now() - 5000),
+      user,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+    })
+    mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
+
+    try {
+      await rotateRefreshToken('reused-token')
+    } catch {
+      // expected
+    }
+
+    expect(mockPrisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+      where: { familyId: 'family-abc' },
+    })
   })
 })
 
@@ -144,5 +234,22 @@ describe('revokeAllUserTokens', () => {
     mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
     await revokeAllUserTokens('user-1')
     expect(mockPrisma.refreshToken.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } })
+  })
+})
+
+describe('cleanupExpiredTokens', () => {
+  it('deletes tokens with expiresAt in the past', async () => {
+    mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 5 })
+    const count = await cleanupExpiredTokens()
+    expect(count).toBe(5)
+    expect(mockPrisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+      where: { expiresAt: { lt: expect.any(Date) } },
+    })
+  })
+
+  it('returns 0 when no expired tokens exist', async () => {
+    mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 0 })
+    const count = await cleanupExpiredTokens()
+    expect(count).toBe(0)
   })
 })

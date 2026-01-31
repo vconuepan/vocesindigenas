@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { createLogger } from '../../lib/logger.js'
-import { existsSync, createReadStream, unlinkSync } from 'fs'
+import { createReadStream, unlinkSync } from 'fs'
 import * as newsletterService from '../../services/newsletter.js'
 import { generateCarouselForNewsletter } from '../../services/newsletter.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
@@ -16,7 +16,7 @@ const log = createLogger('newsletters')
 
 router.get('/', validateQuery(newsletterQuerySchema), async (req, res) => {
   try {
-    const filters = (req as any).parsedQuery || {}
+    const filters = req.parsedQuery || {}
     const result = await newsletterService.getNewsletters(filters)
     res.json(result)
   } catch (err) {
