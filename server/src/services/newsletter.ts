@@ -1,6 +1,7 @@
 import { tmpdir } from 'os'
 import { join } from 'path'
 import prisma from '../lib/prisma.js'
+import type { Prisma } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 
@@ -13,8 +14,8 @@ interface NewsletterFilters {
 export async function getNewsletters(filters: NewsletterFilters) {
   const page = filters.page || 1
   const pageSize = filters.pageSize || 25
-  const where: Record<string, any> = {}
-  if (filters.status) where.status = filters.status
+  const where: Prisma.NewsletterWhereInput = {}
+  if (filters.status) where.status = filters.status as any
 
   return paginate({
     findMany: () =>
@@ -38,7 +39,7 @@ export async function createNewsletter(data: { title: string }) {
   return prisma.newsletter.create({ data: { title: data.title } })
 }
 
-export async function updateNewsletter(id: string, data: Record<string, any>) {
+export async function updateNewsletter(id: string, data: Prisma.NewsletterUpdateInput) {
   return prisma.newsletter.update({ where: { id }, data })
 }
 
