@@ -17,11 +17,11 @@
       "WebFetch(domain:cookbook.openai.com)",
       "WebFetch(domain:developers.openai.com)",
       "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.diffbot.com)",
       "Bash(npm install:*)",
       "Bash(git commit:*)",
       "Bash(git stash:*)",
-      "Bash(git pop:*)",
-      "Bash(rm:*)"
+      "Bash(git pop:*)"
     ]
   }
 }

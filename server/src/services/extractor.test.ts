@@ -31,11 +31,29 @@ describe('extractContent', () => {
     delete process.env.PIPFEED_API_KEY
   })
 
-  it('returns null when page fetch fails', async () => {
+  it('returns null when page fetch fails and no pipfeed key', async () => {
     mockAxiosGet.mockRejectedValue(new Error('Network error'))
 
     const result = await extractContent('https://example.com/article')
     expect(result).toBeNull()
+  })
+
+  it('falls back to pipfeed when page fetch fails', async () => {
+    process.env.PIPFEED_API_KEY = 'test-key'
+    mockAxiosGet.mockRejectedValue(new Error('Network error'))
+    mockAxiosPost.mockResolvedValue({
+      data: {
+        title: 'PipFeed Title',
+        text: 'A '.repeat(50),
+        date: '2024-01-15',
+      },
+    })
+
+    const result = await extractContent('https://example.com/article')
+
+    expect(result).not.toBeNull()
+    expect(result!.method).toBe('pipfeed')
+    expect(result!.title).toBe('PipFeed Title')
   })
 
   it('extracts content using CSS selector (tier 1)', async () => {

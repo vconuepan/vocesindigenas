@@ -10,6 +10,16 @@ import { withRetry } from '../lib/retry.js'
 const log = createLogger('extractor')
 const USER_AGENT = 'ActuallyRelevant/1.0 (news curation bot; +https://actuallyrelevant.news)'
 
+function summarizeError(err: unknown): string {
+  if (err instanceof Error && 'isAxiosError' in err) {
+    const axiosErr = err as { response?: { status?: number }; code?: string; message: string }
+    if (axiosErr.response?.status) return `HTTP ${axiosErr.response.status}`
+    if (axiosErr.code) return axiosErr.code
+    return axiosErr.message
+  }
+  return err instanceof Error ? err.message : String(err)
+}
+
 export interface ExtractionResult {
   title: string | null
   content: string
@@ -34,7 +44,7 @@ async function fetchPage(url: string): Promise<string | null> {
     }))
     return response.data
   } catch (err) {
-    log.error({ url, err }, 'failed to fetch page')
+    log.warn({ url, reason: summarizeError(err) }, 'page fetch failed')
     return null
   }
 }
@@ -55,7 +65,7 @@ function extractBySelector(html: string, selector: string): ExtractionResult | n
       method: 'selector',
     }
   } catch (err) {
-    log.error({ err }, 'selector extraction failed')
+    log.warn({ reason: summarizeError(err) }, 'selector extraction failed')
     return null
   }
 }
@@ -73,7 +83,7 @@ function extractByReadability(html: string, url: string): ExtractionResult | nul
       method: 'readability',
     }
   } catch (err) {
-    log.error({ err }, 'readability extraction failed')
+    log.warn({ reason: summarizeError(err) }, 'readability extraction failed')
     return null
   }
 }
@@ -81,6 +91,8 @@ function extractByReadability(html: string, url: string): ExtractionResult | nul
 async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
   const apiKey = process.env.PIPFEED_API_KEY
   if (!apiKey) return null
+
+  log.info({ url }, 'attempting PipFeed extraction')
 
   try {
     const response = await withRetry(() => axios.post(
@@ -97,8 +109,12 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
     ))
 
     const data = response.data
-    if (!data?.text || data.text.length < config.crawl.minContentLength) return null
+    if (!data?.text || data.text.length < config.crawl.minContentLength) {
+      log.warn({ url, contentLength: data?.text?.length ?? 0 }, 'PipFeed returned insufficient content')
+      return null
+    }
 
+    log.info({ url, contentLength: data.text.length }, 'PipFeed extraction succeeded')
     return {
       title: data.title || null,
       content: data.text,
@@ -106,7 +122,7 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
       method: 'pipfeed',
     }
   } catch (err) {
-    log.error({ err }, 'PipFeed extraction failed')
+    log.warn({ url, reason: summarizeError(err) }, 'PipFeed extraction failed')
     return null
   }
 }
@@ -121,17 +137,18 @@ export async function extractContent(
   }
 
   const html = await fetchPage(url)
-  if (!html) return null
 
   // Tier 1: CSS selector extraction
-  if (options?.htmlSelector) {
+  if (html && options?.htmlSelector) {
     const result = extractBySelector(html, options.htmlSelector)
     if (result) return result
   }
 
   // Tier 2: Readability extraction
-  const readabilityResult = extractByReadability(html, url)
-  if (readabilityResult) return readabilityResult
+  if (html) {
+    const readabilityResult = extractByReadability(html, url)
+    if (readabilityResult) return readabilityResult
+  }
 
   // Tier 3: PipFeed API fallback
   const pipfeedResult = await extractByPipfeed(url)
