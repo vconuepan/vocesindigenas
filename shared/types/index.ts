@@ -150,6 +150,7 @@ export interface JobRun {
   lastCompletedAt: string | null
   lastError: string | null
   enabled: boolean
+  running: boolean
   cronExpression: string
   createdAt: string
   updatedAt: string
@@ -165,6 +166,7 @@ export interface StoryFilters {
   crawledBefore?: string
   ratingMin?: number
   ratingMax?: number
+  rating?: string
   emotionTag?: EmotionTag
   sort?: StorySort
   page?: number
@@ -185,4 +187,22 @@ export interface PaginatedResponse<T> {
   page: number
   pageSize: number
   totalPages: number
+}
+
+// --- Background task types ---
+
+export type BulkTaskType = 'preassess' | 'assess' | 'select'
+export type BulkTaskStatus = 'running' | 'completed' | 'failed'
+
+export interface TaskState {
+  id: string
+  type: BulkTaskType
+  status: BulkTaskStatus
+  total: number
+  completed: number
+  failed: number
+  errors: string[]
+  storyIds: string[]
+  createdAt: string
+  completedAt?: string
 }

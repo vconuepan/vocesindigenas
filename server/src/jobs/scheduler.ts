@@ -1,10 +1,13 @@
 import cron from 'node-cron'
 import prisma from '../lib/prisma.js'
+import { createLogger } from '../lib/logger.js'
 import { runCrawlFeeds } from './crawlFeeds.js'
 import { runPreassessStories } from './preassessStories.js'
 import { runAssessStories } from './assessStories.js'
 import { runSelectStories } from './selectStories.js'
 import { runPublishStories } from './publishStories.js'
+
+const log = createLogger('scheduler')
 
 const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   crawl_feeds: runCrawlFeeds,
@@ -15,26 +18,27 @@ const JOB_HANDLERS: Record<string, () => Promise<void>> = {
 }
 
 const registeredTasks: cron.ScheduledTask[] = []
+const runningJobs = new Set<string>()
 
 export async function initScheduler(): Promise<void> {
-  console.log('[Scheduler] Initializing...')
+  log.info('initializing')
 
   const jobs = await prisma.jobRun.findMany()
 
   for (const job of jobs) {
     if (!job.enabled) {
-      console.log(`[Scheduler] ${job.jobName}: disabled, skipping`)
+      log.info({ jobName: job.jobName }, 'disabled, skipping')
       continue
     }
 
     const handler = JOB_HANDLERS[job.jobName]
     if (!handler) {
-      console.warn(`[Scheduler] ${job.jobName}: no handler found, skipping`)
+      log.warn({ jobName: job.jobName }, 'no handler found, skipping')
       continue
     }
 
     if (!cron.validate(job.cronExpression)) {
-      console.error(`[Scheduler] ${job.jobName}: invalid cron "${job.cronExpression}", skipping`)
+      log.error({ jobName: job.jobName, cronExpression: job.cronExpression }, 'invalid cron expression, skipping')
       continue
     }
 
@@ -43,16 +47,16 @@ export async function initScheduler(): Promise<void> {
       runJob(job.jobName, handler)
     })
     registeredTasks.push(task)
-    console.log(`[Scheduler] ${job.jobName}: registered (${job.cronExpression})`)
+    log.info({ jobName: job.jobName, cronExpression: job.cronExpression }, 'registered')
 
     // Check if overdue
     if (isOverdue(job)) {
-      console.log(`[Scheduler] ${job.jobName}: overdue, running now`)
+      log.info({ jobName: job.jobName }, 'overdue, running now')
       runJob(job.jobName, handler)
     }
   }
 
-  console.log(`[Scheduler] Ready (${registeredTasks.length} jobs registered)`)
+  log.info({ jobCount: registeredTasks.length }, 'ready')
 }
 
 function isOverdue(job: { jobName: string; lastCompletedAt: Date | null; cronExpression: string }): boolean {
@@ -92,16 +96,14 @@ function estimateCronIntervalMs(cronExpr: string): number | null {
 }
 
 async function runJob(jobName: string, handler: () => Promise<void>): Promise<void> {
-  // Overlap prevention
-  const job = await prisma.jobRun.findUnique({ where: { jobName } })
-  if (!job) return
-
-  if (job.lastStartedAt && (!job.lastCompletedAt || job.lastStartedAt > job.lastCompletedAt)) {
-    console.warn(`[Scheduler] ${jobName}: already running, skipping`)
+  if (runningJobs.has(jobName)) {
+    log.warn({ jobName }, 'already running, skipping')
     return
   }
 
-  // Mark as started
+  runningJobs.add(jobName)
+  log.info({ jobName }, 'started')
+
   await prisma.jobRun.update({
     where: { jobName },
     data: { lastStartedAt: new Date(), lastError: null },
@@ -113,18 +115,21 @@ async function runJob(jobName: string, handler: () => Promise<void>): Promise<vo
       where: { jobName },
       data: { lastCompletedAt: new Date() },
     })
+    log.info({ jobName }, 'completed')
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    console.error(`[Scheduler] ${jobName} failed:`, errorMsg)
+    log.error({ jobName, err }, 'job failed')
     await prisma.jobRun.update({
       where: { jobName },
       data: { lastError: errorMsg, lastCompletedAt: new Date() },
     })
+  } finally {
+    runningJobs.delete(jobName)
   }
 }
 
 // Exported for manual trigger via admin API
-export { runJob }
+export { runJob, runningJobs }
 
 export function stopScheduler(): void {
   for (const task of registeredTasks) {

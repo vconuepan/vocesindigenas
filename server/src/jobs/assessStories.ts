@@ -1,30 +1,23 @@
 import { getStoriesByStatus } from '../services/story.js'
-import { assessStory } from '../services/analysis.js'
+import { assessStories } from '../services/analysis.js'
 import { config } from '../config.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('assess_stories')
 
 export async function runAssessStories(): Promise<void> {
-  console.log('[assess_stories] Starting full assessment job')
+  log.info('starting full assessment job')
 
   const threshold = config.llm.fullAssessmentThreshold
   const stories = await getStoriesByStatus('pre_analyzed', { ratingMin: threshold })
   if (stories.length === 0) {
-    console.log('[assess_stories] No pre-analyzed stories above threshold')
+    log.info('no pre-analyzed stories above threshold')
     return
   }
 
-  console.log(`[assess_stories] Assessing ${stories.length} stories (rating >= ${threshold})`)
+  log.info({ storyCount: stories.length, threshold, concurrency: config.concurrency.assess }, 'assessing stories')
 
-  let completed = 0
-  let errors = 0
-  for (const story of stories) {
-    try {
-      await assessStory(story.id)
-      completed++
-    } catch (err) {
-      errors++
-      console.error(`[assess_stories] Error assessing story ${story.id}:`, err)
-    }
-  }
+  const result = await assessStories(stories.map(s => s.id))
 
-  console.log(`[assess_stories] Completed: ${completed} assessed, ${errors} errors`)
+  log.info({ completed: result.completed, errors: result.errors, total: stories.length }, 'assessment job finished')
 }

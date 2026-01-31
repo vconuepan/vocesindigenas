@@ -10,6 +10,7 @@ interface StoryFilters {
   crawledBefore?: string
   ratingMin?: number
   ratingMax?: number
+  rating?: string
   emotionTag?: string
   sort?: string
   page?: number
@@ -76,6 +77,18 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
     where.relevance = {}
     if (filters.ratingMin !== undefined) where.relevance.gte = filters.ratingMin
     if (filters.ratingMax !== undefined) where.relevance.lte = filters.ratingMax
+  }
+  if (filters.rating) {
+    const match = filters.rating.match(/^(gte|lte)(\d+)$/)
+    if (match) {
+      const op = match[1] as 'gte' | 'lte'
+      const val = parseInt(match[2], 10)
+      const condition = { [op]: val }
+      where.OR = [
+        { relevance: condition },
+        { relevance: null, relevancePre: condition },
+      ]
+    }
   }
   if (filters.emotionTag) {
     where.emotionTag = filters.emotionTag as any

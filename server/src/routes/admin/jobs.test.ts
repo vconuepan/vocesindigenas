@@ -26,7 +26,7 @@ vi.mock('../../services/crawler.js', () => ({
   crawlAllDueFeeds: vi.fn(),
   crawlUrl: vi.fn(),
 }))
-vi.mock('../../jobs/scheduler.js', () => ({ runJob: mockRunJob }))
+vi.mock('../../jobs/scheduler.js', () => ({ runJob: mockRunJob, runningJobs: new Set() }))
 vi.mock('../../jobs/crawlFeeds.js', () => ({ runCrawlFeeds: mockRunCrawlFeeds }))
 vi.mock('../../jobs/preassessStories.js', () => ({ runPreassessStories: mockRunPreassessStories }))
 vi.mock('../../jobs/assessStories.js', () => ({ runAssessStories: mockRunAssessStories }))

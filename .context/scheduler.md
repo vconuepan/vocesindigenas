@@ -43,6 +43,21 @@ On server startup, `initScheduler()`:
 | `PUT /api/admin/jobs/:jobName` | Update cron expression or enabled flag |
 | `POST /api/admin/jobs/:jobName/run` | Manually trigger a job (runs in background) |
 
+## Concurrency
+
+LLM-powered jobs (preassess, assess, select) process work items in parallel using a counting semaphore to cap concurrent LLM calls. Default concurrency is 10 per job type, configurable via environment variables:
+
+| Env Var | Default | Controls |
+|---------|---------|----------|
+| `CONCURRENCY_PREASSESS` | 10 | Max concurrent pre-assessment batches |
+| `CONCURRENCY_ASSESS` | 10 | Max concurrent full assessments |
+| `CONCURRENCY_SELECT` | 10 | Max concurrent selection groups |
+| `LLM_DELAY_MS` | 500 | Minimum delay between LLM calls (serialized) |
+
+Set any concurrency to `1` for sequential processing (original behavior). The rate limiter serializes delays across all concurrent workers via a promise chain, so each LLM call waits at least `LLM_DELAY_MS` after the previous one regardless of concurrency level. All jobs use `Promise.allSettled` so individual failures don't abort the batch.
+
+The Semaphore utility is at `server/src/lib/semaphore.ts`.
+
 ## Key Files
 
 | File | Role |

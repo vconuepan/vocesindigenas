@@ -1,18 +1,24 @@
 import { getStoriesByStatus } from '../services/story.js'
 import { preAssessStories } from '../services/analysis.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('preassess_stories')
 
 export async function runPreassessStories(): Promise<void> {
-  console.log('[preassess_stories] Starting pre-assessment job')
+  log.info('starting pre-assessment job')
 
   const stories = await getStoriesByStatus('fetched')
   if (stories.length === 0) {
-    console.log('[preassess_stories] No fetched stories to pre-assess')
+    log.info('no fetched stories to pre-assess')
     return
   }
 
   const ids = stories.map(s => s.id)
-  console.log(`[preassess_stories] Pre-assessing ${ids.length} stories`)
+  log.info({ storyCount: ids.length }, 'found fetched stories to pre-assess')
 
   const results = await preAssessStories(ids)
-  console.log(`[preassess_stories] Completed: ${results.length} stories pre-assessed`)
+  log.info({ completed: results.length, total: ids.length }, 'pre-assessment finished')
+  for (const r of results) {
+    log.info({ storyId: r.storyId, rating: r.rating, emotionTag: r.emotionTag }, 'pre-assessed')
+  }
 }

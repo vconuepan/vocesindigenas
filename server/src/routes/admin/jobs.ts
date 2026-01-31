@@ -1,7 +1,8 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import cron from 'node-cron'
 import prisma from '../../lib/prisma.js'
-import { runJob } from '../../jobs/scheduler.js'
+import { runJob, runningJobs } from '../../jobs/scheduler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { updateJobSchema } from '../../schemas/job.js'
 import { runCrawlFeeds } from '../../jobs/crawlFeeds.js'
@@ -19,13 +20,14 @@ const JOB_HANDLERS: Record<string, () => Promise<void>> = {
 }
 
 const router = Router()
+const log = createLogger('jobs')
 
 router.get('/', async (_req, res) => {
   try {
     const jobs = await prisma.jobRun.findMany({ orderBy: { jobName: 'asc' } })
-    res.json(jobs)
+    res.json(jobs.map(job => ({ ...job, running: runningJobs.has(job.jobName) })))
   } catch (err) {
-    console.error('[jobs] Failed to fetch jobs:', err)
+    log.error({ err }, 'failed to fetch jobs')
     res.status(500).json({ error: 'Failed to fetch jobs' })
   }
 })
@@ -47,7 +49,7 @@ router.put('/:jobName', validateBody(updateJobSchema), async (req, res) => {
       res.status(404).json({ error: 'Job not found' })
       return
     }
-    console.error('[jobs] Failed to update job:', err)
+    log.error({ err }, 'failed to update job')
     res.status(500).json({ error: 'Failed to update job' })
   }
 })
@@ -61,7 +63,7 @@ router.post('/:jobName/run', async (req, res) => {
 
   // Run in background — don't block the response
   runJob(req.params.jobName, handler).catch(err => {
-    console.error(`[jobs] Manual run of ${req.params.jobName} failed:`, err)
+    log.error({ err, jobName: req.params.jobName }, 'manual job run failed')
   })
 
   res.json({ message: `Job ${req.params.jobName} triggered` })

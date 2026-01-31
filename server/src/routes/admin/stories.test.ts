@@ -37,11 +37,17 @@ vi.mock('../../services/crawler.js', () => ({
 const mockPreAssessStories = vi.hoisted(() => vi.fn())
 const mockAssessStory = vi.hoisted(() => vi.fn())
 const mockSelectStories = vi.hoisted(() => vi.fn())
+const mockBulkPreAssess = vi.hoisted(() => vi.fn())
+const mockBulkAssess = vi.hoisted(() => vi.fn())
+const mockBulkSelect = vi.hoisted(() => vi.fn())
 
 vi.mock('../../services/analysis.js', () => ({
   preAssessStories: mockPreAssessStories,
   assessStory: mockAssessStory,
   selectStories: mockSelectStories,
+  bulkPreAssess: mockBulkPreAssess,
+  bulkAssess: mockBulkAssess,
+  bulkSelect: mockBulkSelect,
 }))
 
 process.env.PUBLIC_API_KEY = TEST_API_KEY
@@ -472,6 +478,145 @@ describe('Admin Stories API', () => {
         .delete('/api/admin/stories/unknown')
         .set(authHeader())
       expect(res.status).toBe(404)
+    })
+  })
+
+  describe('POST /api/admin/stories/bulk-preassess', () => {
+    it('returns 202 with taskId', async () => {
+      mockBulkPreAssess.mockResolvedValue(undefined)
+
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-preassess')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
+      expect(res.status).toBe(202)
+      expect(res.body.taskId).toBeTruthy()
+      expect(typeof res.body.taskId).toBe('string')
+    })
+
+    it('calls bulkPreAssess with storyIds and taskId', async () => {
+      mockBulkPreAssess.mockResolvedValue(undefined)
+      const ids = ['00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002']
+
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-preassess')
+        .set(authHeader())
+        .send({ storyIds: ids })
+      expect(res.status).toBe(202)
+      expect(mockBulkPreAssess).toHaveBeenCalledWith(ids, res.body.taskId)
+    })
+
+    it('rejects empty storyIds', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-preassess')
+        .set(authHeader())
+        .send({ storyIds: [] })
+      expect(res.status).toBe(400)
+    })
+
+    it('rejects invalid UUIDs', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-preassess')
+        .set(authHeader())
+        .send({ storyIds: ['not-a-uuid'] })
+      expect(res.status).toBe(400)
+    })
+  })
+
+  describe('POST /api/admin/stories/bulk-assess', () => {
+    it('returns 202 with taskId', async () => {
+      mockBulkAssess.mockResolvedValue(undefined)
+
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-assess')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
+      expect(res.status).toBe(202)
+      expect(res.body.taskId).toBeTruthy()
+    })
+
+    it('rejects empty storyIds', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-assess')
+        .set(authHeader())
+        .send({ storyIds: [] })
+      expect(res.status).toBe(400)
+    })
+  })
+
+  describe('POST /api/admin/stories/bulk-select', () => {
+    it('returns 202 with taskId', async () => {
+      mockBulkSelect.mockResolvedValue(undefined)
+
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-select')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002'] })
+      expect(res.status).toBe(202)
+      expect(res.body.taskId).toBeTruthy()
+    })
+
+    it('rejects empty storyIds', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-select')
+        .set(authHeader())
+        .send({ storyIds: [] })
+      expect(res.status).toBe(400)
+    })
+
+    it('rejects single storyId (minimum 2 required)', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/bulk-select')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
+      expect(res.status).toBe(400)
+    })
+  })
+
+  describe('GET /api/admin/stories/tasks/:taskId', () => {
+    it('returns task state for a known task', async () => {
+      // Create a task via the bulk endpoint first
+      mockBulkAssess.mockResolvedValue(undefined)
+
+      const createRes = await request(app)
+        .post('/api/admin/stories/bulk-assess')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
+      const taskId = createRes.body.taskId
+
+      const res = await request(app)
+        .get(`/api/admin/stories/tasks/${taskId}`)
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(res.body.id).toBe(taskId)
+      expect(res.body.type).toBe('assess')
+      expect(res.body.status).toBe('running')
+      expect(res.body.total).toBe(1)
+      expect(res.body.storyIds).toEqual(['00000000-0000-0000-0000-000000000001'])
+    })
+
+    it('returns 404 for unknown task', async () => {
+      const res = await request(app)
+        .get('/api/admin/stories/tasks/nonexistent')
+        .set(authHeader())
+      expect(res.status).toBe(404)
+    })
+  })
+
+  describe('GET /api/admin/stories/processing', () => {
+    it('returns processing story IDs', async () => {
+      mockBulkAssess.mockResolvedValue(undefined)
+
+      await request(app)
+        .post('/api/admin/stories/bulk-assess')
+        .set(authHeader())
+        .send({ storyIds: ['00000000-0000-0000-0000-000000000001'] })
+
+      const res = await request(app)
+        .get('/api/admin/stories/processing')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(res.body.storyIds).toContain('00000000-0000-0000-0000-000000000001')
     })
   })
 })

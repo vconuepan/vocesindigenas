@@ -12,6 +12,10 @@ const storySortEnum = z.enum([
   'rating_asc', 'rating_desc', 'date_asc', 'date_desc', 'title_asc', 'title_desc',
 ])
 
+const ratingFilterEnum = z.enum([
+  'gte4', 'gte5', 'gte6', 'lte3', 'lte4', 'lte5',
+])
+
 export const createStorySchema = z.object({
   sourceUrl: z.string().url('Must be a valid URL'),
   sourceTitle: z.string().min(1, 'Source title is required'),
@@ -56,6 +60,7 @@ export const storyQuerySchema = z.object({
   crawledBefore: z.string().datetime().optional(),
   ratingMin: z.coerce.number().int().min(0).max(10).optional(),
   ratingMax: z.coerce.number().int().min(0).max(10).optional(),
+  rating: ratingFilterEnum.optional(),
   emotionTag: emotionTagEnum.optional(),
   sort: storySortEnum.optional(),
   page: z.coerce.number().int().positive().optional().default(1),
@@ -81,6 +86,14 @@ export const batchStoriesQuerySchema = z.object({
       arr => arr.every(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)),
       { message: 'All IDs must be valid UUIDs' },
     ),
+})
+
+export const bulkStoryIdsSchema = z.object({
+  storyIds: z.array(z.string().uuid()).min(1, 'At least one story ID is required').max(500, 'Maximum 500 story IDs allowed'),
+})
+
+export const bulkSelectIdsSchema = z.object({
+  storyIds: z.array(z.string().uuid()).min(2, 'At least 2 story IDs are required for selection').max(500, 'Maximum 500 story IDs allowed'),
 })
 
 export const publicStoryQuerySchema = z.object({

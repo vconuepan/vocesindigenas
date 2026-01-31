@@ -10,6 +10,7 @@ import type {
   PaginatedResponse,
   StoryStatus,
   CrawlResult,
+  TaskState,
 } from '@shared/types'
 
 const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
@@ -215,6 +216,16 @@ export const adminApi = {
       request<Story>('/stories/crawl-url', { method: 'POST', body: JSON.stringify({ url, feedId }) }),
     batch: (ids: string[]) =>
       request<{ id: string; title: string }[]>(`/stories/batch?ids=${ids.join(',')}`),
+    bulkPreassess: (storyIds: string[]) =>
+      request<{ taskId: string }>('/stories/bulk-preassess', { method: 'POST', body: JSON.stringify({ storyIds }) }),
+    bulkAssess: (storyIds: string[]) =>
+      request<{ taskId: string }>('/stories/bulk-assess', { method: 'POST', body: JSON.stringify({ storyIds }) }),
+    bulkSelect: (storyIds: string[]) =>
+      request<{ taskId: string }>('/stories/bulk-select', { method: 'POST', body: JSON.stringify({ storyIds }) }),
+    taskStatus: (taskId: string) =>
+      request<TaskState>(`/stories/tasks/${taskId}`),
+    processing: () =>
+      request<{ storyIds: string[] }>('/stories/processing'),
   },
 
   // Feeds

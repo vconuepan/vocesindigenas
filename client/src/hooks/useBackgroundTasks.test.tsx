@@ -1,7 +1,16 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
 import { ToastProvider } from '../components/ui/Toast'
 import { BackgroundTaskProvider, useBackgroundTasks } from './useBackgroundTasks'
+
+// Mock adminApi for polled task tests
+vi.mock('../lib/admin-api', () => ({
+  adminApi: {
+    stories: {
+      taskStatus: vi.fn(),
+    },
+  },
+}))
 
 function TestConsumer({ executor, label }: {
   executor: (report: (c: number, t: number) => void) => Promise<{ succeeded: number; failed: number }>
@@ -163,3 +172,175 @@ function TestOnComplete({ executor, onComplete }: {
     </button>
   )
 }
+
+// --- launchPolledTask tests ---
+
+function PolledTaskConsumer({ submitFn, onComplete, storyIds }: {
+  submitFn: () => Promise<{ taskId: string }>
+  onComplete?: () => void
+  storyIds?: string[]
+}) {
+  const { launchPolledTask, tasks, processingIds } = useBackgroundTasks()
+  return (
+    <div>
+      <button onClick={() => launchPolledTask({
+        id: 'polled-task',
+        label: 'Bulk assess',
+        submitFn,
+        onComplete,
+        storyIds,
+      })}>
+        launch-polled
+      </button>
+      <span data-testid="task-count">{tasks.length}</span>
+      <span data-testid="processing-count">{processingIds.size}</span>
+      {tasks.map(t => (
+        <span key={t.id} data-testid={`status-${t.id}`}>{t.status}</span>
+      ))}
+    </div>
+  )
+}
+
+function renderPolledTest(
+  submitFn: () => Promise<{ taskId: string }>,
+  opts: { onComplete?: () => void; storyIds?: string[] } = {},
+) {
+  return render(
+    <ToastProvider>
+      <BackgroundTaskProvider>
+        <PolledTaskConsumer submitFn={submitFn} {...opts} />
+      </BackgroundTaskProvider>
+    </ToastProvider>,
+  )
+}
+
+describe('launchPolledTask', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.useRealTimers()
+  })
+
+  it('shows running state after submit', async () => {
+    const submitFn = vi.fn().mockResolvedValue({ taskId: 'task-1' })
+    const { adminApi } = await import('../lib/admin-api')
+    vi.mocked(adminApi.stories.taskStatus).mockResolvedValue({
+      id: 'task-1', type: 'assess', status: 'running',
+      total: 3, completed: 1, failed: 0, errors: [], storyIds: ['s1', 's2', 's3'], createdAt: new Date().toISOString(),
+    })
+
+    renderPolledTest(submitFn, { storyIds: ['s1', 's2', 's3'] })
+
+    await act(async () => { fireEvent.click(screen.getByText('launch-polled')) })
+
+    expect(screen.getByText('Bulk assess...')).toBeInTheDocument()
+    expect(screen.getByTestId('processing-count').textContent).toBe('3')
+  })
+
+  it('updates progress from poll response', async () => {
+    const submitFn = vi.fn().mockResolvedValue({ taskId: 'task-1' })
+    const { adminApi } = await import('../lib/admin-api')
+
+    vi.mocked(adminApi.stories.taskStatus)
+      .mockResolvedValueOnce({
+        id: 'task-1', type: 'assess', status: 'running',
+        total: 3, completed: 1, failed: 0, errors: [], storyIds: ['s1', 's2', 's3'], createdAt: new Date().toISOString(),
+      })
+      .mockResolvedValueOnce({
+        id: 'task-1', type: 'assess', status: 'completed',
+        total: 3, completed: 3, failed: 0, errors: [], storyIds: ['s1', 's2', 's3'],
+        createdAt: new Date().toISOString(), completedAt: new Date().toISOString(),
+      })
+
+    const onComplete = vi.fn()
+    renderPolledTest(submitFn, { onComplete, storyIds: ['s1', 's2', 's3'] })
+
+    await act(async () => { fireEvent.click(screen.getByText('launch-polled')) })
+
+    // First poll
+    await act(async () => { vi.advanceTimersByTime(2000) })
+    expect(screen.getByText('Bulk assess... 1/3')).toBeInTheDocument()
+
+    // Second poll — task completed
+    await act(async () => { vi.advanceTimersByTime(2000) })
+    expect(screen.getByText('Bulk assess: 3 completed')).toBeInTheDocument()
+    expect(onComplete).toHaveBeenCalledOnce()
+    expect(screen.getByTestId('processing-count').textContent).toBe('0')
+  })
+
+  it('shows error when submit fails', async () => {
+    const submitFn = vi.fn().mockRejectedValue(new Error('Server down'))
+
+    renderPolledTest(submitFn, { storyIds: ['s1'] })
+
+    await act(async () => { fireEvent.click(screen.getByText('launch-polled')) })
+
+    expect(screen.getByText('Bulk assess: Server down')).toBeInTheDocument()
+    expect(screen.getByTestId('processing-count').textContent).toBe('0')
+  })
+
+  it('shows error when task is lost on poll', async () => {
+    const submitFn = vi.fn().mockResolvedValue({ taskId: 'task-1' })
+    const { adminApi } = await import('../lib/admin-api')
+    vi.mocked(adminApi.stories.taskStatus).mockRejectedValue(new Error('Not found'))
+
+    const onComplete = vi.fn()
+    renderPolledTest(submitFn, { onComplete, storyIds: ['s1'] })
+
+    await act(async () => { fireEvent.click(screen.getByText('launch-polled')) })
+
+    // First poll fails
+    await act(async () => { vi.advanceTimersByTime(2000) })
+
+    expect(screen.getByText('Bulk assess: Task lost (server may have restarted)')).toBeInTheDocument()
+    expect(onComplete).toHaveBeenCalledOnce()
+    expect(screen.getByTestId('processing-count').textContent).toBe('0')
+  })
+})
+
+describe('processingIds', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('tracks processing IDs for launchTask', async () => {
+    function ProcessingConsumer() {
+      const { launchTask, processingIds } = useBackgroundTasks()
+      return (
+        <div>
+          <button onClick={() => launchTask({
+            id: 'task-1',
+            label: 'Test',
+            executor: async () => ({ succeeded: 1, failed: 0 }),
+            storyIds: ['story-1', 'story-2'],
+          })}>
+            launch
+          </button>
+          <span data-testid="processing">{Array.from(processingIds).join(',')}</span>
+        </div>
+      )
+    }
+
+    render(
+      <ToastProvider>
+        <BackgroundTaskProvider>
+          <ProcessingConsumer />
+        </BackgroundTaskProvider>
+      </ToastProvider>,
+    )
+
+    // Before launch — empty
+    expect(screen.getByTestId('processing').textContent).toBe('')
+
+    // Launch — IDs tracked while running, cleared after completion
+    fireEvent.click(screen.getByText('launch'))
+    expect(screen.getByTestId('processing').textContent).toBe('story-1,story-2')
+
+    await act(async () => {})
+
+    expect(screen.getByTestId('processing').textContent).toBe('')
+  })
+})
