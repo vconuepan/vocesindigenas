@@ -120,6 +120,26 @@ fetched → pre_analyzed → analyzed → selected → published
 - **rejected** — Manually or automatically rejected
 - **trashed** — Soft-deleted
 
+## Server Configuration
+
+All tunable server constants are centralized in `server/src/config.ts` with environment variable overrides. Before adding a new magic number anywhere in the server, check if it belongs in config. Key sections:
+
+- `llm` — Model names, delay between calls, batch sizes, content length limits
+- `selection` — Group size, selection ratio, minimum relevance threshold
+- `crawl` — RSS item limit, HTTP timeout, minimum content length
+- `content` — Story assignment window (days) for newsletters/podcasts
+- `feed` — RSS feed size, cache max age
+- `rateLimit` — Window and max values for public and expensive-operation limiters
+- `concurrency` — Semaphore limits for preassess, assess, select, feed crawling, article extraction
+
+## Resilience
+
+- **Retry logic**: External HTTP calls (RSS parsing, page fetching, PipFeed API) and LLM calls use `withRetry()` from `server/src/lib/retry.ts` (3 attempts, exponential backoff). Do not add raw `axios` or `parser.parseURL` calls without wrapping in retry.
+- **Graceful shutdown**: `server/src/index.ts` handles `SIGTERM`/`SIGINT` with a drain period and force-exit timeout.
+- **Global error handler**: `server/src/app.ts` catches unhandled errors (including Prisma `P2025`/`P2002` and known service errors) and returns structured JSON responses.
+- **Request correlation**: Every request gets an `X-Request-Id` header (inherited from upstream or generated as UUID). Included in all HTTP log entries via `req.id`.
+- **Health check**: `GET /health` verifies database connectivity and returns uptime. Returns 503 if the database is unreachable.
+
 ## SEO Checklist
 
 Each page should:
@@ -177,17 +197,17 @@ All hardcoded static text (UI labels, headings, descriptions, error messages, to
 
 ## Context Files
 
-- **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; only stories with `relevancePre >= 3` proceed to full analysis, and only `analyzed` stories with `relevance >= 5` enter selection (batched into groups of ≤20). Covers status transitions, automated jobs, manual admin endpoints, source fields, AI-generated fields, and slug generation (slugs are created on first publish from the title, are immutable by default, and use `-2`/`-3` suffixes for duplicates).
-- **`.context/content-extraction.md`** — Content extraction uses a 3-tier fallback chain (CSS selector → Readability → PipFeed API); set `htmlSelector` on a feed when Readability produces noisy output. Covers the crawl flow, deduplication, and how to add new feeds.
+- **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; only stories with `relevancePre >= 3` proceed to full analysis, and only `analyzed` stories with `relevance >= config.selection.relevanceMin` (default 5) enter selection with configurable ratio and group size. Covers status transitions, automated jobs, manual admin endpoints, source fields, AI-generated fields, and slug generation (slugs are created on first publish from the title, are immutable by default, and use `-2`/`-3` suffixes for duplicates).
+- **`.context/content-extraction.md`** — Content extraction uses a 3-tier fallback chain (CSS selector → Readability → PipFeed API) with retry logic and configurable timeouts/thresholds via `config.crawl.*`; set `htmlSelector` on a feed when Readability produces noisy output. Covers the crawl flow, parallel crawling, retry strategy, deduplication, and how to add new feeds.
 - **`.context/llm-analysis.md`** — LLM config is in `server/src/config.ts`; prompts are in `server/src/prompts/`; to change output format update both the prompt and the Zod schema in `schemas/llm.ts`. Covers model tiers, prompt directory structure, schema-driven format guidance, and the three analysis stages.
 - **`.context/prompting.md`** — Read before modifying any prompt in `server/src/prompts/`; prompts use GPT-5 conventions (declarative constraints, XML scaffolding, no CoT triggers). Covers structure, key principles, what belongs in prompts vs schemas, and reference links to OpenAI guides.
-- **`.context/scheduler.md`** — Jobs run in-process via node-cron with config in the `job_runs` DB table; LLM jobs use semaphore-gated concurrency (default 5, configurable via `CONCURRENCY_*` env vars). Covers overlap prevention, overdue detection, error tracking, concurrency settings, and the admin API.
+- **`.context/scheduler.md`** — Jobs run in-process via node-cron with config in the `job_runs` DB table; LLM jobs use semaphore-gated concurrency (configurable via `CONCURRENCY_*` env vars). Covers overlap prevention, overdue detection, error tracking, webhook failure notifications, hot reload on config change, concurrency settings, and the admin API.
 - **`.context/images.md`** — Run `npm run images:optimize --prefix client` to generate WebP variants before committing new images. Covers size presets, directory structure, retina support, and CLI commands.
 - **`.context/accessibility.md`** — Use `focus-visible:ring-2 focus-visible:ring-brand-500` on all interactive elements and `text-brand-700` (not brand-600) for link contrast. Covers WCAG 2.2 AA patterns, ARIA, forms, navigation, and testing checklist.
 - **`.context/seo.md`** — Add sitemap metadata to `client/src/routes.ts` for every new page; the sitemap is auto-generated during build. Covers robots.txt, priority guidelines, and change frequency options.
 - **`.context/newsletter-podcast.md`** — Newsletters use template-based formatting and carousel image generation; podcasts use LLM script generation via `buildPodcastPrompt`. Covers the create-assign-generate workflow, all API endpoints, carousel image/PDF/ZIP pipeline, and file locations for modification.
 - **`.context/admin-dashboard.md`** — Admin dashboard uses TanStack Query + Headless UI at `/admin/*` with JWT auth; issues support one-level nesting with parent selector, indented table rows, and static content editors (evaluation criteria, sources, links). Covers route structure, key patterns (URL-persisted filters, bulk actions, LLM loading states), and file locations.
-- **`.context/authentication.md`** — Auth uses dual-mode middleware (JWT access tokens + static API key fallback); set `JWT_SECRET` env var and create the first admin via `npx tsx server/src/scripts/create-admin.ts`. Covers token flow, cookie config, refresh rotation, user management, roles, and all auth-related file locations.
+- **`.context/authentication.md`** — Auth uses dual-mode middleware (JWT access tokens restricted to HS256 + static API key fallback) with rate limiting on login/refresh; set `JWT_SECRET` env var and create the first admin via `npx tsx server/src/scripts/create-admin.ts`. Covers token flow, cookie config, refresh rotation with reuse detection, password change endpoints, expired token cleanup, user management, roles, and all auth-related file locations.
 - **`.context/public-website.md`** — Public site uses `PublicLayout` with hardcoded nav links; RSS feed links use `API_BASE` from `client/src/lib/api.ts` so they resolve in both dev (Vite proxy) and production (separate origins on Render). Covers routes, public API, RSS feeds (`/api/feed` and `/api/feed/:issueSlug`), shared components, design system, and key file locations.
 - **`.context/logging.md`** — Use `createLogger('module')` from `server/src/lib/logger.ts` for all server logging; never use `console.log` in application code (scripts are exempt). Covers Pino configuration, structured data patterns, log levels, rotating file transport, and environment variables (`LOG_LEVEL`, `LOG_DIR`, `LOG_RETENTION_DAYS`).
 - **`.context/task-queue.md`** — Bulk LLM operations use server-side task queue with polling; submit story IDs via `POST /stories/bulk-*` and poll `GET /stories/tasks/:taskId` for progress. Covers task registry, bulk analysis wrappers, client polling hook (`launchPolledTask`), processing indicators in StoryTable, and concurrency configuration.

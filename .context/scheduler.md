@@ -18,6 +18,10 @@ On server startup, `initScheduler()`:
 
 **Error tracking**: Each job run updates `lastStartedAt`, `lastCompletedAt`, and `lastError` in the database. Failed jobs don't block subsequent runs.
 
+**Failure notifications**: When a job fails, `notifyJobFailure()` sends a POST to the URL in the `WEBHOOK_URL` environment variable (if set) with the job name, error message, and timestamp. See `server/src/lib/notify.ts`.
+
+**Hot reload**: When a job's cron expression or enabled flag is updated via the admin API (`PUT /api/admin/jobs/:jobName`), the scheduler automatically reloads — stopping all current cron tasks and re-registering from the database. No server restart needed.
+
 **Manual triggers**: Every job can be triggered via `POST /api/admin/jobs/:jobName/run`, which runs the job in the background regardless of schedule.
 
 ## Registered Jobs
@@ -32,7 +36,7 @@ On server startup, `initScheduler()`:
 ## Adding a New Job
 
 1. Create handler in `server/src/jobs/yourJob.ts` exporting an `async function runYourJob(): Promise<void>`
-2. Register handler in `server/src/jobs/scheduler.ts` by adding to the `JOB_HANDLERS` map
+2. Register handler in `server/src/jobs/handlers.ts` by adding to the `JOB_HANDLERS` map
 3. Add a row to `job_runs` table (via migration or seed) with `jobName`, `cronExpression`, and `enabled`
 
 ## Admin API
@@ -54,7 +58,7 @@ LLM-powered jobs (preassess, assess, select) process work items in parallel usin
 | `CONCURRENCY_SELECT` | 10 | Max concurrent selection groups |
 | `LLM_DELAY_MS` | 500 | Minimum delay between LLM calls (serialized) |
 
-Set any concurrency to `1` for sequential processing (original behavior). The rate limiter serializes delays across all concurrent workers via a promise chain, so each LLM call waits at least `LLM_DELAY_MS` after the previous one regardless of concurrency level. All jobs use `Promise.allSettled` so individual failures don't abort the batch.
+Set any concurrency to `1` for sequential processing (original behavior). The rate limiter serializes delays across all concurrent workers via a timestamp-based approach (`nextAvailableTime` in `llm.ts`), so each LLM call waits at least `LLM_DELAY_MS` after the previous one regardless of concurrency level. All jobs use `Promise.allSettled` so individual failures don't abort the batch.
 
 The Semaphore utility is at `server/src/lib/semaphore.ts`.
 
@@ -62,7 +66,10 @@ The Semaphore utility is at `server/src/lib/semaphore.ts`.
 
 | File | Role |
 |------|------|
-| `server/src/jobs/scheduler.ts` | Core scheduler: init, cron registration, overlap prevention |
+| `server/src/jobs/scheduler.ts` | Core scheduler: init, cron registration, overlap prevention, hot reload |
+| `server/src/jobs/handlers.ts` | Shared `JOB_HANDLERS` map (job name → handler function) |
+| `server/src/jobs/jobService.ts` | Service layer for job CRUD and manual triggering |
+| `server/src/lib/notify.ts` | Webhook notification for job failures |
 | `server/src/jobs/crawlFeeds.ts` | RSS crawl job handler |
 | `server/src/jobs/preassessStories.ts` | Pre-assessment job handler |
 | `server/src/jobs/assessStories.ts` | Full assessment job handler |

@@ -26,7 +26,7 @@ fetched → pre_analyzed → analyzed → selected → published
 
 - **fetched → pre_analyzed**: Pre-assess job processes all `fetched` stories in batches of ~10.
 - **pre_analyzed → analyzed**: Assess job picks stories with `relevancePre >= 3`. Stories rated 1-2 stay as `pre_analyzed` and are effectively filtered out.
-- **analyzed → selected/rejected**: Select job takes all `analyzed` stories with `relevance >= 5` and selects ~50% (rounded up). The rest become `rejected`. When there are more than 20 candidates, they are split into roughly equal groups of ≤20 and each group is sent to the LLM separately (e.g. 25 stories → 2 groups of 13 + 12).
+- **analyzed → selected/rejected**: Select job takes all `analyzed` stories with `relevance >= config.selection.relevanceMin` (default 5) and selects ~`config.selection.ratio` (default 50%, rounded up). The rest become `rejected`. When there are more than `config.selection.maxGroupSize` (default 20) candidates, they are split into roughly equal groups and each group is sent to the LLM separately (e.g. 25 stories → 2 groups of 13 + 12).
 - **selected → published**: Publish job or manual admin action. The `publish_stories` job publishes all `selected` stories, sets `datePublished` if not already set, and generates a URL slug if the story doesn't have one yet.
 - **Any → trashed**: Admin can trash any story at any time.
 
@@ -51,7 +51,7 @@ Stories get a URL slug (e.g. `ai-breakthrough-in-protein-folding`) when they are
 | `crawl_feeds` | Every 6 hours | Fetches RSS feeds, extracts content, creates stories as `fetched` |
 | `preassess_stories` | Configurable | Batch pre-screens all `fetched` stories |
 | `assess_stories` | Configurable | Full analysis on `pre_analyzed` stories with rating >= 3 |
-| `select_stories` | Configurable | Selects top 50% of `analyzed` stories with `relevance >= 5`, batched into groups of ≤20 |
+| `select_stories` | Configurable | Selects top ~50% of `analyzed` stories with `relevance >= 5` (both configurable via `config.selection.*`), batched into groups of ≤20 |
 | `publish_stories` | Configurable | Publishes all `selected` stories, sets `datePublished` if not already set |
 
 ### Manual Admin Endpoints

@@ -7,10 +7,10 @@ The admin panel uses JWT-only authentication: access tokens (15 min) with httpOn
 ### Server
 
 - **Auth middleware** (`server/src/middleware/auth.ts`): `requireAuth` accepts JWT only (used on admin routes). `requireApiKey` accepts the static `PUBLIC_API_KEY` (used on public API routes that need authenticated access). `requireRole(...roles)` checks user role after auth.
-- **Auth service** (`server/src/services/auth.ts`): Password hashing (bcryptjs, 12 rounds), JWT generation/verification (`JWT_SECRET` env var, 15 min expiry), refresh token creation/rotation/revocation (stored in `refresh_tokens` DB table, 24h expiry).
+- **Auth service** (`server/src/services/auth.ts`): Password hashing (bcryptjs, 12 rounds), JWT generation/verification (`JWT_SECRET` env var, 15 min expiry), refresh token creation/rotation/revocation (stored in `refresh_tokens` DB table, 24h expiry). Includes token reuse detection via family tracking -- if a rotated token is reused, all tokens in the family are revoked.
 - **User service** (`server/src/services/user.ts`): CRUD operations for user management. Returns sanitized objects (no `passwordHash`).
-- **Auth routes** (`server/src/routes/auth.ts`): Public routes at `/api/auth` — login, refresh, logout, me.
-- **User routes** (`server/src/routes/admin/users.ts`): Admin-only CRUD at `/api/admin/users`. Blocks self-delete, revokes tokens on user deletion.
+- **Auth routes** (`server/src/routes/auth.ts`): Public routes at `/api/auth` — login, refresh, logout, me. Login and refresh endpoints are rate-limited (`authLimiter`: 5 req/15 min, `refreshLimiter`: 30 req/15 min) via `server/src/middleware/rateLimit.ts`.
+- **User routes** (`server/src/routes/admin/users.ts`): Admin-only CRUD at `/api/admin/users`. Blocks self-delete, revokes tokens on user deletion. Includes `PUT /api/admin/users/:id/password` for password changes (self-change requires current password; admins can reset any user's password).
 
 ### Client
 
@@ -30,19 +30,19 @@ The admin panel uses JWT-only authentication: access tokens (15 min) with httpOn
 
 - `httpOnly: true` — not accessible from JavaScript
 - `secure: true` — only in production (HTTPS)
-- `sameSite: strict` — prevents CSRF
+- `sameSite: 'none'` in production (required for cross-origin cookie sending on Render.com where frontend and backend are on separate origins); `'lax'` in development
 - `path: /api/auth` — only sent to auth endpoints
 - `maxAge: 24 hours`
 
 ## Environment Variables
 
-- `JWT_SECRET` — Required. Random string (32+ chars) for signing JWTs
+- `JWT_SECRET` — Required. Random string (32+ chars) for signing JWTs. Verification is restricted to HS256 algorithm only.
 - `PUBLIC_API_KEY` — Optional. Static key for public API consumers (mobile apps, external services). Does **not** grant admin access.
 
 ## Database Models
 
 - `User` (`users` table): id, email, name, passwordHash, role (admin/editor/viewer), timestamps
-- `RefreshToken` (`refresh_tokens` table): id, token, userId, expiresAt, createdAt. Cascade-deleted with user.
+- `RefreshToken` (`refresh_tokens` table): id, token, userId, familyId, expiresAt, rotatedAt, createdAt. Cascade-deleted with user. `familyId` groups tokens from the same login session; `rotatedAt` marks soft-rotated tokens for reuse detection. Expired tokens are automatically cleaned up hourly via `cleanupExpiredTokens()` in `server/src/index.ts`.
 
 ## Roles
 
