@@ -4,6 +4,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import helmet from 'helmet'
+import { randomUUID } from 'crypto'
 import type { Request, Response, NextFunction } from 'express'
 import { createLogger } from './lib/logger.js'
 import healthRouter from './routes/health.js'
@@ -55,6 +56,13 @@ app.use(cors({
 app.use(express.json({ limit: '100kb' }))
 app.use(cookieParser())
 
+// Request ID — inherit from header or generate
+app.use((req, res, next) => {
+  req.id = (req.headers['x-request-id'] as string) || randomUUID()
+  res.set('X-Request-Id', req.id)
+  next()
+})
+
 // Request logging — single line per request, no redundant fields
 app.use((req, res, next) => {
   if (req.originalUrl === '/health') return next()
@@ -63,7 +71,7 @@ app.use((req, res, next) => {
     const ms = Date.now() - start
     const status = res.statusCode
     const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
-    httpLog[level](`${req.method} ${req.originalUrl} ${status} ${ms}ms`)
+    httpLog[level]({ requestId: req.id }, `${req.method} ${req.originalUrl} ${status} ${ms}ms`)
   })
   next()
 })

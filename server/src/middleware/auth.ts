@@ -11,6 +11,7 @@ export interface AuthUser {
 declare global {
   namespace Express {
     interface Request {
+      id?: string
       user?: AuthUser
       parsedQuery?: Record<string, any>
     }
