@@ -1,5 +1,6 @@
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
+import { EmotionTag } from '@prisma/client'
 import { config } from '../config.js'
 import { Semaphore } from '../lib/semaphore.js'
 import { splitIntoGroups } from '../lib/utils.js'
@@ -106,7 +107,7 @@ export async function preAssessStories(
             where: { id: story.id },
             data: {
               relevancePre: item.rating,
-              emotionTag: item.emotionTag as any,
+              emotionTag: item.emotionTag as EmotionTag,
               status: 'pre_analyzed',
             },
           }))

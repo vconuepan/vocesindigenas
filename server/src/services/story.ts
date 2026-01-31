@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js'
-import type { Story, Prisma } from '@prisma/client'
+import { type Story, type Prisma, StoryStatus, EmotionTag } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 
@@ -53,9 +53,9 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   if (filters.status === 'all') {
     // No status filter — show everything including trashed
   } else if (filters.status) {
-    where.status = filters.status as any
+    where.status = filters.status as StoryStatus
   } else {
-    where.status = { not: 'trashed' as any }
+    where.status = { not: StoryStatus.trashed }
   }
   if (filters.feedId) {
     where.feedId = filters.feedId
@@ -93,7 +93,7 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
     }
   }
   if (filters.emotionTag) {
-    where.emotionTag = filters.emotionTag as any
+    where.emotionTag = filters.emotionTag as EmotionTag
   }
   if (filters.search) {
     const searchCondition = {
@@ -240,7 +240,7 @@ export async function updateStory(id: string, data: Record<string, any>): Promis
 }
 
 export async function updateStoryStatus(id: string, status: string): Promise<Story> {
-  const data: Record<string, any> = { status: status as any }
+  const data: Record<string, any> = { status: status as StoryStatus }
   if (status === 'published') {
     Object.assign(data, await preparePublishData(id))
   }
@@ -310,12 +310,12 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
       // Update status for stories that already have datePublished
       prisma.story.updateMany({
         where: { id: { in: ids }, datePublished: { not: null } },
-        data: { status: status as any },
+        data: { status: status as StoryStatus },
       }),
       // Update status + set datePublished for stories without one
       prisma.story.updateMany({
         where: { id: { in: ids }, datePublished: null },
-        data: { status: status as any, datePublished: now },
+        data: { status: status as StoryStatus, datePublished: now },
       }),
     ])
 
@@ -323,7 +323,7 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
   }
   return prisma.story.updateMany({
     where: { id: { in: ids } },
-    data: { status: status as any },
+    data: { status: status as StoryStatus },
   })
 }
 
@@ -419,7 +419,7 @@ function buildStatusWhereClause(
   status: string,
   options: StatusFilterOptions = {},
 ): Prisma.StoryWhereInput {
-  const where: Prisma.StoryWhereInput = { status: status as any }
+  const where: Prisma.StoryWhereInput = { status: status as StoryStatus }
   if (options.ratingMin !== undefined) {
     where.relevancePre = { gte: options.ratingMin }
   }
@@ -464,7 +464,7 @@ export async function publishStory(id: string): Promise<Story> {
   return prisma.story.update({
     where: { id },
     data: {
-      status: 'published' as any,
+      status: StoryStatus.published,
       ...publishData,
     },
   })
@@ -473,7 +473,7 @@ export async function publishStory(id: string): Promise<Story> {
 export async function rejectStory(id: string): Promise<Story> {
   return prisma.story.update({
     where: { id },
-    data: { status: 'rejected' as any },
+    data: { status: StoryStatus.rejected },
   })
 }
 

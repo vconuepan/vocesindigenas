@@ -1,7 +1,7 @@
 import { tmpdir } from 'os'
 import { join } from 'path'
 import prisma from '../lib/prisma.js'
-import type { Prisma } from '@prisma/client'
+import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 
@@ -15,7 +15,7 @@ export async function getNewsletters(filters: NewsletterFilters) {
   const page = filters.page || 1
   const pageSize = filters.pageSize || 25
   const where: Prisma.NewsletterWhereInput = {}
-  if (filters.status) where.status = filters.status as any
+  if (filters.status) where.status = filters.status as ContentStatus
 
   return paginate({
     findMany: () =>
@@ -54,7 +54,7 @@ export async function assignStories(newsletterId: string) {
   // Find recently published/selected stories from the last 7 days
   const stories = await prisma.story.findMany({
     where: {
-      status: { in: ['published' as any, 'selected' as any] },
+      status: { in: [StoryStatus.published, StoryStatus.selected] },
       dateCrawled: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     },
     orderBy: { dateCrawled: 'desc' },

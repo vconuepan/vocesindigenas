@@ -1,6 +1,6 @@
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
-import type { Prisma } from '@prisma/client'
+import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { getSmallLLM, rateLimitDelay } from './llm.js'
 import { buildPodcastPrompt } from './prompts.js'
@@ -16,7 +16,7 @@ export async function getPodcasts(filters: PodcastFilters) {
   const page = filters.page || 1
   const pageSize = filters.pageSize || 25
   const where: Prisma.PodcastWhereInput = {}
-  if (filters.status) where.status = filters.status as any
+  if (filters.status) where.status = filters.status as ContentStatus
 
   return paginate({
     findMany: () =>
@@ -54,7 +54,7 @@ export async function assignStories(podcastId: string) {
 
   const stories = await prisma.story.findMany({
     where: {
-      status: { in: ['published' as any, 'selected' as any] },
+      status: { in: [StoryStatus.published, StoryStatus.selected] },
       dateCrawled: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     },
     orderBy: { dateCrawled: 'desc' },
