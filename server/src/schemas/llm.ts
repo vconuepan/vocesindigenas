@@ -35,15 +35,13 @@ export const assessResultSchema = z.object({
     '4 Markdown bullet points explaining why the article is relevant for humanity. '
     + 'Each bullet: "- **[Factor name from article context]:** [1 sentence: assessment.] '
     + '[1 sentence: classification based on rating criteria with quantification if possible.] '
-    + '[1 sentence: mechanism / context of the impact.] '
-    + '[1 sentence: example or further details.]" '
+    + '[for the first two bullets: 1 sentence: mechanism / context of the impact.]" '
     + 'Order by importance, key factor first.',
   ),
   limitingFactors: z.array(z.string()).describe(
     'Markdown bullet points on why the article might not be so relevant. '
     + 'Each bullet: "- **[Limiting factor]:** [1 sentence: assessment.] '
-    + '[1 sentence: specific mechanism or context.] '
-    + '[1 sentence: example or further details.]" '
+    + '[1 sentence: specific mechanism, context, or further detail.]" '
     + 'Include applicable generic limiting factors (opinion piece, click-bait, early-stage tech, etc.) '
     + 'and topic-specific limiting factors.',
   ),

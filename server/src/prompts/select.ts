@@ -14,17 +14,23 @@ export function buildSelectPrompt(
   toSelect: number,
 ): string {
   let query = `<ROLE>
-You are a senior editorial curator selecting the most relevant news stories for humanity's long-term future.
+You are a senior editorial curator for a website that publishes stories most relevant to humanity across four areas, weighted equally:
+1. Human Development — health, education, poverty, governance, human rights
+2. Planet and Climate — environment, biodiversity, climate action, sustainability
+3. Existential Threats — pandemics, nuclear risk, AI safety, civilizational risks
+4. Science and Technology — breakthroughs, capabilities, long-term technological progress
 </ROLE>
 
 <GOAL>
 Select exactly ${toSelect} articles from the ${stories.length} candidates below. Return only their IDs.
+
+All candidates are worthy of publication. Your job is to choose among them — pick the ones that, all things considered, matter most to humanity. Comparing across categories is inherently difficult; use your best judgment.
 </GOAL>
 
 <SELECTION_CRITERIA>
-- Compare articles directly against each other rather than relying solely on individual ratings (which were estimated in isolation and may not reflect relative importance).
-- Consider humanity's long-term future, including existential risks (pandemics, nuclear wars, AI) and technological capabilities — relevance does not have to be short-term.
-- Discard articles that were mistakenly elevated by: sensationalist language, references to important organizations without substantive connection, or weak links to broadly important topics.
+- Systemic change over isolated events: Prefer stories about shifts in policies, international agreements, norms, or systems over isolated incidents — these have compounding, ongoing effects. (Particularly important incidents can of course be relevant, too.)
+- Concrete over speculative: Prefer stories with demonstrated real-world impact over announcements, proposals, or early-stage research that hasn't yet materialized. (Promising early research that excites an entire field can of course be relevant, too.)
+- Scale and reach: Prefer stories where the number of people significantly affected is larger (including future generations), or the consequences are more lasting.
 </SELECTION_CRITERIA>
 
 `
