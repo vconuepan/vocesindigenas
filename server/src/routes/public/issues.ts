@@ -1,8 +1,10 @@
 import { Router } from 'express'
 import * as issueService from '../../services/issue.js'
 import { TTLCache, cached } from '../../lib/cache.js'
+import { createLogger } from '../../lib/logger.js'
 
 const router = Router()
+const log = createLogger('public:issues')
 
 const ISSUES_TTL = 5 * 60 * 1000 // 5 minutes
 const issuesCache = new TTLCache<unknown>(ISSUES_TTL)
@@ -14,6 +16,7 @@ router.get('/', async (_req, res) => {
     )
     res.json(issues)
   } catch (err) {
+    log.error({ err }, 'failed to fetch issues')
     res.status(500).json({ error: 'Failed to fetch issues' })
   }
 })
@@ -27,6 +30,7 @@ router.get('/:slug', async (req, res) => {
     }
     res.json(issue)
   } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to fetch issue')
     res.status(500).json({ error: 'Failed to fetch issue' })
   }
 })

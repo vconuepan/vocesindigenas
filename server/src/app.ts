@@ -80,8 +80,30 @@ app.use((_req: Request, res: Response) => {
 })
 
 // Global error handler — must be last middleware (4 parameters required)
-app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   const log = createLogger('http')
+
+  // Prisma known request errors
+  if (err?.constructor?.name === 'PrismaClientKnownRequestError') {
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: 'Not found' })
+      return
+    }
+    if (err.code === 'P2002') {
+      res.status(409).json({ error: 'Already exists' })
+      return
+    }
+  }
+
+  // Known service errors
+  if (err instanceof Error) {
+    const notFoundMessages = ['Feed not found', 'Story not found', 'User not found', 'Issue not found']
+    if (notFoundMessages.includes(err.message)) {
+      res.status(404).json({ error: err.message })
+      return
+    }
+  }
+
   log.error({ err, method: req.method, url: req.originalUrl }, 'unhandled error')
   res.status(500).json({ error: 'Internal server error' })
 })
