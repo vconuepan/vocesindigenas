@@ -4,13 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { getCategoryColor } from '../lib/category-colors'
 import { API_BASE } from '../lib/api'
 
-const UTILITY_LINKS = [
-  { label: 'Methodology', href: '/methodology' },
-  { label: 'Newsletter', href: '/newsletter' },
-  { label: 'Podcast', href: '/podcast' },
-  { label: 'About', href: '/about' },
-  { label: 'Imprint', href: '/imprint' },
-]
+const SUBSCRIBE_LINK = { label: 'Subscribe', href: '/newsletter' }
 
 const ISSUE_LINKS = [
   { label: 'Human Development', slug: 'human-development', href: '/issues/human-development' },
@@ -37,7 +31,6 @@ function SearchIcon({ className }: { className?: string }) {
 
 const FOOTER_SUBSCRIBE = [
   { label: 'Newsletter', href: '/newsletter' },
-  { label: 'Podcast', href: '/podcast' },
   { label: 'RSS Feed', href: `${API_BASE}/feed` },
 ]
 
@@ -46,6 +39,8 @@ export default function PublicLayout() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+
   const location = useLocation()
 
   const isActiveIssue = (href: string) =>
@@ -79,6 +74,9 @@ export default function PublicLayout() {
     setSearchQuery('')
   }, [location.pathname])
 
+
+
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
@@ -94,42 +92,7 @@ export default function PublicLayout() {
       </a>
 
       <header>
-        {/* Utility bar — thin top strip with search + secondary links */}
-        <div className="hidden lg:block bg-neutral-50 border-b border-neutral-200">
-          <div className="max-w-6xl mx-auto px-4 py-1.5 flex items-center justify-between">
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className={`flex items-center gap-1.5 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1 py-0.5 ${
-                searchOpen ? 'text-brand-700' : 'text-neutral-400 hover:text-neutral-600'
-              }`}
-              aria-label={searchOpen ? 'Close search' : 'Open search'}
-              aria-expanded={searchOpen}
-            >
-              <SearchIcon className="w-3.5 h-3.5" />
-              <span>Search</span>
-            </button>
-
-            <ul className="flex items-center gap-1">
-              {UTILITY_LINKS.map((link, idx) => (
-                <li key={link.href} className="flex items-center">
-                  {idx > 0 && <span className="text-neutral-300 mx-2" aria-hidden="true">·</span>}
-                  <Link
-                    to={link.href}
-                    className={`text-xs tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 py-0.5 ${
-                      isActive(link.href)
-                        ? 'text-brand-700 font-medium'
-                        : 'text-neutral-500 hover:text-neutral-800'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Logo bar — centered, prominent */}
+        {/* Logo bar — centered logo, engagement actions right */}
         <div className="bg-white border-b border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-center justify-center relative">
             {/* Logo */}
@@ -141,8 +104,22 @@ export default function PublicLayout() {
               />
             </Link>
 
-            {/* Mobile: search + menu buttons */}
-            <div className="lg:hidden absolute right-4 flex items-center gap-1">
+            {/* Desktop: subscribe link */}
+            <div className="hidden lg:flex items-center absolute right-12">
+              <Link
+                to={SUBSCRIBE_LINK.href}
+                className={`text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 ${
+                  isActive(SUBSCRIBE_LINK.href)
+                    ? 'text-brand-700'
+                    : 'text-neutral-500 hover:text-brand-700'
+                }`}
+              >
+                {SUBSCRIBE_LINK.label}
+              </Link>
+            </div>
+
+            {/* Mobile: search on left, menu on right */}
+            <div className="lg:hidden absolute left-4">
               <button
                 onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false) }}
                 className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${
@@ -153,19 +130,21 @@ export default function PublicLayout() {
               >
                 <SearchIcon className="w-5 h-5" />
               </button>
+            </div>
+            <div className="lg:hidden absolute right-4">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
-              aria-expanded={menuOpen}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                {menuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+                aria-expanded={menuOpen}
+                aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  {menuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
               </button>
             </div>
           </div>
@@ -174,6 +153,17 @@ export default function PublicLayout() {
         {/* Issue category navigation — desktop */}
         <nav className="hidden lg:block border-b border-neutral-200" aria-label="Issue categories">
           <ul className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-0">
+            {/* Search button as first item */}
+            <li>
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className={`issue-nav-link ${searchOpen ? '!text-brand-700' : ''}`}
+                aria-label={searchOpen ? 'Close search' : 'Open search'}
+                aria-expanded={searchOpen}
+              >
+                <SearchIcon className="w-4 h-4" />
+              </button>
+            </li>
             {ISSUE_LINKS.map((link) => {
               const colors = getCategoryColor(link.slug)
               const active = isActiveIssue(link.href)
@@ -199,7 +189,6 @@ export default function PublicLayout() {
           <div className="lg:hidden bg-white border-b border-neutral-200 shadow-lg">
             <nav className="px-4 py-3" aria-label="Mobile navigation">
               {/* Issue categories */}
-              <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2 px-2">Issues</p>
               <ul className="mb-3">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug)
@@ -222,25 +211,15 @@ export default function PublicLayout() {
                 })}
               </ul>
 
-              {/* Other links */}
-              <div className="border-t border-neutral-100 pt-3">
-                <ul className="grid grid-cols-2 gap-1">
-                  {UTILITY_LINKS.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        to={link.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={`block py-2 text-sm focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${
-                          isActive(link.href)
-                            ? 'text-brand-700 font-medium'
-                            : 'text-neutral-500 hover:text-neutral-800'
-                        }`}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+              {/* Subscribe */}
+              <div className="border-t border-neutral-100 pt-3 px-2">
+                <Link
+                  to="/newsletter"
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex items-center gap-2 py-2.5 text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                >
+                  Subscribe to Newsletter &rarr;
+                </Link>
               </div>
             </nav>
           </div>
@@ -285,7 +264,7 @@ export default function PublicLayout() {
       </header>
 
       {/* Category color strip — mobile only */}
-      <div className="flex h-1 md:hidden" aria-hidden="true">
+      <div className="flex h-1 lg:hidden" aria-hidden="true">
         <div className="flex-1 bg-amber-400" />
         <div className="flex-1 bg-teal-400" />
         <div className="flex-1 bg-red-400" />
@@ -296,6 +275,20 @@ export default function PublicLayout() {
       <main id="main-content" className="flex-1">
         <Outlet />
       </main>
+
+      {/* Editorial sign-off */}
+      <div className="bg-neutral-50 border-t border-neutral-200 py-10 md:py-14 text-center" aria-hidden="true">
+        <div className="max-w-md mx-auto px-4">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <span className="flex-1 border-t border-neutral-200" />
+            <span className="text-brand-300 text-sm">&#9670;</span>
+            <span className="flex-1 border-t border-neutral-200" />
+          </div>
+          <p className="font-nexa font-light text-lg italic text-neutral-400 leading-relaxed">
+            Curated with care by AI.
+          </p>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="bg-neutral-900 text-neutral-300">

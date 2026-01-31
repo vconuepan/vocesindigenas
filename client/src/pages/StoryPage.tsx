@@ -2,7 +2,97 @@ import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Markdown from 'react-markdown'
 import { usePublicStory } from '../hooks/usePublicStories'
-import { getCategoryColor } from '../lib/category-colors'
+import { getCategoryColor, shiftHex } from '../lib/category-colors'
+import UpliftingBadge from '../components/UpliftingBadge'
+
+/**
+ * Parse a markdown string into individual points.
+ * - If lines start with `- ` or `* `, split on those (markdown list).
+ * - Otherwise, split on blank lines (paragraphs) or single newlines.
+ * Returns an array of trimmed, non-empty strings.
+ */
+function parsePoints(text: string): string[] {
+  const lines = text.split('\n')
+
+  // Check if the text uses markdown list syntax
+  const hasDashes = lines.some((l) => /^\s*[-*]\s+/.test(l))
+
+  if (hasDashes) {
+    // Merge continuation lines (lines that don't start with a dash) into the preceding item
+    const points: string[] = []
+    for (const line of lines) {
+      if (/^\s*[-*]\s+/.test(line)) {
+        points.push(line.replace(/^\s*[-*]\s+/, '').trim())
+      } else if (points.length > 0 && line.trim()) {
+        points[points.length - 1] += ' ' + line.trim()
+      }
+    }
+    return points.filter((p) => p.length > 0)
+  }
+
+  // No dashes — split on blank lines first, then on single newlines
+  const paragraphs = text.split(/\n\s*\n/)
+  if (paragraphs.length > 1) {
+    return paragraphs.map((p) => p.trim()).filter((p) => p.length > 0)
+  }
+
+  // Single block — split on newlines
+  return lines.map((l) => l.trim()).filter((l) => l.length > 0)
+}
+
+// ---------------------------------------------------------------------------
+// Analysis section with ruled heading + numbered points
+// ---------------------------------------------------------------------------
+
+function AnalysisSection({
+  title,
+  text,
+  accentColor,
+}: {
+  title: string
+  text: string
+  accentColor: string
+}) {
+  const points = parsePoints(text)
+
+  return (
+    <section className="mb-10">
+      {/* Ruled heading with colored dot — larger text */}
+      <div className="ruled-heading mb-6 !text-sm !tracking-wider">
+        <span className="flex items-center gap-2">
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0"
+            style={{ backgroundColor: accentColor }}
+            aria-hidden="true"
+          />
+          {title}
+        </span>
+      </div>
+
+      {/* Numbered points — fixed-width number column for alignment */}
+      <div className="space-y-6">
+        {points.map((point, idx) => (
+          <div key={idx} className="flex gap-4">
+            <span
+              className="font-nexa text-2xl font-bold leading-none pt-1 select-none text-right"
+              style={{ color: accentColor, opacity: 0.25, width: '2ch' }}
+              aria-hidden="true"
+            >
+              {idx + 1}
+            </span>
+            <div className="prose flex-1 min-w-0">
+              <Markdown>{point}</Markdown>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Story page
+// ---------------------------------------------------------------------------
 
 export default function StoryPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -74,7 +164,7 @@ export default function StoryPage() {
         <header className="border-b border-neutral-100 pb-8 mb-8">
           <div className="page-section !pb-0 !mb-0">
             {/* Category label */}
-            <div className="flex items-center mb-6">
+            <div className="flex items-center gap-2 mb-6">
               <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
               <Link
                 to={`/issues/${issueSlug}`}
@@ -82,6 +172,7 @@ export default function StoryPage() {
               >
                 {issueName}
               </Link>
+              {story.emotionTag === 'uplifting' && <UpliftingBadge color={colors.hex} />}
             </div>
 
             {/* Title */}
@@ -128,41 +219,58 @@ export default function StoryPage() {
         </header>
 
         <div className="page-section !pt-0">
-          {/* Key quote — prominent callout */}
-          {story.quote && (
-            <div className="pull-quote mb-10">
-              <p>"{story.quote}"</p>
-            </div>
-          )}
-
           {/* Summary */}
           {story.summary && (
             <section className="mb-10">
-              <div className="prose"><Markdown>{story.summary}</Markdown></div>
+              <div
+                className="prose drop-cap"
+                style={{ '--drop-cap-color': colors.hex } as React.CSSProperties}
+              >
+                <Markdown>{story.summary}</Markdown>
+              </div>
             </section>
+          )}
+
+          {/* Key quote — editorial pull-quote style */}
+          {story.quote && (
+            <div className="py-6 md:py-8 text-center max-w-2xl mx-auto mb-10">
+              <div className="relative">
+                <span
+                  aria-hidden="true"
+                  className="block text-brand-200 leading-none select-none pointer-events-none"
+                  style={{ fontSize: '6rem', fontFamily: 'Georgia, "Times New Roman", serif' }}
+                >
+                  &ldquo;
+                </span>
+                <blockquote className="-mt-8">
+                  <p className="text-xl md:text-2xl italic text-neutral-700 leading-relaxed px-4">
+                    {story.quote}
+                  </p>
+                </blockquote>
+              </div>
+            </div>
           )}
 
           {/* Why This Matters */}
           {story.relevanceReasons && (
-            <>
-              <hr className="section-divider" />
-              <section className="mb-10">
-                <h2 className="section-heading">Why This Matters</h2>
-                <div className="prose"><Markdown>{story.relevanceReasons}</Markdown></div>
-              </section>
-            </>
+            <AnalysisSection
+              title="Why This Matters"
+              text={story.relevanceReasons}
+              accentColor={colors.hex}
+            />
           )}
 
           {/* Caveats */}
           {story.antifactors && (
-            <section className="mb-10">
-              <h2 className="section-heading">Caveats</h2>
-              <div className="prose"><Markdown>{story.antifactors}</Markdown></div>
-            </section>
+            <AnalysisSection
+              title="Caveats"
+              text={story.antifactors}
+              accentColor={shiftHex(colors.hex, -0.25)}
+            />
           )}
 
           {/* Back / category navigation */}
-          <div className="border-t border-neutral-200 pt-6 flex flex-wrap gap-4 justify-between items-center">
+          <div className="border-t border-neutral-200 pt-6 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Link
               to="/"
               className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
@@ -171,11 +279,12 @@ export default function StoryPage() {
             </Link>
             <Link
               to={`/issues/${issueSlug}`}
-              className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="self-end sm:self-auto text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               More in {issueName} &rarr;
             </Link>
           </div>
+
         </div>
       </article>
     </>

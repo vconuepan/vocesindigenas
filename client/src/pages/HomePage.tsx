@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom'
 import { usePublicIssues } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
 import StoryCard from '../components/StoryCard'
+import PullQuote, { getQuoteVariant } from '../components/PullQuote'
+import UpliftingBadge from '../components/UpliftingBadge'
 import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
+import { getCategoryPattern } from '../lib/category-patterns'
 import { formatDate } from '../lib/format'
 
 // ---------------------------------------------------------------------------
@@ -16,22 +19,22 @@ function HeroSection({ story }: { story: PublicStory }) {
   const issueSlug = story.feed?.issue?.slug ?? 'general-news'
   const issueName = story.feed?.issue?.name ?? 'News'
   const colors = getCategoryColor(issueSlug)
+  const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
 
   return (
     <section className="hero-section">
+      <Pattern opacity={0.2} />
       <div className="hero-section-inner">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="rank-badge" aria-label="Story #1">1</span>
-          <div className="flex items-center">
-            <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
-            <Link
-              to={`/issues/${issueSlug}`}
-              className="text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-            >
-              {issueName}
-            </Link>
-          </div>
+        <div className="flex items-center gap-2 mb-4">
+          <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
+          <Link
+            to={`/issues/${issueSlug}`}
+            className="text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          >
+            {issueName}
+          </Link>
+          {story.emotionTag === 'uplifting' && <UpliftingBadge color={colors.hex} />}
         </div>
 
         <h1 className="text-3xl md:text-5xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
@@ -59,7 +62,7 @@ function HeroSection({ story }: { story: PublicStory }) {
         {story.quote ? (
           <blockquote className="decorative-quote max-w-2xl">
             <p className="text-lg md:text-xl italic text-neutral-700 leading-relaxed">
-              "{story.quote}"
+              &ldquo;{story.quote}&rdquo;
             </p>
           </blockquote>
         ) : story.summary ? (
@@ -69,36 +72,6 @@ function HeroSection({ story }: { story: PublicStory }) {
         ) : null}
       </div>
     </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Standalone pull quote divider
-// ---------------------------------------------------------------------------
-
-function PullQuoteDivider({ stories }: { stories: PublicStory[] }) {
-  const storyWithQuote = stories.find((s) => s.quote)
-  if (!storyWithQuote) return null
-
-  return (
-    <div className="py-10 md:py-14 text-center max-w-2xl mx-auto">
-      <div className="decorative-quote inline-block text-left">
-        <blockquote>
-          <p className="text-xl md:text-2xl italic text-neutral-700 leading-relaxed">
-            "{storyWithQuote.quote}"
-          </p>
-        </blockquote>
-        <footer className="mt-3 text-sm text-neutral-500">
-          — from{' '}
-          <Link
-            to={`/stories/${storyWithQuote.slug}`}
-            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-          >
-            {storyWithQuote.title || storyWithQuote.sourceTitle}
-          </Link>
-        </footer>
-      </div>
-    </div>
   )
 }
 
@@ -139,14 +112,14 @@ function IssueSection({
   issue,
   heroStoryId,
   layout,
-  rank,
   divider,
+  quoteVariantIndex,
 }: {
   issue: PublicIssue
   heroStoryId: string | null
   layout: LayoutVariant
-  rank?: number
   divider?: 'quote' | 'diamond' | 'none'
+  quoteVariantIndex?: number
 }) {
   const { data } = usePublicStories({ issueSlug: issue.slug, pageSize: 5 })
   const allStories = data?.data ?? []
@@ -162,14 +135,14 @@ function IssueSection({
 
   return (
     <>
-      <section className="mb-8">
+      <section className="mb-6">
         <RuledHeading issue={issue} />
 
         {/* Layout A: 2+3 grid (featured left, compacts right) */}
         {layout === 'A' && (
           <div className="grid gap-5 md:grid-cols-3">
             <div className="md:col-span-2">
-              <StoryCard story={featured} variant="featured" rank={rank} />
+              <StoryCard story={featured} variant="featured" />
             </div>
             {rest.length > 0 && (
               <div className="space-y-3">
@@ -184,7 +157,7 @@ function IssueSection({
         {/* Layout B: Full-width horizontal card + compact row below */}
         {layout === 'B' && (
           <div className="space-y-5">
-            <StoryCard story={featured} variant="horizontal" rank={rank} />
+            <StoryCard story={featured} variant="horizontal" />
             {rest.length > 0 && (
               <div className="grid gap-5 md:grid-cols-3">
                 {rest.slice(0, 3).map((story) => (
@@ -215,10 +188,23 @@ function IssueSection({
       </section>
 
       {/* Section divider */}
-      {divider === 'quote' && <PullQuoteDivider stories={allStories} />}
+      {divider === 'quote' && (
+        <QuoteDivider stories={allStories} variantIndex={quoteVariantIndex ?? 0} />
+      )}
       {divider === 'diamond' && <hr className="section-divider" />}
     </>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Quote divider using the new PullQuote component
+// ---------------------------------------------------------------------------
+
+function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; variantIndex: number }) {
+  const storyWithQuote = stories.find((s) => s.quote)
+  if (!storyWithQuote) return null
+
+  return <PullQuote story={storyWithQuote} variant={getQuoteVariant(variantIndex)} />
 }
 
 // ---------------------------------------------------------------------------
@@ -245,6 +231,8 @@ export default function HomePage() {
   const { data: latestData } = usePublicStories({ pageSize: 1 })
   const heroStory = latestData?.data?.[0] ?? null
 
+  let quoteIdx = 0
+
   return (
     <>
       <Helmet>
@@ -270,7 +258,6 @@ export default function HomePage() {
       <div className="page-section-wide">
         {sortedIssues.map((issue, idx) => {
           const layout = LAYOUTS[idx % LAYOUTS.length]
-          const rank = idx < 2 ? idx + 2 : undefined
           const isLast = idx === sortedIssues.length - 1
           const divider: 'quote' | 'diamond' | 'none' = isLast
             ? 'none'
@@ -278,14 +265,16 @@ export default function HomePage() {
               ? 'quote'
               : 'diamond'
 
+          const currentQuoteIdx = divider === 'quote' ? quoteIdx++ : 0
+
           return (
             <IssueSection
               key={issue.id}
               issue={issue}
               heroStoryId={heroStory?.id ?? null}
               layout={layout}
-              rank={rank}
               divider={divider}
+              quoteVariantIndex={currentQuoteIdx}
             />
           )
         })}

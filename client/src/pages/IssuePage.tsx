@@ -6,38 +6,9 @@ import { usePublicIssue } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
 import { getCategoryColor } from '../lib/category-colors'
 import StoryCard from '../components/StoryCard'
+import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import Pagination from '../components/Pagination'
 import type { PublicStory } from '@shared/types'
-
-// ---------------------------------------------------------------------------
-// Pull quote divider (reused from HomePage pattern)
-// ---------------------------------------------------------------------------
-
-function PullQuoteDivider({ stories }: { stories: PublicStory[] }) {
-  const storyWithQuote = stories.find((s) => s.quote)
-  if (!storyWithQuote) return null
-
-  return (
-    <div className="py-10 md:py-14 text-center max-w-2xl mx-auto">
-      <div className="decorative-quote inline-block text-left">
-        <blockquote>
-          <p className="text-xl md:text-2xl italic text-neutral-700 leading-relaxed">
-            "{storyWithQuote.quote}"
-          </p>
-        </blockquote>
-        <footer className="mt-3 text-sm text-neutral-500">
-          — from{' '}
-          <Link
-            to={`/stories/${storyWithQuote.slug}`}
-            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-          >
-            {storyWithQuote.title || storyWithQuote.sourceTitle}
-          </Link>
-        </footer>
-      </div>
-    </div>
-  )
-}
 
 // ---------------------------------------------------------------------------
 // Story group with a specific layout variant
@@ -108,6 +79,17 @@ function StoryGroup({
       )}
     </div>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Quote divider using the PullQuote component
+// ---------------------------------------------------------------------------
+
+function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; variantIndex: number }) {
+  const storyWithQuote = stories.find((s) => s.quote)
+  if (!storyWithQuote) return null
+
+  return <PullQuote story={storyWithQuote} variant={getQuoteVariant(variantIndex)} />
 }
 
 // ---------------------------------------------------------------------------
@@ -240,6 +222,7 @@ export default function IssuePage() {
             {storyGroups.map((group, idx) => {
               const layout = LAYOUTS[idx % LAYOUTS.length]
               const isLast = idx === storyGroups.length - 1
+              const useQuote = idx % 2 === 0
 
               return (
                 <div key={idx}>
@@ -247,8 +230,8 @@ export default function IssuePage() {
 
                   {/* Divider between groups */}
                   {!isLast && (
-                    idx % 2 === 0
-                      ? <PullQuoteDivider stories={group} />
+                    useQuote
+                      ? <QuoteDivider stories={group} variantIndex={idx} />
                       : <hr className="section-divider" />
                   )}
                 </div>

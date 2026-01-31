@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Nexa Bold — headings */
 @font-face {
   font-family: 'Nexa';
@@ -111,10 +120,8 @@
   /* Editorial magazine elements */
 
   .hero-section {
-    @apply relative py-12 md:py-20 px-4 overflow-hidden;
-    background-color: #fdf2f8;
-    background-image: radial-gradient(circle, #f9a8d4 0.8px, transparent 0.8px);
-    background-size: 24px 24px;
+    @apply relative py-8 md:py-14 px-4 overflow-hidden;
+    background-color: #fafafa;
   }
 
   .hero-section-inner {
@@ -130,7 +137,7 @@
   }
 
   .section-divider {
-    @apply border-0 my-10 md:my-14 relative;
+    @apply border-0 my-6 md:my-10 relative;
     height: 1px;
     background: linear-gradient(
       to right,
@@ -178,12 +185,26 @@
     @apply flex-1 border-t border-neutral-200;
   }
 
-  /* Rank badge */
-  .rank-badge {
-    @apply w-8 h-8 rounded-full bg-neutral-900 text-white text-sm font-bold flex items-center justify-center shrink-0;
+  /* Issue nav link — uses CSS variable for category-colored hover/active */
+  /* Drop cap for story page lead text */
+  .drop-cap::first-letter {
+    float: left;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 4.5rem;
+    line-height: 0.7;
+    margin-right: 0.08em;
+    margin-top: 0.05em;
+    margin-bottom: -0.1em;
+    color: var(--drop-cap-color, #171717);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.04);
   }
 
-  /* Issue nav link — uses CSS variable for category-colored hover/active */
+  /* Story card — subtle category-colored hover background */
+  .story-card-hover:hover {
+    background-color: var(--card-hover-color);
+  }
+
   .issue-nav-link {
     @apply inline-flex items-center gap-1.5 px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors;
     @apply focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 border-transparent text-neutral-400;
