@@ -97,28 +97,33 @@ export async function preAssessStories(
         batchesDone++
         log.info({ progress: `${batchesDone}/${totalBatches}`, resultCount: response.articles.length, batch: work.batchLabel }, 'batch complete')
 
+        const storyMap = new Map(work.batch.map(s => [s.id, s]))
         const batchResults: { storyId: string; rating: number; emotionTag: string }[] = []
+        const updates: ReturnType<typeof prisma.story.update>[] = []
         for (const item of response.articles) {
-          const story = work.batch.find(s => s.id === item.articleId)
+          const story = storyMap.get(item.articleId)
           if (!story) {
             log.warn({ articleId: item.articleId }, 'LLM returned unknown articleId')
             continue
           }
 
-          await prisma.story.update({
+          updates.push(prisma.story.update({
             where: { id: story.id },
             data: {
               relevancePre: item.rating,
               emotionTag: item.emotionTag as any,
               status: 'pre_analyzed',
             },
-          })
+          }))
 
           batchResults.push({
             storyId: story.id,
             rating: item.rating,
             emotionTag: item.emotionTag,
           })
+        }
+        if (updates.length > 0) {
+          await prisma.$transaction(updates)
         }
         onProgress?.({ type: 'completed', count: batchResults.length })
         const missing = work.batch.length - batchResults.length

@@ -8,6 +8,7 @@ const mockPrisma = vi.hoisted(() => ({
     update: vi.fn(),
     updateMany: vi.fn(),
   },
+  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
 }))
 
 const mockGetSmallLLM = vi.hoisted(() => vi.fn())
