@@ -1,21 +1,9 @@
 import cron from 'node-cron'
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
-import { runCrawlFeeds } from './crawlFeeds.js'
-import { runPreassessStories } from './preassessStories.js'
-import { runAssessStories } from './assessStories.js'
-import { runSelectStories } from './selectStories.js'
-import { runPublishStories } from './publishStories.js'
+import { JOB_HANDLERS } from './handlers.js'
 
 const log = createLogger('scheduler')
-
-const JOB_HANDLERS: Record<string, () => Promise<void>> = {
-  crawl_feeds: runCrawlFeeds,
-  preassess_stories: runPreassessStories,
-  assess_stories: runAssessStories,
-  select_stories: runSelectStories,
-  publish_stories: runPublishStories,
-}
 
 const registeredTasks: cron.ScheduledTask[] = []
 const runningJobs = new Set<string>()

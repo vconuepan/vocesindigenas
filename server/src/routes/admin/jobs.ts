@@ -5,19 +5,7 @@ import prisma from '../../lib/prisma.js'
 import { runJob, runningJobs } from '../../jobs/scheduler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { updateJobSchema } from '../../schemas/job.js'
-import { runCrawlFeeds } from '../../jobs/crawlFeeds.js'
-import { runPreassessStories } from '../../jobs/preassessStories.js'
-import { runAssessStories } from '../../jobs/assessStories.js'
-import { runSelectStories } from '../../jobs/selectStories.js'
-import { runPublishStories } from '../../jobs/publishStories.js'
-
-const JOB_HANDLERS: Record<string, () => Promise<void>> = {
-  crawl_feeds: runCrawlFeeds,
-  preassess_stories: runPreassessStories,
-  assess_stories: runAssessStories,
-  select_stories: runSelectStories,
-  publish_stories: runPublishStories,
-}
+import { JOB_HANDLERS } from '../../jobs/handlers.js'
 
 const router = Router()
 const log = createLogger('jobs')
