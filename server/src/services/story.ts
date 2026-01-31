@@ -324,10 +324,17 @@ export async function getPublishedStories(options: {
   }
 }
 
-export async function getStoriesByStatus(
+interface StatusFilterOptions {
+  ratingMin?: number
+  relevanceMin?: number
+  hoursAgo?: number
+  limit?: number
+}
+
+function buildStatusWhereClause(
   status: string,
-  options: { ratingMin?: number; relevanceMin?: number; hoursAgo?: number } = {},
-) {
+  options: StatusFilterOptions = {},
+): Prisma.StoryWhereInput {
   const where: Prisma.StoryWhereInput = { status: status as any }
   if (options.ratingMin !== undefined) {
     where.relevancePre = { gte: options.ratingMin }
@@ -338,10 +345,33 @@ export async function getStoriesByStatus(
   if (options.hoursAgo !== undefined) {
     where.dateCrawled = { gte: new Date(Date.now() - options.hoursAgo * 60 * 60 * 1000) }
   }
+  return where
+}
+
+export async function getStoryIdsByStatus(
+  status: string,
+  options: StatusFilterOptions = {},
+): Promise<string[]> {
+  const where = buildStatusWhereClause(status, options)
+  const stories = await prisma.story.findMany({
+    where,
+    select: { id: true },
+    orderBy: { dateCrawled: 'desc' },
+    ...(options.limit ? { take: options.limit } : {}),
+  })
+  return stories.map(s => s.id)
+}
+
+export async function getStoriesByStatus(
+  status: string,
+  options: StatusFilterOptions = {},
+) {
+  const where = buildStatusWhereClause(status, options)
   return prisma.story.findMany({
     where,
     include: { feed: { include: { issue: true } } },
     orderBy: { dateCrawled: 'desc' },
+    take: options.limit ?? 1000,
   })
 }
 

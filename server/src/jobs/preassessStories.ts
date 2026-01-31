@@ -1,4 +1,4 @@
-import { getStoriesByStatus } from '../services/story.js'
+import { getStoryIdsByStatus } from '../services/story.js'
 import { preAssessStories } from '../services/analysis.js'
 import { createLogger } from '../lib/logger.js'
 
@@ -7,13 +7,12 @@ const log = createLogger('preassess_stories')
 export async function runPreassessStories(): Promise<void> {
   log.info('starting pre-assessment job')
 
-  const stories = await getStoriesByStatus('fetched')
-  if (stories.length === 0) {
+  const ids = await getStoryIdsByStatus('fetched')
+  if (ids.length === 0) {
     log.info('no fetched stories to pre-assess')
     return
   }
 
-  const ids = stories.map(s => s.id)
   log.info({ storyCount: ids.length }, 'found fetched stories to pre-assess')
 
   const results = await preAssessStories(ids)

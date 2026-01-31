@@ -198,8 +198,7 @@ router.post('/preassess', expensiveOpLimiter, validateBody(preassessBodySchema),
     if (req.body.storyIds && req.body.storyIds.length > 0) {
       storyIds = req.body.storyIds
     } else {
-      const fetched = await storyService.getStoriesByStatus('fetched')
-      storyIds = fetched.map(s => s.id)
+      storyIds = await storyService.getStoryIdsByStatus('fetched')
     }
 
     if (storyIds.length === 0) {
