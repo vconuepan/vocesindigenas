@@ -23,7 +23,14 @@ Added `familyId` and `rotatedAt` columns to RefreshToken schema and created migr
 
 ## Skipped Plans (Need User Input)
 
-_(Plans that were skipped because they require user decisions)_
+### Imp-36: Feed Interval Check in SQL
+Skipped — the current JS-side filter is correct and feed count is small (<100 rows). Moving to raw SQL loses Prisma type safety for minimal gain. If feed count grows significantly, consider adding a `$queryRaw` implementation or a `pg_trgm`-based approach.
+
+### Imp-41: Monitoring/Metrics Endpoint
+Skipped — requires installing `prom-client` npm package, creating metrics instrumentation across multiple services (HTTP, LLM, crawler), and adding admin dashboard components. This is a significant feature that should be explicitly approved before adding a dependency.
+
+### Imp-44: JSON Fields to JSONB
+Deferred — the manual `JSON.stringify`/`JSON.parse` serialization works correctly. Migration risk (empty strings, data conversion for `evaluationCriteria`, `sourceNames`, `makeADifference` on Issue model) isn't worth it at this stage. Revisit when adding features that would benefit from native JSONB queries.
 
 ## Notes from Implemented Plans
 
