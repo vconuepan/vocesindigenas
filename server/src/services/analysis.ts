@@ -8,18 +8,13 @@ import { taskRegistry } from '../lib/taskRegistry.js'
 import { getSmallLLM, getLargeLLM, rateLimitDelay } from './llm.js'
 import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from './prompts.js'
 import { preAssessResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
+import type { Guidelines } from '../prompts/shared.js'
 
 const log = createLogger('analysis')
 
 export type ProgressCallback = (
   event: { type: 'completed'; count: number } | { type: 'failed'; count: number; error: string }
 ) => void
-
-interface Guidelines {
-  factors: string
-  antifactors: string
-  ratings: string
-}
 
 function getGuidelines(issue: { promptFactors: string; promptAntifactors: string; promptRatings: string }): Guidelines {
   return {
