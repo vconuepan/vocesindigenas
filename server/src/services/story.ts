@@ -97,6 +97,32 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   return where
 }
 
+const ADMIN_LIST_SELECT = {
+  id: true,
+  sourceUrl: true,
+  sourceTitle: true,
+  sourceDatePublished: true,
+  feedId: true,
+  status: true,
+  dateCrawled: true,
+  datePublished: true,
+  relevancePre: true,
+  relevance: true,
+  emotionTag: true,
+  slug: true,
+  title: true,
+  summary: true,
+  quote: true,
+  marketingBlurb: true,
+  relevanceReasons: true,
+  antifactors: true,
+  relevanceCalculation: true,
+  crawlMethod: true,
+  createdAt: true,
+  updatedAt: true,
+  feed: { select: { id: true, title: true, issue: { select: { id: true, name: true, slug: true } } } },
+} as const
+
 export async function getStories(filters: StoryFilters) {
   const page = filters.page || 1
   const pageSize = filters.pageSize || 25
@@ -109,7 +135,7 @@ export async function getStories(filters: StoryFilters) {
       orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { feed: { include: { issue: true } } },
+      select: ADMIN_LIST_SELECT,
     }),
     prisma.story.count({ where }),
   ])

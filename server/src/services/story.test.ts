@@ -21,7 +21,40 @@ const mockPrisma = vi.hoisted(() => ({
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 
-const { getStoryIdsByStatus, generateUniqueSlugs } = await import('./story.js')
+const { getStoryIdsByStatus, generateUniqueSlugs, getStories } = await import('./story.js')
+
+describe('getStories', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('excludes sourceContent from admin list query', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+    mockPrisma.story.count.mockResolvedValue(0)
+
+    await getStories({})
+
+    const call = mockPrisma.story.findMany.mock.calls[0][0]
+    expect(call.select).toBeDefined()
+    expect(call.select.sourceContent).toBeUndefined()
+    expect(call.select.id).toBe(true)
+    expect(call.select.title).toBe(true)
+    expect(call.select.status).toBe(true)
+    expect(call.select.feed).toBeDefined()
+  })
+
+  it('includes feed with issue in select', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+    mockPrisma.story.count.mockResolvedValue(0)
+
+    await getStories({})
+
+    const call = mockPrisma.story.findMany.mock.calls[0][0]
+    expect(call.select.feed.select.id).toBe(true)
+    expect(call.select.feed.select.title).toBe(true)
+    expect(call.select.feed.select.issue).toBeDefined()
+  })
+})
 
 describe('getStoryIdsByStatus', () => {
   beforeEach(() => {
