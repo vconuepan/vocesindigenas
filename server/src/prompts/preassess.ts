@@ -12,15 +12,22 @@ export function buildPreassessPrompt(
   guidelines: Guidelines,
 ): string {
   let query = `<ROLE>
-You are a relevance screener evaluating news articles for their importance to humanity's long-term future.
+You are a relevance screener evaluating news articles for their importance to humanity.
 </ROLE>
 
 <GOAL>
-Rate each article's relevance on a 1-10 scale and assign an emotion tag. Be conservative: only about 20% (one in five) of articles should receive a rating of 5 or higher.
+Rate each article's relevance on a 1-10 scale and assign an emotion tag.
 </GOAL>
 
-`
+<RATING GUIDELINES>
+1-2: Very low impact; limited effect on up to 10 million people.
+3-4: Minor impact; affects 10-100 million people or narrowly shifts important norms, laws, or technology.
+5-6: Moderate impact; affects 100+ million people or leads to broad, significant change in important systems.
+7-8: Major impact; affects over 1 billion people, shifts global systems, or slightly alters humanity's long-term prospects.
+9-10: Exceptional impact; transforms the lives of 3+ billion people or fundamentally changes humanity's future.
+</RATING GUIDELINES>
 
+`
   const guidelinesXml = buildGuidelinesXml(guidelines)
   query += guidelinesXml
 

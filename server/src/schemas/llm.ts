@@ -3,13 +3,13 @@ import { z } from 'zod'
 export const preAssessItemSchema = z.object({
   articleId: z.string().describe('The article ID exactly as provided in the input'),
   rating: z.number().int().min(1).max(10).describe(
-    'Conservative relevance rating 1-10. Only about 20% (one in five) of articles should get a rating of 5 or higher.',
+    'Conservative relevance rating 1-10 as per the <RATING GUIDELINES>.',
   ),
   emotionTag: z.enum(['uplifting', 'surprising', 'frustrating', 'scary', 'calm']).describe(
     'Emotion tag based on how the article affects readers. '
-    + 'uplifting: positive or inspiring stories (e.g. a positive trend or useful new technology). '
-    + 'surprising: unexpected or counterintuitive stories (e.g. an effect opposite to expectations). '
-    + 'frustrating: negative or disappointing stories (e.g. a policy change that harms the environment). '
+    + 'uplifting: positive or inspiring stories. '
+    + 'surprising: unexpected or counterintuitive stories. '
+    + 'frustrating: negative or disappointing stories. '
     + 'scary: frightening stories (e.g. increased existential risks, wars). '
     + 'calm: stories without a strong association with any other emotion tag.',
   ),
