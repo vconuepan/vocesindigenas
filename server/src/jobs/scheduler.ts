@@ -1,6 +1,7 @@
 import cron from 'node-cron'
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
+import { notifyJobFailure } from '../lib/notify.js'
 import { JOB_HANDLERS } from './handlers.js'
 
 const log = createLogger('scheduler')
@@ -111,6 +112,7 @@ async function runJob(jobName: string, handler: () => Promise<void>): Promise<vo
       where: { jobName },
       data: { lastError: errorMsg, lastCompletedAt: new Date() },
     })
+    notifyJobFailure(jobName, errorMsg).catch(() => {})
   } finally {
     runningJobs.delete(jobName)
   }
