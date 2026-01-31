@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { createLogger } from '../../lib/logger.js'
 import cron from 'node-cron'
-import { runJob } from '../../jobs/scheduler.js'
+import { runJob, reloadJob } from '../../jobs/scheduler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { updateJobSchema } from '../../schemas/job.js'
 import { JOB_HANDLERS } from '../../jobs/handlers.js'
@@ -28,6 +28,7 @@ router.put('/:jobName', validateBody(updateJobSchema), async (req, res) => {
     }
 
     const job = await updateJob(req.params.jobName, req.body)
+    await reloadJob(req.params.jobName)
     res.json(job)
   } catch (err: any) {
     if (err.code === 'P2025') {
