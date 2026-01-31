@@ -1,4 +1,7 @@
 import Parser from 'rss-parser'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('rssParser')
 
 const parser = new Parser({
   timeout: 10000,
@@ -31,7 +34,7 @@ export async function parseFeed(feedUrl: string): Promise<RSSItem[]> {
 
     return items
   } catch (err) {
-    console.error(`[rssParser] Failed to parse feed: ${feedUrl}`, err)
+    log.error({ feedUrl, err }, 'failed to parse feed')
     return []
   }
 }

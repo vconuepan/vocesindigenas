@@ -1,13 +1,15 @@
 import prisma from './lib/prisma.js'
+import { createLogger } from './lib/logger.js'
 import app from './app.js'
 
+const log = createLogger('server')
 const PORT = process.env.PORT || 3001
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  log.info({ port: PORT }, 'server started')
 
   import('./jobs/scheduler.js').then(m => m.initScheduler()).catch(err => {
-    console.error('[Scheduler] Failed to initialize:', err)
+    log.error({ err }, 'scheduler initialization failed')
   })
 })
 

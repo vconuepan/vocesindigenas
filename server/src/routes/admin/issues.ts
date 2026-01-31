@@ -1,16 +1,18 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import * as issueService from '../../services/issue.js'
 import { validateBody } from '../../middleware/validate.js'
 import { createIssueSchema, updateIssueSchema } from '../../schemas/issue.js'
 
 const router = Router()
+const log = createLogger('issues')
 
 router.get('/', async (_req, res) => {
   try {
     const issues = await issueService.getAllIssues()
     res.json(issues)
   } catch (err) {
-    console.error('[issues] Failed to fetch issues:', err)
+    log.error({ err }, 'failed to fetch issues')
     res.status(500).json({ error: 'Failed to fetch issues' })
   }
 })
@@ -24,7 +26,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(issue)
   } catch (err) {
-    console.error('[issues] Failed to fetch issue:', err)
+    log.error({ err }, 'failed to fetch issue')
     res.status(500).json({ error: 'Failed to fetch issue' })
   }
 })
@@ -42,7 +44,7 @@ router.post('/', validateBody(createIssueSchema), async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
-    console.error('[issues] Failed to create issue:', err)
+    log.error({ err }, 'failed to create issue')
     res.status(500).json({ error: 'Failed to create issue' })
   }
 })
@@ -70,7 +72,7 @@ router.put('/:id', validateBody(updateIssueSchema), async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
-    console.error('[issues] Failed to update issue:', err)
+    log.error({ err }, 'failed to update issue')
     res.status(500).json({ error: 'Failed to update issue' })
   }
 })
@@ -88,7 +90,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Issue not found' })
       return
     }
-    console.error('[issues] Failed to delete issue:', err)
+    log.error({ err }, 'failed to delete issue')
     res.status(500).json({ error: 'Failed to delete issue' })
   }
 })

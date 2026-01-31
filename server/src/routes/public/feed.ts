@@ -1,9 +1,11 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import { Feed } from 'feed'
 import * as storyService from '../../services/story.js'
 import * as issueService from '../../services/issue.js'
 
 const router = Router()
+const log = createLogger('feed')
 
 const FEED_SIZE = 50
 const CACHE_MAX_AGE = 900 // 15 minutes
@@ -58,7 +60,7 @@ router.get('/', async (_req, res) => {
     setRssHeaders(res)
     res.send(feed.rss2())
   } catch (err) {
-    console.error('Failed to generate global RSS feed:', err)
+    log.error({ err }, 'failed to generate global RSS feed')
     res.status(500).json({ error: 'Failed to generate feed' })
   }
 })
@@ -100,7 +102,7 @@ router.get('/:issueSlug', async (req, res) => {
     setRssHeaders(res)
     res.send(feed.rss2())
   } catch (err) {
-    console.error('Failed to generate issue RSS feed:', err)
+    log.error({ err }, 'failed to generate issue RSS feed')
     res.status(500).json({ error: 'Failed to generate feed' })
   }
 })

@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import { existsSync, createReadStream, unlinkSync } from 'fs'
 import * as newsletterService from '../../services/newsletter.js'
 import { generateCarouselForNewsletter } from '../../services/newsletter.js'
@@ -11,6 +12,7 @@ import {
 } from '../../schemas/newsletter.js'
 
 const router = Router()
+const log = createLogger('newsletters')
 
 router.get('/', validateQuery(newsletterQuerySchema), async (req, res) => {
   try {
@@ -18,7 +20,7 @@ router.get('/', validateQuery(newsletterQuerySchema), async (req, res) => {
     const result = await newsletterService.getNewsletters(filters)
     res.json(result)
   } catch (err) {
-    console.error('[newsletters] Failed to fetch newsletters:', err)
+    log.error({ err }, 'failed to fetch newsletters')
     res.status(500).json({ error: 'Failed to fetch newsletters' })
   }
 })
@@ -32,7 +34,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(newsletter)
   } catch (err) {
-    console.error('[newsletters] Failed to fetch newsletter:', err)
+    log.error({ err }, 'failed to fetch newsletter')
     res.status(500).json({ error: 'Failed to fetch newsletter' })
   }
 })
@@ -42,7 +44,7 @@ router.post('/', validateBody(createNewsletterSchema), async (req, res) => {
     const newsletter = await newsletterService.createNewsletter(req.body)
     res.status(201).json(newsletter)
   } catch (err) {
-    console.error('[newsletters] Failed to create newsletter:', err)
+    log.error({ err }, 'failed to create newsletter')
     res.status(500).json({ error: 'Failed to create newsletter' })
   }
 })
@@ -56,7 +58,7 @@ router.put('/:id', validateBody(updateNewsletterSchema), async (req, res) => {
       res.status(404).json({ error: 'Newsletter not found' })
       return
     }
-    console.error('[newsletters] Failed to update newsletter:', err)
+    log.error({ err }, 'failed to update newsletter')
     res.status(500).json({ error: 'Failed to update newsletter' })
   }
 })
@@ -70,7 +72,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Newsletter not found' })
       return
     }
-    console.error('[newsletters] Failed to delete newsletter:', err)
+    log.error({ err }, 'failed to delete newsletter')
     res.status(500).json({ error: 'Failed to delete newsletter' })
   }
 })
@@ -84,7 +86,7 @@ router.post('/:id/assign', async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
-    console.error('[newsletters] Failed to assign stories:', err)
+    log.error({ err }, 'failed to assign stories')
     res.status(500).json({ error: 'Failed to assign stories' })
   }
 })
@@ -102,7 +104,7 @@ router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
-    console.error('[newsletters] Failed to generate newsletter content:', err)
+    log.error({ err }, 'failed to generate newsletter content')
     res.status(500).json({ error: 'Failed to generate newsletter content' })
   }
 })
@@ -126,7 +128,7 @@ router.post('/:id/carousel', async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
-    console.error('[newsletters] Failed to generate carousel images:', err)
+    log.error({ err }, 'failed to generate carousel images')
     res.status(500).json({ error: 'Failed to generate carousel images' })
   }
 })

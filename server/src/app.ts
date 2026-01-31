@@ -3,10 +3,13 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import helmet from 'helmet'
+import { createLogger } from './lib/logger.js'
 import healthRouter from './routes/health.js'
 import authRouter from './routes/auth.js'
 import adminRouter from './routes/admin/index.js'
 import publicRouter from './routes/public/index.js'
+
+const httpLog = createLogger('http')
 
 const app = express()
 
@@ -50,13 +53,15 @@ app.use(cors({
 app.use(express.json({ limit: '100kb' }))
 app.use(cookieParser())
 
-// Request logging
+// Request logging — single line per request, no redundant fields
 app.use((req, res, next) => {
+  if (req.originalUrl === '/health') return next()
   const start = Date.now()
-  console.log(`→ ${req.method} ${req.originalUrl}`)
   res.on('finish', () => {
     const ms = Date.now() - start
-    console.log(`← ${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms`)
+    const status = res.statusCode
+    const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
+    httpLog[level](`${req.method} ${req.originalUrl} ${status} ${ms}ms`)
   })
   next()
 })

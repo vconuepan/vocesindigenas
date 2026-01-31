@@ -1,9 +1,12 @@
 import { crawlAllDueFeeds } from '../services/crawler.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('crawl_feeds')
 
 export async function runCrawlFeeds(): Promise<void> {
-  console.log('[crawl_feeds] Starting...')
+  log.info('starting crawl')
   const results = await crawlAllDueFeeds()
   const totalNew = results.reduce((sum, r) => sum + r.newStories, 0)
   const totalErrors = results.reduce((sum, r) => sum + r.errors, 0)
-  console.log(`[crawl_feeds] Done: ${results.length} feeds, ${totalNew} new stories, ${totalErrors} errors`)
+  log.info({ feedCount: results.length, newStories: totalNew, errors: totalErrors }, 'crawl finished')
 }

@@ -1,10 +1,12 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import * as feedService from '../../services/feed.js'
 import { crawlFeed, crawlAllDueFeeds } from '../../services/crawler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { createFeedSchema, updateFeedSchema } from '../../schemas/feed.js'
 
 const router = Router()
+const log = createLogger('feeds')
 
 router.get('/', async (req, res) => {
   try {
@@ -14,7 +16,7 @@ router.get('/', async (req, res) => {
     const feeds = await feedService.getFeeds(filters)
     res.json(feeds)
   } catch (err) {
-    console.error('[feeds] Failed to fetch feeds:', err)
+    log.error({ err }, 'failed to fetch feeds')
     res.status(500).json({ error: 'Failed to fetch feeds' })
   }
 })
@@ -28,7 +30,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(feed)
   } catch (err) {
-    console.error('[feeds] Failed to fetch feed:', err)
+    log.error({ err }, 'failed to fetch feed')
     res.status(500).json({ error: 'Failed to fetch feed' })
   }
 })
@@ -46,7 +48,7 @@ router.post('/', validateBody(createFeedSchema), async (req, res) => {
       res.status(409).json({ error: 'A feed with this URL already exists' })
       return
     }
-    console.error('[feeds] Failed to create feed:', err)
+    log.error({ err }, 'failed to create feed')
     res.status(500).json({ error: 'Failed to create feed' })
   }
 })
@@ -68,7 +70,7 @@ router.put('/:id', validateBody(updateFeedSchema), async (req, res) => {
       res.status(409).json({ error: 'A feed with this URL already exists' })
       return
     }
-    console.error('[feeds] Failed to update feed:', err)
+    log.error({ err }, 'failed to update feed')
     res.status(500).json({ error: 'Failed to update feed' })
   }
 })
@@ -85,7 +87,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Feed not found' })
       return
     }
-    console.error('[feeds] Failed to delete feed:', err)
+    log.error({ err }, 'failed to delete feed')
     res.status(500).json({ error: 'Failed to delete feed' })
   }
 })
@@ -100,7 +102,7 @@ router.post('/:id/crawl', async (req, res) => {
     const result = await crawlFeed(req.params.id)
     res.json(result)
   } catch (err) {
-    console.error('[feeds] Failed to crawl feed:', err)
+    log.error({ err }, 'failed to crawl feed')
     res.status(500).json({ error: 'Failed to crawl feed' })
   }
 })
@@ -110,7 +112,7 @@ router.post('/crawl-all', async (_req, res) => {
     const results = await crawlAllDueFeeds()
     res.json(results)
   } catch (err) {
-    console.error('[feeds] Failed to crawl all feeds:', err)
+    log.error({ err }, 'failed to crawl all feeds')
     res.status(500).json({ error: 'Failed to crawl feeds' })
   }
 })

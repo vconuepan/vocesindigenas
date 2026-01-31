@@ -3,6 +3,9 @@ import * as cheerio from 'cheerio'
 import { Readability } from '@mozilla/readability'
 import { JSDOM } from 'jsdom'
 import { isAllowedUrl } from '../utils/urlValidation.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('extractor')
 
 const HTTP_TIMEOUT = 10000
 const USER_AGENT = 'ActuallyRelevant/1.0 (news curation bot; +https://actuallyrelevant.news)'
@@ -31,7 +34,7 @@ async function fetchPage(url: string): Promise<string | null> {
     })
     return response.data
   } catch (err) {
-    console.error(`[extractor] Failed to fetch: ${url}`, err instanceof Error ? err.message : err)
+    log.error({ url, err }, 'failed to fetch page')
     return null
   }
 }
@@ -52,7 +55,7 @@ function extractBySelector(html: string, selector: string): ExtractionResult | n
       method: 'selector',
     }
   } catch (err) {
-    console.error('[extractor] Selector extraction failed:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'selector extraction failed')
     return null
   }
 }
@@ -70,7 +73,7 @@ function extractByReadability(html: string, url: string): ExtractionResult | nul
       method: 'readability',
     }
   } catch (err) {
-    console.error('[extractor] Readability extraction failed:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'readability extraction failed')
     return null
   }
 }
@@ -103,7 +106,7 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
       method: 'pipfeed',
     }
   } catch (err) {
-    console.error('[extractor] PipFeed extraction failed:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'PipFeed extraction failed')
     return null
   }
 }
@@ -113,7 +116,7 @@ export async function extractContent(
   options?: { htmlSelector?: string | null }
 ): Promise<ExtractionResult | null> {
   if (!isAllowedUrl(url)) {
-    console.warn(`[extractor] Blocked disallowed URL: ${url}`)
+    log.warn({ url }, 'blocked disallowed URL')
     return null
   }
 
@@ -134,6 +137,6 @@ export async function extractContent(
   const pipfeedResult = await extractByPipfeed(url)
   if (pipfeedResult) return pipfeedResult
 
-  console.warn(`[extractor] All extraction methods failed for: ${url}`)
+  log.warn({ url }, 'all extraction methods failed')
   return null
 }

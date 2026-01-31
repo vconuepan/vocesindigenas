@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import * as podcastService from '../../services/podcast.js'
 import { validateBody, validateQuery } from '../../middleware/validate.js'
 import { expensiveOpLimiter } from '../../middleware/rateLimit.js'
@@ -9,6 +10,7 @@ import {
 } from '../../schemas/podcast.js'
 
 const router = Router()
+const log = createLogger('podcasts')
 
 router.get('/', validateQuery(podcastQuerySchema), async (req, res) => {
   try {
@@ -16,7 +18,7 @@ router.get('/', validateQuery(podcastQuerySchema), async (req, res) => {
     const result = await podcastService.getPodcasts(filters)
     res.json(result)
   } catch (err) {
-    console.error('[podcasts] Failed to fetch podcasts:', err)
+    log.error({ err }, 'failed to fetch podcasts')
     res.status(500).json({ error: 'Failed to fetch podcasts' })
   }
 })
@@ -30,7 +32,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(podcast)
   } catch (err) {
-    console.error('[podcasts] Failed to fetch podcast:', err)
+    log.error({ err }, 'failed to fetch podcast')
     res.status(500).json({ error: 'Failed to fetch podcast' })
   }
 })
@@ -40,7 +42,7 @@ router.post('/', validateBody(createPodcastSchema), async (req, res) => {
     const podcast = await podcastService.createPodcast(req.body)
     res.status(201).json(podcast)
   } catch (err) {
-    console.error('[podcasts] Failed to create podcast:', err)
+    log.error({ err }, 'failed to create podcast')
     res.status(500).json({ error: 'Failed to create podcast' })
   }
 })
@@ -54,7 +56,7 @@ router.put('/:id', validateBody(updatePodcastSchema), async (req, res) => {
       res.status(404).json({ error: 'Podcast not found' })
       return
     }
-    console.error('[podcasts] Failed to update podcast:', err)
+    log.error({ err }, 'failed to update podcast')
     res.status(500).json({ error: 'Failed to update podcast' })
   }
 })
@@ -68,7 +70,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'Podcast not found' })
       return
     }
-    console.error('[podcasts] Failed to delete podcast:', err)
+    log.error({ err }, 'failed to delete podcast')
     res.status(500).json({ error: 'Failed to delete podcast' })
   }
 })
@@ -82,7 +84,7 @@ router.post('/:id/assign', async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
-    console.error('[podcasts] Failed to assign stories:', err)
+    log.error({ err }, 'failed to assign stories')
     res.status(500).json({ error: 'Failed to assign stories' })
   }
 })
@@ -100,7 +102,7 @@ router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
       res.status(400).json({ error: err.message })
       return
     }
-    console.error('[podcasts] Failed to generate podcast script:', err)
+    log.error({ err }, 'failed to generate podcast script')
     res.status(500).json({ error: 'Failed to generate podcast script' })
   }
 })

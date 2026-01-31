@@ -11,6 +11,9 @@ import {
   verifyAccessToken,
 } from '../services/auth.js'
 import { getUserById } from '../services/user.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('auth')
 
 const router = Router()
 
@@ -65,7 +68,7 @@ router.post('/login', validateBody(loginSchema), async (req, res) => {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
     })
   } catch (err) {
-    console.error('[auth] Login failed:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'login failed')
     res.status(500).json({ error: 'Login failed' })
   }
 })
@@ -87,7 +90,7 @@ router.post('/refresh', async (req, res) => {
       res.status(401).json({ error: err.message })
       return
     }
-    console.error('[auth] Refresh failed:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'token refresh failed')
     res.status(500).json({ error: 'Token refresh failed' })
   }
 })
@@ -101,7 +104,7 @@ router.post('/logout', async (req, res) => {
     clearRefreshCookie(res)
     res.json({ message: 'Logged out' })
   } catch (err) {
-    console.error('[auth] Logout failed:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'logout failed')
     clearRefreshCookie(res)
     res.json({ message: 'Logged out' })
   }

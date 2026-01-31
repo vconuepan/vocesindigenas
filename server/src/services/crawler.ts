@@ -2,6 +2,9 @@ import { parseFeed } from './rssParser.js'
 import { extractContent } from './extractor.js'
 import { getExistingUrls, createStory } from './story.js'
 import { getFeedById, getDueFeeds, updateLastCrawled } from './feed.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('crawler')
 
 export interface CrawlResult {
   feedId: string
@@ -44,7 +47,7 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
       })
 
       if (!extracted) {
-        console.warn(`[crawler] No content extracted for: ${item.url}`)
+        log.warn({ url: item.url }, 'no content extracted')
         result.errors++
         continue
       }
@@ -59,7 +62,7 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
 
       result.newStories++
     } catch (err) {
-      console.error(`[crawler] Failed to process: ${item.url}`, err instanceof Error ? err.message : err)
+      log.error({ url: item.url, err }, 'failed to process item')
       result.errors++
     }
   }
@@ -70,16 +73,18 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
 
 export async function crawlAllDueFeeds(): Promise<CrawlResult[]> {
   const dueFeeds = await getDueFeeds()
-  console.log(`[crawler] ${dueFeeds.length} feeds due for crawling`)
+  log.info({ feedCount: dueFeeds.length }, 'feeds due for crawling')
 
   const results: CrawlResult[] = []
-  for (const feed of dueFeeds) {
+  const total = dueFeeds.length
+  for (let i = 0; i < dueFeeds.length; i++) {
+    const feed = dueFeeds[i]
     try {
       const result = await crawlFeed(feed.id)
       results.push(result)
-      console.log(`[crawler] ${result.feedTitle}: ${result.newStories} new, ${result.skipped} skipped, ${result.errors} errors`)
+      log.info({ progress: `${i + 1}/${total}`, feed: result.feedTitle, new: result.newStories, skipped: result.skipped, errors: result.errors }, 'feed crawl complete')
     } catch (err) {
-      console.error(`[crawler] Failed to crawl feed ${feed.title}:`, err instanceof Error ? err.message : err)
+      log.error({ feed: feed.title, err }, 'failed to crawl feed')
       results.push({
         feedId: feed.id,
         feedTitle: feed.title,

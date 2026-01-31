@@ -16,6 +16,9 @@ server/prisma/*.db
 # Test coverage
 coverage
 
+# Log files
+logs/
+
 # AI development artifacts
 nul
 .playwright-mcp

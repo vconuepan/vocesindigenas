@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { createLogger } from '../../lib/logger.js'
 import * as userService from '../../services/user.js'
 import { revokeAllUserTokens } from '../../services/auth.js'
 import { validateBody } from '../../middleware/validate.js'
@@ -6,6 +7,7 @@ import { requireRole } from '../../middleware/auth.js'
 import { createUserSchema, updateUserSchema } from '../../schemas/user.js'
 
 const router = Router()
+const log = createLogger('users')
 
 // All user management requires admin role
 router.use(requireRole('admin'))
@@ -15,7 +17,7 @@ router.get('/', async (_req, res) => {
     const users = await userService.listUsers()
     res.json(users)
   } catch (err) {
-    console.error('[users] Failed to list users:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'failed to list users')
     res.status(500).json({ error: 'Failed to list users' })
   }
 })
@@ -29,7 +31,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(user)
   } catch (err) {
-    console.error('[users] Failed to get user:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'failed to get user')
     res.status(500).json({ error: 'Failed to get user' })
   }
 })
@@ -43,7 +45,7 @@ router.post('/', validateBody(createUserSchema), async (req, res) => {
       res.status(409).json({ error: 'A user with this email already exists' })
       return
     }
-    console.error('[users] Failed to create user:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'failed to create user')
     res.status(500).json({ error: 'Failed to create user' })
   }
 })
@@ -57,7 +59,7 @@ router.put('/:id', validateBody(updateUserSchema), async (req, res) => {
       res.status(404).json({ error: 'User not found' })
       return
     }
-    console.error('[users] Failed to update user:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'failed to update user')
     res.status(500).json({ error: 'Failed to update user' })
   }
 })
@@ -76,7 +78,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ error: 'User not found' })
       return
     }
-    console.error('[users] Failed to delete user:', err instanceof Error ? err.message : err)
+    log.error({ err }, 'failed to delete user')
     res.status(500).json({ error: 'Failed to delete user' })
   }
 })
