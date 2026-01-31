@@ -7,7 +7,7 @@ import { splitIntoGroups } from '../lib/utils.js'
 import { createLogger } from '../lib/logger.js'
 import { taskRegistry } from '../lib/taskRegistry.js'
 import { getSmallLLM, getLargeLLM, rateLimitDelay } from './llm.js'
-import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from './prompts.js'
+import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
 import { preAssessResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
 import type { Guidelines } from '../prompts/shared.js'
 

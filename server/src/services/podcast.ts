@@ -3,7 +3,7 @@ import prisma from '../lib/prisma.js'
 import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { getSmallLLM, rateLimitDelay } from './llm.js'
-import { buildPodcastPrompt } from './prompts.js'
+import { buildPodcastPrompt } from '../prompts/index.js'
 import { podcastScriptSchema } from '../schemas/llm.js'
 
 interface PodcastFilters {
