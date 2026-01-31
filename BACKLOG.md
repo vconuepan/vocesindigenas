@@ -2,22 +2,15 @@
 
 ## To implement before public deployment
 
-- List of sources: dynamic from db instead of hard-coded in settings of issues
+- Improve fetching. Get full articles. API? Fancy crawler?
+- Assess: identify which issue to use dynamically for each story (instead of hard link story -> feed -> issue)
+- Test cron jobs
+- Define gpt-5-nano as the small model. Currently used by podcast and preassessments. Switch those to medium. small useful for anything?
 
-9. Source favicon/logo.
-  Display a small favicon or text badge for the source publication (Heise, Al
-   Jazeera, allAfrica, etc.). This adds visual variety since different
-  sources have different branding. You could fetch favicons from
-  https://www.google.com/s2/favicons?domain=... or keep a small local sprite.
-
-Split admin stuff from stuff that a regular user needs?
-Task Output b2f06ed
-  ⎿ (!) Some chunks are larger than 500 kB after minification. Consider:
-    - Using dynamic import() to code-split the application
-    - Use build.rollupOptions.output.manualChunks to improve chunking:
-
-
-- Set up and test cron jobs
+- when shutting down the dev server with Ctrl+C:
+PS D:\projects\actually-relevant\server>
+[Verarbeitung des Prozesses mit Code 2 (0x00000002) beendet]
+Sie können dieses Terminal jetzt mit STRG+D schließen oder zum Neustart die EINGABETASTE drücken.
 
 ## After public deployment
 

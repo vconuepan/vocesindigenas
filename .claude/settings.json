@@ -2,10 +2,15 @@
   "plansDirectory": ".plans",
   "permissions": {
     "allow": [
+      "Bash(npm run db:migrate:resolve:*)",
       "Bash(npm run images:*)",
       "WebFetch(domain:actuallyrelevant.news)"
     ]
   },
+  "deny": [
+    "Bash(npx prisma:*)",
+    "Bash(npm run db:migrate --prefix:*)"
+  ],
   "enabledPlugins": {
     "pyright-lsp@claude-plugins-official": false
   }

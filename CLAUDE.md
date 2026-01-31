@@ -122,15 +122,7 @@ fetched → pre_analyzed → analyzed → selected → published
 
 ## Server Configuration
 
-All tunable server constants are centralized in `server/src/config.ts` with environment variable overrides. Before adding a new magic number anywhere in the server, check if it belongs in config. Key sections:
-
-- `llm` — Model names, delay between calls, batch sizes, content length limits
-- `selection` — Group size, selection ratio, minimum relevance threshold
-- `crawl` — RSS item limit, HTTP timeout, minimum content length
-- `content` — Story assignment window (days) for newsletters/podcasts
-- `feed` — RSS feed size, cache max age
-- `rateLimit` — Window and max values for public and expensive-operation limiters
-- `concurrency` — Semaphore limits for preassess, assess, select, feed crawling, article extraction
+All tunable server constants are centralized in `server/src/config.ts` with environment variable overrides. Before adding a new magic number anywhere in the server, check if it belongs in config.
 
 ## Resilience
 
@@ -231,8 +223,4 @@ Follow these steps for every implementation task:
 
 6. **Update Tracking** — Update any plans, backlog files, or other tracking documents that referenced this work to mark it as completed.
 
-A task is **not done** until steps 3, 5, and 6 are complete.
-
-## Migration Reference
-
-PHP reference files from the original WordPress plugin are in `.to-migrate/`. See `.to-migrate/REFERENCE.md` for what each file contains and which migration phase needs it.
+A task is **not done** until steps 3-6 are complete.

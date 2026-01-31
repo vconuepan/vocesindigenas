@@ -1,23 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "WebFetch(domain:render.com)",
       "Bash(wc:*)",
-      "Bash(npx prisma validate:*)",
+      "Bash(tree :*)",
+      "Bash(find :*)",
+      "Bash(git add:*)",
       "Bash(git status:*)",
       "Bash(npm list:*)",
       "Bash(npm view:*)",
-      "Bash(tree :*)",
-      "WebFetch(domain:platform.openai.com)",
-      "WebFetch(domain:cookbook.openai.com)",
       "Bash(npm audit:*)",
       "Bash(npx vitest:*)",
       "Bash(npm ls:*)",
-      "Bash(npx prisma migrate:*)",
-      "WebFetch(domain:developers.openai.com)",
       "mcp__playwright__browser_close",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:render.com)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:cookbook.openai.com)",
+      "WebFetch(domain:developers.openai.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(git pop:*)",
+      "Bash(rm:*)"
     ]
   }
 }

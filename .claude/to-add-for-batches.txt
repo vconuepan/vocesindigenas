@@ -1,0 +1,4 @@
+      "Bash(npm install:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(git pop:*)"
