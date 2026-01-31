@@ -162,6 +162,19 @@ Defined in `client/src/index.css`:
 - `.section-heading` — Section headings (text-2xl)
 - `.section-heading-lg` — Larger section headings (text-3xl)
 
+## Bundle Splitting
+
+The client uses `React.lazy()` to split admin code from the public bundle. Public visitors never download admin pages, `@headlessui/react`, or `@heroicons/react`.
+
+**Rules:**
+
+- **Public pages** (`client/src/pages/*.tsx`): Always use **static imports** in `App.tsx` (required for prerendering)
+- **Admin pages** (`client/src/pages/admin/*.tsx`): Always use **`React.lazy()`** in `App.tsx`. Must use `export default` (not named exports).
+- **Admin-only npm packages** (`@headlessui/react`, `@heroicons/react`): Grouped into the `admin-vendor` chunk via `manualChunks` in `vite.config.ts`. If adding a new admin-only dependency, add it there too.
+- **Shared npm packages** (`@tanstack/react-query`, `react-markdown`, `date-fns`, `react-router-dom`): Stay in the main bundle — do not add them to `manualChunks`.
+- **Error boundary:** `ChunkErrorBoundary` wraps admin routes to catch chunk load failures (e.g. after deployments) and offer a reload button.
+- **Preloading:** `LoginPage` calls `preloadAdminChunks()` on mount so the admin layout and dashboard are fetched while the user types credentials.
+
 ## Accessibility (WCAG 2.2 AA)
 
 See `.context/accessibility.md` for full details.
@@ -174,13 +187,17 @@ See `.context/accessibility.md` for full details.
 - **Forms**: Every input needs a `<label>` with matching `htmlFor`/`id`
 - **Touch targets**: Minimum 24x24px
 
+## Spelling & Language
+
+All hardcoded static text (UI labels, headings, descriptions, error messages, tooltips, meta tags) must use **American English** spelling. Examples: "analyzed" (not "analysed"), "color" (not "colour"), "organize" (not "organise"). Proper nouns that use British spelling (e.g. organization names like "Centre for...") are exempt.
+
 ## Context Files
 
 - **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; only stories with `relevancePre >= 3` proceed to full analysis, and only `analyzed` stories with `relevance >= 5` enter selection (batched into groups of ≤20). Covers status transitions, automated jobs, manual admin endpoints, source fields, AI-generated fields, and slug generation (slugs are created on first publish from the title, are immutable by default, and use `-2`/`-3` suffixes for duplicates).
 - **`.context/content-extraction.md`** — Content extraction uses a 3-tier fallback chain (CSS selector → Readability → PipFeed API); set `htmlSelector` on a feed when Readability produces noisy output. Covers the crawl flow, deduplication, and how to add new feeds.
 - **`.context/llm-analysis.md`** — LLM config is in `server/src/config.ts`; prompts are in `server/src/prompts/`; to change output format update both the prompt and the Zod schema in `schemas/llm.ts`. Covers model tiers, prompt directory structure, schema-driven format guidance, and the three analysis stages.
 - **`.context/prompting.md`** — Read before modifying any prompt in `server/src/prompts/`; prompts use GPT-5 conventions (declarative constraints, XML scaffolding, no CoT triggers). Covers structure, key principles, what belongs in prompts vs schemas, and reference links to OpenAI guides.
-- **`.context/scheduler.md`** — Jobs run in-process via node-cron with config in the `job_runs` DB table; add new jobs by creating a handler, registering it in `scheduler.ts`, and adding a DB row. Covers overlap prevention, overdue detection, error tracking, and the admin API.
+- **`.context/scheduler.md`** — Jobs run in-process via node-cron with config in the `job_runs` DB table; LLM jobs use semaphore-gated concurrency (default 5, configurable via `CONCURRENCY_*` env vars). Covers overlap prevention, overdue detection, error tracking, concurrency settings, and the admin API.
 - **`.context/images.md`** — Run `npm run images:optimize --prefix client` to generate WebP variants before committing new images. Covers size presets, directory structure, retina support, and CLI commands.
 - **`.context/accessibility.md`** — Use `focus-visible:ring-2 focus-visible:ring-brand-500` on all interactive elements and `text-brand-700` (not brand-600) for link contrast. Covers WCAG 2.2 AA patterns, ARIA, forms, navigation, and testing checklist.
 - **`.context/seo.md`** — Add sitemap metadata to `client/src/routes.ts` for every new page; the sitemap is auto-generated during build. Covers robots.txt, priority guidelines, and change frequency options.
@@ -188,6 +205,8 @@ See `.context/accessibility.md` for full details.
 - **`.context/admin-dashboard.md`** — Admin dashboard uses TanStack Query + Headless UI at `/admin/*` with JWT auth; issues support one-level nesting with parent selector, indented table rows, and static content editors (evaluation criteria, sources, links). Covers route structure, key patterns (URL-persisted filters, bulk actions, LLM loading states), and file locations.
 - **`.context/authentication.md`** — Auth uses dual-mode middleware (JWT access tokens + static API key fallback); set `JWT_SECRET` env var and create the first admin via `npx tsx server/src/scripts/create-admin.ts`. Covers token flow, cookie config, refresh rotation, user management, roles, and all auth-related file locations.
 - **`.context/public-website.md`** — Public site uses `PublicLayout` with hardcoded nav links; RSS feed links use `API_BASE` from `client/src/lib/api.ts` so they resolve in both dev (Vite proxy) and production (separate origins on Render). Covers routes, public API, RSS feeds (`/api/feed` and `/api/feed/:issueSlug`), shared components, design system, and key file locations.
+- **`.context/logging.md`** — Use `createLogger('module')` from `server/src/lib/logger.ts` for all server logging; never use `console.log` in application code (scripts are exempt). Covers Pino configuration, structured data patterns, log levels, rotating file transport, and environment variables (`LOG_LEVEL`, `LOG_DIR`, `LOG_RETENTION_DAYS`).
+- **`.context/task-queue.md`** — Bulk LLM operations use server-side task queue with polling; submit story IDs via `POST /stories/bulk-*` and poll `GET /stories/tasks/:taskId` for progress. Covers task registry, bulk analysis wrappers, client polling hook (`launchPolledTask`), processing indicators in StoryTable, and concurrency configuration.
 
 ## Implementation Workflow
 

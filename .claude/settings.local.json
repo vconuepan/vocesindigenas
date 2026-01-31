@@ -15,7 +15,9 @@
       "Bash(npx vitest:*)",
       "Bash(npm ls:*)",
       "Bash(npx prisma migrate:*)",
-      "WebFetch(domain:developers.openai.com)"
+      "WebFetch(domain:developers.openai.com)",
+      "mcp__playwright__browser_close",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
