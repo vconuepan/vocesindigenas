@@ -1,5 +1,6 @@
 import Parser from 'rss-parser'
 import { createLogger } from '../lib/logger.js'
+import { withRetry } from '../lib/retry.js'
 
 const log = createLogger('rssParser')
 
@@ -17,7 +18,7 @@ export interface RSSItem {
 
 export async function parseFeed(feedUrl: string): Promise<RSSItem[]> {
   try {
-    const feed = await parser.parseURL(feedUrl)
+    const feed = await withRetry(() => parser.parseURL(feedUrl))
     const items: RSSItem[] = []
 
     for (const item of feed.items.slice(0, 20)) {

@@ -4,6 +4,7 @@ import { Readability } from '@mozilla/readability'
 import { JSDOM } from 'jsdom'
 import { isAllowedUrl } from '../utils/urlValidation.js'
 import { createLogger } from '../lib/logger.js'
+import { withRetry } from '../lib/retry.js'
 
 const log = createLogger('extractor')
 
@@ -19,7 +20,7 @@ export interface ExtractionResult {
 
 async function fetchPage(url: string): Promise<string | null> {
   try {
-    const response = await axios.get(url, {
+    const response = await withRetry(() => axios.get(url, {
       timeout: HTTP_TIMEOUT,
       headers: { 'User-Agent': USER_AGENT },
       maxRedirects: 5,
@@ -31,7 +32,7 @@ async function fetchPage(url: string): Promise<string | null> {
           throw new Error(`Blocked redirect to disallowed URL: ${redirectUrl}`)
         }
       },
-    })
+    }))
     return response.data
   } catch (err) {
     log.error({ url, err }, 'failed to fetch page')
@@ -83,7 +84,7 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
   if (!apiKey) return null
 
   try {
-    const response = await axios.post(
+    const response = await withRetry(() => axios.post(
       'https://news-article-data-extract-and-summarization1.p.rapidapi.com/extract/',
       { url },
       {
@@ -94,7 +95,7 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
           'X-RapidAPI-Host': 'news-article-data-extract-and-summarization1.p.rapidapi.com',
         },
       }
-    )
+    ))
 
     const data = response.data
     if (!data?.text || data.text.length < 50) return null
