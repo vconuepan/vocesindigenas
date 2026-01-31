@@ -195,6 +195,18 @@ export async function getExistingUrls(urls: string[]): Promise<Set<string>> {
   return new Set(existing.map(s => s.sourceUrl))
 }
 
+async function preparePublishData(id: string): Promise<Record<string, any>> {
+  const story = await prisma.story.findUnique({
+    where: { id },
+    select: { datePublished: true, slug: true, title: true, sourceTitle: true },
+  })
+  if (!story) return {}
+  const data: Record<string, any> = {}
+  if (!story.datePublished) data.datePublished = new Date()
+  if (!story.slug) data.slug = await generateUniqueSlug(story.title || story.sourceTitle, id)
+  return data
+}
+
 export async function updateStory(id: string, data: Record<string, any>): Promise<Story> {
   const updateData = { ...data }
   // Convert date strings to Date objects if present
@@ -204,31 +216,19 @@ export async function updateStory(id: string, data: Record<string, any>): Promis
   if (updateData.datePublished !== undefined) {
     updateData.datePublished = updateData.datePublished ? new Date(updateData.datePublished) : null
   }
-  // Auto-set datePublished when status changes to published
+  // Auto-set datePublished and slug when status changes to published
   if (updateData.status === 'published' && updateData.datePublished === undefined) {
-    const story = await prisma.story.findUnique({ where: { id }, select: { datePublished: true, slug: true, title: true, sourceTitle: true } })
-    if (story && !story.datePublished) {
-      updateData.datePublished = new Date()
-    }
-    // Auto-generate slug on publish if not already set
-    if (story && !story.slug && !updateData.slug) {
-      updateData.slug = await generateUniqueSlug(story.title || story.sourceTitle, id)
-    }
+    const publishData = await preparePublishData(id)
+    if (!updateData.slug && publishData.slug) updateData.slug = publishData.slug
+    if (publishData.datePublished) updateData.datePublished = publishData.datePublished
   }
   return prisma.story.update({ where: { id }, data: updateData })
 }
 
 export async function updateStoryStatus(id: string, status: string): Promise<Story> {
   const data: Record<string, any> = { status: status as any }
-  // Auto-set datePublished and slug when status changes to published
   if (status === 'published') {
-    const story = await prisma.story.findUnique({ where: { id }, select: { datePublished: true, slug: true, title: true, sourceTitle: true } })
-    if (story && !story.datePublished) {
-      data.datePublished = new Date()
-    }
-    if (story && !story.slug) {
-      data.slug = await generateUniqueSlug(story.title || story.sourceTitle, id)
-    }
+    Object.assign(data, await preparePublishData(id))
   }
   return prisma.story.update({ where: { id }, data })
 }
@@ -451,17 +451,12 @@ export async function getStoriesByStatus(
 }
 
 export async function publishStory(id: string): Promise<Story> {
-  const story = await prisma.story.findUnique({ where: { id } })
-  const slug = story && !story.slug
-    ? await generateUniqueSlug(story.title || story.sourceTitle, id)
-    : undefined
+  const publishData = await preparePublishData(id)
   return prisma.story.update({
     where: { id },
     data: {
       status: 'published' as any,
-      // Set datePublished only on first publish
-      ...(story && !story.datePublished ? { datePublished: new Date() } : {}),
-      ...(slug ? { slug } : {}),
+      ...publishData,
     },
   })
 }
