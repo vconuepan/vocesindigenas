@@ -1,8 +1,10 @@
 import 'dotenv/config'
+import 'express-async-errors'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import helmet from 'helmet'
+import type { Request, Response, NextFunction } from 'express'
 import { createLogger } from './lib/logger.js'
 import healthRouter from './routes/health.js'
 import authRouter from './routes/auth.js'
@@ -71,5 +73,17 @@ app.use('/health', healthRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api', publicRouter)
+
+// 404 handler for unmatched routes
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({ error: 'Not found' })
+})
+
+// Global error handler — must be last middleware (4 parameters required)
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  const log = createLogger('http')
+  log.error({ err, method: req.method, url: req.originalUrl }, 'unhandled error')
+  res.status(500).json({ error: 'Internal server error' })
+})
 
 export default app
