@@ -15,6 +15,7 @@ const mockPrisma = vi.hoisted(() => ({
     findUnique: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
+    update: vi.fn(),
   },
   $disconnect: vi.fn(),
 }))
@@ -124,10 +125,12 @@ describe('Auth Routes', () => {
         id: 'rt-1',
         token: 'valid-refresh',
         userId: 'user-1',
+        familyId: 'family-abc',
+        rotatedAt: null,
         user,
         expiresAt: new Date(Date.now() + 1000 * 60 * 60),
       })
-      mockPrisma.refreshToken.delete.mockResolvedValue({})
+      mockPrisma.refreshToken.update.mockResolvedValue({})
       mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-2', token: 'new-refresh' })
 
       const res = await request(app)

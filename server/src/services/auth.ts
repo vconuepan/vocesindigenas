@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { randomBytes } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import prisma from '../lib/prisma.js'
 
 const BCRYPT_ROUNDS = 12
@@ -40,12 +40,13 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
   return jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] }) as AccessTokenPayload
 }
 
-export async function generateRefreshToken(userId: string): Promise<string> {
+export async function generateRefreshToken(userId: string, familyId?: string): Promise<string> {
   const token = randomBytes(40).toString('hex')
   const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS)
+  const family = familyId ?? randomUUID()
 
   await prisma.refreshToken.create({
-    data: { token, userId, expiresAt },
+    data: { token, userId, expiresAt, familyId: family },
   })
 
   return token
@@ -65,12 +66,21 @@ export async function rotateRefreshToken(
     throw new Error('Refresh token expired')
   }
 
-  // Delete old token (rotation)
-  await prisma.refreshToken.delete({ where: { id: record.id } })
+  // Reuse detection: if this token was already rotated, revoke the entire family
+  if (record.rotatedAt) {
+    await prisma.refreshToken.deleteMany({ where: { familyId: record.familyId } })
+    throw new Error('Refresh token reuse detected')
+  }
 
-  // Generate new pair
+  // Soft-rotate: mark old token as rotated instead of deleting
+  await prisma.refreshToken.update({
+    where: { id: record.id },
+    data: { rotatedAt: new Date() },
+  })
+
+  // Generate new pair with same familyId
   const accessToken = generateAccessToken(record.user)
-  const refreshToken = await generateRefreshToken(record.user.id)
+  const refreshToken = await generateRefreshToken(record.user.id, record.familyId)
 
   return { accessToken, refreshToken }
 }
