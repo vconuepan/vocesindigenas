@@ -27,5 +27,7 @@ export const config = {
     preassess: parseInt(process.env.CONCURRENCY_PREASSESS || '10', 10),
     assess: parseInt(process.env.CONCURRENCY_ASSESS || '10', 10),
     select: parseInt(process.env.CONCURRENCY_SELECT || '10', 10),
+    crawlFeeds: parseInt(process.env.CONCURRENCY_CRAWL_FEEDS || '5', 10),
+    crawlArticles: parseInt(process.env.CONCURRENCY_CRAWL_ARTICLES || '3', 10),
   },
 } as const
