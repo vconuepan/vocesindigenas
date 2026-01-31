@@ -105,7 +105,6 @@ model Issue {
   intro              String   @default("")
   evaluationIntro    String   @default("") @map("evaluation_intro")
   evaluationCriteria String   @default("") @map("evaluation_criteria")
-  sourceNames        String   @default("") @map("source_names")
   makeADifference    String   @default("") @map("make_a_difference")
   feeds              Feed[]
   createdAt          DateTime @default(now()) @map("created_at")

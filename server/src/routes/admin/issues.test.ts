@@ -62,7 +62,7 @@ describe('Admin Issues API', () => {
           ...sampleIssue(),
           parent: null,
           children: [],
-          feeds: [{ _count: { stories: 3 } }, { _count: { stories: 1 } }],
+          feeds: [{ title: 'Feed A', active: true, _count: { stories: 3 } }, { title: 'Feed B', active: true, _count: { stories: 1 } }],
         },
         {
           ...sampleIssue({ id: 'issue-2', name: 'Climate', slug: 'climate' }),
@@ -117,6 +117,7 @@ describe('Admin Issues API', () => {
         ...sampleIssue(),
         parent: null,
         children: [],
+        feeds: [{ title: 'Test Feed', active: true }],
       })
 
       const res = await request(app)
@@ -222,7 +223,6 @@ describe('Admin Issues API', () => {
         intro: 'Intro text',
         evaluationIntro: 'Eval intro',
         evaluationCriteria: '["Criterion 1"]',
-        sourceNames: '["Source 1"]',
         makeADifference: '[{"label":"Link","url":"https://example.com"}]',
       }))
 
@@ -234,7 +234,6 @@ describe('Admin Issues API', () => {
           intro: 'Intro text',
           evaluationIntro: 'Eval intro',
           evaluationCriteria: ['Criterion 1'],
-          sourceNames: ['Source 1'],
           makeADifference: [{ label: 'Link', url: 'https://example.com' }],
         })
       expect(res.status).toBe(201)

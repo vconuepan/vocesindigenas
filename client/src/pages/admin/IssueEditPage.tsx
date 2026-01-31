@@ -45,7 +45,6 @@ export default function IssueEditPage() {
     intro: '',
     evaluationIntro: '',
     evaluationCriteria: [] as string[],
-    sourceNames: [] as string[],
     makeADifference: [] as MakeADifferenceLink[],
   })
   const [slugManual, setSlugManual] = useState(false)
@@ -63,7 +62,6 @@ export default function IssueEditPage() {
         intro: issueQuery.data.intro || '',
         evaluationIntro: issueQuery.data.evaluationIntro || '',
         evaluationCriteria: issueQuery.data.evaluationCriteria || [],
-        sourceNames: issueQuery.data.sourceNames || [],
         makeADifference: issueQuery.data.makeADifference || [],
       })
       setSlugManual(true)
@@ -236,40 +234,23 @@ export default function IssueEditPage() {
             </div>
           </div>
 
-          {/* Source Names */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Source Names</label>
-            <div className="space-y-2">
-              {form.sourceNames.map((source, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={source}
-                    onChange={e => {
-                      const updated = [...form.sourceNames]
-                      updated[i] = e.target.value
-                      set('sourceNames', updated)
-                    }}
-                    className="flex-1 rounded-md border border-neutral-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-brand-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => set('sourceNames', form.sourceNames.filter((_, j) => j !== i))}
-                    className="p-1.5 text-neutral-400 hover:text-red-500"
+          {/* Source Names (derived from active feeds) */}
+          {!isNew && issueQuery.data?.sourceNames && issueQuery.data.sourceNames.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Sources</label>
+              <p className="text-xs text-neutral-500 mb-2">Derived from active feed titles. Edit feed names to change these.</p>
+              <div className="flex flex-wrap gap-1.5">
+                {issueQuery.data.sourceNames.map((source: string) => (
+                  <span
+                    key={source}
+                    className="bg-neutral-100 text-neutral-600 text-xs px-2 py-0.5 rounded-full"
                   >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => set('sourceNames', [...form.sourceNames, ''])}
-                className="flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
-              >
-                <PlusIcon className="h-4 w-4" /> Add source
-              </button>
+                    {source}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Make a Difference Links */}
           <div>

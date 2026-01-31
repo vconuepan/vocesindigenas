@@ -33,7 +33,6 @@ function buildFormState(issue: Issue) {
     intro: issue.intro || '',
     evaluationIntro: issue.evaluationIntro || '',
     evaluationCriteria: issue.evaluationCriteria || [] as string[],
-    sourceNames: issue.sourceNames || [] as string[],
     makeADifference: issue.makeADifference || [] as MakeADifferenceLink[],
   }
 }
@@ -128,21 +127,22 @@ function IssueEditForm({ issue, onClose }: { issue: Issue; onClose: () => void }
           )}
         />
 
-        <ArrayField
-          label="Source Names"
-          items={form.sourceNames}
-          onChange={(items) => set('sourceNames', items)}
-          createEmpty={() => ''}
-          addLabel="Add source"
-          renderItem={(item, _i, onItemChange) => (
-            <input
-              type="text"
-              value={item}
-              onChange={e => onItemChange(e.target.value)}
-              className={TEXT_INPUT_CLASS}
-            />
-          )}
-        />
+        {issue.sourceNames && issue.sourceNames.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Sources</label>
+            <p className="text-xs text-neutral-500 mb-2">Derived from active feed titles. Edit feed names to change these.</p>
+            <div className="flex flex-wrap gap-1.5">
+              {issue.sourceNames.map((source: string) => (
+                <span
+                  key={source}
+                  className="bg-neutral-100 text-neutral-600 text-xs px-2 py-0.5 rounded-full"
+                >
+                  {source}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <ArrayField<MakeADifferenceLink>
           label="Make a Difference Links"

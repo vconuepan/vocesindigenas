@@ -72,28 +72,11 @@ npm run db:seed      # Seed database with sample data
 
 - **`.env` files are not accessible** — Claude cannot read `.env` files (they are in `.gitignore`). Do not attempt to read or access them. Database commands that need env vars must be run via npm scripts defined in `package.json`, which load `.env` automatically.
 
-- **Ask the user to stop the dev server before running any Prisma/database commands** — The dev server holds a database connection and can interfere with migrations, seeding, and other Prisma operations. Always ask the user to stop `npm run dev --prefix server` before running `db:migrate`, `db:seed`, or any other database command.
+- **Database migrations — MUST follow `.context/database-migrations.md`** — Never run `prisma migrate dev` or `npm run db:migrate` directly. Instead, generate the SQL file, ask the user to execute it in pgAdmin, then mark it as applied with `db:migrate:resolve`. See the context file for the full step-by-step workflow and troubleshooting.
 
-- **Never run `db:migrate` without `--name`** — `npm run db:migrate` (which runs `prisma migrate dev`) is interactive and will prompt for a migration name. This blocks the terminal and leaves a PostgreSQL advisory lock that prevents all subsequent migration commands. Use these non-interactive alternatives instead:
+- **Never use `npx prisma` directly** — Always use the `npm run db:*` scripts with `--prefix server`. Direct `npx prisma` commands skip `.env` and fail. Never pass `--no-engine` to `prisma generate` — it produces a client that only works with Prisma Accelerate and breaks all direct PostgreSQL queries.
 
-  ```bash
-  # Create migration file only (does NOT apply it):
-  npm run db:migrate:create --prefix server -- --name migration_name
-
-  # Apply all pending migrations (non-interactive, safe for CI):
-  npm run db:migrate:deploy --prefix server
-
-  # Mark a migration as already applied (e.g. after manual SQL):
-  npm run db:migrate:resolve --prefix server -- --applied MIGRATION_NAME
-
-  # Check migration status:
-  npm run db:migrate:status --prefix server
-
-  # Or use db:migrate with --name to avoid the interactive prompt:
-  npm run db:migrate --prefix server -- --name migration_name
-  ```
-
-  If a migration gets stuck with an advisory lock, the user must release it via pgAdmin: `SELECT pg_advisory_unlock(72707369);`
+- **`db:generate` requires the dev server to be stopped** — `prisma generate` replaces a DLL that is locked while the server runs. Before running `npm run db:generate --prefix server`, ask the user to stop their dev server and wait for confirmation. Never run it automatically.
 
 - **Prefer file tools over bash:** Use Read, Write, Edit, Glob, and Grep tools instead of bash commands for file operations.
 
@@ -111,10 +94,11 @@ npm run db:seed      # Seed database with sample data
 
   ```bash
   npm run test --prefix server        # Good
-  npx prisma generate --schema server/prisma/schema.prisma  # Good
+  npm run db:generate --prefix server # Good
   git status                          # Good
 
   cd server && npx vitest run         # Bad — triggers confirmation prompts
+  npx prisma generate --schema ...    # Bad — skips .env, may get wrong flags
   cd D:/projects/... && npm run test  # Bad
   ```
 
@@ -207,6 +191,7 @@ All hardcoded static text (UI labels, headings, descriptions, error messages, to
 - **`.context/public-website.md`** — Public site uses `PublicLayout` with hardcoded nav links; RSS feed links use `API_BASE` from `client/src/lib/api.ts` so they resolve in both dev (Vite proxy) and production (separate origins on Render). Covers routes, public API, RSS feeds (`/api/feed` and `/api/feed/:issueSlug`), shared components, design system, and key file locations.
 - **`.context/logging.md`** — Use `createLogger('module')` from `server/src/lib/logger.ts` for all server logging; never use `console.log` in application code (scripts are exempt). Covers Pino configuration, structured data patterns, log levels, rotating file transport, and environment variables (`LOG_LEVEL`, `LOG_DIR`, `LOG_RETENTION_DAYS`).
 - **`.context/task-queue.md`** — Bulk LLM operations use server-side task queue with polling; submit story IDs via `POST /stories/bulk-*` and poll `GET /stories/tasks/:taskId` for progress. Covers task registry, bulk analysis wrappers, client polling hook (`launchPolledTask`), processing indicators in StoryTable, and concurrency configuration.
+- **`.context/database-migrations.md`** — **MANDATORY:** Never use `npx prisma` directly (skips `.env`), never use `--no-engine` on generate (breaks all queries), never run `prisma migrate dev` (DLL locks), and never run `db:generate` without asking the user to stop their dev server first (DLL lock); always use `npm run db:*` scripts with `--prefix server`. Covers the full SQL-first migration workflow, allowed/banned command tables, and troubleshooting for advisory locks, failed migrations, and schema drift.
 
 ## Implementation Workflow
 

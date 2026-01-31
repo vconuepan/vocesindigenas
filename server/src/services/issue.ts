@@ -8,9 +8,6 @@ function serializeJsonFields(data: Record<string, any>): Record<string, any> {
   if ('evaluationCriteria' in result) {
     result.evaluationCriteria = JSON.stringify(result.evaluationCriteria ?? [])
   }
-  if ('sourceNames' in result) {
-    result.sourceNames = JSON.stringify(result.sourceNames ?? [])
-  }
   if ('makeADifference' in result) {
     result.makeADifference = JSON.stringify(result.makeADifference ?? [])
   }
@@ -21,9 +18,16 @@ function parseJsonFields(issue: Issue) {
   return {
     ...issue,
     evaluationCriteria: safeParseJson(issue.evaluationCriteria, []),
-    sourceNames: safeParseJson(issue.sourceNames, []),
     makeADifference: safeParseJson(issue.makeADifference, []),
   }
+}
+
+function deriveSourceNames(feeds: { title: string; active: boolean }[]): string[] {
+  return [...new Set(
+    feeds
+      .filter(f => f.active)
+      .map(f => f.title)
+  )].sort()
 }
 
 function safeParseJson<T>(value: string, fallback: T): T {
@@ -45,6 +49,8 @@ export async function getAllIssues() {
       children: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
       feeds: {
         select: {
+          title: true,
+          active: true,
           _count: { select: { stories: { where: { status: 'published' } } } }
         }
       }
@@ -52,6 +58,7 @@ export async function getAllIssues() {
   })
   return issues.map(({ feeds, ...issue }) => ({
     ...parseJsonFields(issue as unknown as Issue),
+    sourceNames: deriveSourceNames(feeds),
     parent: issue.parent,
     children: issue.children,
     publishedStoryCount: feeds.reduce((sum, f) => sum + f._count.stories, 0),
@@ -64,10 +71,17 @@ export async function getIssueById(id: string) {
     include: {
       parent: { select: { id: true, name: true, slug: true } },
       children: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
+      feeds: { select: { title: true, active: true } },
     },
   })
   if (!issue) return null
-  return { ...parseJsonFields(issue as unknown as Issue), parent: issue.parent, children: issue.children }
+  const { feeds, ...rest } = issue
+  return {
+    ...parseJsonFields(rest as unknown as Issue),
+    sourceNames: deriveSourceNames(feeds),
+    parent: issue.parent,
+    children: issue.children,
+  }
 }
 
 export async function getIssueBySlug(slug: string): Promise<Issue | null> {
@@ -85,7 +99,6 @@ export async function createIssue(data: {
   intro?: string
   evaluationIntro?: string
   evaluationCriteria?: string[]
-  sourceNames?: string[]
   makeADifference?: { label: string; url: string }[]
 }) {
   if (data.parentId) {
@@ -106,7 +119,6 @@ export async function updateIssue(id: string, data: Partial<{
   intro: string
   evaluationIntro: string
   evaluationCriteria: string[]
-  sourceNames: string[]
   makeADifference: { label: string; url: string }[]
 }>) {
   if ('parentId' in data && data.parentId !== undefined) {
@@ -146,7 +158,6 @@ const PUBLIC_ISSUE_SELECT = {
   intro: true,
   evaluationIntro: true,
   evaluationCriteria: true,
-  sourceNames: true,
   makeADifference: true,
   parentId: true,
 } as const
@@ -155,26 +166,37 @@ function parsePublicIssueJson(issue: any) {
   return {
     ...issue,
     evaluationCriteria: safeParseJson(issue.evaluationCriteria, []),
-    sourceNames: safeParseJson(issue.sourceNames, []),
     makeADifference: safeParseJson(issue.makeADifference, []),
   }
 }
 
 export async function getPublicIssues() {
+  const feedSelect = { title: true, active: true } as const
   const issues = await prisma.issue.findMany({
     where: { parentId: null },
     select: {
       ...PUBLIC_ISSUE_SELECT,
+      feeds: { select: feedSelect },
       children: {
-        select: PUBLIC_ISSUE_SELECT,
+        select: {
+          ...PUBLIC_ISSUE_SELECT,
+          feeds: { select: feedSelect },
+        },
         orderBy: { name: 'asc' },
       },
     },
     orderBy: { name: 'asc' },
   })
-  return issues.map(issue => ({
+  return issues.map(({ feeds, ...issue }) => ({
     ...parsePublicIssueJson(issue),
-    children: issue.children.map(parsePublicIssueJson),
+    sourceNames: deriveSourceNames([
+      ...feeds,
+      ...issue.children.flatMap(c => c.feeds),
+    ]),
+    children: issue.children.map(({ feeds: childFeeds, ...child }) => ({
+      ...parsePublicIssueJson(child),
+      sourceNames: deriveSourceNames(childFeeds),
+    })),
   }))
 }
 
@@ -183,11 +205,14 @@ export async function getPublicIssueBySlug(slug: string) {
     where: { slug },
     select: {
       ...PUBLIC_ISSUE_SELECT,
+      feeds: { select: { title: true, active: true } },
       children: {
         select: {
           ...PUBLIC_ISSUE_SELECT,
           feeds: {
             select: {
+              title: true,
+              active: true,
               _count: { select: { stories: { where: { status: 'published' } } } },
             },
           },
@@ -200,11 +225,17 @@ export async function getPublicIssueBySlug(slug: string) {
     },
   })
   if (!issue) return null
+  const { feeds, ...rest } = issue
   return {
-    ...parsePublicIssueJson(issue),
-    children: issue.children?.map(({ feeds, ...child }) => ({
+    ...parsePublicIssueJson(rest),
+    sourceNames: deriveSourceNames([
+      ...feeds,
+      ...(issue.children?.flatMap(c => c.feeds) ?? []),
+    ]),
+    children: issue.children?.map(({ feeds: childFeeds, ...child }) => ({
       ...parsePublicIssueJson(child),
-      publishedStoryCount: feeds.reduce((sum, f) => sum + f._count.stories, 0),
+      sourceNames: deriveSourceNames(childFeeds),
+      publishedStoryCount: childFeeds.reduce((sum, f) => sum + f._count.stories, 0),
     })) ?? [],
     parent: issue.parent,
   }

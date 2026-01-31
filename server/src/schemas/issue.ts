@@ -16,7 +16,6 @@ export const createIssueSchema = z.object({
   intro: z.string().optional().default(''),
   evaluationIntro: z.string().optional().default(''),
   evaluationCriteria: z.array(z.string()).optional().default([]),
-  sourceNames: z.array(z.string()).optional().default([]),
   makeADifference: z.array(makeADifferenceItem).optional().default([]),
 })
 
@@ -31,6 +30,5 @@ export const updateIssueSchema = z.object({
   intro: z.string().optional(),
   evaluationIntro: z.string().optional(),
   evaluationCriteria: z.array(z.string()).optional(),
-  sourceNames: z.array(z.string()).optional(),
   makeADifference: z.array(makeADifferenceItem).optional(),
 })
