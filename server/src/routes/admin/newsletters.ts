@@ -16,7 +16,7 @@ const log = createLogger('newsletters')
 
 router.get('/', validateQuery(newsletterQuerySchema), async (req, res) => {
   try {
-    const filters = (req as any).parsedQuery || {}
+    const filters = req.parsedQuery || {}
     const result = await newsletterService.getNewsletters(filters)
     res.json(result)
   } catch (err) {

@@ -7,7 +7,7 @@ const router = Router()
 
 router.get('/', validateQuery(publicStoryQuerySchema), async (req, res) => {
   try {
-    const query = (req as any).parsedQuery
+    const query = req.parsedQuery
     const result = await storyService.getPublishedStories({
       page: query.page,
       pageSize: query.pageSize,

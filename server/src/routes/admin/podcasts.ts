@@ -14,7 +14,7 @@ const log = createLogger('podcasts')
 
 router.get('/', validateQuery(podcastQuerySchema), async (req, res) => {
   try {
-    const filters = (req as any).parsedQuery || {}
+    const filters = req.parsedQuery || {}
     const result = await podcastService.getPodcasts(filters)
     res.json(result)
   } catch (err) {
