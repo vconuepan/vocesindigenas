@@ -15,6 +15,7 @@ router.get('/', validateQuery(publicStoryQuerySchema), async (req, res) => {
       pageSize: query.pageSize,
       issueSlug: query.issueSlug,
     })
+    res.set('Cache-Control', 'public, max-age=60')
     res.json(result)
   } catch (err) {
     log.error({ err }, 'failed to fetch stories')
@@ -29,6 +30,7 @@ router.get('/:slug', async (req, res) => {
       res.status(404).json({ error: 'Story not found' })
       return
     }
+    res.set('Cache-Control', 'public, max-age=60')
     res.json(story)
   } catch (err) {
     log.error({ err, slug: req.params.slug }, 'failed to fetch story')

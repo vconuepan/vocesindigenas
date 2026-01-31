@@ -14,6 +14,7 @@ router.get('/', async (_req, res) => {
     const issues = await cached(issuesCache, 'public-issues', () =>
       issueService.getPublicIssues()
     )
+    res.set('Cache-Control', 'public, max-age=300')
     res.json(issues)
   } catch (err) {
     log.error({ err }, 'failed to fetch issues')
@@ -28,6 +29,7 @@ router.get('/:slug', async (req, res) => {
       res.status(404).json({ error: 'Issue not found' })
       return
     }
+    res.set('Cache-Control', 'public, max-age=300')
     res.json(issue)
   } catch (err) {
     log.error({ err, slug: req.params.slug }, 'failed to fetch issue')
