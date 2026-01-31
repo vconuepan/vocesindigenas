@@ -10,16 +10,25 @@ export function rateLimitDelay(): Promise<void> {
   return delayChain
 }
 
+let _smallLLM: ChatOpenAI | null = null
+let _largeLLM: ChatOpenAI | null = null
+
 export function getSmallLLM(): ChatOpenAI {
-  return new ChatOpenAI({
-    model: config.llm.models.small.name,
-    reasoning: { effort: config.llm.models.small.reasoningEffort },
-  }).withRetry({ stopAfterAttempt: 3 }) as unknown as ChatOpenAI
+  if (!_smallLLM) {
+    _smallLLM = new ChatOpenAI({
+      model: config.llm.models.small.name,
+      reasoning: { effort: config.llm.models.small.reasoningEffort },
+    }).withRetry({ stopAfterAttempt: 3 }) as unknown as ChatOpenAI
+  }
+  return _smallLLM
 }
 
 export function getLargeLLM(): ChatOpenAI {
-  return new ChatOpenAI({
-    model: config.llm.models.large.name,
-    reasoning: { effort: config.llm.models.large.reasoningEffort },
-  }).withRetry({ stopAfterAttempt: 3 }) as unknown as ChatOpenAI
+  if (!_largeLLM) {
+    _largeLLM = new ChatOpenAI({
+      model: config.llm.models.large.name,
+      reasoning: { effort: config.llm.models.large.reasoningEffort },
+    }).withRetry({ stopAfterAttempt: 3 }) as unknown as ChatOpenAI
+  }
+  return _largeLLM
 }
