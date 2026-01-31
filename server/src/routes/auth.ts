@@ -29,7 +29,7 @@ function setRefreshCookie(res: any, token: string) {
   res.cookie(REFRESH_COOKIE, token, {
     httpOnly: true,
     secure: isSecureEnv(),
-    sameSite: 'strict' as const,
+    sameSite: isSecureEnv() ? 'none' as const : 'strict' as const,
     maxAge: COOKIE_MAX_AGE,
     path: '/api/auth',
   })
@@ -39,7 +39,7 @@ function clearRefreshCookie(res: any) {
   res.clearCookie(REFRESH_COOKIE, {
     httpOnly: true,
     secure: isSecureEnv(),
-    sameSite: 'strict' as const,
+    sameSite: isSecureEnv() ? 'none' as const : 'strict' as const,
     path: '/api/auth',
   })
 }
@@ -87,7 +87,7 @@ router.post('/refresh', refreshLimiter, async (req, res) => {
     res.json({ accessToken: result.accessToken })
   } catch (err) {
     clearRefreshCookie(res)
-    if (err instanceof Error && (err.message === 'Invalid refresh token' || err.message === 'Refresh token expired')) {
+    if (err instanceof Error && (err.message === 'Invalid refresh token' || err.message === 'Refresh token expired' || err.message === 'Refresh token reuse detected')) {
       res.status(401).json({ error: err.message })
       return
     }

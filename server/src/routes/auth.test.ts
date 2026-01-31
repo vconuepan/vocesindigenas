@@ -92,7 +92,7 @@ describe('Auth Routes', () => {
       expect(res.status).toBe(400)
     })
 
-    it('sets refresh token cookie', async () => {
+    it('sets refresh token cookie with strict sameSite in dev', async () => {
       const user = sampleUser({ passwordHash: testPasswordHash })
       mockPrisma.user.findUnique.mockResolvedValue(user)
       mockPrisma.refreshToken.create.mockResolvedValue({ id: 'rt-1', token: 'rt' })
@@ -107,6 +107,7 @@ describe('Auth Routes', () => {
       const cookieStr = Array.isArray(cookies) ? cookies.join('; ') : cookies
       expect(cookieStr).toContain('refresh_token')
       expect(cookieStr).toContain('HttpOnly')
+      expect(cookieStr).toContain('SameSite=Strict')
     })
   })
 
@@ -149,6 +150,26 @@ describe('Auth Routes', () => {
         .set('Cookie', 'refresh_token=invalid-token')
 
       expect(res.status).toBe(401)
+    })
+
+    it('returns 401 on token reuse detection', async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({
+        id: 'rt-1',
+        token: 'reused-token',
+        userId: 'user-1',
+        familyId: 'family-abc',
+        rotatedAt: new Date(), // already rotated = reuse
+        user: { id: 'user-1', email: 'admin@test.com', role: 'admin' },
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+      })
+      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .set('Cookie', 'refresh_token=reused-token')
+
+      expect(res.status).toBe(401)
+      expect(res.body.error).toBe('Refresh token reuse detected')
     })
   })
 
