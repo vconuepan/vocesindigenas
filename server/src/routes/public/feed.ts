@@ -1,11 +1,15 @@
 import { Router } from 'express'
 import { createLogger } from '../../lib/logger.js'
+import { TTLCache, cached } from '../../lib/cache.js'
 import { Feed } from 'feed'
 import * as storyService from '../../services/story.js'
 import * as issueService from '../../services/issue.js'
 
 const router = Router()
 const log = createLogger('feed')
+
+const FEED_TTL = 15 * 60 * 1000 // 15 minutes
+const feedCache = new TTLCache<string>(FEED_TTL)
 
 const FEED_SIZE = 50
 const CACHE_MAX_AGE = 900 // 15 minutes
@@ -37,28 +41,32 @@ function setRssHeaders(res: import('express').Response) {
 // Global feed — all published stories
 router.get('/', async (_req, res) => {
   try {
-    const result = await storyService.getPublishedStories({ page: 1, pageSize: FEED_SIZE })
-    const siteUrl = getSiteUrl()
+    const xml = await cached(feedCache, 'feed:global', async () => {
+      const result = await storyService.getPublishedStories({ page: 1, pageSize: FEED_SIZE })
+      const siteUrl = getSiteUrl()
 
-    const feed = buildFeed({
-      title: 'Actually Relevant',
-      description: 'AI-curated news that matters. Stories most relevant to humanity\u2019s future.',
-      feedPath: '/api/feed',
+      const feed = buildFeed({
+        title: 'Actually Relevant',
+        description: 'AI-curated news that matters. Stories most relevant to humanity\u2019s future.',
+        feedPath: '/api/feed',
+      })
+
+      for (const story of result.data) {
+        feed.addItem({
+          title: story.title || story.sourceTitle,
+          id: story.id,
+          link: `${siteUrl}/stories/${story.slug || story.id}`,
+          description: story.summary || undefined,
+          date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
+          category: story.feed?.issue ? [{ name: story.feed.issue.name }] : undefined,
+        })
+      }
+
+      return feed.rss2()
     })
 
-    for (const story of result.data) {
-      feed.addItem({
-        title: story.title || story.sourceTitle,
-        id: story.id,
-        link: `${siteUrl}/stories/${story.slug || story.id}`,
-        description: story.summary || undefined,
-        date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
-        category: story.feed?.issue ? [{ name: story.feed.issue.name }] : undefined,
-      })
-    }
-
     setRssHeaders(res)
-    res.send(feed.rss2())
+    res.send(xml)
   } catch (err) {
     log.error({ err }, 'failed to generate global RSS feed')
     res.status(500).json({ error: 'Failed to generate feed' })
@@ -75,32 +83,36 @@ router.get('/:issueSlug', async (req, res) => {
       return
     }
 
-    const result = await storyService.getPublishedStories({
-      page: 1,
-      pageSize: FEED_SIZE,
-      issueSlug,
-    })
-    const siteUrl = getSiteUrl()
-
-    const feed = buildFeed({
-      title: `Actually Relevant — ${issue.name}`,
-      description: issue.description || `Stories about ${issue.name} curated by Actually Relevant.`,
-      feedPath: `/api/feed/${issueSlug}`,
-    })
-
-    for (const story of result.data) {
-      feed.addItem({
-        title: story.title || story.sourceTitle,
-        id: story.id,
-        link: `${siteUrl}/stories/${story.slug || story.id}`,
-        description: story.summary || undefined,
-        date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
-        category: story.feed?.issue ? [{ name: story.feed.issue.name }] : undefined,
+    const xml = await cached(feedCache, `feed:issue:${issueSlug}`, async () => {
+      const result = await storyService.getPublishedStories({
+        page: 1,
+        pageSize: FEED_SIZE,
+        issueSlug,
       })
-    }
+      const siteUrl = getSiteUrl()
+
+      const feed = buildFeed({
+        title: `Actually Relevant — ${issue.name}`,
+        description: issue.description || `Stories about ${issue.name} curated by Actually Relevant.`,
+        feedPath: `/api/feed/${issueSlug}`,
+      })
+
+      for (const story of result.data) {
+        feed.addItem({
+          title: story.title || story.sourceTitle,
+          id: story.id,
+          link: `${siteUrl}/stories/${story.slug || story.id}`,
+          description: story.summary || undefined,
+          date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
+          category: story.feed?.issue ? [{ name: story.feed.issue.name }] : undefined,
+        })
+      }
+
+      return feed.rss2()
+    })
 
     setRssHeaders(res)
-    res.send(feed.rss2())
+    res.send(xml)
   } catch (err) {
     log.error({ err }, 'failed to generate issue RSS feed')
     res.status(500).json({ error: 'Failed to generate feed' })
