@@ -1,13 +1,16 @@
 import { ChatOpenAI } from '@langchain/openai'
 import { config } from '../config.js'
 
-let delayChain = Promise.resolve()
+let nextAvailableTime = 0
 
-export function rateLimitDelay(): Promise<void> {
-  delayChain = delayChain.then(
-    () => new Promise(resolve => setTimeout(resolve, config.llm.delayMs)),
-  )
-  return delayChain
+export async function rateLimitDelay(): Promise<void> {
+  const now = Date.now()
+  const waitUntil = Math.max(nextAvailableTime, now)
+  nextAvailableTime = waitUntil + config.llm.delayMs
+  const waitMs = waitUntil - now
+  if (waitMs > 0) {
+    await new Promise(resolve => setTimeout(resolve, waitMs))
+  }
 }
 
 let _smallLLM: ChatOpenAI | null = null
