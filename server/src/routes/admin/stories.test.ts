@@ -25,6 +25,7 @@ const mockPrisma = vi.hoisted(() => ({
     groupBy: vi.fn(),
   },
   $disconnect: vi.fn(),
+  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
 }))
 
 vi.mock('../../lib/prisma.js', () => ({ default: mockPrisma }))
@@ -299,6 +300,9 @@ describe('Admin Stories API', () => {
 
   describe('POST /api/admin/stories/bulk-status', () => {
     it('bulk updates story statuses', async () => {
+      // findMany for stories needing slugs
+      mockPrisma.story.findMany.mockResolvedValueOnce([])
+      // findMany for existing slugs check (empty = no conflicts)
       mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 1 })
       mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 2 })
 

@@ -207,30 +207,79 @@ export async function updateStoryStatus(id: string, status: string): Promise<Sto
   return prisma.story.update({ where: { id }, data })
 }
 
+export async function generateUniqueSlugs(
+  stories: { id: string; title: string | null; sourceTitle: string }[],
+): Promise<Map<string, string>> {
+  if (stories.length === 0) return new Map()
+
+  // Generate base slugs for all stories
+  const baseSlugs = stories.map(s => ({
+    id: s.id,
+    base: slugify(s.title || s.sourceTitle),
+  }))
+
+  // Find all existing slugs that could conflict (matching any base pattern)
+  const uniqueBases = [...new Set(baseSlugs.map(s => s.base))]
+  const existingStories = await prisma.story.findMany({
+    where: {
+      slug: { not: null },
+      id: { notIn: stories.map(s => s.id) },
+      OR: uniqueBases.map(base => ({
+        slug: { startsWith: base },
+      })),
+    },
+    select: { slug: true },
+  })
+  const existingSlugs = new Set(existingStories.map(s => s.slug!))
+
+  // Resolve conflicts: track slugs we're assigning in this batch too
+  const assignedSlugs = new Set<string>()
+  const result = new Map<string, string>()
+
+  for (const { id, base } of baseSlugs) {
+    let candidate = base
+    let suffix = 2
+    while (existingSlugs.has(candidate) || assignedSlugs.has(candidate)) {
+      candidate = `${base}-${suffix}`
+      suffix++
+    }
+    assignedSlugs.add(candidate)
+    result.set(id, candidate)
+  }
+
+  return result
+}
+
 export async function bulkUpdateStatus(ids: string[], status: string) {
   if (status === 'published') {
-    // Generate slugs for stories that don't have them yet
+    // Batch-generate slugs for stories that don't have them yet
     const storiesNeedingSlugs = await prisma.story.findMany({
       where: { id: { in: ids }, slug: null },
       select: { id: true, title: true, sourceTitle: true },
     })
-    for (const story of storiesNeedingSlugs) {
-      const slug = await generateUniqueSlug(story.title || story.sourceTitle, story.id)
-      await prisma.story.update({ where: { id: story.id }, data: { slug } })
-    }
 
-    // Auto-set datePublished when bulk-publishing stories that don't have one yet
-    const [withDate, withoutDate] = await Promise.all([
+    const slugMap = await generateUniqueSlugs(storiesNeedingSlugs)
+
+    // Apply slug updates + status updates in a transaction
+    const now = new Date()
+    await prisma.$transaction([
+      // Set slugs for stories that need them
+      ...Array.from(slugMap.entries()).map(([storyId, slug]) =>
+        prisma.story.update({ where: { id: storyId }, data: { slug } }),
+      ),
+      // Update status for stories that already have datePublished
       prisma.story.updateMany({
         where: { id: { in: ids }, datePublished: { not: null } },
         data: { status: status as any },
       }),
+      // Update status + set datePublished for stories without one
       prisma.story.updateMany({
         where: { id: { in: ids }, datePublished: null },
-        data: { status: status as any, datePublished: new Date() },
+        data: { status: status as any, datePublished: now },
       }),
     ])
-    return { count: withDate.count + withoutDate.count }
+
+    return { count: ids.length }
   }
   return prisma.story.updateMany({
     where: { id: { in: ids } },
