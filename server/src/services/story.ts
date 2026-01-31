@@ -13,6 +13,7 @@ interface StoryFilters {
   ratingMax?: number
   rating?: string
   emotionTag?: string
+  search?: string
   sort?: string
   page?: number
   pageSize?: number
@@ -93,6 +94,23 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   }
   if (filters.emotionTag) {
     where.emotionTag = filters.emotionTag as any
+  }
+  if (filters.search) {
+    const searchCondition = {
+      OR: [
+        { title: { contains: filters.search, mode: 'insensitive' as const } },
+        { sourceTitle: { contains: filters.search, mode: 'insensitive' as const } },
+        { summary: { contains: filters.search, mode: 'insensitive' as const } },
+      ],
+    }
+    if (where.OR) {
+      // rating filter already set where.OR — combine via AND
+      const ratingCondition = { OR: where.OR }
+      delete where.OR
+      where.AND = [ratingCondition, searchCondition]
+    } else {
+      where.OR = searchCondition.OR
+    }
   }
 
   return where

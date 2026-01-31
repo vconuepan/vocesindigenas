@@ -43,6 +43,44 @@ describe('getStories', () => {
     expect(call.select.feed).toBeDefined()
   })
 
+  it('applies search filter with OR on title, sourceTitle, summary', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+    mockPrisma.story.count.mockResolvedValue(0)
+
+    await getStories({ search: 'climate' })
+
+    const call = mockPrisma.story.findMany.mock.calls[0][0]
+    expect(call.where.OR).toEqual([
+      { title: { contains: 'climate', mode: 'insensitive' } },
+      { sourceTitle: { contains: 'climate', mode: 'insensitive' } },
+      { summary: { contains: 'climate', mode: 'insensitive' } },
+    ])
+  })
+
+  it('combines search and rating filters via AND', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+    mockPrisma.story.count.mockResolvedValue(0)
+
+    await getStories({ search: 'AI', rating: 'gte5' })
+
+    const call = mockPrisma.story.findMany.mock.calls[0][0]
+    // Both should be combined via AND
+    expect(call.where.AND).toHaveLength(2)
+    // Rating condition
+    expect(call.where.AND[0].OR).toEqual([
+      { relevance: { gte: 5 } },
+      { relevance: null, relevancePre: { gte: 5 } },
+    ])
+    // Search condition
+    expect(call.where.AND[1].OR).toEqual([
+      { title: { contains: 'AI', mode: 'insensitive' } },
+      { sourceTitle: { contains: 'AI', mode: 'insensitive' } },
+      { summary: { contains: 'AI', mode: 'insensitive' } },
+    ])
+    // OR should not be on where directly
+    expect(call.where.OR).toBeUndefined()
+  })
+
   it('includes feed with issue in select', async () => {
     mockPrisma.story.findMany.mockResolvedValue([])
     mockPrisma.story.count.mockResolvedValue(0)
