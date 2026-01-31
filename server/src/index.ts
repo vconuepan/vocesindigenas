@@ -1,6 +1,7 @@
 import prisma from './lib/prisma.js'
 import { createLogger } from './lib/logger.js'
 import { initScheduler, stopScheduler } from './jobs/scheduler.js'
+import { cleanupExpiredTokens } from './services/auth.js'
 import { taskRegistry } from './lib/taskRegistry.js'
 import app from './app.js'
 
@@ -12,6 +13,8 @@ const FORCE_EXIT_MS = 10_000
 
 let shuttingDown = false
 
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000 // 1 hour
+
 const server = app.listen(PORT, () => {
   log.info({ port: PORT }, 'server started')
 
@@ -19,6 +22,15 @@ const server = app.listen(PORT, () => {
     log.error({ err }, 'scheduler initialization failed')
   })
 })
+
+const tokenCleanupTimer = setInterval(async () => {
+  try {
+    const count = await cleanupExpiredTokens()
+    if (count > 0) log.info({ count }, 'cleaned up expired refresh tokens')
+  } catch (err) {
+    log.error({ err }, 'failed to clean up expired tokens')
+  }
+}, CLEANUP_INTERVAL_MS)
 
 export async function shutdown(): Promise<void> {
   if (shuttingDown) return
@@ -33,8 +45,9 @@ export async function shutdown(): Promise<void> {
   }, FORCE_EXIT_MS)
   forceTimer.unref()
 
-  // 1. Stop scheduler (prevent new jobs)
+  // 1. Stop scheduler and cleanup timers
   stopScheduler()
+  clearInterval(tokenCleanupTimer)
 
   // 2. Close HTTP server (stop accepting new connections)
   await new Promise<void>((resolve) => {

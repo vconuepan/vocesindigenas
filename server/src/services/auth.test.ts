@@ -37,6 +37,7 @@ const {
   rotateRefreshToken,
   revokeRefreshToken,
   revokeAllUserTokens,
+  cleanupExpiredTokens,
 } = await import('./auth.js')
 
 describe('hashPassword / verifyPassword', () => {
@@ -233,5 +234,22 @@ describe('revokeAllUserTokens', () => {
     mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 3 })
     await revokeAllUserTokens('user-1')
     expect(mockPrisma.refreshToken.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } })
+  })
+})
+
+describe('cleanupExpiredTokens', () => {
+  it('deletes tokens with expiresAt in the past', async () => {
+    mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 5 })
+    const count = await cleanupExpiredTokens()
+    expect(count).toBe(5)
+    expect(mockPrisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+      where: { expiresAt: { lt: expect.any(Date) } },
+    })
+  })
+
+  it('returns 0 when no expired tokens exist', async () => {
+    mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 0 })
+    const count = await cleanupExpiredTokens()
+    expect(count).toBe(0)
   })
 })

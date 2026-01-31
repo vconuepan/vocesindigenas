@@ -92,3 +92,10 @@ export async function revokeRefreshToken(token: string): Promise<void> {
 export async function revokeAllUserTokens(userId: string): Promise<void> {
   await prisma.refreshToken.deleteMany({ where: { userId } })
 }
+
+export async function cleanupExpiredTokens(): Promise<number> {
+  const result = await prisma.refreshToken.deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  })
+  return result.count
+}
