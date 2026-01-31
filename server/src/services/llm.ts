@@ -17,13 +17,6 @@ export function getSmallLLM(): ChatOpenAI {
   }).withRetry({ stopAfterAttempt: 3 }) as unknown as ChatOpenAI
 }
 
-export function getMediumLLM(): ChatOpenAI {
-  return new ChatOpenAI({
-    model: config.llm.models.medium.name,
-    reasoning: { effort: config.llm.models.medium.reasoningEffort },
-  }).withRetry({ stopAfterAttempt: 3 }) as unknown as ChatOpenAI
-}
-
 export function getLargeLLM(): ChatOpenAI {
   return new ChatOpenAI({
     model: config.llm.models.large.name,

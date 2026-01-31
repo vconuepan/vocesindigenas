@@ -477,13 +477,6 @@ export async function rejectStory(id: string): Promise<Story> {
   })
 }
 
-export async function getPublishedStoryById(id: string) {
-  return prisma.story.findFirst({
-    where: { id, status: 'published' },
-    select: PUBLIC_STORY_SELECT,
-  })
-}
-
 export async function getPublishedStoryBySlug(slug: string) {
   return prisma.story.findFirst({
     where: { slug, status: 'published' },

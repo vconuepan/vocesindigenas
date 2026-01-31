@@ -1,10 +1,9 @@
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas'
 import PDFDocument from 'pdfkit'
 import archiver from 'archiver'
-import { createWriteStream, mkdirSync, unlinkSync, existsSync, readFileSync } from 'fs'
+import { createWriteStream, mkdirSync, unlinkSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { Writable } from 'stream'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ASSETS_DIR = join(__dirname, '..', '..', 'assets')
@@ -14,23 +13,6 @@ const WIDTH = 1200
 const HEIGHT = 675
 const PADDING = 50
 const HEADER_HEIGHT = 80
-
-// Category-to-header mapping
-const CATEGORY_HEADERS: Record<string, string> = {
-  human: 'header_human_development_1200x80.png',
-  planet: 'header_planet_climate_1200x80.png',
-  science: 'header_science_tech_1200x80.png',
-  general: 'header_general_news_1200x80.png',
-  existential: 'header_existential_risks_1200x80.png',
-}
-
-function getCategoryHeaderFile(category: string): string {
-  const lower = category.toLowerCase()
-  for (const [key, file] of Object.entries(CATEGORY_HEADERS)) {
-    if (lower.includes(key)) return file
-  }
-  return CATEGORY_HEADERS.existential
-}
 
 export interface CarouselStory {
   title: string
@@ -80,20 +62,9 @@ export function createStoryImage(story: CarouselStory): Buffer {
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
-  // Header bar (colored rectangle as placeholder if image not available)
-  const headerFile = getCategoryHeaderFile(story.category)
-  const headerPath = join(ASSETS_DIR, 'images', headerFile)
-  if (existsSync(headerPath)) {
-    // Load and draw header image
-    const headerData = readFileSync(headerPath)
-    // @napi-rs/canvas loadImage is async, so we draw a placeholder instead
-    ctx.fillStyle = '#2563eb'
-    ctx.fillRect(0, 0, WIDTH, HEADER_HEIGHT)
-  } else {
-    // Placeholder colored header
-    ctx.fillStyle = '#2563eb'
-    ctx.fillRect(0, 0, WIDTH, HEADER_HEIGHT)
-  }
+  // Header bar (colored rectangle)
+  ctx.fillStyle = '#2563eb'
+  ctx.fillRect(0, 0, WIDTH, HEADER_HEIGHT)
 
   // Header text (category name on the header)
   ctx.fillStyle = '#ffffff'
@@ -148,17 +119,9 @@ export function createStoryImage(story: CarouselStory): Buffer {
   }
 
   // Logo placeholder (bottom-right)
-  const logoPath = join(ASSETS_DIR, 'images', 'logo_112x80.png')
-  if (existsSync(logoPath)) {
-    // Would draw logo here — for now, draw text placeholder
-    ctx.fillStyle = '#9ca3af'
-    ctx.font = '14px InterRegular, Arial, sans-serif'
-    ctx.fillText('actuallyrelevant.news', WIDTH - PADDING / 2 - 170, HEIGHT - PADDING / 2 - 10)
-  } else {
-    ctx.fillStyle = '#9ca3af'
-    ctx.font = '14px InterRegular, Arial, sans-serif'
-    ctx.fillText('actuallyrelevant.news', WIDTH - PADDING / 2 - 170, HEIGHT - PADDING / 2 - 10)
-  }
+  ctx.fillStyle = '#9ca3af'
+  ctx.font = '14px InterRegular, Arial, sans-serif'
+  ctx.fillText('actuallyrelevant.news', WIDTH - PADDING / 2 - 170, HEIGHT - PADDING / 2 - 10)
 
   return canvas.toBuffer('image/png')
 }
