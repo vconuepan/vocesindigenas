@@ -35,7 +35,7 @@ router.get('/stats', async (_req, res) => {
 
 router.get('/', validateQuery(storyQuerySchema), async (req, res) => {
   try {
-    const filters = req.parsedQuery
+    const filters = req.parsedQuery!
     const result = await storyService.getStories(filters)
     res.json(result)
   } catch (err) {
@@ -46,7 +46,7 @@ router.get('/', validateQuery(storyQuerySchema), async (req, res) => {
 
 router.get('/batch', validateQuery(batchStoriesQuerySchema), async (req, res) => {
   try {
-    const { ids } = req.parsedQuery
+    const { ids } = req.parsedQuery!
     if (ids.length === 0) {
       res.json([])
       return

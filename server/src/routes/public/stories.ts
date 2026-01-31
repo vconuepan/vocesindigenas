@@ -9,7 +9,7 @@ const log = createLogger('public:stories')
 
 router.get('/', validateQuery(publicStoryQuerySchema), async (req, res) => {
   try {
-    const query = req.parsedQuery
+    const query = req.parsedQuery!
     const result = await storyService.getPublishedStories({
       page: query.page,
       pageSize: query.pageSize,
