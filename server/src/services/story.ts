@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js'
 import type { Story, Prisma } from '@prisma/client'
+import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 
 interface StoryFilters {
@@ -129,24 +130,19 @@ export async function getStories(filters: StoryFilters) {
   const where = buildWhereClause(filters)
   const orderBy = filters.sort ? SORT_MAP[filters.sort] : { dateCrawled: 'desc' as const }
 
-  const [data, total] = await Promise.all([
-    prisma.story.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      select: ADMIN_LIST_SELECT,
-    }),
-    prisma.story.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.story.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: ADMIN_LIST_SELECT,
+      }),
+    count: () => prisma.story.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
 export async function getStoriesByIds(ids: string[]) {
@@ -379,24 +375,19 @@ export async function getPublishedStories(options: {
     }
   }
 
-  const [data, total] = await Promise.all([
-    prisma.story.findMany({
-      where,
-      select: PUBLIC_STORY_SELECT,
-      orderBy: { dateCrawled: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.story.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.story.findMany({
+        where,
+        select: PUBLIC_STORY_SELECT,
+        orderBy: { dateCrawled: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    count: () => prisma.story.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
 interface StatusFilterOptions {

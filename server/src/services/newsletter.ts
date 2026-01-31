@@ -1,6 +1,7 @@
 import { tmpdir } from 'os'
 import { join } from 'path'
 import prisma from '../lib/prisma.js'
+import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 
 interface NewsletterFilters {
@@ -15,23 +16,18 @@ export async function getNewsletters(filters: NewsletterFilters) {
   const where: Record<string, any> = {}
   if (filters.status) where.status = filters.status
 
-  const [data, total] = await Promise.all([
-    prisma.newsletter.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.newsletter.count({ where }),
-  ])
-
-  return {
-    data,
-    total,
+  return paginate({
+    findMany: () =>
+      prisma.newsletter.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    count: () => prisma.newsletter.count({ where }),
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  }
+  })
 }
 
 export async function getNewsletterById(id: string) {
