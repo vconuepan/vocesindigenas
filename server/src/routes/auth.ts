@@ -1,8 +1,9 @@
 import { Router } from 'express'
 import { validateBody } from '../middleware/validate.js'
+import { requireAuth } from '../middleware/auth.js'
 import { authLimiter, refreshLimiter } from '../middleware/rateLimit.js'
-import { loginSchema } from '../schemas/auth.js'
-import { getUserByEmail } from '../services/user.js'
+import { loginSchema, changePasswordSchema } from '../schemas/auth.js'
+import { getUserByEmail, changePassword } from '../services/user.js'
 import {
   verifyPassword,
   generateAccessToken,
@@ -130,6 +131,20 @@ router.get('/me', async (req, res) => {
     res.json(user)
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' })
+  }
+})
+
+router.put('/password', requireAuth, validateBody(changePasswordSchema), async (req, res) => {
+  try {
+    await changePassword(req.user!.userId, req.body.currentPassword, req.body.newPassword)
+    res.json({ message: 'Password changed' })
+  } catch (err) {
+    if (err instanceof Error && err.message === 'Current password is incorrect') {
+      res.status(401).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'password change failed')
+    res.status(500).json({ error: 'Password change failed' })
   }
 })
 

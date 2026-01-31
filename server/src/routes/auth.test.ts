@@ -9,6 +9,7 @@ vi.mock('express-rate-limit', () => ({
 const mockPrisma = vi.hoisted(() => ({
   user: {
     findUnique: vi.fn(),
+    update: vi.fn(),
   },
   refreshToken: {
     create: vi.fn(),
@@ -227,6 +228,72 @@ describe('Auth Routes', () => {
         .set('Authorization', 'Bearer invalid-token')
 
       expect(res.status).toBe(401)
+    })
+  })
+
+  describe('PUT /api/auth/password', () => {
+    it('returns 200 when current password is correct', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        passwordHash: testPasswordHash,
+      })
+      mockPrisma.user.update.mockResolvedValue({})
+      mockPrisma.refreshToken.deleteMany.mockResolvedValue({ count: 1 })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'testpassword', newPassword: 'newpassword123' })
+
+      expect(res.status).toBe(200)
+      expect(res.body.message).toBe('Password changed')
+    })
+
+    it('returns 401 when current password is wrong', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        passwordHash: testPasswordHash,
+      })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'wrongpassword', newPassword: 'newpassword123' })
+
+      expect(res.status).toBe(401)
+      expect(res.body.error).toBe('Current password is incorrect')
+    })
+
+    it('returns 401 without auth', async () => {
+      const res = await request(app)
+        .put('/api/auth/password')
+        .send({ currentPassword: 'old', newPassword: 'newpassword123' })
+
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 400 for missing fields', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({})
+
+      expect(res.status).toBe(400)
+    })
+
+    it('returns 400 when new password is too short', async () => {
+      const token = generateAccessToken({ id: 'user-1', email: 'admin@test.com', role: 'admin' })
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'testpassword', newPassword: 'short' })
+
+      expect(res.status).toBe(400)
     })
   })
 })
