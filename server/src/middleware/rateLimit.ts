@@ -30,3 +30,31 @@ export const expensiveOpLimiter = rateLimit({
     error: 'Operational limit reached for this endpoint. Please try again later.'
   }
 })
+
+/**
+ * Strict rate limiter for login endpoint.
+ * 5 attempts per 15 minutes per IP to prevent brute-force attacks.
+ */
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many login attempts. Please try again later.'
+  }
+})
+
+/**
+ * Rate limiter for token refresh endpoint.
+ * More lenient than login since refresh is called automatically by the client.
+ */
+export const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many refresh attempts. Please try again later.'
+  }
+})
