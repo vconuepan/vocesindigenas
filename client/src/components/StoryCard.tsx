@@ -3,6 +3,7 @@ import type { PublicStory } from '@shared/types'
 import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
 import { formatDate } from '../lib/format'
+import FeedFavicon from './FeedFavicon'
 import UpliftingBadge from './UpliftingBadge'
 
 interface StoryCardProps {
@@ -14,7 +15,8 @@ function StoryMeta({ story, size = 'sm', issueColor }: { story: PublicStory; siz
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
   return (
     <div className={`flex flex-wrap items-center gap-x-2 text-neutral-500 ${size === 'xs' ? 'text-xs' : 'text-sm'}`}>
-      <span>
+      <span className="inline-flex items-center gap-1.5">
+        <FeedFavicon feedId={story.feed.id} size={size === 'xs' ? 14 : 16} />
         <a
           href={story.sourceUrl}
           target="_blank"

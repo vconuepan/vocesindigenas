@@ -239,6 +239,8 @@ export const adminApi = {
     delete: (id: string) => request<{ action: string; message: string }>(`/feeds/${id}`, { method: 'DELETE' }),
     crawl: (id: string) => request<CrawlResult>(`/feeds/${id}/crawl`, { method: 'POST' }),
     crawlAll: () => request<CrawlResult[]>('/feeds/crawl-all', { method: 'POST' }),
+    fetchFavicon: (id: string) => request<{ success: boolean; message: string }>(`/feeds/${id}/favicon`, { method: 'POST' }),
+    fetchAllFavicons: () => request<{ succeeded: number; failed: number; skipped: number; errors: string[] }>('/feeds/fetch-favicons', { method: 'POST' }),
   },
 
   // Issues

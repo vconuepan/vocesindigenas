@@ -72,6 +72,7 @@ export interface Story {
 
 export interface PublicStory extends Story {
   feed: {
+    id: string
     title: string
     issue: {
       name: string

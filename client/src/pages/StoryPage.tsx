@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import Markdown from 'react-markdown'
 import { usePublicStory } from '../hooks/usePublicStories'
 import { getCategoryColor, shiftHex } from '../lib/category-colors'
+import FeedFavicon from '../components/FeedFavicon'
 import UpliftingBadge from '../components/UpliftingBadge'
 
 /**
@@ -184,8 +185,9 @@ export default function StoryPage() {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
               <time dateTime={displayDate}>{dateStr}</time>
               <span className="text-neutral-300">|</span>
-              <span>
+              <span className="inline-flex items-center gap-1.5">
                 Based on{' '}
+                <FeedFavicon feedId={story.feed.id} />
                 <a
                   href={story.sourceUrl}
                   target="_blank"

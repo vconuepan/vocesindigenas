@@ -274,6 +274,7 @@ const PUBLIC_STORY_SELECT = {
   antifactors: true,
   feed: {
     select: {
+      id: true,
       title: true,
       issue: {
         select: { name: true, slug: true },

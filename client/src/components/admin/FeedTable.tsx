@@ -7,6 +7,7 @@ import {
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 import type { Feed, Issue } from '@shared/types'
+import { FeedFaviconPreview } from '../FeedFavicon'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import { formatDateWithTime } from '../../lib/constants'
 
@@ -39,6 +40,7 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
             <tr key={feed.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
               <td className="px-3 py-2">
                 <div className="flex items-center gap-1.5">
+                  <FeedFaviconPreview feedId={feed.id} size={16} />
                   <button
                     onClick={() => onEdit(feed.id)}
                     className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"

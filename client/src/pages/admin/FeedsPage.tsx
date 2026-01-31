@@ -76,6 +76,17 @@ export default function FeedsPage() {
     })
   }
 
+  const handleFetchAllFavicons = () => {
+    launchTask({
+      id: `fetch-favicons-${Date.now()}`,
+      label: 'Fetching missing favicons',
+      executor: async () => {
+        const result = await adminApi.feeds.fetchAllFavicons()
+        return { succeeded: result.succeeded, failed: result.failed, skipped: result.skipped }
+      },
+    })
+  }
+
   const handleCrawlAll = () => {
     const feeds = feedsQuery.data
     if (!feeds || feeds.length === 0) return
@@ -133,6 +144,11 @@ export default function FeedsPage() {
             >
               {showInactive ? 'Hide inactive' : 'Show inactive'}
             </Button>
+            {import.meta.env.DEV && (
+              <Button variant="secondary" onClick={handleFetchAllFavicons}>
+                Fetch All Favicons
+              </Button>
+            )}
             <Button variant="secondary" onClick={handleCrawlAll}>
               Crawl All
             </Button>

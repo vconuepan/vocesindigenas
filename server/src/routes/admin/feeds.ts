@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { createLogger } from '../../lib/logger.js'
 import * as feedService from '../../services/feed.js'
+import { fetchFavicon, fetchAllFavicons } from '../../services/favicon.js'
 import { crawlFeed, crawlAllDueFeeds } from '../../services/crawler.js'
 import { validateBody } from '../../middleware/validate.js'
 import { createFeedSchema, updateFeedSchema } from '../../schemas/feed.js'
@@ -104,6 +105,31 @@ router.post('/:id/crawl', async (req, res) => {
   } catch (err) {
     log.error({ err }, 'failed to crawl feed')
     res.status(500).json({ error: 'Failed to crawl feed' })
+  }
+})
+
+router.post('/:id/favicon', async (req, res) => {
+  try {
+    const feed = await feedService.getFeedById(req.params.id)
+    if (!feed) {
+      res.status(404).json({ error: 'Feed not found' })
+      return
+    }
+    const result = await fetchFavicon(feed.id, feed.url, true)
+    res.json(result)
+  } catch (err) {
+    log.error({ err }, 'failed to fetch favicon')
+    res.status(500).json({ error: 'Failed to fetch favicon' })
+  }
+})
+
+router.post('/fetch-favicons', async (_req, res) => {
+  try {
+    const result = await fetchAllFavicons()
+    res.json(result)
+  } catch (err) {
+    log.error({ err }, 'failed to fetch favicons')
+    res.status(500).json({ error: 'Failed to fetch favicons' })
   }
 })
 

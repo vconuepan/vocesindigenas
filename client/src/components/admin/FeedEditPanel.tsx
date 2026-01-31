@@ -1,9 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Issue } from '@shared/types'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
+import { Button } from '../ui/Button'
+import { FeedFaviconPreview } from '../FeedFavicon'
 import { useFeed, useUpdateFeed } from '../../hooks/useFeeds'
 import { useEditForm } from '../../hooks/useEditForm'
+import { adminApi } from '../../lib/admin-api'
+import { useToast } from '../ui/Toast'
 import { EditPanel, PANEL_BODY } from './EditPanel'
 import { PanelFooter } from './PanelFooter'
 import { buildIssueOptions } from './FeedForm'
@@ -24,6 +28,43 @@ function buildFormState(feed: { title: string; url: string; issueId: string; lan
     htmlSelector: feed.htmlSelector || '',
     active: feed.active,
   }
+}
+
+function FaviconSection({ feedId }: { feedId: string }) {
+  const [fetching, setFetching] = useState(false)
+  const [imgKey, setImgKey] = useState(0)
+  const { toast } = useToast()
+  const isDev = import.meta.env.DEV
+
+  const handleFetch = async () => {
+    setFetching(true)
+    try {
+      const result = await adminApi.feeds.fetchFavicon(feedId)
+      if (result.success) {
+        setImgKey(k => k + 1)
+        toast('success', 'Favicon fetched')
+      } else {
+        toast('error', result.message)
+      }
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to fetch favicon')
+    } finally {
+      setFetching(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <FeedFaviconPreview feedId={feedId} imgKey={imgKey} size={24} />
+      {isDev ? (
+        <Button type="button" variant="ghost" size="sm" onClick={handleFetch} disabled={fetching}>
+          {fetching ? 'Fetching...' : 'Fetch Favicon'}
+        </Button>
+      ) : (
+        <span className="text-xs text-neutral-400">Fetch in dev only</span>
+      )}
+    </div>
+  )
 }
 
 function FeedEditForm({ feedId, issues, onClose }: { feedId: string; issues: Issue[]; onClose: () => void }) {
@@ -77,6 +118,7 @@ function FeedEditForm({ feedId, issues, onClose }: { feedId: string; issues: Iss
           />
           Active
         </label>
+        <FaviconSection feedId={feedId} />
       </div>
       <PanelFooter isPending={isPending} isDirty={isDirty} onCancel={onClose} />
     </form>
