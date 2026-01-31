@@ -5,10 +5,19 @@ interface BulkActionsBarProps {
   count: number
   onAction: (action: 'preassess' | 'assess' | 'select' | StoryStatus) => void
   loading?: boolean
+  allHaveRelevance?: boolean
 }
 
-export function BulkActionsBar({ count, onAction, loading }: BulkActionsBarProps) {
+const RELEVANCE_TOOLTIP = 'All stories must have a relevance rating'
+const SELECT_MIN_TOOLTIP = 'Select at least 2 stories to compare'
+
+export function BulkActionsBar({ count, onAction, loading, allHaveRelevance }: BulkActionsBarProps) {
   if (count === 0) return null
+
+  const needsRelevance = !allHaveRelevance
+  const tooFewForSelect = count < 2
+  const selectDisabled = loading || needsRelevance || tooFewForSelect
+  const selectTooltip = tooFewForSelect ? SELECT_MIN_TOOLTIP : needsRelevance ? RELEVANCE_TOOLTIP : undefined
 
   return (
     <div className="sticky bottom-0 z-10 bg-white border-t border-neutral-200 shadow-lg px-4 py-3 flex items-center gap-3 flex-wrap">
@@ -22,12 +31,21 @@ export function BulkActionsBar({ count, onAction, loading }: BulkActionsBarProps
         <Button variant="secondary" size="sm" onClick={() => onAction('assess')} disabled={loading}>
           Assess
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => onAction('select')} disabled={loading}>
-          Select
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => onAction('published')} disabled={loading}>
-          Publish
-        </Button>
+        <span title={needsRelevance ? RELEVANCE_TOOLTIP : undefined}>
+          <Button variant="secondary" size="sm" onClick={() => onAction('analyzed')} disabled={loading || needsRelevance}>
+            Set to Analyzed
+          </Button>
+        </span>
+        <span title={selectTooltip}>
+          <Button variant="secondary" size="sm" onClick={() => onAction('select')} disabled={selectDisabled}>
+            Select
+          </Button>
+        </span>
+        <span title={needsRelevance ? RELEVANCE_TOOLTIP : undefined}>
+          <Button variant="secondary" size="sm" onClick={() => onAction('published')} disabled={loading || needsRelevance}>
+            Publish
+          </Button>
+        </span>
         <Button variant="secondary" size="sm" onClick={() => onAction('rejected')} disabled={loading}>
           Reject
         </Button>

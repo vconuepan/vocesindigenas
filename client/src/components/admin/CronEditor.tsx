@@ -7,10 +7,13 @@ import { cronToHuman, CRON_PRESETS, findPreset } from '../../lib/cron'
 
 interface CronEditorProps {
   job: JobRun
+  initialEditing?: boolean
+  onSave?: () => void
+  onCancel?: () => void
 }
 
-export function CronEditor({ job }: CronEditorProps) {
-  const [editing, setEditing] = useState(false)
+export function CronEditor({ job, initialEditing = false, onSave, onCancel }: CronEditorProps) {
+  const [editing, setEditing] = useState(initialEditing)
   const [mode, setMode] = useState<'preset' | 'custom'>(() =>
     findPreset(job.cronExpression) ? 'preset' : 'custom',
   )
@@ -32,6 +35,7 @@ export function CronEditor({ job }: CronEditorProps) {
       await updateJob.mutateAsync({ jobName: job.jobName, data: { cronExpression: currentValue } })
       toast('success', 'Schedule updated')
       setEditing(false)
+      onSave?.()
     } catch {
       toast('error', 'Invalid cron expression')
     }
@@ -42,6 +46,7 @@ export function CronEditor({ job }: CronEditorProps) {
     setMode(findPreset(job.cronExpression) ? 'preset' : 'custom')
     setSelectedPreset(findPreset(job.cronExpression)?.value ?? '')
     setCustomValue(job.cronExpression)
+    onCancel?.()
   }
 
   if (!editing) {

@@ -4,6 +4,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
   ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 import type { Feed, Issue } from '@shared/types'
 import { ActionIconButton } from '../ui/ActionIconButton'
@@ -26,7 +27,6 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
             <th className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
-            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">URL</th>
             <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
             <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
             <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
@@ -38,22 +38,28 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
           {feeds.map(feed => (
             <tr key={feed.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50">
               <td className="px-3 py-2">
-                <button
-                  onClick={() => onEdit(feed.id)}
-                  className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                >
-                  {feed.title}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => onEdit(feed.id)}
+                    className="text-left font-medium text-neutral-900 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  >
+                    {feed.title}
+                  </button>
+                  <a
+                    href={feed.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-neutral-400 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                    title={feed.url}
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                  </a>
+                </div>
                 {/* Mobile metadata */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">
                   <span className="text-neutral-500 text-xs">{issueMap.get(feed.issueId) || '—'}</span>
                   <span className="text-neutral-400 text-xs">{formatDateWithTime(feed.lastCrawledAt)}</span>
                 </div>
-              </td>
-              <td className="hidden lg:table-cell px-3 py-2 text-neutral-500 max-w-[200px] truncate">
-                <a href={feed.url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-                  {feed.url}
-                </a>
               </td>
               <td className="hidden md:table-cell px-3 py-2 text-neutral-600">{issueMap.get(feed.issueId) || '—'}</td>
               <td className="hidden lg:table-cell px-3 py-2 text-neutral-600">{feed.language}</td>

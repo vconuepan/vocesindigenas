@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { NavLink, Outlet, Navigate } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import {
@@ -56,7 +56,7 @@ function NavItems({ onClick }: { onClick?: () => void }) {
   )
 }
 
-function Sidebar() {
+function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
 
   return (
@@ -65,7 +65,7 @@ function Sidebar() {
         <span className="text-lg font-bold text-neutral-900">Admin</span>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Admin navigation">
-        <NavItems />
+        <NavItems onClick={onNavigate} />
       </nav>
       <div className="border-t border-neutral-200 px-3 py-3">
         {user && (
@@ -112,9 +112,9 @@ export default function AdminLayout() {
         </aside>
 
         {/* Mobile sidebar */}
-        <Dialog as={Fragment} open={mobileOpen} onClose={setMobileOpen}>
-          <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" aria-hidden="true" />
-          <DialogPanel className="fixed inset-y-0 left-0 z-50 w-60 bg-white shadow-xl lg:hidden">
+        <Dialog open={mobileOpen} onClose={setMobileOpen} className="relative z-40 lg:hidden">
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          <DialogPanel className="fixed inset-y-0 left-0 z-50 w-60 bg-white shadow-xl">
             <div className="absolute right-2 top-2">
               <button
                 onClick={() => setMobileOpen(false)}
@@ -124,7 +124,7 @@ export default function AdminLayout() {
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            <Sidebar />
+            <Sidebar onNavigate={() => setMobileOpen(false)} />
           </DialogPanel>
         </Dialog>
 

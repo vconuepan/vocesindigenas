@@ -81,11 +81,8 @@ describe('DashboardPage', () => {
     expect(await screen.findByText('Crawl Feeds')).toBeInTheDocument()
   })
 
-  it('renders quick action buttons', () => {
+  it('renders run buttons for each job', async () => {
     renderDashboard()
-    expect(screen.getByRole('button', { name: 'Crawl Feeds' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Pre-assess Stories' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Assess Stories' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Select Stories' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Run Crawl Feeds' })).toBeInTheDocument()
   })
 })

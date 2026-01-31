@@ -1,14 +1,16 @@
 import { Helmet } from 'react-helmet-async'
+import { PlayIcon } from '@heroicons/react/24/outline'
 import { STORY_STATUSES } from '@shared/constants'
 import { useStoryStats } from '../../hooks/useStoryStats'
 import { useJobs, useRunJob } from '../../hooks/useJobs'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
-import { Button } from '../../components/ui/Button'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { ErrorState } from '../../components/ui/ErrorState'
-import { formatStatus, formatDateWithTime, STATUS_VARIANTS, JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER } from '../../lib/constants'
+import { JobStatusBadge } from '../../components/admin/JobStatusBadge'
+import { ActionIconButton } from '../../components/ui/ActionIconButton'
+import { formatStatus, formatDateWithTime, formatShortDate, STATUS_VARIANTS, JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER } from '../../lib/constants'
 
 function StatsGrid({ stats }: { stats: Record<string, number> }) {
   return (
@@ -29,18 +31,6 @@ function StatsGrid({ stats }: { stats: Record<string, number> }) {
       </div>
     </div>
   )
-}
-
-function JobStatusDot({ job }: { job: { lastStartedAt: string | null; lastCompletedAt: string | null; lastError: string | null; enabled: boolean } }) {
-  if (!job.enabled) return <span className="inline-block h-2.5 w-2.5 rounded-full bg-neutral-300" title="Disabled" />
-
-  const started = job.lastStartedAt ? new Date(job.lastStartedAt).getTime() : 0
-  const completed = job.lastCompletedAt ? new Date(job.lastCompletedAt).getTime() : 0
-
-  if (started > completed) return <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-400 animate-pulse" title="Running" />
-  if (job.lastError) return <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" title="Error" />
-  if (job.lastCompletedAt) return <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500" title="OK" />
-  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-neutral-300" title="Never run" />
 }
 
 export default function DashboardPage() {
@@ -68,25 +58,7 @@ export default function DashboardPage() {
         {statsQuery.data && <StatsGrid stats={statsQuery.data} />}
       </section>
 
-      {/* Quick Actions */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-neutral-900 mb-3">Quick Actions</h2>
-        <div className="flex flex-wrap gap-2">
-          {JOB_PIPELINE_ORDER.map(jobName => (
-            <Button
-              key={jobName}
-              variant="secondary"
-              size="sm"
-              loading={runJob.isPending && runJob.variables === jobName}
-              onClick={() => runJob.mutate(jobName)}
-            >
-              {JOB_DISPLAY_NAMES[jobName]}
-            </Button>
-          ))}
-        </div>
-      </section>
-
-      {/* Jobs Health */}
+      {/* Jobs */}
       <section>
         <Card title="Jobs">
           {jobsQuery.isLoading && (
@@ -103,7 +75,8 @@ export default function DashboardPage() {
                     <th className="text-left py-2 px-4 font-medium text-neutral-500">Job</th>
                     <th className="text-left py-2 px-4 font-medium text-neutral-500">Status</th>
                     <th className="text-left py-2 px-4 font-medium text-neutral-500">Last Run</th>
-                    <th className="text-left py-2 px-4 font-medium text-neutral-500">Error</th>
+                    <th className="text-left py-2 px-4 font-medium text-neutral-500 hidden sm:table-cell">Error</th>
+                    <th className="py-2 px-4"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -112,22 +85,40 @@ export default function DashboardPage() {
                     const bi = JOB_PIPELINE_ORDER.indexOf(b.jobName)
                     return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi)
                   }).map(job => (
-                    <tr key={job.jobName} className="border-b border-neutral-100 last:border-0">
+                    <tr key={job.jobName} className={`border-b border-neutral-100 last:border-0 ${job.running ? 'bg-yellow-50' : ''}`}>
                       <td className="py-2 px-4 font-medium text-neutral-900">
                         {JOB_DISPLAY_NAMES[job.jobName] || job.jobName}
                       </td>
                       <td className="py-2 px-4">
-                        <JobStatusDot job={job} />
+                        <JobStatusBadge job={job} variant="dot" />
                       </td>
-                      <td className="py-2 px-4 text-neutral-500">
-                        {formatDateWithTime(job.lastCompletedAt)}
+                      <td className="py-2 px-4 text-neutral-500 whitespace-nowrap">
+                        <span className="hidden sm:inline">{formatDateWithTime(job.lastCompletedAt)}</span>
+                        <span className="sm:hidden">{formatShortDate(job.lastCompletedAt)}</span>
                       </td>
-                      <td className="py-2 px-4 text-neutral-500 max-w-xs truncate">
+                      <td className="py-2 px-4 text-neutral-500 max-w-xs truncate hidden sm:table-cell">
                         {job.lastError ? (
                           <span className="text-red-600" title={job.lastError}>
                             {job.lastError.slice(0, 80)}
                           </span>
                         ) : '—'}
+                      </td>
+                      <td className="py-2 px-4 text-right">
+                        {job.running ? (
+                          <span className="inline-block p-1">
+                            <svg className="h-5 w-5 animate-spin text-yellow-600" viewBox="0 0 24 24" fill="none" aria-label="Running">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          </span>
+                        ) : (
+                          <ActionIconButton
+                            icon={PlayIcon}
+                            label={`Run ${JOB_DISPLAY_NAMES[job.jobName] || job.jobName}`}
+                            onClick={() => runJob.mutate(job.jobName)}
+                            disabled={runJob.isPending && runJob.variables === job.jobName}
+                          />
+                        )}
                       </td>
                     </tr>
                   ))}

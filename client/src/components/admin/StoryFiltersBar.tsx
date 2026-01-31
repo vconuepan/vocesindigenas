@@ -57,6 +57,7 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
     searchParams.get('issueId'),
     searchParams.get('feedId'),
     searchParams.get('emotionTag'),
+    searchParams.get('rating'),
   ].filter(Boolean).length
 
   return (
@@ -101,6 +102,21 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
           value={searchParams.get('feedId') || ''}
           onChange={e => setFilter('feedId', e.target.value)}
           options={feeds.map(f => ({ value: f.id, label: f.title }))}
+        />
+        <Select
+          id="filter-rating"
+          label="Rating"
+          placeholder="Any rating"
+          value={searchParams.get('rating') || ''}
+          onChange={e => setFilter('rating', e.target.value)}
+          options={[
+            { value: 'gte4', label: '≥ 4' },
+            { value: 'gte5', label: '≥ 5' },
+            { value: 'gte6', label: '≥ 6' },
+            { value: 'lte3', label: '≤ 3' },
+            { value: 'lte4', label: '≤ 4' },
+            { value: 'lte5', label: '≤ 5' },
+          ]}
         />
         <Select
           id="filter-emotion"

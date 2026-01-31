@@ -8,7 +8,6 @@ import { useFeeds } from '../../hooks/useFeeds'
 import { useIssues } from '../../hooks/useIssues'
 import { useBackgroundTasks } from '../../hooks/useBackgroundTasks'
 import { adminApi } from '../../lib/admin-api'
-import { parallelMap } from '../../lib/async-utils'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
@@ -30,6 +29,7 @@ function useFiltersFromParams(): StoryFilters {
     issueId: searchParams.get('issueId') || undefined,
     feedId: searchParams.get('feedId') || undefined,
     emotionTag: searchParams.get('emotionTag') as StoryFilters['emotionTag'] || undefined,
+    rating: searchParams.get('rating') || undefined,
     sort: (searchParams.get('sort') as StorySort) || 'date_desc',
     page: Number(searchParams.get('page')) || 1,
     pageSize: 25,
@@ -44,7 +44,7 @@ export default function StoriesPage() {
   const feedsQuery = useFeeds()
   const issuesQuery = useIssues()
   const { toast } = useToast()
-  const { launchTask } = useBackgroundTasks()
+  const { launchTask, launchPolledTask, processingIds } = useBackgroundTasks()
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -94,14 +94,12 @@ export default function StoriesPage() {
         description: 'This will run AI pre-assessment on the selected stories.',
         action: async () => {
           setSelectedIds(new Set())
-          launchTask({
+          launchPolledTask({
             id: `preassess-${Date.now()}`,
             label: `Pre-assessing ${ids.length} stories`,
-            executor: async () => {
-              await adminApi.stories.preassess(ids)
-              return { succeeded: ids.length, failed: 0 }
-            },
+            submitFn: () => adminApi.stories.bulkPreassess(ids),
             onComplete: invalidateStories,
+            storyIds: ids,
           })
         },
       })
@@ -111,19 +109,12 @@ export default function StoriesPage() {
         description: 'This will run full AI assessment on each selected story.',
         action: async () => {
           setSelectedIds(new Set())
-          launchTask({
+          launchPolledTask({
             id: `assess-${Date.now()}`,
             label: `Assessing ${ids.length} stories`,
-            executor: async (reportProgress) => {
-              const { results, errors } = await parallelMap(
-                ids,
-                (id) => adminApi.stories.assess(id),
-                10,
-                (completed, total) => reportProgress(completed, total),
-              )
-              return { succeeded: results.length, failed: errors.length }
-            },
+            submitFn: () => adminApi.stories.bulkAssess(ids),
             onComplete: invalidateStories,
+            storyIds: ids,
           })
         },
       })
@@ -133,14 +124,12 @@ export default function StoriesPage() {
         description: 'Selected stories will be marked for publishing.',
         action: async () => {
           setSelectedIds(new Set())
-          launchTask({
+          launchPolledTask({
             id: `select-${Date.now()}`,
             label: `Selecting ${ids.length} stories`,
-            executor: async () => {
-              await adminApi.stories.select(ids)
-              return { succeeded: ids.length, failed: 0 }
-            },
+            submitFn: () => adminApi.stories.bulkSelect(ids),
             onComplete: invalidateStories,
+            storyIds: ids,
           })
         },
       })
@@ -175,6 +164,7 @@ export default function StoriesPage() {
         return { succeeded: 1, failed: 0 }
       },
       onComplete: invalidateStories,
+      storyIds: [id],
     })
   }
 
@@ -187,18 +177,7 @@ export default function StoriesPage() {
         return { succeeded: 1, failed: 0 }
       },
       onComplete: invalidateStories,
-    })
-  }
-
-  const handleSelect = (id: string) => {
-    launchTask({
-      id: `select-${id}-${Date.now()}`,
-      label: 'Selecting story',
-      executor: async () => {
-        await adminApi.stories.select([id])
-        return { succeeded: 1, failed: 0 }
-      },
-      onComplete: invalidateStories,
+      storyIds: [id],
     })
   }
 
@@ -211,6 +190,7 @@ export default function StoriesPage() {
         return { succeeded: 1, failed: 0 }
       },
       onComplete: invalidateStories,
+      storyIds: [id],
     })
   }
 
@@ -266,6 +246,7 @@ export default function StoriesPage() {
           <StoryTable
             stories={stories}
             selectedIds={selectedIds}
+            processingIds={processingIds}
             onToggleSelect={toggleSelect}
             onToggleSelectAll={toggleSelectAll}
             allSelected={selectedIds.size === stories.length}
@@ -274,7 +255,6 @@ export default function StoriesPage() {
             onDelete={handleDelete}
             onPreassess={handlePreassess}
             onAssess={handleAssess}
-            onSelect={handleSelect}
             onPublish={handlePublish}
           />
 
@@ -290,6 +270,7 @@ export default function StoriesPage() {
         count={selectedIds.size}
         onAction={handleBulkAction}
         loading={confirmLoading}
+        allHaveRelevance={selectedIds.size > 0 && stories.filter(s => selectedIds.has(s.id)).every(s => s.relevance != null)}
       />
 
       <StoryDetail storyId={detailId} onClose={() => setDetailId(null)} />

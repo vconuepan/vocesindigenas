@@ -6,7 +6,12 @@ export function useJobs(options?: { refetchInterval?: number }) {
   return useQuery({
     queryKey: ['jobs'],
     queryFn: () => adminApi.jobs.list(),
-    refetchInterval: options?.refetchInterval,
+    refetchInterval: (query) => {
+      if (options?.refetchInterval) return options.refetchInterval
+      // Auto-poll every 3s while any job is running
+      const hasRunning = query.state.data?.some(j => j.running)
+      return hasRunning ? 3_000 : false
+    },
   })
 }
 
@@ -33,25 +38,25 @@ export function useRunJob() {
 }
 
 function pollJobCompletion(queryClient: QueryClient, jobName: string) {
-  const triggerTime = Date.now()
   const maxWait = 120_000
   const interval = 3_000
+  const start = Date.now()
 
   const poll = () => {
     adminApi.jobs.list().then(jobs => {
+      queryClient.setQueryData(['jobs'], jobs)
+
       const job = jobs.find(j => j.jobName === jobName)
       if (!job) return
 
-      const completedAt = job.lastCompletedAt ? new Date(job.lastCompletedAt).getTime() : 0
-      if (completedAt >= triggerTime) {
+      if (!job.running) {
         queryClient.invalidateQueries({ queryKey: ['stories'] })
         queryClient.invalidateQueries({ queryKey: ['storyStats'] })
         queryClient.invalidateQueries({ queryKey: ['feeds'] })
-        queryClient.invalidateQueries({ queryKey: ['jobs'] })
         return
       }
 
-      if (Date.now() - triggerTime < maxWait) {
+      if (Date.now() - start < maxWait) {
         setTimeout(poll, interval)
       }
     })

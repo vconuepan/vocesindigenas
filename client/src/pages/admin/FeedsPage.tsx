@@ -7,6 +7,7 @@ import { useBackgroundTasks } from '../../hooks/useBackgroundTasks'
 import { adminApi } from '../../lib/admin-api'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
+import { Select } from '../../components/ui/Select'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { EmptyState } from '../../components/ui/EmptyState'
@@ -15,10 +16,37 @@ import { FeedTable } from '../../components/admin/FeedTable'
 import { FeedCreateForm } from '../../components/admin/FeedForm'
 import { FeedEditPanel } from '../../components/admin/FeedEditPanel'
 import { useToast } from '../../components/ui/Toast'
+import type { Issue } from '@shared/types'
+
+function buildIssueOptions(issues: Issue[]): { value: string; label: string }[] {
+  const parents = issues.filter(i => !i.parentId).sort((a, b) => a.name.localeCompare(b.name))
+  const childrenByParent = new Map<string, Issue[]>()
+  for (const issue of issues) {
+    if (issue.parentId) {
+      const list = childrenByParent.get(issue.parentId) || []
+      list.push(issue)
+      childrenByParent.set(issue.parentId, list)
+    }
+  }
+  const options: { value: string; label: string }[] = []
+  for (const parent of parents) {
+    options.push({ value: parent.id, label: parent.name })
+    const children = childrenByParent.get(parent.id) || []
+    children.sort((a, b) => a.name.localeCompare(b.name))
+    for (const child of children) {
+      options.push({ value: child.id, label: `└ ${child.name}` })
+    }
+  }
+  return options
+}
 
 export default function FeedsPage() {
   const [showInactive, setShowInactive] = useState(false)
-  const feedsQuery = useFeeds(showInactive ? undefined : { active: true })
+  const [issueFilter, setIssueFilter] = useState('')
+  const feedsQuery = useFeeds({
+    ...(showInactive ? {} : { active: true }),
+    ...(issueFilter ? { issueId: issueFilter } : {}),
+  })
   const issuesQuery = useIssues()
   const deleteFeed = useDeleteFeed()
   const { toast } = useToast()
@@ -112,6 +140,19 @@ export default function FeedsPage() {
           </>
         }
       />
+
+      {issuesQuery.data && issuesQuery.data.length > 0 && (
+        <div className="mb-4">
+          <Select
+            id="filter-issue"
+            label="Issue"
+            placeholder="All issues"
+            value={issueFilter}
+            onChange={e => setIssueFilter(e.target.value)}
+            options={buildIssueOptions(issuesQuery.data)}
+          />
+        </div>
+      )}
 
       {feedsQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
       {feedsQuery.error && <ErrorState message="Failed to load feeds" onRetry={() => feedsQuery.refetch()} />}
