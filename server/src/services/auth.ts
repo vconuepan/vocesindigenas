@@ -37,7 +37,7 @@ export function generateAccessToken(user: { id: string; email: string; role: str
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
-  return jwt.verify(token, getJwtSecret()) as AccessTokenPayload
+  return jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] }) as AccessTokenPayload
 }
 
 export async function generateRefreshToken(userId: string): Promise<string> {
