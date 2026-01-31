@@ -329,6 +329,27 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
 
 export async function deleteStory(id: string): Promise<void> {
   await prisma.story.delete({ where: { id } })
+
+  // Clean up dangling storyId references in newsletters and podcasts
+  const [newsletters, podcasts] = await Promise.all([
+    prisma.newsletter.findMany({ where: { storyIds: { has: id } }, select: { id: true, storyIds: true } }),
+    prisma.podcast.findMany({ where: { storyIds: { has: id } }, select: { id: true, storyIds: true } }),
+  ])
+
+  const updates: Promise<unknown>[] = []
+  for (const nl of newsletters) {
+    updates.push(prisma.newsletter.update({
+      where: { id: nl.id },
+      data: { storyIds: nl.storyIds.filter(sid => sid !== id) },
+    }))
+  }
+  for (const pod of podcasts) {
+    updates.push(prisma.podcast.update({
+      where: { id: pod.id },
+      data: { storyIds: pod.storyIds.filter(sid => sid !== id) },
+    }))
+  }
+  if (updates.length > 0) await Promise.all(updates)
 }
 
 export async function getStoryStats() {

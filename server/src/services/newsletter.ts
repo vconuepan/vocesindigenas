@@ -63,6 +63,8 @@ export async function assignStories(newsletterId: string) {
   })
 
   const storyIds = stories.map(s => s.id)
+  if (storyIds.length === 0) throw new Error('No recent stories to assign')
+
   return prisma.newsletter.update({
     where: { id: newsletterId },
     data: { storyIds },

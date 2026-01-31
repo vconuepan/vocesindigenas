@@ -12,6 +12,14 @@ const mockPrisma = vi.hoisted(() => ({
     delete: vi.fn(),
     groupBy: vi.fn(),
   },
+  newsletter: {
+    findMany: vi.fn(),
+    update: vi.fn(),
+  },
+  podcast: {
+    findMany: vi.fn(),
+    update: vi.fn(),
+  },
   feed: {
     findUnique: vi.fn(),
   },
@@ -21,7 +29,7 @@ const mockPrisma = vi.hoisted(() => ({
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 
-const { getStoryIdsByStatus, generateUniqueSlugs, getStories } = await import('./story.js')
+const { getStoryIdsByStatus, generateUniqueSlugs, getStories, deleteStory } = await import('./story.js')
 
 describe('getStories', () => {
   beforeEach(() => {
@@ -356,5 +364,46 @@ describe('generateUniqueSlugs', () => {
     expect(result.get('s1')).toBe('article-one')
     expect(result.get('s2')).toBe('article-two')
     expect(result.get('s3')).toBe('article-three')
+  })
+})
+
+describe('deleteStory', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('deletes story and removes its ID from newsletters and podcasts', async () => {
+    mockPrisma.story.delete.mockResolvedValue({})
+    mockPrisma.newsletter.findMany.mockResolvedValue([
+      { id: 'nl-1', storyIds: ['s1', 's2', 's3'] },
+    ])
+    mockPrisma.podcast.findMany.mockResolvedValue([
+      { id: 'p-1', storyIds: ['s1', 's3'] },
+    ])
+    mockPrisma.newsletter.update.mockResolvedValue({})
+    mockPrisma.podcast.update.mockResolvedValue({})
+
+    await deleteStory('s1')
+
+    expect(mockPrisma.story.delete).toHaveBeenCalledWith({ where: { id: 's1' } })
+    expect(mockPrisma.newsletter.update).toHaveBeenCalledWith({
+      where: { id: 'nl-1' },
+      data: { storyIds: ['s2', 's3'] },
+    })
+    expect(mockPrisma.podcast.update).toHaveBeenCalledWith({
+      where: { id: 'p-1' },
+      data: { storyIds: ['s3'] },
+    })
+  })
+
+  it('does not update newsletters/podcasts that do not contain the deleted story', async () => {
+    mockPrisma.story.delete.mockResolvedValue({})
+    mockPrisma.newsletter.findMany.mockResolvedValue([])
+    mockPrisma.podcast.findMany.mockResolvedValue([])
+
+    await deleteStory('s99')
+
+    expect(mockPrisma.newsletter.update).not.toHaveBeenCalled()
+    expect(mockPrisma.podcast.update).not.toHaveBeenCalled()
   })
 })

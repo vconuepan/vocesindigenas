@@ -24,6 +24,14 @@ const mockPrisma = vi.hoisted(() => ({
     count: vi.fn(),
     groupBy: vi.fn(),
   },
+  newsletter: {
+    findMany: vi.fn(),
+    update: vi.fn(),
+  },
+  podcast: {
+    findMany: vi.fn(),
+    update: vi.fn(),
+  },
   $disconnect: vi.fn(),
   $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
 }))
@@ -470,6 +478,8 @@ describe('Admin Stories API', () => {
   describe('DELETE /api/admin/stories/:id', () => {
     it('deletes a story', async () => {
       mockPrisma.story.delete.mockResolvedValue(sampleStory())
+      mockPrisma.newsletter.findMany.mockResolvedValue([])
+      mockPrisma.podcast.findMany.mockResolvedValue([])
 
       const res = await request(app)
         .delete('/api/admin/stories/story-1')
