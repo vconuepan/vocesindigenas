@@ -223,7 +223,7 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
 
   log.info({ storyCount: stories.length }, 'selecting from stories')
 
-  const toSelect = Math.ceil(stories.length * 0.5)
+  const toSelect = Math.ceil(stories.length * config.selection.ratio)
   const prompt = buildSelectPrompt(
     stories.map(s => ({
       id: s.id,

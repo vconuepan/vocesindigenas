@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { config } from '../../config.js'
 import { createLogger } from '../../lib/logger.js'
 import { TTLCache, cached } from '../../lib/cache.js'
 import { Feed } from 'feed'
@@ -8,11 +9,7 @@ import * as issueService from '../../services/issue.js'
 const router = Router()
 const log = createLogger('feed')
 
-const FEED_TTL = 15 * 60 * 1000 // 15 minutes
-const feedCache = new TTLCache<string>(FEED_TTL)
-
-const FEED_SIZE = 50
-const CACHE_MAX_AGE = 900 // 15 minutes
+const feedCache = new TTLCache<string>(config.feed.cacheMaxAge * 1000)
 
 function getSiteUrl(): string {
   return process.env.FRONTEND_URL || 'https://actuallyrelevant.com'
@@ -35,14 +32,14 @@ function buildFeed(options: { title: string; description: string; feedPath: stri
 
 function setRssHeaders(res: import('express').Response) {
   res.set('Content-Type', 'application/rss+xml; charset=utf-8')
-  res.set('Cache-Control', `public, max-age=${CACHE_MAX_AGE}`)
+  res.set('Cache-Control', `public, max-age=${config.feed.cacheMaxAge}`)
 }
 
 // Global feed — all published stories
 router.get('/', async (_req, res) => {
   try {
     const xml = await cached(feedCache, 'feed:global', async () => {
-      const result = await storyService.getPublishedStories({ page: 1, pageSize: FEED_SIZE })
+      const result = await storyService.getPublishedStories({ page: 1, pageSize: config.feed.size })
       const siteUrl = getSiteUrl()
 
       const feed = buildFeed({
@@ -86,7 +83,7 @@ router.get('/:issueSlug', async (req, res) => {
     const xml = await cached(feedCache, `feed:issue:${issueSlug}`, async () => {
       const result = await storyService.getPublishedStories({
         page: 1,
-        pageSize: FEED_SIZE,
+        pageSize: config.feed.size,
         issueSlug,
       })
       const siteUrl = getSiteUrl()

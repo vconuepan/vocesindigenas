@@ -1,11 +1,12 @@
 import Parser from 'rss-parser'
+import { config } from '../config.js'
 import { createLogger } from '../lib/logger.js'
 import { withRetry } from '../lib/retry.js'
 
 const log = createLogger('rssParser')
 
 const parser = new Parser({
-  timeout: 10000,
+  timeout: config.crawl.httpTimeoutMs,
   maxRedirects: 3,
 })
 
@@ -21,7 +22,7 @@ export async function parseFeed(feedUrl: string): Promise<RSSItem[]> {
     const feed = await withRetry(() => parser.parseURL(feedUrl))
     const items: RSSItem[] = []
 
-    for (const item of feed.items.slice(0, 20)) {
+    for (const item of feed.items.slice(0, config.crawl.rssItemLimit)) {
       const url = item.link
       if (!url) continue
 

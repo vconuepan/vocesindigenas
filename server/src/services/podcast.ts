@@ -1,5 +1,6 @@
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
+import { config } from '../config.js'
 import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { getSmallLLM, rateLimitDelay } from './llm.js'
@@ -55,7 +56,7 @@ export async function assignStories(podcastId: string) {
   const stories = await prisma.story.findMany({
     where: {
       status: { in: [StoryStatus.published, StoryStatus.selected] },
-      dateCrawled: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      dateCrawled: { gte: new Date(Date.now() - config.content.storyAssignmentDays * 24 * 60 * 60 * 1000) },
     },
     orderBy: { dateCrawled: 'desc' },
     select: { id: true },

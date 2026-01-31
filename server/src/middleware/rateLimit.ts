@@ -1,12 +1,13 @@
 import rateLimit from 'express-rate-limit'
+import { config } from '../config.js'
 
 /**
  * General API rate limiter.
  * Applied to public endpoints to prevent abuse.
  */
 export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  windowMs: config.rateLimit.publicWindowMs,
+  max: config.rateLimit.publicMax,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -21,8 +22,8 @@ export const apiLimiter = rateLimit({
  * Each endpoint tracks its own budget via keyGenerator.
  */
 export const expensiveOpLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 1000,
+  windowMs: config.rateLimit.expensiveWindowMs,
+  max: config.rateLimit.expensiveMax,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => `${req.ip}-${req.baseUrl}${req.path}`,

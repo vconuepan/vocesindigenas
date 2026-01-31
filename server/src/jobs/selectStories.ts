@@ -8,9 +8,9 @@ const log = createLogger('select_stories')
 export async function runSelectStories(): Promise<void> {
   log.info('starting selection job')
 
-  const ids = await getStoryIdsByStatus('analyzed', { relevanceMin: 5 })
+  const ids = await getStoryIdsByStatus('analyzed', { relevanceMin: config.selection.relevanceMin })
   if (ids.length === 0) {
-    log.info('no analyzed stories with relevance >= 5')
+    log.info(`no analyzed stories with relevance >= ${config.selection.relevanceMin}`)
     return
   }
 
