@@ -246,11 +246,13 @@ export default function IssuePage() {
           </p>
         )}
 
-        {/* About this issue — collapsible */}
+        {/* About this issue — collapsible on mobile, always visible on md+ */}
         {hasAboutContent && (
           <>
             <hr className="section-divider" />
-            <details className="group mb-8">
+
+            {/* Mobile: collapsible */}
+            <details className="group mb-8 md:hidden">
               <summary className="cursor-pointer select-none text-sm font-semibold text-neutral-500 uppercase tracking-wide py-3 list-none flex items-center gap-2 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                 <svg
                   className="w-4 h-4 transition-transform group-open:rotate-90"
@@ -264,7 +266,7 @@ export default function IssuePage() {
                 About {issue.name}
               </summary>
 
-              <div className="pt-4 pb-2 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              <div className="pt-4 pb-2 grid gap-8">
                 {/* Evaluation criteria */}
                 {issue.evaluationCriteria?.length > 0 && (
                   <div>
@@ -312,7 +314,10 @@ export default function IssuePage() {
                           >
                             {link.label}
                             <span className="sr-only"> (opens in new tab)</span>
-                            {' '}&rarr;
+                            {' '}
+                            <svg className="inline w-3.5 h-3.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
                           </a>
                         </li>
                       ))}
@@ -321,6 +326,76 @@ export default function IssuePage() {
                 )}
               </div>
             </details>
+
+            {/* Desktop: always visible, no collapse */}
+            <div className="hidden md:block mb-8">
+              <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide py-3">
+                About {issue.name}
+              </h2>
+
+              <div className="pt-4 pb-2 grid gap-8" style={{ gridTemplateColumns: '3fr 2fr' }}>
+                {/* Evaluation criteria — left column (~60%) */}
+                {issue.evaluationCriteria?.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-700 mb-2">How We Evaluate</h3>
+                    {issue.evaluationIntro && (
+                      <p className="text-sm text-neutral-500 mb-2">{issue.evaluationIntro}</p>
+                    )}
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-neutral-600">
+                      {issue.evaluationCriteria.map((criterion, i) => (
+                        <li key={i}>{criterion}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {/* Right column (~40%) — Sources stacked above Make a Difference */}
+                <div className="space-y-6">
+                  {/* Sources */}
+                  {issue.sourceNames?.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-neutral-700 mb-2">Our Sources</h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {issue.sourceNames.map((source) => (
+                          <span
+                            key={source}
+                            className="bg-neutral-100 text-neutral-600 text-xs px-2 py-0.5 rounded-full"
+                          >
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Make a difference */}
+                  {issue.makeADifference?.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-neutral-700 mb-2">Make a Difference</h3>
+                      <ul className="space-y-1">
+                        {issue.makeADifference.map((link) => (
+                          <li key={link.url}>
+                            <a
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                            >
+                              {link.label}
+                              <span className="sr-only"> (opens in new tab)</span>
+                              {' '}
+                              <svg className="inline w-3.5 h-3.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>

@@ -131,7 +131,6 @@ const ISSUE_ORDER = [
   'planet-climate',
   'existential-threats',
   'science-technology',
-  'general-news',
 ]
 
 export default function IssuesPage() {

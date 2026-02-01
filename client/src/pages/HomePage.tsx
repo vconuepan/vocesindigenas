@@ -221,7 +221,6 @@ const ISSUE_ORDER = [
   'planet-climate',
   'existential-threats',
   'science-technology',
-  'general-news',
 ]
 
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']

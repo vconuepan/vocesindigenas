@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { getCategoryColor } from '../lib/category-colors'
@@ -11,7 +11,6 @@ const ISSUE_LINKS = [
   { label: 'Planet & Climate', slug: 'planet-climate', href: '/issues/planet-climate' },
   { label: 'Existential Threats', slug: 'existential-threats', href: '/issues/existential-threats' },
   { label: 'Science & Technology', slug: 'science-technology', href: '/issues/science-technology' },
-  { label: 'General News', slug: 'general-news', href: '/issues/general-news' },
 ]
 
 const FOOTER_NAV = [
@@ -21,10 +20,18 @@ const FOOTER_NAV = [
 ]
 
 const FOOTER_LEGAL = [
-  { label: 'Imprint', href: '/imprint' },
+  { label: 'Legal Notice / Impressum', href: '/imprint' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'No Cookies', href: '/privacy' },
 ]
+
+function NewsletterIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" />
+    </svg>
+  )
+}
 
 function SearchIcon({ className }: { className?: string }) {
   return (
@@ -69,10 +76,14 @@ export default function PublicLayout() {
     }
   }, [searchOpen])
 
-  // Close search on route change
+  // Close search on route change and scroll to top
   useEffect(() => {
     setSearchOpen(false)
     setSearchQuery('')
+  }, [location.pathname])
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
   }, [location.pathname])
 
 
@@ -109,12 +120,13 @@ export default function PublicLayout() {
             <div className="hidden lg:flex items-center absolute right-12">
               <Link
                 to={SUBSCRIBE_LINK.href}
-                className={`text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 ${
+                className={`inline-flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 ${
                   isActive(SUBSCRIBE_LINK.href)
                     ? 'text-brand-700'
                     : 'text-neutral-500 hover:text-brand-700'
                 }`}
               >
+                <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                 {SUBSCRIBE_LINK.label}
               </Link>
             </div>
@@ -162,7 +174,7 @@ export default function PublicLayout() {
                 aria-label={searchOpen ? 'Close search' : 'Open search'}
                 aria-expanded={searchOpen}
               >
-                <SearchIcon className="w-4 h-4" />
+                <SearchIcon className="w-5 h-5" />
               </button>
             </li>
             {ISSUE_LINKS.map((link) => {
@@ -176,7 +188,7 @@ export default function PublicLayout() {
                     data-active={active}
                     style={{ '--issue-color': colors.hex } as React.CSSProperties}
                   >
-                    <span className={`w-2 h-2 rounded-full ${colors.dotBg} ${active ? 'opacity-100' : 'opacity-60'}`} aria-hidden="true" />
+                    <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} ${active ? 'opacity-100' : 'opacity-60'}`} aria-hidden="true" />
                     {link.label}
                   </Link>
                 </li>
@@ -219,7 +231,8 @@ export default function PublicLayout() {
                   onClick={() => setMenuOpen(false)}
                   className="inline-flex items-center gap-2 py-2.5 text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
-                  Subscribe to Newsletter &rarr;
+                  <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
+                  Subscribe to Newsletter
                 </Link>
               </div>
             </nav>
@@ -270,7 +283,6 @@ export default function PublicLayout() {
         <div className="flex-1 bg-teal-400" />
         <div className="flex-1 bg-red-400" />
         <div className="flex-1 bg-indigo-400" />
-        <div className="flex-1 bg-brand-400" />
       </div>
 
       <main id="main-content" className="flex-1">
@@ -299,7 +311,6 @@ export default function PublicLayout() {
           <div className="flex-1 bg-teal-400" />
           <div className="flex-1 bg-red-400" />
           <div className="flex-1 bg-indigo-400" />
-          <div className="flex-1 bg-brand-400" />
         </div>
 
         <div className="max-w-5xl mx-auto px-4 py-12">
@@ -312,10 +323,7 @@ export default function PublicLayout() {
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
                 AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity.
               </p>
-              <p className="text-xs text-neutral-600 mt-4">
-                &copy; {new Date().getFullYear()} Actually Relevant. All rights reserved.
-              </p>
-              <ul className="hidden md:flex gap-4 mt-3">
+              <ul className="hidden md:flex gap-4 mt-4">
                 {FOOTER_LEGAL.map((link) => (
                   <li key={link.label}>
                     <Link
@@ -327,6 +335,9 @@ export default function PublicLayout() {
                   </li>
                 ))}
               </ul>
+              <p className="hidden md:block text-xs text-neutral-600 mt-2">
+                &copy; {new Date().getFullYear()} Actually Relevant. All rights reserved.
+              </p>
             </div>
 
             {/* Navigation column */}
@@ -355,9 +366,7 @@ export default function PublicLayout() {
                     to="/newsletter"
                     className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" />
-                    </svg>
+                    <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                     Newsletter
                   </Link>
                 </li>
@@ -397,19 +406,24 @@ export default function PublicLayout() {
             </div>
           </div>
 
-          {/* Legal links — mobile only */}
-          <ul className="flex justify-center gap-5 mt-10 md:hidden">
-            {FOOTER_LEGAL.map((link) => (
-              <li key={link.label}>
-                <Link
-                  to={link.href}
-                  className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {/* Legal links + copyright — mobile only */}
+          <div className="mt-7 md:hidden text-center">
+            <ul className="flex justify-center gap-5">
+              {FOOTER_LEGAL.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
+                    className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-neutral-600 mt-3">
+              &copy; {new Date().getFullYear()} Actually Relevant. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

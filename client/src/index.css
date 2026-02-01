@@ -206,7 +206,7 @@
   }
 
   .issue-nav-link {
-    @apply inline-flex items-center gap-1.5 px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors;
+    @apply inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold uppercase tracking-widest transition-colors;
     @apply focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 border-transparent text-neutral-400;
   }
 
