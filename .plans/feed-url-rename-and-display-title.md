@@ -1,4 +1,4 @@
-# Feed URL Rename & Display Title
+# Feed URL Rename & Display Title [COMPLETED]
 
 ## Requirements
 

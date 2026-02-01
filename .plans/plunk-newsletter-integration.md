@@ -1,4 +1,4 @@
-# Plunk Newsletter Integration
+# Plunk Newsletter Integration [COMPLETED]
 
 ## Requirements
 

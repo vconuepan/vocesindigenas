@@ -1,4 +1,4 @@
-# Plan: Connect Public Search UI to Server
+# Plan: Connect Public Search UI to Server [COMPLETED]
 
 ## Summary
 
