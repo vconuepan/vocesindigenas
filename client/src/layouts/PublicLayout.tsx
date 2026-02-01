@@ -60,12 +60,16 @@ export default function PublicLayout() {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMenuOpen(false)
-        setSearchOpen(false)
+        if (searchQuery) {
+          setSearchQuery('')
+        } else {
+          setSearchOpen(false)
+        }
       }
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [menuOpen, searchOpen])
+  }, [menuOpen, searchOpen, searchQuery])
 
   // Auto-focus search input when opened
   useEffect(() => {
@@ -250,7 +254,7 @@ export default function PublicLayout() {
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none" />
                 <input
                   ref={searchInputRef}
-                  type="search"
+                  type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search stories..."
@@ -259,7 +263,7 @@ export default function PublicLayout() {
                 />
                 <button
                   type="button"
-                  onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+                  onClick={() => { searchQuery ? setSearchQuery('') : setSearchOpen(false) }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   aria-label="Close search"
                 >
