@@ -55,7 +55,7 @@ router.get('/', async (_req, res) => {
           link: `${siteUrl}/stories/${story.slug || story.id}`,
           description: story.summary || undefined,
           date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
-          category: story.feed?.issue ? [{ name: story.feed.issue.name }] : undefined,
+          category: [{ name: (story.issue ?? story.feed?.issue)?.name || 'General' }],
         })
       }
 
@@ -101,7 +101,7 @@ router.get('/:issueSlug', async (req, res) => {
           link: `${siteUrl}/stories/${story.slug || story.id}`,
           description: story.summary || undefined,
           date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
-          category: story.feed?.issue ? [{ name: story.feed.issue.name }] : undefined,
+          category: [{ name: (story.issue ?? story.feed?.issue)?.name || 'General' }],
         })
       }
 

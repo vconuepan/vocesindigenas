@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import type { Story, StoryStatus, EmotionTag } from '@shared/types'
+import type { Story, StoryStatus, EmotionTag, Issue } from '@shared/types'
 import { STORY_STATUSES, EMOTION_TAGS } from '@shared/constants'
 import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
@@ -10,9 +10,11 @@ import { useEditForm } from '../../hooks/useEditForm'
 import { formatStatus, formatDate } from '../../lib/constants'
 import { PANEL_BODY } from './EditPanel'
 import { PanelFooter } from './PanelFooter'
+import { buildIssueOptions } from './StoryFiltersBar'
 
 interface StoryEditFormProps {
   story: Story
+  issues: Issue[]
   onDone: () => void
   variant?: 'page' | 'panel'
 }
@@ -21,6 +23,7 @@ function buildFormState(story: Story) {
   return {
     title: story.title ?? '',
     slug: story.slug ?? '',
+    issueId: story.issueId ?? '',
     status: story.status,
     relevancePre: story.relevancePre ?? '',
     relevance: story.relevance ?? '',
@@ -34,7 +37,7 @@ function buildFormState(story: Story) {
   }
 }
 
-export function StoryEditForm({ story, onDone, variant = 'page' }: StoryEditFormProps) {
+export function StoryEditForm({ story, issues, onDone, variant = 'page' }: StoryEditFormProps) {
   const [contentExpanded, setContentExpanded] = useState(false)
   const updateStory = useUpdateStory()
 
@@ -47,6 +50,7 @@ export function StoryEditForm({ story, onDone, variant = 'page' }: StoryEditForm
     toPayload: (f) => ({
       title: f.title || null,
       slug: f.slug || undefined,
+      issueId: f.issueId || null,
       status: f.status as StoryStatus,
       relevancePre: f.relevancePre === '' ? null : Number(f.relevancePre),
       relevance: f.relevance === '' ? null : Number(f.relevance),
@@ -67,7 +71,9 @@ export function StoryEditForm({ story, onDone, variant = 'page' }: StoryEditForm
     <>
       <Input id="edit-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} />
       {story.slug && (
-        <Input id="edit-slug" label="Slug" value={form.slug} onChange={e => set('slug', e.target.value)} placeholder="auto-generated-on-publish" />
+        story.datePublished
+          ? <Input id="edit-slug" label="Slug" value={form.slug} readOnly className="bg-neutral-50 text-neutral-500 cursor-not-allowed" />
+          : <Input id="edit-slug" label="Slug" value={form.slug} onChange={e => set('slug', e.target.value)} placeholder="auto-generated-on-publish" />
       )}
       <div className="grid grid-cols-2 gap-3">
         <Select
@@ -86,6 +92,14 @@ export function StoryEditForm({ story, onDone, variant = 'page' }: StoryEditForm
           options={EMOTION_TAGS.map(e => ({ value: e, label: e.charAt(0).toUpperCase() + e.slice(1) }))}
         />
       </div>
+      <Select
+        id="edit-issue"
+        label="Issue"
+        placeholder="From feed"
+        value={form.issueId}
+        onChange={e => set('issueId', e.target.value)}
+        options={buildIssueOptions(issues)}
+      />
       <div className="grid grid-cols-2 gap-3">
         <Input id="edit-rating-pre" label="Pre-rating" type="number" min="1" max="10" value={String(form.relevancePre)} onChange={e => set('relevancePre', e.target.value)} />
         <Input id="edit-rating" label="Rating" type="number" min="1" max="10" value={String(form.relevance)} onChange={e => set('relevance', e.target.value)} />

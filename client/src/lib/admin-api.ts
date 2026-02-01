@@ -218,6 +218,8 @@ export const adminApi = {
       request<{ id: string; title: string }[]>(`/stories/batch?ids=${ids.join(',')}`),
     bulkPreassess: (storyIds: string[]) =>
       request<{ taskId: string }>('/stories/bulk-preassess', { method: 'POST', body: JSON.stringify({ storyIds }) }),
+    bulkReclassify: (storyIds: string[]) =>
+      request<{ taskId: string }>('/stories/bulk-reclassify', { method: 'POST', body: JSON.stringify({ storyIds }) }),
     bulkAssess: (storyIds: string[]) =>
       request<{ taskId: string }>('/stories/bulk-assess', { method: 'POST', body: JSON.stringify({ storyIds }) }),
     bulkSelect: (storyIds: string[]) =>

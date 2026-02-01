@@ -8,12 +8,12 @@ Configuration is centralized in `server/src/config.ts`. Three model tiers are av
 
 | Tier | Default Model | Reasoning Effort | Used By |
 |------|--------------|-----------------|---------|
-| Small | `gpt-5-mini` | `medium` | Pre-assessment |
-| Medium | `gpt-5-mini` | `medium` | (Available, not yet assigned) |
-| Large | `gpt-5.2` | `medium` | Full assessment, selection |
+| Small | `gpt-5-nano` | `medium` | Reclassification (issue + emotion only) |
+| Medium | `gpt-5-mini` | `medium` | Pre-assessment (includes issue assignment) |
+| Large | `gpt-5.2` | `medium` | Full assessment, selection, podcast script |
 
 Environment variables:
-- `OPENAI_MODEL_SMALL` — default `gpt-5-mini`
+- `OPENAI_MODEL_SMALL` — default `gpt-5-nano`
 - `OPENAI_MODEL_MEDIUM` — default `gpt-5-mini`
 - `OPENAI_MODEL_LARGE` — default `gpt-5.2`
 - `LLM_DELAY_MS` — rate limit delay between calls (default 1000ms)
@@ -25,13 +25,12 @@ Prompt templates live in `server/src/prompts/`:
 | File | Contents |
 |------|----------|
 | `shared.ts` | `Guidelines` interface, `buildGuidelinesXml()`, `escapeXml()`, `containsChineseCharacters()` |
-| `preassess.ts` | `buildPreassessPrompt()` — batch screening |
+| `preassess.ts` | `buildPreassessPrompt()` — batch screening + issue classification |
+| `reclassify.ts` | `buildReclassifyPrompt()` — issue + emotion reclassification (no rating) |
 | `assess.ts` | `buildAssessPrompt()` — full analysis |
 | `select.ts` | `buildSelectPrompt()` — editorial curation |
 | `podcast.ts` | `buildPodcastPrompt()` — podcast script generation |
 | `index.ts` | Barrel re-exports all builders and types |
-
-`server/src/services/prompts.ts` re-exports from the prompts directory for backward compatibility.
 
 ## Schema-Driven Format Guidance
 
@@ -41,15 +40,29 @@ The Zod schemas in `server/src/schemas/llm.ts` use `.describe()` to tell the LLM
 - **Plain text**: `summary`, `quote`, `relevanceTitle`, `marketingBlurb` remain plain text
 - **Emotion tags**: The five emotion definitions are embedded in the schema description
 
-## Three Stages
+## Shared Batch Classification
+
+Both pre-assessment and reclassification use `runBatchClassification()` in `analysis.ts` — a generic helper that handles DB fetching, issue slug resolution, batching, semaphore-gated concurrent LLM calls, progress reporting, and DB transaction writes. Callers provide the LLM instance, schema, prompt builder, and an update function that determines which fields to write per story. The `fallbackToFeedIssue` option controls whether stories omitted from the LLM response get their `issueId` overwritten to the feed default (enabled for pre-assessment, disabled for reclassification to preserve existing assignments).
+
+## Analysis Stages
+
+### 0. Reclassification (Batch, Non-destructive)
+
+Re-runs issue classification and emotion tagging without changing ratings or status. Uses the small model. Triggered manually via the admin bulk "Reclassify" action. Does not overwrite any fields for stories the LLM omits from its response.
+
+**Zod schema**: `reclassifyResultSchema` — array of `{ articleId, issueSlug, emotionTag }`
+
+**Use case**: Fix misclassified issues or update emotion tags after issue definitions change, without re-running the full pipeline.
 
 ### 1. Pre-assessment (Batch)
 
-Screens multiple stories per LLM call (~10 per batch, fewer for Chinese text). Produces a conservative rating (1-10) and emotion tag per story. Uses the small model with medium reasoning effort.
+Screens multiple stories per LLM call (~10 per batch, fewer for Chinese text). In a single call, the LLM classifies each story into the most relevant issue, assigns a conservative rating (1-10), and assigns an emotion tag. Uses the medium model with medium reasoning effort. All stories are batched together regardless of issue — pre-assessment uses only the generic rating scale (1-10 impact criteria), not issue-specific guidelines. Falls back to `story.feed.issueId` if the LLM returns an invalid issue slug.
 
-**Zod schema**: `preAssessResultSchema` — array of `{ articleId, rating, emotionTag }`
+**Zod schema**: `preAssessResultSchema` — array of `{ articleId, issueSlug, rating, emotionTag }`
 
 **Threshold**: Only stories rated >= 3 proceed to full assessment.
+
+**Precedence**: Downstream code (assessStory, podcast, RSS feeds) uses `story.issue ?? story.feed.issue`.
 
 ### 2. Full Assessment (Individual)
 
@@ -70,7 +83,7 @@ Each Issue (topic category) has three prompt sections stored in the database:
 - `promptAntifactors` — topic-specific limiting factors
 - `promptRatings` — rating criteria (1-10 scale definitions)
 
-These are injected into prompt templates as `<FACTORS>`, `<TOPIC-SPECIFIC LIMITING FACTORS>`, and `<CRITERIA>` XML sections.
+These are injected into prompt templates as `<FACTORS>`, `<TOPIC-SPECIFIC LIMITING FACTORS>`, and `<CRITERIA>` XML sections. They are used only in full assessment (stage 2), not in pre-assessment.
 
 ## Modifying Prompts or Output Format
 
@@ -85,6 +98,5 @@ See `.context/prompting.md` for GPT-5 prompt design principles that must be foll
 | `server/src/config.ts` | Centralized config: model names, reasoning effort, rate limits, batch sizes |
 | `server/src/services/llm.ts` | LLM client: `getSmallLLM()`, `getMediumLLM()`, `getLargeLLM()`, rate limiting |
 | `server/src/prompts/` | Prompt builders (shared, preassess, assess, select, podcast) |
-| `server/src/services/prompts.ts` | Re-export barrel for backward compatibility |
-| `server/src/services/analysis.ts` | Orchestration: preAssessStories, assessStory, selectStories |
+| `server/src/services/analysis.ts` | Orchestration: runBatchClassification, preAssessStories, reclassifyStories, assessStory, selectStories |
 | `server/src/schemas/llm.ts` | Zod schemas with `.describe()` format guidance for all LLM output |

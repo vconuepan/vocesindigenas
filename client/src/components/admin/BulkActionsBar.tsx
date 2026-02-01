@@ -3,7 +3,7 @@ import { Button } from '../ui/Button'
 
 interface BulkActionsBarProps {
   count: number
-  onAction: (action: 'preassess' | 'assess' | 'select' | StoryStatus) => void
+  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | StoryStatus) => void
   loading?: boolean
   allHaveRelevance?: boolean
 }
@@ -27,6 +27,9 @@ export function BulkActionsBar({ count, onAction, loading, allHaveRelevance }: B
       <div className="flex gap-2 flex-wrap">
         <Button variant="secondary" size="sm" onClick={() => onAction('preassess')} disabled={loading}>
           Pre-assess
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onAction('reclassify')} disabled={loading}>
+          Reclassify
         </Button>
         <Button variant="secondary" size="sm" onClick={() => onAction('assess')} disabled={loading}>
           Assess

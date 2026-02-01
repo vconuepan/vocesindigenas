@@ -24,7 +24,7 @@ fetched → pre_analyzed → analyzed → selected → published
 
 ### Transition Rules
 
-- **fetched → pre_analyzed**: Pre-assess job processes all `fetched` stories in batches of ~10.
+- **fetched → pre_analyzed**: Pre-assess job first assigns each story to an issue via LLM (nano model), then groups stories by assigned issue and batch pre-screens them (~10 per batch) using the medium model.
 - **pre_analyzed → analyzed**: Assess job picks stories with `relevancePre >= 3`. Stories rated 1-2 stay as `pre_analyzed` and are effectively filtered out.
 - **analyzed → selected/rejected**: Select job takes all `analyzed` stories with `relevance >= config.selection.relevanceMin` (default 5) and selects ~`config.selection.ratio` (default 50%, rounded up). The rest become `rejected`. When there are more than `config.selection.maxGroupSize` (default 20) candidates, they are split into roughly equal groups and each group is sent to the LLM separately (e.g. 25 stories → 2 groups of 13 + 12).
 - **selected → published**: Publish job or manual admin action. The `publish_stories` job publishes all `selected` stories, sets `datePublished` if not already set, and generates a URL slug if the story doesn't have one yet.
@@ -82,6 +82,8 @@ Stories get a URL slug (e.g. `ai-breakthrough-in-protein-folding`) when they are
 Stories carry both crawled data and AI-generated analysis:
 
 **Source data** (set during crawl): `sourceUrl`, `sourceTitle`, `sourceContent`, `sourceDatePublished`, `dateCrawled`, `feedId`, `crawlMethod`
+
+**Issue assignment** (set during pre-assessment): `issueId` — the LLM-assigned issue for this story. Set by `assignIssuesToStories()` as the first step of pre-assessment. Falls back to `feed.issueId` if the LLM returns an invalid slug. Downstream code uses `story.issue ?? story.feed.issue` for issue lookup.
 
 **Platform data**: `title` (AI-generated, nullable), `slug` (generated on publish), `datePublished` (set on first publish)
 

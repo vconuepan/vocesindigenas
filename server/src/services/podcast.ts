@@ -3,7 +3,7 @@ import prisma from '../lib/prisma.js'
 import { config } from '../config.js'
 import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
-import { getSmallLLM, rateLimitDelay } from './llm.js'
+import { getLargeLLM, rateLimitDelay } from './llm.js'
 import { buildPodcastPrompt } from '../prompts/index.js'
 import { podcastScriptSchema } from '../schemas/llm.js'
 
@@ -78,12 +78,12 @@ export async function generateScript(podcastId: string) {
 
   const stories = await prisma.story.findMany({
     where: { id: { in: podcast.storyIds } },
-    include: { feed: { include: { issue: true } } },
+    include: { issue: true, feed: { include: { issue: true } } },
     orderBy: { dateCrawled: 'desc' },
   })
 
   const storyData = stories.map(s => ({
-    category: s.feed?.issue?.name || 'General',
+    category: s.issue?.name || s.feed?.issue?.name || 'General',
     title: s.title || s.sourceTitle,
     summary: s.summary || '',
     publisher: s.feed?.title || 'Unknown',
@@ -94,7 +94,7 @@ export async function generateScript(podcastId: string) {
   const prompt = buildPodcastPrompt(storyData)
 
   await rateLimitDelay()
-  const llm = getSmallLLM()
+  const llm = getLargeLLM()
   const structuredLlm = llm.withStructuredOutput(podcastScriptSchema)
   const response = await structuredLlm.invoke([new HumanMessage(prompt)])
 

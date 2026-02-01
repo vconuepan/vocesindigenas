@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt } from '../prompts/index.js'
+import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt } from '../prompts/index.js'
 
 const guidelines = {
   factors: 'Technology advancement\nScientific discovery',
@@ -7,13 +7,18 @@ const guidelines = {
   ratings: '1-2: Minimal impact\n5-6: Moderate impact\n9-10: Transformative',
 }
 
+const issues = [
+  { slug: 'ai-technology', name: 'AI & Technology', description: 'Artificial intelligence and tech advances' },
+  { slug: 'climate', name: 'Climate', description: 'Climate change and environment' },
+]
+
 describe('buildPreassessPrompt', () => {
   it('includes article IDs and titles', () => {
     const stories = [
       { id: 'story-1', title: 'AI Breakthrough', content: 'Some content about AI...' },
       { id: 'story-2', title: 'Climate News', content: 'Climate change update...' },
     ]
-    const prompt = buildPreassessPrompt(stories, guidelines)
+    const prompt = buildPreassessPrompt(stories, issues)
     expect(prompt).toContain('Article ID: story-1')
     expect(prompt).toContain('Title: AI Breakthrough')
     expect(prompt).toContain('Article ID: story-2')
@@ -22,23 +27,51 @@ describe('buildPreassessPrompt', () => {
   it('truncates content to 1200 chars', () => {
     const longContent = 'x'.repeat(2000)
     const stories = [{ id: 's1', title: 'Test', content: longContent }]
-    const prompt = buildPreassessPrompt(stories, guidelines)
+    const prompt = buildPreassessPrompt(stories, issues)
     const contentStart = prompt.indexOf('x'.repeat(100))
     expect(contentStart).toBeGreaterThan(-1)
     expect(prompt).not.toContain('x'.repeat(1500))
   })
 
-  it('injects issue-specific guidelines', () => {
+  it('includes generic rating guidelines', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
-    const prompt = buildPreassessPrompt(stories, guidelines)
-    expect(prompt).toContain('Technology advancement')
-    expect(prompt).toContain('Limited geographic scope')
+    const prompt = buildPreassessPrompt(stories, issues)
+    expect(prompt).toContain('<RATING GUIDELINES>')
     expect(prompt).toContain('Moderate impact')
+    expect(prompt).toContain('Exceptional impact')
+  })
+
+  it('does not include issue-specific guidelines', () => {
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildPreassessPrompt(stories, issues)
+    expect(prompt).not.toContain('<FACTORS>')
+    expect(prompt).not.toContain('<CRITERIA>')
+    expect(prompt).not.toContain('<TOPIC-SPECIFIC LIMITING FACTORS>')
+  })
+
+  it('includes issues XML block with slug, name, and description', () => {
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildPreassessPrompt(stories, issues)
+    expect(prompt).toContain('<ISSUES>')
+    expect(prompt).toContain('</ISSUES>')
+    expect(prompt).toContain('slug="ai-technology"')
+    expect(prompt).toContain('name="AI &amp; Technology"')
+    expect(prompt).toContain('Artificial intelligence and tech advances')
+    expect(prompt).toContain('slug="climate"')
+  })
+
+  it('escapes XML characters in issue names', () => {
+    const specialIssues = [
+      { slug: 'test', name: 'Test & <Special>', description: 'Desc with "quotes"' },
+    ]
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildPreassessPrompt(stories, specialIssues)
+    expect(prompt).toContain('name="Test &amp; &lt;Special&gt;"')
   })
 
   it('uses XML scaffolding structure', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
-    const prompt = buildPreassessPrompt(stories, guidelines)
+    const prompt = buildPreassessPrompt(stories, issues)
     expect(prompt).toContain('<ROLE>')
     expect(prompt).toContain('<GOAL>')
     expect(prompt).toContain('<ARTICLES>')
@@ -47,11 +80,56 @@ describe('buildPreassessPrompt', () => {
 
   it('does not contain legacy prompting patterns', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
-    const prompt = buildPreassessPrompt(stories, guidelines)
+    const prompt = buildPreassessPrompt(stories, issues)
     expect(prompt).not.toContain('<STRUCTURE>')
     expect(prompt).not.toContain('Follow this prompt exactly')
     expect(prompt).not.toContain('Take a deep breath')
     expect(prompt).not.toContain('step by step')
+  })
+})
+
+describe('buildReclassifyPrompt', () => {
+  it('includes article IDs, titles, and content', () => {
+    const stories = [
+      { id: 'story-1', title: 'AI Breakthrough', content: 'Some content about AI...' },
+    ]
+    const prompt = buildReclassifyPrompt(stories, issues)
+    expect(prompt).toContain('Article ID: story-1')
+    expect(prompt).toContain('Title: AI Breakthrough')
+    expect(prompt).toContain('Some content about AI...')
+  })
+
+  it('includes issues XML block', () => {
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildReclassifyPrompt(stories, issues)
+    expect(prompt).toContain('<ISSUES>')
+    expect(prompt).toContain('slug="ai-technology"')
+    expect(prompt).toContain('slug="climate"')
+  })
+
+  it('does NOT include rating guidelines', () => {
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildReclassifyPrompt(stories, issues)
+    expect(prompt).not.toContain('<RATING GUIDELINES>')
+    expect(prompt).not.toContain('Moderate impact')
+    expect(prompt).not.toContain('Exceptional impact')
+  })
+
+  it('asks for classification and emotion only, not rating', () => {
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildReclassifyPrompt(stories, issues)
+    expect(prompt).toContain('classify')
+    expect(prompt).toContain('emotion')
+    expect(prompt).toContain('Do not rate')
+  })
+
+  it('uses XML scaffolding structure', () => {
+    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
+    const prompt = buildReclassifyPrompt(stories, issues)
+    expect(prompt).toContain('<ROLE>')
+    expect(prompt).toContain('<GOAL>')
+    expect(prompt).toContain('<ARTICLES>')
+    expect(prompt).toContain('</ARTICLES>')
   })
 })
 

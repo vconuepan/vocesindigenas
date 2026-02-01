@@ -120,6 +120,7 @@ export function sampleStory(overrides: Record<string, any> = {}) {
     antifactors: null,
     relevanceCalculation: null,
     crawlMethod: null,
+    issueId: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     ...overrides,

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useStory } from '../../hooks/useStories'
+import { useIssues } from '../../hooks/useIssues'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Button } from '../../components/ui/Button'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
@@ -12,6 +13,7 @@ export default function StoryDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: story, isLoading, error, refetch } = useStory(id || '')
+  const issuesQuery = useIssues()
 
   return (
     <>
@@ -31,7 +33,7 @@ export default function StoryDetailPage() {
       {story && (
         <>
           <PageHeader title={story.title || story.sourceTitle} />
-          <StoryEditForm story={story} onDone={() => navigate('/admin/stories')} />
+          <StoryEditForm story={story} issues={issuesQuery.data || []} onDone={() => navigate('/admin/stories')} />
         </>
       )}
     </>

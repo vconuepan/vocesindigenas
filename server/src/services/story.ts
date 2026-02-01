@@ -50,6 +50,7 @@ export async function generateUniqueSlug(title: string, excludeId?: string): Pro
 
 function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   const where: Prisma.StoryWhereInput = {}
+  const conditions: Prisma.StoryWhereInput[] = []
 
   if (filters.status === 'all') {
     // No status filter — show everything including trashed
@@ -62,14 +63,16 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
     where.feedId = filters.feedId
   }
   if (filters.issueId) {
-    where.feed = {
-      issue: {
-        OR: [
-          { id: filters.issueId },
-          { parentId: filters.issueId },
-        ],
-      },
-    }
+    conditions.push({
+      OR: [
+        { issueId: filters.issueId },
+        { issue: { parentId: filters.issueId } },
+        {
+          issueId: null,
+          feed: { issue: { OR: [{ id: filters.issueId }, { parentId: filters.issueId }] } },
+        },
+      ],
+    })
   }
   if (filters.crawledAfter || filters.crawledBefore) {
     where.dateCrawled = {}
@@ -87,31 +90,29 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
       const op = match[1] as 'gte' | 'lte'
       const val = parseInt(match[2], 10)
       const condition = { [op]: val }
-      where.OR = [
-        { relevance: condition },
-        { relevance: null, relevancePre: condition },
-      ]
+      conditions.push({
+        OR: [
+          { relevance: condition },
+          { relevance: null, relevancePre: condition },
+        ],
+      })
     }
   }
   if (filters.emotionTag) {
     where.emotionTag = filters.emotionTag as EmotionTag
   }
   if (filters.search) {
-    const searchCondition = {
+    conditions.push({
       OR: [
         { title: { contains: filters.search, mode: 'insensitive' as const } },
         { sourceTitle: { contains: filters.search, mode: 'insensitive' as const } },
         { summary: { contains: filters.search, mode: 'insensitive' as const } },
       ],
-    }
-    if (where.OR) {
-      // rating filter already set where.OR — combine via AND
-      const ratingCondition = { OR: where.OR }
-      delete where.OR
-      where.AND = [ratingCondition, searchCondition]
-    } else {
-      where.OR = searchCondition.OR
-    }
+    })
+  }
+
+  if (conditions.length > 0) {
+    where.AND = conditions
   }
 
   return where
@@ -137,6 +138,8 @@ const ADMIN_LIST_SELECT = {
   relevanceReasons: true,
   antifactors: true,
   relevanceCalculation: true,
+  issueId: true,
+  issue: { select: { id: true, name: true, slug: true } },
   crawlMethod: true,
   createdAt: true,
   updatedAt: true,
@@ -175,7 +178,7 @@ export async function getStoriesByIds(ids: string[]) {
 export async function getStoryById(id: string) {
   return prisma.story.findUnique({
     where: { id },
-    include: { feed: { include: { issue: true } } },
+    include: { issue: true, feed: { include: { issue: true } } },
   })
 }
 
@@ -384,6 +387,9 @@ const PUBLIC_STORY_SELECT = {
   marketingBlurb: true,
   relevanceReasons: true,
   antifactors: true,
+  issue: {
+    select: { name: true, slug: true },
+  },
   feed: {
     select: {
       id: true,
@@ -406,14 +412,27 @@ export async function getPublishedStories(options: {
     status: 'published',
   }
   if (options.issueSlug) {
-    where.feed = {
-      issue: {
-        OR: [
-          { slug: options.issueSlug },
-          { parent: { slug: options.issueSlug } },
-        ],
+    where.OR = [
+      {
+        issue: {
+          OR: [
+            { slug: options.issueSlug },
+            { parent: { slug: options.issueSlug } },
+          ],
+        },
       },
-    }
+      {
+        issue: null,
+        feed: {
+          issue: {
+            OR: [
+              { slug: options.issueSlug },
+              { parent: { slug: options.issueSlug } },
+            ],
+          },
+        },
+      },
+    ]
   }
 
   return paginate({

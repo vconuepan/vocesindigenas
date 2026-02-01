@@ -44,6 +44,7 @@ export interface Story {
   sourceContent: string
   sourceDatePublished: string | null
   feedId: string
+  issueId: string | null
   status: StoryStatus
   dateCrawled: string
   datePublished: string | null
@@ -61,6 +62,7 @@ export interface Story {
   crawlMethod: string | null
   createdAt: string
   updatedAt: string
+  issue?: { id: string; name: string; slug: string } | null
   feed?: {
     title: string
     issue?: {
@@ -201,7 +203,7 @@ export interface PaginatedResponse<T> {
 
 // --- Background task types ---
 
-export type BulkTaskType = 'preassess' | 'assess' | 'select'
+export type BulkTaskType = 'preassess' | 'assess' | 'select' | 'reclassify'
 export type BulkTaskStatus = 'running' | 'completed' | 'failed'
 
 export interface TaskState {

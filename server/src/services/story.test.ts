@@ -58,7 +58,8 @@ describe('getStories', () => {
     await getStories({ search: 'climate' })
 
     const call = mockPrisma.story.findMany.mock.calls[0][0]
-    expect(call.where.OR).toEqual([
+    expect(call.where.AND).toHaveLength(1)
+    expect(call.where.AND[0].OR).toEqual([
       { title: { contains: 'climate', mode: 'insensitive' } },
       { sourceTitle: { contains: 'climate', mode: 'insensitive' } },
       { summary: { contains: 'climate', mode: 'insensitive' } },

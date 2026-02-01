@@ -1,14 +1,17 @@
 import { HumanMessage } from '@langchain/core/messages'
+import type { ChatOpenAI } from '@langchain/openai'
+import type { z } from 'zod'
 import prisma from '../lib/prisma.js'
-import { EmotionTag } from '@prisma/client'
+import { EmotionTag, Prisma } from '@prisma/client'
 import { config } from '../config.js'
 import { Semaphore } from '../lib/semaphore.js'
 import { splitIntoGroups } from '../lib/utils.js'
 import { createLogger } from '../lib/logger.js'
 import { taskRegistry } from '../lib/taskRegistry.js'
-import { getSmallLLM, getLargeLLM, rateLimitDelay } from './llm.js'
-import { buildPreassessPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
-import { preAssessResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
+import { getSmallLLM, getMediumLLM, getLargeLLM, rateLimitDelay } from './llm.js'
+import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
+import type { StoryForPreassess, IssueForPreassess } from '../prompts/index.js'
+import { preAssessResultSchema, reclassifyResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
 import type { Guidelines } from '../prompts/shared.js'
 
 const log = createLogger('analysis')
@@ -25,76 +28,68 @@ function getGuidelines(issue: { promptFactors: string; promptAntifactors: string
   }
 }
 
-export async function preAssessStories(
-  storyIds: string[],
-  onProgress?: ProgressCallback,
-): Promise<{ storyId: string; rating: number; emotionTag: string }[]> {
+// --- Shared batch classification helper ---
+
+interface BatchClassificationOptions<T extends { articleId: string; issueSlug: string; emotionTag: string }> {
+  storyIds: string[]
+  llm: ChatOpenAI
+  schema: z.ZodType<{ articles: T[] }>
+  buildPrompt: (stories: StoryForPreassess[], issues: IssueForPreassess[]) => string
+  buildUpdate: (item: T, issueId: string | null) => Prisma.StoryUpdateInput
+  /** Whether to assign feed issue to stories not returned by the LLM. Default true (pre-assess behavior). */
+  fallbackToFeedIssue?: boolean
+  onProgress?: ProgressCallback
+  batchSize: number
+  concurrency: number
+  label: string
+}
+
+async function runBatchClassification<T extends { articleId: string; issueSlug: string; emotionTag: string }>(
+  options: BatchClassificationOptions<T>,
+): Promise<{ storyId: string; item: T }[]> {
+  const { storyIds, llm, schema, buildPrompt, buildUpdate, fallbackToFeedIssue = true, onProgress, batchSize, concurrency, label } = options
+
   const stories = await prisma.story.findMany({
     where: { id: { in: storyIds } },
     include: { feed: { include: { issue: true } } },
   })
 
-  // Group stories by issue for batching
-  const byIssue = new Map<string, typeof stories>()
-  for (const story of stories) {
-    const issueId = story.feed.issue.id
-    if (!byIssue.has(issueId)) byIssue.set(issueId, [])
-    byIssue.get(issueId)!.push(story)
+  const issues = await prisma.issue.findMany({
+    select: { id: true, slug: true, name: true, description: true },
+  })
+
+  const slugToId = new Map(issues.map(i => [i.slug, i.id]))
+
+  const batches: (typeof stories)[] = []
+  for (let i = 0; i < stories.length; i += batchSize) {
+    batches.push(stories.slice(i, i + batchSize))
   }
 
-  // Flatten all batches across issues into work items
-  interface BatchWork {
-    issueId: string
-    guidelines: Guidelines
-    batch: typeof stories
-    batchLabel: string
-  }
+  log.info({ batchCount: batches.length, storyCount: stories.length }, `${label} batches prepared`)
 
-  const workItems: BatchWork[] = []
-  const batchSize = config.llm.preassessBatchSize
-
-  for (const [issueId, issueStories] of byIssue) {
-    const issue = issueStories[0].feed.issue
-    const guidelines = getGuidelines(issue)
-    const totalBatches = Math.ceil(issueStories.length / batchSize)
-
-    for (let i = 0; i < issueStories.length; i += batchSize) {
-      const batch = issueStories.slice(i, i + batchSize)
-      const batchNum = Math.floor(i / batchSize) + 1
-      workItems.push({
-        issueId,
-        guidelines,
-        batch,
-        batchLabel: `issue ${issueId} batch ${batchNum}/${totalBatches}`,
-      })
-    }
-  }
-
-  log.info({ batchCount: workItems.length, issueCount: byIssue.size }, 'pre-assessment batches prepared')
-
-  const llm = getSmallLLM()
-  const structuredLlm = llm.withStructuredOutput(preAssessResultSchema)
-  const semaphore = new Semaphore(config.concurrency.preassess)
-  const totalBatches = workItems.length
+  const structuredLlm = llm.withStructuredOutput(schema)
+  const semaphore = new Semaphore(concurrency)
+  const totalBatches = batches.length
   let batchesDone = 0
 
   const settled = await Promise.allSettled(
-    workItems.map(work =>
+    batches.map((batch, batchIdx) =>
       semaphore.run(async () => {
-        log.info({ batch: work.batchLabel, storyCount: work.batch.length }, 'processing batch')
+        const batchLabel = `batch ${batchIdx + 1}/${totalBatches}`
+        log.info({ batch: batchLabel, storyCount: batch.length }, 'processing batch')
 
-        const prompt = buildPreassessPrompt(
-          work.batch.map(s => ({ id: s.id, title: s.sourceTitle, content: s.sourceContent })),
-          work.guidelines,
+        const prompt = buildPrompt(
+          batch.map(s => ({ id: s.id, title: s.sourceTitle, content: s.sourceContent })),
+          issues,
         )
 
         await rateLimitDelay()
         const response = await structuredLlm.invoke([new HumanMessage(prompt)])
         batchesDone++
-        log.info({ progress: `${batchesDone}/${totalBatches}`, resultCount: response.articles.length, batch: work.batchLabel }, 'batch complete')
+        log.info({ progress: `${batchesDone}/${totalBatches}`, resultCount: response.articles.length, batch: batchLabel }, 'batch complete')
 
-        const storyMap = new Map(work.batch.map(s => [s.id, s]))
-        const batchResults: { storyId: string; rating: number; emotionTag: string }[] = []
+        const storyMap = new Map(batch.map(s => [s.id, s]))
+        const batchResults: { storyId: string; item: T }[] = []
         const updates: ReturnType<typeof prisma.story.update>[] = []
         for (const item of response.articles) {
           const story = storyMap.get(item.articleId)
@@ -103,35 +98,49 @@ export async function preAssessStories(
             continue
           }
 
+          let issueId = slugToId.get(item.issueSlug)
+          if (!issueId) {
+            log.warn({ articleId: item.articleId, issueSlug: item.issueSlug }, 'invalid issue slug, falling back to feed issue')
+            issueId = story.feed.issueId
+          }
+
           updates.push(prisma.story.update({
             where: { id: story.id },
-            data: {
-              relevancePre: item.rating,
-              emotionTag: item.emotionTag as EmotionTag,
-              status: 'pre_analyzed',
-            },
+            data: buildUpdate(item, issueId),
           }))
 
           batchResults.push({
             storyId: story.id,
-            rating: item.rating,
-            emotionTag: item.emotionTag,
+            item,
           })
         }
+
+        // Fallback: assign feed issue to stories not returned by LLM (opt-in)
+        if (fallbackToFeedIssue) {
+          for (const story of batch) {
+            if (!batchResults.some(r => r.storyId === story.id)) {
+              updates.push(prisma.story.update({
+                where: { id: story.id },
+                data: { issueId: story.feed.issueId },
+              }))
+            }
+          }
+        }
+
         if (updates.length > 0) {
           await prisma.$transaction(updates)
         }
         onProgress?.({ type: 'completed', count: batchResults.length })
-        const missing = work.batch.length - batchResults.length
+        const missing = batch.length - batchResults.length
         if (missing > 0) {
-          onProgress?.({ type: 'failed', count: missing, error: 'Story not returned in pre-assessment results' })
+          onProgress?.({ type: 'failed', count: missing, error: `Story not returned in ${label} results` })
         }
         return batchResults
       }),
     ),
   )
 
-  const results: { storyId: string; rating: number; emotionTag: string }[] = []
+  const results: { storyId: string; item: T }[] = []
   let errors = 0
   for (const result of settled) {
     if (result.status === 'fulfilled') {
@@ -147,16 +156,76 @@ export async function preAssessStories(
   return results
 }
 
+// --- Pre-assessment ---
+
+export async function preAssessStories(
+  storyIds: string[],
+  onProgress?: ProgressCallback,
+): Promise<{ storyId: string; rating: number; emotionTag: string }[]> {
+  const results = await runBatchClassification({
+    storyIds,
+    llm: getMediumLLM(),
+    schema: preAssessResultSchema,
+    buildPrompt: buildPreassessPrompt,
+    buildUpdate: (item, issueId) => ({
+      issueId,
+      relevancePre: item.rating,
+      emotionTag: item.emotionTag as EmotionTag,
+      status: 'pre_analyzed',
+    }),
+    onProgress,
+    batchSize: config.llm.preassessBatchSize,
+    concurrency: config.concurrency.preassess,
+    label: 'pre-assessment',
+  })
+
+  return results.map(r => ({
+    storyId: r.storyId,
+    rating: r.item.rating,
+    emotionTag: r.item.emotionTag,
+  }))
+}
+
+// --- Reclassification ---
+
+export async function reclassifyStories(
+  storyIds: string[],
+  onProgress?: ProgressCallback,
+): Promise<{ storyId: string; emotionTag: string }[]> {
+  const results = await runBatchClassification({
+    storyIds,
+    llm: getSmallLLM(),
+    schema: reclassifyResultSchema,
+    buildPrompt: buildReclassifyPrompt,
+    buildUpdate: (item, issueId) => ({
+      issueId,
+      emotionTag: item.emotionTag as EmotionTag,
+    }),
+    fallbackToFeedIssue: false,
+    onProgress,
+    batchSize: config.llm.preassessBatchSize,
+    concurrency: config.concurrency.reclassify,
+    label: 'reclassification',
+  })
+
+  return results.map(r => ({
+    storyId: r.storyId,
+    emotionTag: r.item.emotionTag,
+  }))
+}
+
+// --- Full assessment ---
+
 export async function assessStory(storyId: string): Promise<void> {
   const story = await prisma.story.findUnique({
     where: { id: storyId },
-    include: { feed: { include: { issue: true } } },
+    include: { issue: true, feed: { include: { issue: true } } },
   })
   if (!story) throw new Error('Story not found')
 
   log.info({ storyId, title: story.sourceTitle?.slice(0, 80) }, 'assessing story')
 
-  const guidelines = getGuidelines(story.feed.issue)
+  const guidelines = getGuidelines(story.issue ?? story.feed.issue)
   const publisher = story.feed.title
   const prompt = buildAssessPrompt(story.sourceTitle, story.sourceContent, publisher, story.sourceUrl, guidelines)
 
@@ -336,6 +405,20 @@ export async function bulkPreAssess(storyIds: string[], taskId: string): Promise
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
     log.error({ err, taskId }, 'bulk pre-assess failed')
+    for (const _id of storyIds) {
+      taskRegistry.increment(taskId, 'failed', msg)
+    }
+  } finally {
+    taskRegistry.complete(taskId)
+  }
+}
+
+export async function bulkReclassify(storyIds: string[], taskId: string): Promise<void> {
+  try {
+    await reclassifyStories(storyIds, taskProgressCallback(taskId))
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    log.error({ err, taskId }, 'bulk reclassify failed')
     for (const _id of storyIds) {
       taskRegistry.increment(taskId, 'failed', msg)
     }

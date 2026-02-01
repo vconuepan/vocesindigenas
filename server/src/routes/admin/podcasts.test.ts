@@ -28,12 +28,13 @@ vi.mock('../../services/crawler.js', () => ({
   crawlUrl: vi.fn(),
 }))
 vi.mock('../../services/llm.js', () => ({
-  getSmallLLM: vi.fn(() => ({
+  getSmallLLM: vi.fn(),
+  getMediumLLM: vi.fn(),
+  getLargeLLM: vi.fn(() => ({
     withStructuredOutput: vi.fn(() => ({
       invoke: vi.fn().mockResolvedValue({ script: 'Generated podcast script' }),
     })),
   })),
-  getLargeLLM: vi.fn(),
   rateLimitDelay: vi.fn().mockResolvedValue(undefined),
 }))
 

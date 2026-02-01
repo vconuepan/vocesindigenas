@@ -50,6 +50,8 @@ model Story {
   sourceDatePublished    DateTime?    @map("source_date_published")
   feedId                 String       @map("feed_id")
   feed                   Feed         @relation(fields: [feedId], references: [id])
+  issueId                String?      @map("issue_id")
+  issue                  Issue?       @relation(fields: [issueId], references: [id])
   status                 StoryStatus  @default(fetched)
   dateCrawled            DateTime     @default(now()) @map("date_crawled")
   datePublished          DateTime?    @map("date_published")
@@ -75,6 +77,7 @@ model Story {
   @@index([status, relevancePre])
   @@index([status, relevance])
   @@index([datePublished])
+  @@index([issueId])
   @@map("stories")
 }
 
@@ -120,6 +123,7 @@ model Issue {
   evaluationCriteria String   @default("") @map("evaluation_criteria")
   makeADifference    String   @default("") @map("make_a_difference")
   feeds              Feed[]
+  stories            Story[]
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

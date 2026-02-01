@@ -1,5 +1,5 @@
 import { config } from '../config.js'
-import { Guidelines, buildGuidelinesXml, containsChineseCharacters } from './shared.js'
+import { containsChineseCharacters, escapeXml } from './shared.js'
 
 export interface StoryForPreassess {
   id: string
@@ -7,17 +7,32 @@ export interface StoryForPreassess {
   content: string
 }
 
+export interface IssueForPreassess {
+  slug: string
+  name: string
+  description: string
+}
+
 export function buildPreassessPrompt(
   stories: StoryForPreassess[],
-  guidelines: Guidelines,
+  issues: IssueForPreassess[],
 ): string {
   let query = `<ROLE>
 You are a relevance screener evaluating news articles for their importance to humanity.
 </ROLE>
 
 <GOAL>
-Rate each article's relevance on a 1-10 scale and assign an emotion tag.
+For each article: classify it into the single most relevant issue, rate its relevance on a 1-10 scale, and assign an emotion tag.
 </GOAL>
+
+<ISSUES>
+`
+
+  for (const issue of issues) {
+    query += `<ISSUE slug="${escapeXml(issue.slug)}" name="${escapeXml(issue.name)}">${escapeXml(issue.description)}</ISSUE>\n`
+  }
+
+  query += `</ISSUES>
 
 <RATING GUIDELINES>
 1-2: Very low impact; limited effect on up to 10 million people.
@@ -27,11 +42,7 @@ Rate each article's relevance on a 1-10 scale and assign an emotion tag.
 9-10: Exceptional impact; transforms the lives of 3+ billion people or fundamentally changes humanity's future.
 </RATING GUIDELINES>
 
-`
-  const guidelinesXml = buildGuidelinesXml(guidelines)
-  query += guidelinesXml
-
-  query += `\n\n<ARTICLES>`
+<ARTICLES>`
 
   let capacity = config.llm.preassessBatchSize
   for (const story of stories) {

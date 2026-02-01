@@ -1,13 +1,15 @@
+import type { Issue } from '@shared/types'
 import { EditPanel } from './EditPanel'
 import { StoryEditForm } from './StoryEditForm'
 import { useStory } from '../../hooks/useStories'
 
 interface StoryDetailProps {
   storyId: string | null
+  issues: Issue[]
   onClose: () => void
 }
 
-export function StoryDetail({ storyId, onClose }: StoryDetailProps) {
+export function StoryDetail({ storyId, issues, onClose }: StoryDetailProps) {
   const { data: story, isLoading, error } = useStory(storyId || '')
 
   return (
@@ -18,7 +20,7 @@ export function StoryDetail({ storyId, onClose }: StoryDetailProps) {
       loading={isLoading}
       error={!!error}
     >
-      {story && <StoryEditForm story={story} onDone={onClose} variant="panel" />}
+      {story && <StoryEditForm story={story} issues={issues} onDone={onClose} variant="panel" />}
     </EditPanel>
   )
 }

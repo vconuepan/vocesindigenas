@@ -2,7 +2,7 @@ export const config = {
   llm: {
     models: {
       small: {
-        name: process.env.OPENAI_MODEL_SMALL || 'gpt-5-mini',
+        name: process.env.OPENAI_MODEL_SMALL || 'gpt-5-nano',
         reasoningEffort: 'medium' as const,
       },
       medium: {
@@ -56,6 +56,7 @@ export const config = {
     preassess: parseInt(process.env.CONCURRENCY_PREASSESS || '10', 10),
     assess: parseInt(process.env.CONCURRENCY_ASSESS || '10', 10),
     select: parseInt(process.env.CONCURRENCY_SELECT || '10', 10),
+    reclassify: parseInt(process.env.CONCURRENCY_RECLASSIFY || '10', 10),
     crawlFeeds: parseInt(process.env.CONCURRENCY_CRAWL_FEEDS || '5', 10),
     crawlArticles: parseInt(process.env.CONCURRENCY_CRAWL_ARTICLES || '3', 10),
   },

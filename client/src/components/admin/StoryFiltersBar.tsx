@@ -7,7 +7,7 @@ import { formatStatus } from '../../lib/constants'
 import type { Issue, Feed } from '@shared/types'
 
 /** Build a flat options list with children indented under their parent. */
-function buildIssueOptions(issues: Issue[]): { value: string; label: string }[] {
+export function buildIssueOptions(issues: Issue[]): { value: string; label: string }[] {
   const parents = issues.filter(i => !i.parentId).sort((a, b) => a.name.localeCompare(b.name))
   const childrenByParent = new Map<string, Issue[]>()
   for (const issue of issues) {

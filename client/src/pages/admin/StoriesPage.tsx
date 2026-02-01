@@ -103,6 +103,21 @@ export default function StoriesPage() {
           })
         },
       })
+    } else if (action === 'reclassify') {
+      setConfirmAction({
+        title: `Reclassify ${ids.length} stories?`,
+        description: 'This will re-run issue and emotion classification without changing ratings or status.',
+        action: async () => {
+          setSelectedIds(new Set())
+          launchPolledTask({
+            id: `reclassify-${Date.now()}`,
+            label: `Reclassifying ${ids.length} stories`,
+            submitFn: () => adminApi.stories.bulkReclassify(ids),
+            onComplete: invalidateStories,
+            storyIds: ids,
+          })
+        },
+      })
     } else if (action === 'assess') {
       setConfirmAction({
         title: `Assess ${ids.length} stories?`,
@@ -273,7 +288,7 @@ export default function StoriesPage() {
         allHaveRelevance={selectedIds.size > 0 && stories.filter(s => selectedIds.has(s.id)).every(s => s.relevance != null)}
       />
 
-      <StoryDetail storyId={detailId} onClose={() => setDetailId(null)} />
+      <StoryDetail storyId={detailId} issues={issuesQuery.data || []} onClose={() => setDetailId(null)} />
 
       <CrawlUrlForm open={crawlOpen} onClose={() => setCrawlOpen(false)} />
 

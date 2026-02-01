@@ -1,18 +1,21 @@
 import { z } from 'zod'
 
+const EMOTION_TAG_SCHEMA = z.enum(['uplifting', 'surprising', 'frustrating', 'scary', 'calm']).describe(
+  'Emotion tag based on how the article affects readers. '
+  + 'uplifting: positive or inspiring stories. '
+  + 'surprising: unexpected or counterintuitive stories. '
+  + 'frustrating: negative or disappointing stories. '
+  + 'scary: frightening stories (e.g. increased existential risks, wars). '
+  + 'calm: stories without a strong association with any other emotion tag.',
+)
+
 export const preAssessItemSchema = z.object({
   articleId: z.string().describe('The article ID exactly as provided in the input'),
+  issueSlug: z.string().describe('The slug of the most relevant issue from the <ISSUES> list'),
   rating: z.number().int().min(1).max(10).describe(
     'Conservative relevance rating 1-10 as per the <RATING GUIDELINES>.',
   ),
-  emotionTag: z.enum(['uplifting', 'surprising', 'frustrating', 'scary', 'calm']).describe(
-    'Emotion tag based on how the article affects readers. '
-    + 'uplifting: positive or inspiring stories. '
-    + 'surprising: unexpected or counterintuitive stories. '
-    + 'frustrating: negative or disappointing stories. '
-    + 'scary: frightening stories (e.g. increased existential risks, wars). '
-    + 'calm: stories without a strong association with any other emotion tag.',
-  ),
+  emotionTag: EMOTION_TAG_SCHEMA,
 })
 
 export const preAssessResultSchema = z.object({
@@ -80,7 +83,18 @@ export const podcastScriptSchema = z.object({
   script: z.string().describe('Full podcast script text ready for text-to-speech'),
 })
 
+export const reclassifyItemSchema = z.object({
+  articleId: z.string().describe('The article ID exactly as provided in the input'),
+  issueSlug: z.string().describe('The slug of the most relevant issue from the <ISSUES> list'),
+  emotionTag: EMOTION_TAG_SCHEMA,
+})
+
+export const reclassifyResultSchema = z.object({
+  articles: z.array(reclassifyItemSchema).describe('One entry per article in the input batch'),
+})
+
 export type PreAssessResult = z.infer<typeof preAssessResultSchema>
 export type AssessResult = z.infer<typeof assessResultSchema>
 export type SelectResult = z.infer<typeof selectResultSchema>
+export type ReclassifyResult = z.infer<typeof reclassifyResultSchema>
 export type PodcastScript = z.infer<typeof podcastScriptSchema>
