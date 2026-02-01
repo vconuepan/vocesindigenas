@@ -2,9 +2,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import prisma from '../lib/prisma.js'
 import { config } from '../config.js'
-import { type Prisma, ContentStatus, StoryStatus } from '@prisma/client'
-
-type NewsletterSendStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+import { type Prisma, ContentStatus, StoryStatus, NewsletterSendStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 import * as plunk from './plunk.js'
@@ -252,7 +250,7 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
 // --- Newsletter sends ---
 
 export async function getNewsletterSends(newsletterId: string) {
-  return (prisma as any).newsletterSend.findMany({
+  return prisma.newsletterSend.findMany({
     where: { newsletterId },
     orderBy: { createdAt: 'desc' },
   })
@@ -273,7 +271,7 @@ export async function sendTest(newsletterId: string) {
 
   await plunk.testCampaign(campaign.id)
 
-  return (prisma as any).newsletterSend.create({
+  return prisma.newsletterSend.create({
     data: {
       newsletterId,
       plunkCampaignId: campaign.id,
@@ -301,7 +299,7 @@ export async function sendLive(newsletterId: string, scheduledFor?: string) {
 
   const status: NewsletterSendStatus = scheduledFor ? 'scheduled' : 'sending'
 
-  return (prisma as any).newsletterSend.create({
+  return prisma.newsletterSend.create({
     data: {
       newsletterId,
       plunkCampaignId: campaign.id,
@@ -314,12 +312,12 @@ export async function sendLive(newsletterId: string, scheduledFor?: string) {
 }
 
 export async function refreshSendStats(sendId: string) {
-  const send = await (prisma as any).newsletterSend.findUniqueOrThrow({ where: { id: sendId } })
+  const send = await prisma.newsletterSend.findUniqueOrThrow({ where: { id: sendId } })
   if (!send.plunkCampaignId) throw new Error('No Plunk campaign ID')
 
   const stats = await plunk.getCampaignStats(send.plunkCampaignId)
 
-  return (prisma as any).newsletterSend.update({
+  return prisma.newsletterSend.update({
     where: { id: sendId },
     data: { stats: stats as unknown as Prisma.JsonObject },
   })

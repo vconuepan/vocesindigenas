@@ -115,8 +115,7 @@ router.post('/:id/favicon', async (req, res) => {
       res.status(404).json({ error: 'Feed not found' })
       return
     }
-    // After migration + db:generate, change to: fetchFavicon(feed.id, feed.rssUrl, feed.url, true)
-    const result = await fetchFavicon(feed.id, feed.url, null, true)
+    const result = await fetchFavicon(feed.id, feed.rssUrl, feed.url, true)
     res.json(result)
   } catch (err) {
     log.error({ err }, 'failed to fetch favicon')

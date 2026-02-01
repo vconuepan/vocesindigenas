@@ -39,10 +39,7 @@ export async function createFeed(data: {
   if (!issue) {
     throw new Error('Issue not found')
   }
-  // After migration + db:generate, replace with: prisma.feed.create({ data })
-  // Until then, map rssUrl→url and strip fields that don't exist in current schema
-  const { rssUrl, url: _homepage, displayTitle: _display, ...rest } = data
-  return (prisma.feed as any).create({ data: { ...rest, url: rssUrl } })
+  return prisma.feed.create({ data })
 }
 
 export async function updateFeed(id: string, data: Partial<{
@@ -62,11 +59,7 @@ export async function updateFeed(id: string, data: Partial<{
       throw new Error('Issue not found')
     }
   }
-  // After migration + db:generate, replace with: prisma.feed.update({ where: { id }, data })
-  // Until then, map rssUrl→url and strip fields that don't exist in current schema
-  const { rssUrl, url: _homepage, displayTitle: _display, ...rest } = data
-  const prismaData = { ...rest, ...(rssUrl !== undefined && { url: rssUrl }) }
-  return (prisma.feed as any).update({ where: { id }, data: prismaData })
+  return prisma.feed.update({ where: { id }, data })
 }
 
 export async function getDueFeeds() {

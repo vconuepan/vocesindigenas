@@ -14,7 +14,7 @@ export async function subscribe(email: string) {
   const expiresAt = new Date(Date.now() + config.subscribe.confirmTokenExpiryHours * 60 * 60 * 1000)
 
   // Check if already confirmed
-  const existing = await (prisma as any).pendingSubscription.findFirst({
+  const existing = await prisma.pendingSubscription.findFirst({
     where: { email, confirmedAt: { not: null } },
   })
   if (existing) {
@@ -36,7 +36,7 @@ export async function subscribe(email: string) {
   }
 
   // Store pending subscription
-  await (prisma as any).pendingSubscription.create({
+  await prisma.pendingSubscription.create({
     data: {
       email,
       token,
@@ -96,7 +96,7 @@ export async function subscribe(email: string) {
 }
 
 export async function confirmSubscription(token: string, email: string) {
-  const pending = await (prisma as any).pendingSubscription.findFirst({
+  const pending = await prisma.pendingSubscription.findFirst({
     where: { token, email },
   })
 
@@ -125,7 +125,7 @@ export async function confirmSubscription(token: string, email: string) {
   }
 
   // Mark as confirmed
-  await (prisma as any).pendingSubscription.update({
+  await prisma.pendingSubscription.update({
     where: { id: pending.id },
     data: { confirmedAt: new Date() },
   })

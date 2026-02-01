@@ -167,8 +167,7 @@ export async function fetchAllFavicons(): Promise<{ succeeded: number; failed: n
     const results = await Promise.allSettled(
       batch.map(async (feed) => {
         if (await faviconExists(feed.id)) return 'skipped' as const
-        // After migration + db:generate, change feed.url to feed.rssUrl and add feed.url as homeUrl
-        const result = await fetchFavicon(feed.id, feed.url)
+        const result = await fetchFavicon(feed.id, feed.rssUrl, feed.url)
         return result.success ? 'fetched' as const : 'not_found' as const
       })
     )

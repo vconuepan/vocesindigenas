@@ -394,7 +394,7 @@ const PUBLIC_STORY_SELECT = {
     select: {
       id: true,
       title: true,
-      // After migration + db:generate, uncomment: displayTitle: true,
+      displayTitle: true,
       issue: {
         select: { name: true, slug: true },
       },

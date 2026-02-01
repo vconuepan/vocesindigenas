@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
   try {
     const { event, contact, campaign } = req.body || {}
 
-    await (prisma as any).emailEvent.create({
+    await prisma.emailEvent.create({
       data: {
         eventType: event || 'unknown',
         contactEmail: contact?.email || null,

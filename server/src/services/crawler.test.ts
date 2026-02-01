@@ -27,7 +27,7 @@ const { crawlFeed, crawlAllDueFeeds, crawlUrl } = await import('./crawler.js')
 const sampleFeed = {
   id: 'feed-1',
   title: 'Test Feed',
-  url: 'https://example.com/feed',
+  rssUrl: 'https://example.com/feed',
   htmlSelector: null,
   lastEtag: null,
   lastModified: null,
