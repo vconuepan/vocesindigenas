@@ -8,12 +8,12 @@ export default function MethodologyPage() {
         <title>Methodology - Actually Relevant</title>
         <meta
           name="description"
-          content="How we evaluate news relevance using AI. Our three-criteria framework assesses scale, systemic change, and technological impact for each story."
+          content="How we evaluate news relevance using AI. Each issue area has its own evaluation criteria, and a multi-stage pipeline filters for what truly matters."
         />
         <meta property="og:title" content="Methodology - Actually Relevant" />
         <meta
           property="og:description"
-          content="How we evaluate news relevance using AI. Our three-criteria framework assesses scale, systemic change, and technological impact."
+          content="How we evaluate news relevance using AI. Each issue area has its own evaluation criteria, and a multi-stage pipeline filters for what truly matters."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://actuallyrelevant.news/methodology" />
@@ -35,28 +35,37 @@ export default function MethodologyPage() {
             genuine progress in our understanding of the world.
           </p>
 
-          <h2 className="section-heading mt-8">The Three-Criteria Framework</h2>
+          <h2 className="section-heading mt-8">Issue-Specific Evaluation Criteria</h2>
           <p>
-            Each story is evaluated against three criteria, adapted for its issue area:
+            Each issue area defines its own evaluation criteria tailored to what matters
+            most in that domain. Stories are scored against these criteria on a 1–10 scale.
+          </p>
+          <p>
+            For example, stories in the{' '}
+            <Link to="/issues/human-development" className="text-brand-700 hover:text-brand-800 font-medium">
+              Human Development
+            </Link>
+            {' '}issue are evaluated on:
           </p>
           <ol className="list-decimal list-inside space-y-4 my-4 text-neutral-600">
             <li className="leading-relaxed">
-              <strong>Scale and impact</strong> — How many people are significantly
-              affected? How large is the event in terms of its consequences for ecosystems,
-              societies, or global systems?
+              The number of people directly affected in terms of their basic human needs
+              (nutrition, shelter), foundations of wellbeing (healthcare, schooling), and
+              opportunities (personal rights, equal access)
             </li>
             <li className="leading-relaxed">
-              <strong>Systemic change</strong> — Does this represent a change in policies,
-              norms, institutions, or other social systems that will have an ongoing effect?
-              New laws, international agreements, and shifts in public understanding fall
-              into this category.
+              Changes in social, political, economic, and legal trends, norms, and systems
+              that have an ongoing effect on people's access to basic needs, wellbeing, and
+              opportunities
             </li>
             <li className="leading-relaxed">
-              <strong>Technological or scientific progress</strong> — Does this represent
-              a meaningful advance in our ability to understand or address important
-              challenges? Both breakthroughs and risks are considered.
+              Technological advancements or innovations that affect access to basic needs,
+              foundations of wellbeing, and opportunities
             </li>
           </ol>
+          <p>
+            You can see the full evaluation criteria for each issue on its dedicated page.
+          </p>
 
           <h2 className="section-heading mt-8">How AI Analysis Works</h2>
           <p>
@@ -68,24 +77,21 @@ export default function MethodologyPage() {
               our four issue areas, extracting article content automatically.
             </li>
             <li className="leading-relaxed">
-              <strong>Pre-screening</strong> — Each article receives a quick assessment
-              to determine whether it merits a full evaluation. Articles below a minimum
-              relevance threshold are filtered out.
+              <strong>Pre-screening</strong> — Each article is assigned to the issue it
+              best belongs to and receives a quick assessment to determine whether it
+              merits a full evaluation. Articles below a minimum relevance threshold are
+              filtered out.
             </li>
             <li className="leading-relaxed">
               <strong>Full analysis</strong> — Qualifying articles receive detailed
-              evaluation: relevance factors and antifactors are identified, conservative
-              and speculative ratings are assigned, and a summary with key scenarios is
-              generated.
+              evaluation: relevance factors and antifactors are identified, a rating is
+              assigned, and a summary is generated.
             </li>
             <li className="leading-relaxed">
-              <strong>Selection</strong> — From the analyzed pool, the most relevant
-              stories are selected for publication through pairwise comparison.
+              <strong>Selection</strong> — From the pool of worthy candidates, the
+              most relevant stories are selected for publication.
             </li>
           </ol>
-          <p>
-            A human editor reviews the final selection before publication.
-          </p>
 
           <h2 className="section-heading mt-8">Issue Areas</h2>
           <p>
@@ -121,8 +127,8 @@ export default function MethodologyPage() {
           <h2 className="section-heading mt-8">Transparency</h2>
           <p>
             For every published story, we show the AI-generated analysis: why the story
-            matters, what factors contributed to its rating, potential caveats, and
-            future scenarios. We believe readers deserve to understand not just <em>what</em>{' '}
+            matters, what factors contributed to its rating, and potential caveats. We
+            believe readers deserve to understand not just <em>what</em>{' '}
             is relevant, but <em>why</em>.
           </p>
         </div>
