@@ -101,7 +101,16 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
           placeholder="All feeds"
           value={searchParams.get('feedId') || ''}
           onChange={e => setFilter('feedId', e.target.value)}
-          options={feeds.map(f => ({ value: f.id, label: f.title }))}
+          options={(() => {
+            const sorted = [...feeds].sort((a, b) => Number(b.active) - Number(a.active) || a.title.localeCompare(b.title))
+            const active = sorted.filter(f => f.active)
+            const inactive = sorted.filter(f => !f.active)
+            return [
+              ...active.map(f => ({ value: f.id, label: f.title })),
+              ...(inactive.length ? [{ value: '', label: '── Inactive ──', disabled: true }] : []),
+              ...inactive.map(f => ({ value: f.id, label: f.title })),
+            ]
+          })()}
         />
         <Select
           id="filter-rating"
