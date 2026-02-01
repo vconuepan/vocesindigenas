@@ -18,7 +18,12 @@ const FOOTER_NAV = [
   { label: 'All Issues', href: '/issues' },
   { label: 'Methodology', href: '/methodology' },
   { label: 'About', href: '/about' },
+]
+
+const FOOTER_LEGAL = [
   { label: 'Imprint', href: '/imprint' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'No Cookies', href: '/privacy' },
 ]
 
 function SearchIcon({ className }: { className?: string }) {
@@ -29,10 +34,6 @@ function SearchIcon({ className }: { className?: string }) {
   )
 }
 
-const FOOTER_SUBSCRIBE = [
-  { label: 'Newsletter', href: '/newsletter' },
-  { label: 'RSS Feed', href: `${API_BASE}/feed` },
-]
 
 export default function PublicLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -314,17 +315,29 @@ export default function PublicLayout() {
               <p className="text-xs text-neutral-600 mt-4">
                 &copy; {new Date().getFullYear()} Actually Relevant. All rights reserved.
               </p>
+              <ul className="hidden md:flex gap-4 mt-3">
+                {FOOTER_LEGAL.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      to={link.href}
+                      className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Navigation column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3">Navigate</h3>
-              <ul className="space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Navigate</h3>
+              <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 {FOOTER_NAV.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.label} className="flex items-center">
                     <Link
                       to={link.href}
-                      className="text-sm text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                      className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                     >
                       {link.label}
                     </Link>
@@ -335,49 +348,46 @@ export default function PublicLayout() {
 
             {/* Subscribe column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3">Subscribe</h3>
-              <ul className="space-y-2">
-                {FOOTER_SUBSCRIBE.map((link) =>
-                  link.href.includes('/feed') ? (
-                    <li key={link.href}>
-                      <a
-                        href={link.href}
-                        className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                      >
-                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                          <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z" />
-                        </svg>
-                        {link.label}
-                      </a>
-                    </li>
-                  ) : (
-                    <li key={link.href}>
-                      <Link
-                        to={link.href}
-                        className="text-sm text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ),
-                )}
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Subscribe</h3>
+              <ul className="grid auto-rows-[1.25rem] gap-y-2">
+                <li className="flex items-center">
+                  <Link
+                    to="/newsletter"
+                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" />
+                    </svg>
+                    Newsletter
+                  </Link>
+                </li>
+                <li className="flex items-center">
+                  <a
+                    href={`${API_BASE}/feed`}
+                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z" />
+                    </svg>
+                    RSS Feed
+                  </a>
+                </li>
               </ul>
-
             </div>
 
             {/* Issues column */}
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3">Issues</h3>
-              <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Issues</h3>
+              <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1 auto-rows-[1.25rem]">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug)
                   return (
-                    <li key={link.href}>
+                    <li key={link.href} className="flex items-center">
                       <Link
                         to={link.href}
-                        className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                        className="inline-flex items-center gap-2 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${colors.dotBg} opacity-70`} aria-hidden="true" />
+                        <span className={`w-1.5 h-1.5 rounded-full ${colors.dotBg} opacity-70 shrink-0`} aria-hidden="true" />
                         {link.label}
                       </Link>
                     </li>
@@ -387,6 +397,19 @@ export default function PublicLayout() {
             </div>
           </div>
 
+          {/* Legal links — mobile only */}
+          <ul className="flex justify-center gap-5 mt-10 md:hidden">
+            {FOOTER_LEGAL.map((link) => (
+              <li key={link.label}>
+                <Link
+                  to={link.href}
+                  className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </footer>
     </div>
