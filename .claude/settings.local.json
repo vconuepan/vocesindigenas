@@ -11,17 +11,7 @@
       "Bash(npm audit:*)",
       "Bash(npx vitest:*)",
       "Bash(npm ls:*)",
-      "mcp__playwright__browser_close",
-      "WebFetch(domain:render.com)",
-      "WebFetch(domain:platform.openai.com)",
-      "WebFetch(domain:cookbook.openai.com)",
-      "WebFetch(domain:developers.openai.com)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:docs.diffbot.com)",
-      "Bash(npm install:*)",
-      "Bash(git commit:*)",
-      "Bash(git stash:*)",
-      "Bash(git pop:*)"
+      "mcp__playwright__browser_close"
     ]
   }
 }

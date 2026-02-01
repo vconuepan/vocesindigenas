@@ -9,7 +9,7 @@ The crawler fetches RSS feeds and extracts article content using a 3-tier fallba
    ↓ fails or too short
 2. Mozilla Readability (ML-based)
    ↓ fails
-3. PipFeed API (external service)
+3. Configured API (Diffbot or PipFeed, no fallback)
 ```
 
 ### Tier 1: CSS Selector
@@ -24,9 +24,19 @@ If the feed has an `htmlSelector` configured (e.g., `article.post-content`), the
 
 Uses `@mozilla/readability` with `jsdom` to extract the main article content. Works well for standard news articles. This is the primary extraction method for most feeds.
 
-### Tier 3: PipFeed API
+### Tier 3: External API
 
-External paid service fallback. Only used when Readability also fails. Requires `PIPFEED_API_KEY` environment variable. Skipped entirely if the key isn't set.
+Only the configured `config.crawl.extractionApi` (default `diffbot`) is called — there is no fallback to the other API. Requires `DIFFBOT_TOKEN` or `PIPFEED_API_KEY` depending on which API is configured. Skipped if the required key isn't set.
+
+All API calls go through a shared `ApiThrottle` that serializes requests and handles 429 rate limiting. On 429: waits a 30-second backoff, then doubles the inter-call delay (up to 30 seconds max). Successful calls gradually halve the delay back toward the base. This means the system slows down instead of stopping — it respects the provider's signal without abandoning the crawl.
+
+### Local Extraction Skip
+
+When consecutive articles in a feed all fail local extraction (tiers 1+2) and require the API, the crawler skips local extraction for remaining articles (controlled by `config.crawl.localFailThreshold`, default 3). This avoids wasting time on HTTP 403s from sites that block scrapers. The counter resets when any article succeeds via a local method. With the default concurrency of 3, the first batch always attempts local extraction; the threshold takes effect for subsequent articles.
+
+### Total Failure Bail-Out
+
+When consecutive articles all fail extraction entirely (local + API both return nothing), the crawler stops attempting remaining articles (controlled by `config.crawl.totalFailThreshold`, default 3). This prevents burning API quota on feeds where the source blocks all extraction methods. The counter resets when any article succeeds.
 
 ## Crawl Flow
 

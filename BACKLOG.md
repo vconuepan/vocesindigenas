@@ -2,15 +2,13 @@
 
 ## To implement before public deployment
 
-- Improve fetching. Get full articles. API? Fancy crawler?
-- Assess: identify which issue to use dynamically for each story (instead of hard link story -> feed -> issue)
 - Test cron jobs
-- Define gpt-5-nano as the small model. Currently used by podcast and preassessments. Switch those to medium. small useful for anything?
 
-- when shutting down the dev server with Ctrl+C:
-PS D:\projects\actually-relevant\server>
-[Verarbeitung des Prozesses mit Code 2 (0x00000002) beendet]
-Sie können dieses Terminal jetzt mit STRG+D schließen oder zum Neustart die EINGABETASTE drücken.
+- Put this right before the </body> tag everywhere:
+<!-- 100% privacy-first analytics -->
+<script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+- Feed filter in stories overview: move inactive/hidden feeds to the bottom of the dropdown list
 
 ## After public deployment
 
@@ -28,4 +26,6 @@ Sie können dieses Terminal jetzt mit STRG+D schließen oder zum Neustart die EI
 
 ## Orga
 
+- After deployment, confirm Simple Analytics at https://dashboard.simpleanalytics.com/install?hostname=actuallyrelevant.news
 - Download full Flywheel backup to desktop PC
+- Cancel Flywheel subscription

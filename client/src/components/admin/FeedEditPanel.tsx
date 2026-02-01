@@ -4,10 +4,12 @@ import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { FeedFaviconPreview } from '../FeedFavicon'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useFeed, useUpdateFeed } from '../../hooks/useFeeds'
 import { useEditForm } from '../../hooks/useEditForm'
 import { adminApi } from '../../lib/admin-api'
 import { useToast } from '../ui/Toast'
+import { formatDateWithTime } from '../../lib/constants'
 import { EditPanel, PANEL_BODY } from './EditPanel'
 import { PanelFooter } from './PanelFooter'
 import { buildIssueOptions } from './FeedForm'
@@ -94,6 +96,18 @@ function FeedEditForm({ feedId, issues, onClose }: { feedId: string; issues: Iss
   return (
     <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
       <div className={PANEL_BODY}>
+        {feed!.lastCrawlError && (
+          <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+            <ExclamationTriangleIcon className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
+            <div>
+              <p className="font-medium">Last crawl error</p>
+              <p>{feed!.lastCrawlError}</p>
+              {feed!.lastCrawlErrorAt && (
+                <p className="text-xs text-amber-600 mt-1">{formatDateWithTime(feed!.lastCrawlErrorAt)}</p>
+              )}
+            </div>
+          </div>
+        )}
         <Input id="feed-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} required />
         <Input id="feed-url" label="URL" type="url" value={form.url} onChange={e => set('url', e.target.value)} required />
         <Select

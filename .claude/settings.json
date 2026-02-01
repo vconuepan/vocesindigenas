@@ -4,7 +4,15 @@
     "allow": [
       "Bash(npm run db:migrate:resolve:*)",
       "Bash(npm run images:*)",
-      "WebFetch(domain:actuallyrelevant.news)"
+      "WebFetch(domain:actuallyrelevant.news)",
+      "WebFetch(domain:render.com)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:cookbook.openai.com)",
+      "WebFetch(domain:developers.openai.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.diffbot.com)",
+      "WebFetch(domain:emailoctopus.com)",
+      "WebFetch(domain:help.emailoctopus.com)"
     ]
   },
   "deny": [
