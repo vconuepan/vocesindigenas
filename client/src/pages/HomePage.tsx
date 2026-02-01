@@ -52,7 +52,7 @@ function HeroSection({ story }: { story: PublicStory }) {
             rel="noopener noreferrer"
             className="hover:text-neutral-700 transition-colors"
           >
-            {story.feed.title}
+            {story.feed.displayTitle || story.feed.title}
             <span className="sr-only"> (opens in new tab)</span>
           </a>
           {dateStr && <> · {dateStr}</>}

@@ -46,7 +46,7 @@ router.post('/', validateBody(createFeedSchema), async (req, res) => {
       return
     }
     if (err.code === 'P2002') {
-      res.status(409).json({ error: 'A feed with this URL already exists' })
+      res.status(409).json({ error: 'A feed with this RSS URL already exists' })
       return
     }
     log.error({ err }, 'failed to create feed')
@@ -68,7 +68,7 @@ router.put('/:id', validateBody(updateFeedSchema), async (req, res) => {
       return
     }
     if (err.code === 'P2002') {
-      res.status(409).json({ error: 'A feed with this URL already exists' })
+      res.status(409).json({ error: 'A feed with this RSS URL already exists' })
       return
     }
     log.error({ err }, 'failed to update feed')
@@ -115,7 +115,8 @@ router.post('/:id/favicon', async (req, res) => {
       res.status(404).json({ error: 'Feed not found' })
       return
     }
-    const result = await fetchFavicon(feed.id, feed.url, true)
+    // After migration + db:generate, change to: fetchFavicon(feed.id, feed.rssUrl, feed.url, true)
+    const result = await fetchFavicon(feed.id, feed.url, null, true)
     res.json(result)
   } catch (err) {
     log.error({ err }, 'failed to fetch favicon')

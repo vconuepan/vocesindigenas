@@ -73,6 +73,20 @@ describe('Public Stories API', () => {
       expect(res.status).toBe(200)
     })
 
+    it('supports search filter', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([publicStory])
+      mockPrisma.story.count.mockResolvedValue(1)
+
+      const res = await request(app).get('/api/stories?search=Published')
+      expect(res.status).toBe(200)
+    })
+
+    it('rejects search queries longer than 200 characters', async () => {
+      const longQuery = 'a'.repeat(201)
+      const res = await request(app).get(`/api/stories?search=${longQuery}`)
+      expect(res.status).toBe(400)
+    })
+
     it('supports pagination', async () => {
       mockPrisma.story.findMany.mockResolvedValue([])
       mockPrisma.story.count.mockResolvedValue(50)

@@ -12,8 +12,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`)
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, options)
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }))
@@ -52,7 +52,7 @@ export interface PublicIssue {
 
 export const publicApi = {
   stories: {
-    list: (params?: { page?: number; pageSize?: number; issueSlug?: string }) =>
+    list: (params?: { page?: number; pageSize?: number; issueSlug?: string; search?: string }) =>
       request<PaginatedResponse<PublicStory>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),
     get: (slug: string) => request<PublicStory>(`/stories/${slug}`),
   },
@@ -61,4 +61,11 @@ export const publicApi = {
     list: () => request<PublicIssue[]>(`/issues`),
     get: (slug: string) => request<PublicIssue>(`/issues/${slug}`),
   },
+
+  subscribe: (email: string) =>
+    request<{ success: boolean; message: string }>('/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }),
 }

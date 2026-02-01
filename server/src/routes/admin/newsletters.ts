@@ -9,6 +9,7 @@ import {
   createNewsletterSchema,
   updateNewsletterSchema,
   newsletterQuerySchema,
+  sendLiveSchema,
 } from '../../schemas/newsletter.js'
 
 const router = Router()
@@ -130,6 +131,82 @@ router.post('/:id/carousel', async (req, res) => {
     }
     log.error({ err }, 'failed to generate carousel images')
     res.status(500).json({ error: 'Failed to generate carousel images' })
+  }
+})
+
+// --- HTML generation ---
+
+router.post('/:id/html', async (req, res) => {
+  try {
+    const html = await newsletterService.generateHtmlContent(req.params.id)
+    res.json({ html })
+  } catch (err: any) {
+    if (err.message === 'Newsletter not found') {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    if (err.message === 'No stories assigned') {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'failed to generate HTML content')
+    res.status(500).json({ error: 'Failed to generate HTML content' })
+  }
+})
+
+// --- Send endpoints ---
+
+router.post('/:id/send-test', async (req, res) => {
+  try {
+    const send = await newsletterService.sendTest(req.params.id)
+    res.json(send)
+  } catch (err: any) {
+    if (err.message === 'Newsletter not found') {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'failed to send test newsletter')
+    res.status(500).json({ error: 'Failed to send test newsletter' })
+  }
+})
+
+router.post('/:id/send-live', validateBody(sendLiveSchema), async (req, res) => {
+  try {
+    const send = await newsletterService.sendLive(req.params.id, req.body.scheduledFor)
+    res.json(send)
+  } catch (err: any) {
+    if (err.message === 'Newsletter not found') {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'failed to send live newsletter')
+    res.status(500).json({ error: 'Failed to send live newsletter' })
+  }
+})
+
+// --- Send history & stats ---
+
+router.get('/:id/sends', async (req, res) => {
+  try {
+    const sends = await newsletterService.getNewsletterSends(req.params.id)
+    res.json(sends)
+  } catch (err) {
+    log.error({ err }, 'failed to fetch newsletter sends')
+    res.status(500).json({ error: 'Failed to fetch sends' })
+  }
+})
+
+router.post('/:id/sends/:sendId/refresh-stats', async (req, res) => {
+  try {
+    const send = await newsletterService.refreshSendStats(req.params.sendId)
+    res.json(send)
+  } catch (err: any) {
+    if (err.message === 'No Plunk campaign ID') {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'failed to refresh send stats')
+    res.status(500).json({ error: 'Failed to refresh stats' })
   }
 })
 

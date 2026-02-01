@@ -14,6 +14,7 @@ router.get('/', validateQuery(publicStoryQuerySchema), async (req, res) => {
       page: query.page,
       pageSize: query.pageSize,
       issueSlug: query.issueSlug,
+      search: query.search,
     })
     res.set('Cache-Control', 'public, max-age=60')
     res.json(result)

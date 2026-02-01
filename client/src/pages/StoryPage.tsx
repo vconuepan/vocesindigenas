@@ -192,7 +192,7 @@ export default function StoryPage() {
                   rel="noopener noreferrer"
                   className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                 >
-                  {story.feed.title}
+                  {story.feed.displayTitle || story.feed.title}
                   <span className="sr-only"> (opens in new tab)</span>
                 </a>
                 {hasSourceDate && <>, {sourceDateStr}</>}

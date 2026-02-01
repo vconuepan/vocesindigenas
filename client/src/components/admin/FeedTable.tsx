@@ -49,11 +49,11 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
                     {feed.title}
                   </button>
                   <a
-                    href={feed.url}
+                    href={feed.url || feed.rssUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 text-neutral-400 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                    title={feed.url}
+                    title={feed.url || feed.rssUrl}
                   >
                     <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                   </a>

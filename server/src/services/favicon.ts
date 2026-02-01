@@ -112,7 +112,7 @@ export interface FaviconResult {
   message: string
 }
 
-export async function fetchFavicon(feedId: string, feedUrl: string, force = false): Promise<FaviconResult> {
+export async function fetchFavicon(feedId: string, feedUrl: string, homeUrl?: string | null, force = false): Promise<FaviconResult> {
   if (!UUID_RE.test(feedId)) {
     throw new Error(`Invalid feed ID format: ${feedId}`)
   }
@@ -122,8 +122,9 @@ export async function fetchFavicon(feedId: string, feedUrl: string, force = fals
     return { success: true, message: 'Already exists' }
   }
 
-  const url = new URL(feedUrl)
-  const hostname = url.hostname
+  // Prefer homepage URL for favicon (cleaner domain), fall back to RSS URL
+  const primaryUrl = homeUrl ? new URL(homeUrl) : new URL(feedUrl)
+  const hostname = primaryUrl.hostname
 
   // Try the feed's hostname, then progressively shorter domains
   // e.g. feeder-prod.int.politico.com → int.politico.com → politico.com
@@ -135,7 +136,7 @@ export async function fetchFavicon(feedId: string, feedUrl: string, force = fals
 
   let buffer: Buffer | null = null
   for (const domain of domains) {
-    const origin = `${url.protocol}//${domain}`
+    const origin = `${primaryUrl.protocol}//${domain}`
     buffer =
       await tryGoogleApi(domain) ??
       await tryHtmlParsing(origin) ??
@@ -166,6 +167,7 @@ export async function fetchAllFavicons(): Promise<{ succeeded: number; failed: n
     const results = await Promise.allSettled(
       batch.map(async (feed) => {
         if (await faviconExists(feed.id)) return 'skipped' as const
+        // After migration + db:generate, change feed.url to feed.rssUrl and add feed.url as homeUrl
         const result = await fetchFavicon(feed.id, feed.url)
         return result.success ? 'fetched' as const : 'not_found' as const
       })

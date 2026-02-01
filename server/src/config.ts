@@ -60,4 +60,18 @@ export const config = {
     crawlFeeds: parseInt(process.env.CONCURRENCY_CRAWL_FEEDS || '5', 10),
     crawlArticles: parseInt(process.env.CONCURRENCY_CRAWL_ARTICLES || '3', 10),
   },
+  plunk: {
+    secretKey: process.env.PLUNK_SECRET_KEY || '',
+    publicKey: process.env.PLUNK_PUBLIC_KEY || '',
+    fromEmail: process.env.PLUNK_FROM_EMAIL || '',
+    fromName: process.env.PLUNK_FROM_NAME || 'Actually Relevant',
+    testSegmentId: process.env.PLUNK_TEST_SEGMENT_ID || '',
+    webhookSecret: process.env.PLUNK_WEBHOOK_SECRET || '',
+    baseUrl: 'https://next-api.useplunk.com',
+  },
+  subscribe: {
+    confirmTokenExpiryHours: parseInt(process.env.SUBSCRIBE_TOKEN_EXPIRY_HOURS || '24', 10),
+    rateLimitWindowMs: parseInt(process.env.SUBSCRIBE_RATE_LIMIT_WINDOW_MS || String(60 * 1000), 10),
+    rateLimitMax: parseInt(process.env.SUBSCRIBE_RATE_LIMIT_MAX || '3', 10),
+  },
 } as const

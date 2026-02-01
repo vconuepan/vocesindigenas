@@ -5,6 +5,7 @@ export function usePublicStories(params?: {
   page?: number
   pageSize?: number
   issueSlug?: string
+  search?: string
 }) {
   return useQuery({
     queryKey: ['public-stories', params],

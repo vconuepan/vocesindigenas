@@ -20,10 +20,12 @@ interface FeedEditPanelProps {
   onClose: () => void
 }
 
-function buildFormState(feed: { title: string; url: string; issueId: string; language: string; crawlIntervalHours: number; htmlSelector: string | null; active: boolean }) {
+function buildFormState(feed: { title: string; rssUrl: string; url: string | null; displayTitle: string | null; issueId: string; language: string; crawlIntervalHours: number; htmlSelector: string | null; active: boolean }) {
   return {
     title: feed.title,
-    url: feed.url,
+    rssUrl: feed.rssUrl,
+    url: feed.url || '',
+    displayTitle: feed.displayTitle || '',
     issueId: feed.issueId,
     language: feed.language,
     crawlIntervalHours: String(feed.crawlIntervalHours),
@@ -81,7 +83,9 @@ function FeedEditForm({ feedId, issues, onClose }: { feedId: string; issues: Iss
     mutation: updateFeed,
     toPayload: (f) => ({
       title: f.title,
-      url: f.url,
+      rssUrl: f.rssUrl,
+      url: f.url || null,
+      displayTitle: f.displayTitle || null,
       issueId: f.issueId,
       language: f.language,
       crawlIntervalHours: Number(f.crawlIntervalHours),
@@ -109,7 +113,9 @@ function FeedEditForm({ feedId, issues, onClose }: { feedId: string; issues: Iss
           </div>
         )}
         <Input id="feed-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} required />
-        <Input id="feed-url" label="URL" type="url" value={form.url} onChange={e => set('url', e.target.value)} required />
+        <Input id="feed-display-title" label="Display Title (optional)" value={form.displayTitle} onChange={e => set('displayTitle', e.target.value)} placeholder="Public-facing name" />
+        <Input id="feed-rss-url" label="RSS URL" type="url" value={form.rssUrl} onChange={e => set('rssUrl', e.target.value)} required />
+        <Input id="feed-url" label="Homepage URL (optional)" type="url" value={form.url} onChange={e => set('url', e.target.value)} placeholder="e.g. https://reuters.com" />
         <Select
           id="feed-issue"
           label="Issue"

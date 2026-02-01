@@ -31,6 +31,7 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
   }
 
   // Parse RSS feed with conditional headers
+  // After migration + db:generate, change to feed.rssUrl
   const rssResult = await parseFeed(feed.url, {
     etag: feed.lastEtag,
     lastModified: feed.lastModified,

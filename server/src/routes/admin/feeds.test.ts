@@ -49,7 +49,7 @@ describe('Admin Feeds API', () => {
     it('returns all feeds', async () => {
       const feeds = [
         { ...sampleFeed(), issue: sampleIssue() },
-        { ...sampleFeed({ id: 'feed-2', url: 'https://example.com/feed2' }), issue: sampleIssue() },
+        { ...sampleFeed({ id: 'feed-2', rssUrl: 'https://example.com/feed2' }), issue: sampleIssue() },
       ]
       mockPrisma.feed.findMany.mockResolvedValue(feeds)
 
@@ -124,7 +124,7 @@ describe('Admin Feeds API', () => {
         .set(authHeader())
         .send({
           title: 'Test Feed',
-          url: 'https://example.com/feed',
+          rssUrl: 'https://example.com/feed',
           issueId: '00000000-0000-0000-0000-000000000001',
         })
       expect(res.status).toBe(201)
@@ -142,7 +142,7 @@ describe('Admin Feeds API', () => {
       const res = await request(app)
         .post('/api/admin/feeds')
         .set(authHeader())
-        .send({ title: 'Test', url: 'not-a-url', issueId: '00000000-0000-0000-0000-000000000001' })
+        .send({ title: 'Test', rssUrl: 'not-a-url', issueId: '00000000-0000-0000-0000-000000000001' })
       expect(res.status).toBe(400)
     })
 
@@ -154,7 +154,7 @@ describe('Admin Feeds API', () => {
         .set(authHeader())
         .send({
           title: 'Test Feed',
-          url: 'https://example.com/feed',
+          rssUrl: 'https://example.com/feed',
           issueId: '00000000-0000-0000-0000-000000000000',
         })
       expect(res.status).toBe(400)

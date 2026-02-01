@@ -46,7 +46,9 @@ export function sampleFeed(overrides: Record<string, any> = {}) {
   return {
     id: 'feed-1',
     title: 'Test Feed',
-    url: 'https://example.com/feed',
+    rssUrl: 'https://example.com/feed',
+    url: null,
+    displayTitle: null,
     language: 'en',
     issueId: 'issue-1',
     active: true,

@@ -9,6 +9,8 @@ import MethodologyPage from './pages/MethodologyPage'
 import AboutPage from './pages/AboutPage'
 import ImprintPage from './pages/ImprintPage'
 import PrivacyPage from './pages/PrivacyPage'
+import SearchPage from './pages/SearchPage'
+import SubscribedPage from './pages/SubscribedPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 import { ChunkErrorBoundary } from './components/ui/ChunkErrorBoundary'
@@ -56,6 +58,8 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/imprint" element={<ImprintPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/subscribed" element={<SubscribedPage />} />
       </Route>
 
       {/* Admin routes — lazy-loaded with error boundary for chunk failures */}

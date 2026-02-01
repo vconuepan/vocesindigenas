@@ -65,6 +65,7 @@ export interface Story {
   issue?: { id: string; name: string; slug: string } | null
   feed?: {
     title: string
+    displayTitle?: string | null
     issue?: {
       name: string
       slug: string
@@ -76,6 +77,7 @@ export interface PublicStory extends Story {
   feed: {
     id: string
     title: string
+    displayTitle: string | null
     issue: {
       name: string
       slug: string
@@ -86,7 +88,9 @@ export interface PublicStory extends Story {
 export interface Feed {
   id: string
   title: string
-  url: string
+  rssUrl: string
+  url: string | null
+  displayTitle: string | null
   language: string
   issueId: string
   active: boolean
@@ -143,6 +147,43 @@ export interface Newsletter {
   status: 'draft' | 'published'
   createdAt: string
   updatedAt: string
+}
+
+export type NewsletterSendStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+
+export interface NewsletterSend {
+  id: string
+  newsletterId: string
+  plunkCampaignId: string | null
+  isTest: boolean
+  status: NewsletterSendStatus
+  htmlContent: string
+  stats: Record<string, unknown>
+  errorMessage: string | null
+  sentAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PendingSubscription {
+  id: string
+  email: string
+  token: string
+  plunkContactId: string | null
+  confirmedAt: string | null
+  expiresAt: string
+  createdAt: string
+}
+
+export interface EmailEvent {
+  id: string
+  eventType: string
+  contactEmail: string | null
+  contactId: string | null
+  campaignId: string | null
+  payload: Record<string, unknown>
+  occurredAt: string
+  createdAt: string
 }
 
 export interface Podcast {

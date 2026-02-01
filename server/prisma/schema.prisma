@@ -84,7 +84,9 @@ model Story {
 model Feed {
   id                 String    @id @default(uuid())
   title              String
-  url                String    @unique
+  rssUrl             String    @unique @map("rss_url")
+  url                String?
+  displayTitle       String?   @map("display_title")
   language           String    @default("en")
   issueId            String    @map("issue_id")
   issue              Issue     @relation(fields: [issueId], references: [id])
@@ -131,15 +133,43 @@ model Issue {
 }
 
 model Newsletter {
-  id        String        @id @default(uuid())
+  id        String           @id @default(uuid())
   title     String
-  content   String        @default("")
-  storyIds  String[]      @map("story_ids")
-  status    ContentStatus @default(draft)
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+  content   String           @default("")
+  storyIds  String[]         @map("story_ids")
+  status    ContentStatus    @default(draft)
+  sends     NewsletterSend[]
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
 
   @@map("newsletters")
+}
+
+enum NewsletterSendStatus {
+  draft
+  scheduled
+  sending
+  sent
+  failed
+}
+
+model NewsletterSend {
+  id              String               @id @default(uuid())
+  newsletterId    String               @map("newsletter_id")
+  newsletter      Newsletter           @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+  plunkCampaignId String?              @map("plunk_campaign_id")
+  isTest          Boolean              @default(false) @map("is_test")
+  status          NewsletterSendStatus @default(draft)
+  htmlContent     String               @map("html_content")
+  stats           Json                 @default("{}")
+  errorMessage    String?              @map("error_message")
+  sentAt          DateTime?            @map("sent_at")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@index([newsletterId])
+  @@index([plunkCampaignId])
+  @@map("newsletter_sends")
 }
 
 model Podcast {
@@ -166,6 +196,38 @@ model JobRun {
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("job_runs")
+}
+
+// --- Subscription Tables ---
+
+model PendingSubscription {
+  id             String    @id @default(uuid())
+  email          String
+  token          String    @unique
+  plunkContactId String?   @map("plunk_contact_id")
+  confirmedAt    DateTime? @map("confirmed_at")
+  expiresAt      DateTime  @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([email])
+  @@map("pending_subscriptions")
+}
+
+model EmailEvent {
+  id            String   @id @default(uuid())
+  eventType     String   @map("event_type")
+  contactEmail  String?  @map("contact_email")
+  contactId     String?  @map("contact_id")
+  campaignId    String?  @map("campaign_id")
+  payload       Json
+  occurredAt    DateTime @default(now()) @map("occurred_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([campaignId])
+  @@index([eventType])
+  @@index([occurredAt])
+  @@map("email_events")
 }
 
 // --- Auth Tables ---

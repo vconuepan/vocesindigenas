@@ -11,6 +11,10 @@ export const updateNewsletterSchema = z.object({
   status: z.enum(['draft', 'published']).optional(),
 })
 
+export const sendLiveSchema = z.object({
+  scheduledFor: z.string().datetime().optional(),
+})
+
 export const newsletterQuerySchema = z.object({
   status: z.enum(['draft', 'published']).optional(),
   page: z.coerce.number().int().positive().optional(),

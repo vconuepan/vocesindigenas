@@ -394,6 +394,7 @@ const PUBLIC_STORY_SELECT = {
     select: {
       id: true,
       title: true,
+      // After migration + db:generate, uncomment: displayTitle: true,
       issue: {
         select: { name: true, slug: true },
       },
@@ -405,25 +406,15 @@ export async function getPublishedStories(options: {
   page?: number
   pageSize?: number
   issueSlug?: string
+  search?: string
 }) {
   const page = options.page || 1
   const pageSize = options.pageSize || 25
-  const where: Prisma.StoryWhereInput = {
-    status: 'published',
-  }
+  const conditions: Prisma.StoryWhereInput[] = []
   if (options.issueSlug) {
-    where.OR = [
-      {
-        issue: {
-          OR: [
-            { slug: options.issueSlug },
-            { parent: { slug: options.issueSlug } },
-          ],
-        },
-      },
-      {
-        issue: null,
-        feed: {
+    conditions.push({
+      OR: [
+        {
           issue: {
             OR: [
               { slug: options.issueSlug },
@@ -431,8 +422,31 @@ export async function getPublishedStories(options: {
             ],
           },
         },
-      },
-    ]
+        {
+          issue: null,
+          feed: {
+            issue: {
+              OR: [
+                { slug: options.issueSlug },
+                { parent: { slug: options.issueSlug } },
+              ],
+            },
+          },
+        },
+      ],
+    })
+  }
+  if (options.search) {
+    conditions.push({
+      OR: [
+        { title: { contains: options.search, mode: 'insensitive' } },
+        { summary: { contains: options.search, mode: 'insensitive' } },
+      ],
+    })
+  }
+  const where: Prisma.StoryWhereInput = {
+    status: 'published',
+    ...(conditions.length > 0 && { AND: conditions }),
   }
 
   return paginate({

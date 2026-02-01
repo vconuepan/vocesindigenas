@@ -3,6 +3,7 @@ import type {
   Feed,
   Issue,
   Newsletter,
+  NewsletterSend,
   Podcast,
   JobRun,
   User,
@@ -268,6 +269,13 @@ export const adminApi = {
     assign: (id: string) => request<Newsletter>(`/newsletters/${id}/assign`, { method: 'POST' }),
     generate: (id: string) => request<Newsletter>(`/newsletters/${id}/generate`, { method: 'POST' }),
     carousel: (id: string) => requestBlob(`/newsletters/${id}/carousel`, { method: 'POST' }),
+    generateHtml: (id: string) => request<{ html: string }>(`/newsletters/${id}/html`, { method: 'POST' }),
+    sendTest: (id: string) => request<NewsletterSend>(`/newsletters/${id}/send-test`, { method: 'POST' }),
+    sendLive: (id: string, scheduledFor?: string) =>
+      request<NewsletterSend>(`/newsletters/${id}/send-live`, { method: 'POST', body: JSON.stringify({ scheduledFor }) }),
+    listSends: (id: string) => request<NewsletterSend[]>(`/newsletters/${id}/sends`),
+    refreshStats: (id: string, sendId: string) =>
+      request<NewsletterSend>(`/newsletters/${id}/sends/${sendId}/refresh-stats`, { method: 'POST' }),
   },
 
   // Podcasts

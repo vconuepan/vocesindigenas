@@ -40,7 +40,9 @@ interface FeedCreateFormProps {
 export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
   const [form, setForm] = useState({
     title: '',
+    rssUrl: '',
     url: '',
+    displayTitle: '',
     issueId: '',
     language: 'en',
     crawlIntervalHours: '6',
@@ -53,7 +55,7 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
 
   useEffect(() => {
     if (open) {
-      setForm({ title: '', url: '', issueId: '', language: 'en', crawlIntervalHours: '6', htmlSelector: '', active: true })
+      setForm({ title: '', rssUrl: '', url: '', displayTitle: '', issueId: '', language: 'en', crawlIntervalHours: '6', htmlSelector: '', active: true })
     }
   }, [open])
 
@@ -64,7 +66,9 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
     try {
       await createFeed.mutateAsync({
         title: form.title,
-        url: form.url,
+        rssUrl: form.rssUrl,
+        url: form.url || null,
+        displayTitle: form.displayTitle || null,
         issueId: form.issueId,
         language: form.language,
         crawlIntervalHours: Number(form.crawlIntervalHours),
@@ -88,7 +92,9 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
           </DialogTitle>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input id="feed-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} required />
-            <Input id="feed-url" label="URL" type="url" value={form.url} onChange={e => set('url', e.target.value)} required />
+            <Input id="feed-display-title" label="Display Title (optional)" value={form.displayTitle} onChange={e => set('displayTitle', e.target.value)} placeholder="Public-facing name" />
+            <Input id="feed-rss-url" label="RSS URL" type="url" value={form.rssUrl} onChange={e => set('rssUrl', e.target.value)} required />
+            <Input id="feed-url" label="Homepage URL (optional)" type="url" value={form.url} onChange={e => set('url', e.target.value)} placeholder="e.g. https://reuters.com" />
             <Select
               id="feed-issue"
               label="Issue"

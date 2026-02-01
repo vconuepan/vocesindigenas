@@ -84,3 +84,49 @@ export function useGenerateCarousel() {
     },
   })
 }
+
+export function useGenerateHtml() {
+  return useMutation({
+    mutationFn: (id: string) => adminApi.newsletters.generateHtml(id),
+  })
+}
+
+export function useSendTestNewsletter() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => adminApi.newsletters.sendTest(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['newsletter-sends', id] })
+    },
+  })
+}
+
+export function useSendLiveNewsletter() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, scheduledFor }: { id: string; scheduledFor?: string }) =>
+      adminApi.newsletters.sendLive(id, scheduledFor),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['newsletter-sends', id] })
+    },
+  })
+}
+
+export function useNewsletterSends(id: string) {
+  return useQuery({
+    queryKey: ['newsletter-sends', id],
+    queryFn: () => adminApi.newsletters.listSends(id),
+    enabled: !!id,
+  })
+}
+
+export function useRefreshSendStats() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ newsletterId, sendId }: { newsletterId: string; sendId: string }) =>
+      adminApi.newsletters.refreshStats(newsletterId, sendId),
+    onSuccess: (_, { newsletterId }) => {
+      queryClient.invalidateQueries({ queryKey: ['newsletter-sends', newsletterId] })
+    },
+  })
+}

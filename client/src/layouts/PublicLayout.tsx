@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { getCategoryColor } from '../lib/category-colors'
 import { API_BASE } from '../lib/api'
-
-const SUBSCRIBE_LINK = { label: 'Subscribe', href: '/newsletter' }
+import SubscribeModal from '../components/SubscribeModal'
 
 const ISSUE_LINKS = [
   { label: 'Human Development', slug: 'human-development', href: '/issues/human-development' },
@@ -46,14 +45,14 @@ export default function PublicLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [subscribeOpen, setSubscribeOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
-
+  const navigate = useNavigate()
 
   const location = useLocation()
 
   const isActiveIssue = (href: string) =>
     location.pathname === href || location.pathname.startsWith(href + '/')
-  const isActive = (href: string) => location.pathname === href
 
   // Close mobile menu and search on Escape
   useEffect(() => {
@@ -116,19 +115,15 @@ export default function PublicLayout() {
               />
             </Link>
 
-            {/* Desktop: subscribe link */}
+            {/* Desktop: subscribe button */}
             <div className="hidden lg:flex items-center absolute right-12">
-              <Link
-                to={SUBSCRIBE_LINK.href}
-                className={`inline-flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 ${
-                  isActive(SUBSCRIBE_LINK.href)
-                    ? 'text-brand-700'
-                    : 'text-neutral-500 hover:text-brand-700'
-                }`}
+              <button
+                onClick={() => setSubscribeOpen(true)}
+                className="inline-flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
               >
                 <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
-                {SUBSCRIBE_LINK.label}
-              </Link>
+                Subscribe
+              </button>
             </div>
 
             {/* Mobile: search on left, menu on right */}
@@ -226,14 +221,13 @@ export default function PublicLayout() {
 
               {/* Subscribe */}
               <div className="border-t border-neutral-100 pt-3 px-2">
-                <Link
-                  to="/newsletter"
-                  onClick={() => setMenuOpen(false)}
+                <button
+                  onClick={() => { setMenuOpen(false); setSubscribeOpen(true) }}
                   className="inline-flex items-center gap-2 py-2.5 text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                   Subscribe to Newsletter
-                </Link>
+                </button>
               </div>
             </nav>
           </div>
@@ -246,7 +240,10 @@ export default function PublicLayout() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  // Search not yet implemented
+                  if (searchQuery.trim()) {
+                    navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+                    setSearchOpen(false)
+                  }
                 }}
                 className="relative"
               >
@@ -271,7 +268,7 @@ export default function PublicLayout() {
                   </svg>
                 </button>
               </form>
-              <p className="text-xs text-neutral-400 mt-2 text-center">Search is coming soon.</p>
+              <p className="text-xs text-neutral-400 mt-2 text-center">Search published stories by title or summary.</p>
             </div>
           </div>
         )}
@@ -362,13 +359,13 @@ export default function PublicLayout() {
               <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Subscribe</h3>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 <li className="flex items-center">
-                  <Link
-                    to="/newsletter"
+                  <button
+                    onClick={() => setSubscribeOpen(true)}
                     className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
                     <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                     Newsletter
-                  </Link>
+                  </button>
                 </li>
                 <li className="flex items-center">
                   <a
@@ -426,6 +423,8 @@ export default function PublicLayout() {
           </div>
         </div>
       </footer>
+
+      <SubscribeModal open={subscribeOpen} onClose={() => setSubscribeOpen(false)} />
     </div>
   )
 }
