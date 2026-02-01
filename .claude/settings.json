@@ -11,8 +11,7 @@
       "WebFetch(domain:developers.openai.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.diffbot.com)",
-      "WebFetch(domain:emailoctopus.com)",
-      "WebFetch(domain:help.emailoctopus.com)"
+      "WebFetch(domain:next-wiki.useplunk.com)"
     ]
   },
   "deny": [

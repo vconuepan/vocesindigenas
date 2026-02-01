@@ -10,8 +10,7 @@
       "Bash(npm view:*)",
       "Bash(npm audit:*)",
       "Bash(npx vitest:*)",
-      "Bash(npm ls:*)",
-      "mcp__playwright__browser_close"
+      "Bash(npm ls:*)"
     ]
   }
 }

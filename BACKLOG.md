@@ -4,12 +4,6 @@
 
 - Test cron jobs
 
-- Put this right before the </body> tag everywhere:
-<!-- 100% privacy-first analytics -->
-<script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
-
-- Feed filter in stories overview: move inactive/hidden feeds to the bottom of the dropdown list
-
 ## After public deployment
 
 - **Syntactic Search**
