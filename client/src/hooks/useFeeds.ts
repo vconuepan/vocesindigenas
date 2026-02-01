@@ -32,8 +32,9 @@ export function useUpdateFeed() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Feed> }) =>
       adminApi.feeds.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['feeds'] })
+      queryClient.invalidateQueries({ queryKey: ['feed', variables.id] })
     },
   })
 }
