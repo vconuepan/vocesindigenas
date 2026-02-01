@@ -83,8 +83,8 @@ function RuledHeading({ issue }: { issue: PublicIssue }) {
 
   return (
     <div className="relative z-20 mb-5">
-      <div className="flex items-center gap-4 text-neutral-400">
-        <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
+      <div className="flex items-center justify-center gap-4 text-neutral-400">
+        <span className="hidden md:block flex-1 border-t border-neutral-200" aria-hidden="true" />
         <Link
           to={`/issues/${issue.slug}`}
           className="flex items-center gap-2 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
@@ -92,7 +92,7 @@ function RuledHeading({ issue }: { issue: PublicIssue }) {
           <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
           <span className="text-lg font-bold uppercase tracking-wider md:text-xl">{issue.name}</span>
         </Link>
-        <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
+        <span className="hidden md:block flex-1 border-t border-neutral-200" aria-hidden="true" />
       </div>
     </div>
   )
@@ -133,7 +133,7 @@ function IssueSection({
 
   return (
     <>
-      <section className="relative mb-6 mt-14">
+      <section className="relative mb-6 mt-14 md:mt-28">
         {/* Large decorative illustration — extends left, overlaps content */}
         <div className="absolute -left-12 top-0 -translate-y-[40%] z-10 pointer-events-none select-none hidden md:block w-[200px] h-[200px]">
           <Illustration color={colors.hex} className="opacity-[0.18] w-full h-full" />
@@ -260,7 +260,7 @@ export default function HomePage() {
       {heroStory && <HeroSection story={heroStory} />}
 
       {/* Issue sections with rotating layouts */}
-      <div className="page-section-wide">
+      <div className="page-section-wide md:-mt-14">
         {sortedIssues.map((issue, idx) => {
           const layout = LAYOUTS[idx % LAYOUTS.length]
           const isLast = idx === sortedIssues.length - 1
