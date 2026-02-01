@@ -22,11 +22,11 @@ function parseJsonFields(issue: Issue) {
   }
 }
 
-function deriveSourceNames(feeds: { title: string; active: boolean }[]): string[] {
+function deriveSourceNames(feeds: { title: string; displayTitle: string | null; active: boolean }[]): string[] {
   return [...new Set(
     feeds
       .filter(f => f.active)
-      .map(f => f.title)
+      .map(f => f.displayTitle || f.title)
   )].sort()
 }
 
@@ -50,6 +50,7 @@ export async function getAllIssues() {
       feeds: {
         select: {
           title: true,
+          displayTitle: true,
           active: true,
           _count: { select: { stories: { where: { status: 'published' } } } }
         }
@@ -71,7 +72,7 @@ export async function getIssueById(id: string) {
     include: {
       parent: { select: { id: true, name: true, slug: true } },
       children: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
-      feeds: { select: { title: true, active: true } },
+      feeds: { select: { title: true, displayTitle: true, active: true } },
     },
   })
   if (!issue) return null
@@ -171,7 +172,7 @@ function parsePublicIssueJson(issue: any) {
 }
 
 export async function getPublicIssues() {
-  const feedSelect = { title: true, active: true } as const
+  const feedSelect = { title: true, displayTitle: true, active: true } as const
   const issues = await prisma.issue.findMany({
     where: { parentId: null },
     select: {
@@ -205,13 +206,14 @@ export async function getPublicIssueBySlug(slug: string) {
     where: { slug },
     select: {
       ...PUBLIC_ISSUE_SELECT,
-      feeds: { select: { title: true, active: true } },
+      feeds: { select: { title: true, displayTitle: true, active: true } },
       children: {
         select: {
           ...PUBLIC_ISSUE_SELECT,
           feeds: {
             select: {
               title: true,
+              displayTitle: true,
               active: true,
               _count: { select: { stories: { where: { status: 'published' } } } },
             },

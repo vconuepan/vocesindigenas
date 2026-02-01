@@ -47,9 +47,9 @@ describe('Issue Service — dynamic sourceNames', () => {
           parent: null,
           children: [],
           feeds: [
-            { title: 'TechCrunch', active: true, _count: { stories: 5 } },
-            { title: 'Ars Technica', active: true, _count: { stories: 3 } },
-            { title: 'Inactive Feed', active: false, _count: { stories: 1 } },
+            { title: 'TechCrunch', displayTitle: null, active: true, _count: { stories: 5 } },
+            { title: 'Ars Technica', displayTitle: null, active: true, _count: { stories: 3 } },
+            { title: 'Inactive Feed', displayTitle: null, active: false, _count: { stories: 1 } },
           ],
         },
       ])
@@ -111,9 +111,9 @@ describe('Issue Service — dynamic sourceNames', () => {
         parent: null,
         children: [],
         feeds: [
-          { title: 'Reuters', active: true },
-          { title: 'Bloomberg', active: true },
-          { title: 'Dead Source', active: false },
+          { title: 'Reuters', displayTitle: null, active: true },
+          { title: 'Bloomberg', displayTitle: null, active: true },
+          { title: 'Dead Source', displayTitle: null, active: false },
         ],
       })
 
@@ -121,6 +121,36 @@ describe('Issue Service — dynamic sourceNames', () => {
 
       expect(issue).not.toBeNull()
       expect(issue!.sourceNames).toEqual(['Bloomberg', 'Reuters'])
+    })
+
+    it('prefers displayTitle over title in sourceNames', async () => {
+      mockPrisma.issue.findUnique.mockResolvedValue({
+        id: 'issue-1',
+        name: 'AI & Technology',
+        slug: 'ai-technology',
+        description: '',
+        promptFactors: '',
+        promptAntifactors: '',
+        promptRatings: '',
+        parentId: null,
+        intro: '',
+        evaluationIntro: '',
+        evaluationCriteria: '',
+        sourceNames: '',
+        makeADifference: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        parent: null,
+        children: [],
+        feeds: [
+          { title: 'reuters-rss', displayTitle: 'Reuters', active: true },
+          { title: 'Bloomberg Terminal Feed', displayTitle: null, active: true },
+        ],
+      })
+
+      const issue = await getIssueById('issue-1')
+
+      expect(issue!.sourceNames).toEqual(['Bloomberg Terminal Feed', 'Reuters'])
     })
 
     it('returns empty sourceNames when no active feeds', async () => {
@@ -166,8 +196,8 @@ describe('Issue Service — dynamic sourceNames', () => {
           makeADifference: '',
           parentId: null,
           feeds: [
-            { title: 'Nature', active: true },
-            { title: 'Paused Feed', active: false },
+            { title: 'Nature', displayTitle: null, active: true },
+            { title: 'Paused Feed', displayTitle: null, active: false },
           ],
           children: [
             {
@@ -182,8 +212,8 @@ describe('Issue Service — dynamic sourceNames', () => {
               makeADifference: '',
               parentId: 'parent-1',
               feeds: [
-                { title: 'Alignment Forum', active: true },
-                { title: 'LessWrong', active: true },
+                { title: 'Alignment Forum', displayTitle: null, active: true },
+                { title: 'LessWrong', displayTitle: null, active: true },
               ],
             },
           ],
@@ -211,8 +241,8 @@ describe('Issue Service — dynamic sourceNames', () => {
         makeADifference: '',
         parentId: null,
         feeds: [
-          { title: 'Wired', active: true },
-          { title: 'MIT Tech Review', active: true },
+          { title: 'Wired', displayTitle: null, active: true },
+          { title: 'MIT Tech Review', displayTitle: null, active: true },
         ],
         children: [
           {
@@ -227,8 +257,8 @@ describe('Issue Service — dynamic sourceNames', () => {
             makeADifference: '',
             parentId: 'issue-1',
             feeds: [
-              { title: 'Alignment Forum', active: true, _count: { stories: 2 } },
-              { title: 'Inactive', active: false, _count: { stories: 1 } },
+              { title: 'Alignment Forum', displayTitle: null, active: true, _count: { stories: 2 } },
+              { title: 'Inactive', displayTitle: null, active: false, _count: { stories: 1 } },
             ],
           },
         ],
