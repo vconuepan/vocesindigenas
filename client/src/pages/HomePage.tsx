@@ -8,6 +8,7 @@ import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
+import { getCategoryIllustration } from '../lib/category-illustrations'
 import { formatDate } from '../lib/format'
 
 // ---------------------------------------------------------------------------
@@ -15,8 +16,8 @@ import { formatDate } from '../lib/format'
 // ---------------------------------------------------------------------------
 
 function HeroSection({ story }: { story: PublicStory }) {
-  const issueSlug = story.feed?.issue?.slug ?? 'general-news'
-  const issueName = story.feed?.issue?.name ?? 'News'
+  const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
+  const issueName = story.issue?.name ?? story.feed?.issue?.name ?? 'News'
   const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
@@ -79,23 +80,20 @@ function HeroSection({ story }: { story: PublicStory }) {
 
 function RuledHeading({ issue }: { issue: PublicIssue }) {
   const colors = getCategoryColor(issue.slug)
+
   return (
-    <div className="flex items-center justify-between mb-5">
-      <div className="ruled-heading flex-1">
+    <div className="relative z-20 mb-5">
+      <div className="flex items-center gap-4 text-neutral-400">
+        <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
         <Link
           to={`/issues/${issue.slug}`}
           className="flex items-center gap-2 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
         >
           <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
-          {issue.name}
+          <span className="text-lg font-bold uppercase tracking-wider md:text-xl">{issue.name}</span>
         </Link>
+        <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
       </div>
-      <Link
-        to={`/issues/${issue.slug}`}
-        className="text-sm text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1 ml-4 shrink-0"
-      >
-        View all &rarr;
-      </Link>
     </div>
   )
 }
@@ -121,6 +119,8 @@ function IssueSection({
 }) {
   const { data } = usePublicStories({ issueSlug: issue.slug, pageSize: 5 })
   const allStories = data?.data ?? []
+  const colors = getCategoryColor(issue.slug)
+  const Illustration = getCategoryIllustration(issue.slug)
 
   // Exclude the hero story from this section
   const stories = heroStoryId
@@ -133,56 +133,63 @@ function IssueSection({
 
   return (
     <>
-      <section className="mb-6">
+      <section className="relative mb-6 mt-14">
+        {/* Large decorative illustration — extends left, overlaps content */}
+        <div className="absolute -left-12 top-0 -translate-y-[40%] z-10 pointer-events-none select-none hidden md:block w-[200px] h-[200px]">
+          <Illustration color={colors.hex} className="opacity-[0.18] w-full h-full" />
+        </div>
+
         <RuledHeading issue={issue} />
 
-        {/* Layout A: 2+3 grid (featured left, compacts right) */}
-        {layout === 'A' && (
-          <div className="grid gap-5 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <StoryCard story={featured} variant="featured" />
-            </div>
-            {rest.length > 0 && (
-              <div className="space-y-3">
-                {rest.slice(0, 3).map((story) => (
-                  <StoryCard key={story.id} story={story} variant="compact" />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Layout B: Full-width horizontal card + compact row below */}
-        {layout === 'B' && (
-          <div className="space-y-5">
-            <StoryCard story={featured} variant="horizontal" />
-            {rest.length > 0 && (
-              <div className="grid gap-5 md:grid-cols-3">
-                {rest.slice(0, 3).map((story) => (
-                  <StoryCard key={story.id} story={story} variant="compact" />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Layout C: Three equal columns + compact remainder */}
-        {layout === 'C' && (
-          <div className="space-y-5">
+        <div className="relative">
+          {/* Layout A: 2+3 grid (featured left, compacts right) */}
+          {layout === 'A' && (
             <div className="grid gap-5 md:grid-cols-3">
-              {stories.slice(0, 3).map((story) => (
-                <StoryCard key={story.id} story={story} variant="equal" />
-              ))}
+              <div className="md:col-span-2">
+                <StoryCard story={featured} variant="featured" />
+              </div>
+              {rest.length > 0 && (
+                <div className="space-y-3">
+                  {rest.slice(0, 3).map((story) => (
+                    <StoryCard key={story.id} story={story} variant="compact" />
+                  ))}
+                </div>
+              )}
             </div>
-            {stories.length > 3 && (
+          )}
+
+          {/* Layout B: Full-width horizontal card + compact row below */}
+          {layout === 'B' && (
+            <div className="space-y-5">
+              <StoryCard story={featured} variant="horizontal" />
+              {rest.length > 0 && (
+                <div className="grid gap-5 md:grid-cols-3">
+                  {rest.slice(0, 3).map((story) => (
+                    <StoryCard key={story.id} story={story} variant="compact" />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Layout C: Three equal columns + compact remainder */}
+          {layout === 'C' && (
+            <div className="space-y-5">
               <div className="grid gap-5 md:grid-cols-3">
-                {stories.slice(3).map((story) => (
-                  <StoryCard key={story.id} story={story} variant="compact" />
+                {stories.slice(0, 3).map((story) => (
+                  <StoryCard key={story.id} story={story} variant="equal" />
                 ))}
               </div>
-            )}
-          </div>
-        )}
+              {stories.length > 3 && (
+                <div className="grid gap-5 md:grid-cols-3">
+                  {stories.slice(3).map((story) => (
+                    <StoryCard key={story.id} story={story} variant="compact" />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Section divider */}
@@ -261,7 +268,7 @@ export default function HomePage() {
             ? 'none'
             : idx % 2 === 0
               ? 'quote'
-              : 'diamond'
+              : 'none'
 
           const currentQuoteIdx = divider === 'quote' ? quoteIdx++ : 0
 

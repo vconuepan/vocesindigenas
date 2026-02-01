@@ -32,7 +32,7 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
 }
 
 export default function StoryCard({ story, variant = 'featured' }: StoryCardProps) {
-  const issueSlug = story.feed?.issue?.slug ?? 'general-news'
+  const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
 

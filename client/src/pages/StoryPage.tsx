@@ -140,8 +140,8 @@ export default function StoryPage() {
     : null
 
   const description = story.summary || displayTitle
-  const issueSlug = story.feed?.issue?.slug ?? 'general-news'
-  const issueName = story.feed?.issue?.name ?? 'News'
+  const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
+  const issueName = story.issue?.name ?? story.feed?.issue?.name ?? 'News'
   const colors = getCategoryColor(issueSlug)
 
   return (

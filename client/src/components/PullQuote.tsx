@@ -18,7 +18,7 @@ interface PullQuoteProps {
 export default function PullQuote({ story, variant = 'centered' }: PullQuoteProps) {
   if (!story.quote) return null
 
-  const issueSlug = story.feed?.issue?.slug ?? 'general-news'
+  const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const colors = getCategoryColor(issueSlug)
 
   const attribution = (
