@@ -68,7 +68,7 @@ describe('crawlFeed', () => {
     }))
   })
 
-  it('handles 304 not modified response', async () => {
+  it('handles 304 not modified response (preserves existing errors)', async () => {
     mockGetFeedById.mockResolvedValue(sampleFeed)
     mockParseFeed.mockResolvedValue(rssResult([], { notModified: true }))
 
@@ -76,6 +76,7 @@ describe('crawlFeed', () => {
 
     expect(result.newStories).toBe(0)
     expect(mockUpdateCrawlStatus).toHaveBeenCalledWith('feed-1', expect.objectContaining({
+      hadSuccess: false,
       crawlResult: '304 not modified',
     }))
   })
@@ -233,6 +234,49 @@ describe('crawlFeed', () => {
     )
   })
 
+  it('does not claim success when all items are skipped (preserves previous error)', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    mockParseFeed.mockResolvedValue(rssResult([
+      { url: 'https://example.com/old1', title: 'Old 1', datePublished: null, description: null },
+      { url: 'https://example.com/old2', title: 'Old 2', datePublished: null, description: null },
+    ]))
+    mockGetExistingUrls.mockResolvedValue(new Set(['https://example.com/old1', 'https://example.com/old2']))
+
+    const result = await crawlFeed('feed-1')
+
+    expect(result.newStories).toBe(0)
+    expect(result.skipped).toBe(2)
+    // hadSuccess should be false (0 new > 0 is false), so updateCrawlStatus
+    // won't clear existing error fields
+    expect(mockUpdateCrawlStatus).toHaveBeenCalledWith('feed-1', expect.objectContaining({
+      hadSuccess: false,
+      errorMessage: undefined,
+      newItemCount: 0,
+      rssItemCount: 2,
+    }))
+  })
+
+  it('clears error when crawl has genuine new successes', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    mockParseFeed.mockResolvedValue(rssResult([
+      { url: 'https://example.com/new1', title: 'New 1', datePublished: null, description: null },
+    ]))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    mockExtractContent.mockResolvedValue({
+      title: 'New 1', content: 'Content', datePublished: null, method: 'readability',
+    })
+    mockCreateStory.mockResolvedValue({ id: 'story-1' })
+
+    const result = await crawlFeed('feed-1')
+
+    expect(result.newStories).toBe(1)
+    // hadSuccess is true, so updateCrawlStatus will clear error fields
+    expect(mockUpdateCrawlStatus).toHaveBeenCalledWith('feed-1', expect.objectContaining({
+      hadSuccess: true,
+      errorMessage: undefined,
+    }))
+  })
+
   it('passes htmlSelector to extractor', async () => {
     const feedWithSelector = { ...sampleFeed, htmlSelector: '.article-body' }
     mockGetFeedById.mockResolvedValue(feedWithSelector)
@@ -249,8 +293,123 @@ describe('crawlFeed', () => {
 
     expect(mockExtractContent).toHaveBeenCalledWith(
       'https://example.com/a',
-      { htmlSelector: '.article-body' }
+      { htmlSelector: '.article-body', skipLocalExtraction: false }
     )
+  })
+
+  it('skips local extraction after consecutive API-only successes reach threshold', async () => {
+    // With concurrency=3, the first 3 articles run concurrently (all with skipLocal=false).
+    // Use concurrency=1 via 5 sequential articles to test threshold (default 3).
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    const items = Array.from({ length: 5 }, (_, i) => ({
+      url: `https://example.com/art-${i}`,
+      title: `Art ${i}`,
+      datePublished: null,
+      description: null,
+    }))
+    mockParseFeed.mockResolvedValue(rssResult(items))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    // All return API method (diffbot)
+    mockExtractContent.mockResolvedValue({
+      title: 'T', content: 'Content', datePublished: null, method: 'diffbot',
+    })
+    mockCreateStory.mockResolvedValue({ id: 'story-1' })
+
+    await crawlFeed('feed-1')
+
+    // The first crawlArticles (3) articles run concurrently with skipLocal=false.
+    // After those 3 complete (all diffbot), localFailCount=3 → skipLocal=true.
+    // Articles 4 and 5 should have skipLocalExtraction=true.
+    const calls = mockExtractContent.mock.calls
+    expect(calls).toHaveLength(5)
+    // First 3 calls: skipLocalExtraction=false (concurrent batch)
+    expect(calls[0][1]).toEqual({ htmlSelector: null, skipLocalExtraction: false })
+    expect(calls[1][1]).toEqual({ htmlSelector: null, skipLocalExtraction: false })
+    expect(calls[2][1]).toEqual({ htmlSelector: null, skipLocalExtraction: false })
+    // Remaining calls: skipLocalExtraction=true
+    expect(calls[3][1]).toEqual({ htmlSelector: null, skipLocalExtraction: true })
+    expect(calls[4][1]).toEqual({ htmlSelector: null, skipLocalExtraction: true })
+  })
+
+  it('skips remaining articles after consecutive total extraction failures', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    const items = Array.from({ length: 6 }, (_, i) => ({
+      url: `https://example.com/art-${i}`,
+      title: `Art ${i}`,
+      datePublished: null,
+      description: null,
+    }))
+    mockParseFeed.mockResolvedValue(rssResult(items))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    // All extractions return null (total failure)
+    mockExtractContent.mockResolvedValue(null)
+
+    const result = await crawlFeed('feed-1')
+
+    // First 3 (concurrent batch) attempt extraction → all fail → totalFailCount=3 → skipAll=true
+    // Articles 4-6 are skipped entirely without calling extractContent
+    expect(mockExtractContent).toHaveBeenCalledTimes(3)
+    expect(result.errors).toBe(6)
+  })
+
+  it('resets total fail count when extraction succeeds', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    const items = Array.from({ length: 6 }, (_, i) => ({
+      url: `https://example.com/art-${i}`,
+      title: `Art ${i}`,
+      datePublished: null,
+      description: null,
+    }))
+    mockParseFeed.mockResolvedValue(rssResult(items))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    // First 2 fail, 3rd succeeds, 4th+5th+6th fail
+    mockExtractContent
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ title: 'T', content: 'C', datePublished: null, method: 'diffbot' })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+    mockCreateStory.mockResolvedValue({ id: 'story-1' })
+
+    const result = await crawlFeed('feed-1')
+
+    // All 6 should be attempted: the success at article 3 resets totalFailCount.
+    // After articles 4-6 fail (count=3), skipAll would be true but there are no more articles.
+    expect(mockExtractContent).toHaveBeenCalledTimes(6)
+    expect(result.newStories).toBe(1)
+    expect(result.errors).toBe(5)
+  })
+
+  it('resets local fail count when a local extraction method succeeds', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    const items = Array.from({ length: 5 }, (_, i) => ({
+      url: `https://example.com/art-${i}`,
+      title: `Art ${i}`,
+      datePublished: null,
+      description: null,
+    }))
+    mockParseFeed.mockResolvedValue(rssResult(items))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    // First 2 → diffbot, 3rd → readability (resets counter), 4th+5th → diffbot
+    mockExtractContent
+      .mockResolvedValueOnce({ title: 'T', content: 'C', datePublished: null, method: 'diffbot' })
+      .mockResolvedValueOnce({ title: 'T', content: 'C', datePublished: null, method: 'diffbot' })
+      .mockResolvedValueOnce({ title: 'T', content: 'C', datePublished: null, method: 'readability' })
+      .mockResolvedValueOnce({ title: 'T', content: 'C', datePublished: null, method: 'diffbot' })
+      .mockResolvedValueOnce({ title: 'T', content: 'C', datePublished: null, method: 'diffbot' })
+    mockCreateStory.mockResolvedValue({ id: 'story-1' })
+
+    await crawlFeed('feed-1')
+
+    const calls = mockExtractContent.mock.calls
+    expect(calls).toHaveLength(5)
+    // All should have skipLocalExtraction=false because the readability success resets the counter.
+    // With concurrency=3, first 3 run together (all false). Article 3 is readability → resets to 0.
+    // Articles 4 and 5: counter was reset, so 2 diffbot results → count=2, still < 3.
+    for (const call of calls) {
+      expect(call[1]).toEqual(expect.objectContaining({ skipLocalExtraction: false }))
+    }
   })
 })
 

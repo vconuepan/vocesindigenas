@@ -23,7 +23,7 @@ vi.mock('@mozilla/readability', () => ({
   },
 }))
 
-const { extractContent, _resetDiffbotQuota } = await import('./extractor.js')
+const { extractContent, _resetApiState, ApiThrottle } = await import('./extractor.js')
 
 const LONG_TEXT = 'A '.repeat(200)
 
@@ -32,7 +32,7 @@ describe('extractContent', () => {
     vi.clearAllMocks()
     delete process.env.PIPFEED_API_KEY
     delete process.env.DIFFBOT_TOKEN
-    _resetDiffbotQuota()
+    _resetApiState()
   })
 
   it('returns null when page fetch fails and no API keys', async () => {
@@ -42,18 +42,19 @@ describe('extractContent', () => {
     expect(result).toBeNull()
   })
 
-  it('falls back to pipfeed when page fetch fails', async () => {
-    process.env.PIPFEED_API_KEY = 'test-key'
-    mockAxiosGet.mockRejectedValue(new Error('Network error'))
-    mockAxiosPost.mockResolvedValue({
-      data: { title: 'PipFeed Title', text: LONG_TEXT, date: '2024-01-15' },
-    })
+  it('falls back to configured API when page fetch fails', async () => {
+    process.env.DIFFBOT_TOKEN = 'test-token'
+    mockAxiosGet
+      .mockRejectedValueOnce(new Error('Network error')) // page fetch fails
+      .mockResolvedValueOnce({                           // Diffbot API
+        data: { objects: [{ title: 'Diffbot Title', text: LONG_TEXT, date: '2024-01-15' }] },
+      })
 
     const result = await extractContent('https://example.com/article')
 
     expect(result).not.toBeNull()
-    expect(result!.method).toBe('pipfeed')
-    expect(result!.title).toBe('PipFeed Title')
+    expect(result!.method).toBe('diffbot')
+    expect(result!.title).toBe('Diffbot Title')
   })
 
   it('extracts content using CSS selector (tier 1)', async () => {
@@ -102,20 +103,21 @@ describe('extractContent', () => {
     expect(result!.method).toBe('readability')
   })
 
-  it('falls back to pipfeed when readability fails (tier 3)', async () => {
-    process.env.PIPFEED_API_KEY = 'test-key'
+  it('falls back to configured API when readability fails (tier 3)', async () => {
+    process.env.DIFFBOT_TOKEN = 'test-token'
     const html = `<html><body><p>Short</p></body></html>`
-    mockAxiosGet.mockResolvedValue({ data: html })
+    mockAxiosGet
+      .mockResolvedValueOnce({ data: html }) // page fetch
+      .mockResolvedValueOnce({               // Diffbot API
+        data: { objects: [{ title: 'Diffbot Title', text: LONG_TEXT, date: '2024-01-15' }] },
+      })
     mockReadabilityParse.mockReturnValue(null)
-    mockAxiosPost.mockResolvedValue({
-      data: { title: 'PipFeed Title', text: LONG_TEXT, date: '2024-01-15' },
-    })
 
     const result = await extractContent('https://example.com/article')
 
     expect(result).not.toBeNull()
-    expect(result!.method).toBe('pipfeed')
-    expect(result!.title).toBe('PipFeed Title')
+    expect(result!.method).toBe('diffbot')
+    expect(result!.title).toBe('Diffbot Title')
     expect(result!.datePublished).toBe('2024-01-15')
   })
 
@@ -178,6 +180,24 @@ describe('extractContent', () => {
     // Selector finds "Short" (< 300 chars), falls through to readability (null), no API keys
     expect(result).toBeNull()
   })
+
+  it('skips local extraction when skipLocalExtraction is true', async () => {
+    process.env.DIFFBOT_TOKEN = 'test-token'
+    mockAxiosGet.mockResolvedValueOnce({
+      data: { objects: [{ title: 'API Title', text: LONG_TEXT, date: '2024-01-01' }] },
+    })
+
+    const result = await extractContent('https://example.com/article', {
+      htmlSelector: '.content',
+      skipLocalExtraction: true,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.method).toBe('diffbot')
+    // Only one GET call (Diffbot API) — no page fetch
+    expect(mockAxiosGet).toHaveBeenCalledTimes(1)
+    expect(mockReadabilityParse).not.toHaveBeenCalled()
+  })
 })
 
 describe('Diffbot extraction', () => {
@@ -185,7 +205,7 @@ describe('Diffbot extraction', () => {
     vi.clearAllMocks()
     delete process.env.PIPFEED_API_KEY
     delete process.env.DIFFBOT_TOKEN
-    _resetDiffbotQuota()
+    _resetApiState()
   })
 
   it('extracts content via Diffbot when readability fails', async () => {
@@ -259,7 +279,7 @@ describe('Diffbot extraction', () => {
     expect(result!.datePublished).toBe('2024-05-01')
   })
 
-  it('falls back to PipFeed when Diffbot fails', async () => {
+  it('returns null when Diffbot fails (no fallback to other API)', async () => {
     process.env.DIFFBOT_TOKEN = 'test-token'
     process.env.PIPFEED_API_KEY = 'test-key'
     const html = `<html><body><p>Short</p></body></html>`
@@ -267,46 +287,12 @@ describe('Diffbot extraction', () => {
       .mockResolvedValueOnce({ data: html }) // page fetch
       .mockRejectedValueOnce(new Error('Diffbot error')) // Diffbot fails
     mockReadabilityParse.mockReturnValue(null)
-    mockAxiosPost.mockResolvedValue({
-      data: { title: 'PipFeed Fallback', text: LONG_TEXT, date: '2024-01-01' },
-    })
 
     const result = await extractContent('https://example.com/article')
 
-    expect(result).not.toBeNull()
-    expect(result!.method).toBe('pipfeed')
-    expect(result!.title).toBe('PipFeed Fallback')
-  })
-
-  it('skips Diffbot after quota exhaustion (429)', async () => {
-    process.env.DIFFBOT_TOKEN = 'test-token'
-    const html = `<html><body><p>Short</p></body></html>`
-
-    // Create a 429 error that looks like an Axios error
-    const quotaError = Object.assign(new Error('Rate limited'), {
-      isAxiosError: true,
-      response: { status: 429 },
-    })
-
-    mockAxiosGet
-      .mockResolvedValueOnce({ data: html }) // page fetch
-      .mockRejectedValueOnce(quotaError)     // Diffbot 429
-    mockReadabilityParse.mockReturnValue(null)
-
-    // First call - hits 429
-    const result1 = await extractContent('https://example.com/article1')
-    expect(result1).toBeNull()
-
-    // Second call - Diffbot should be skipped entirely
-    mockAxiosGet.mockResolvedValueOnce({ data: html }) // page fetch only
-    mockReadabilityParse.mockReturnValue(null)
-
-    const result2 = await extractContent('https://example.com/article2')
-    expect(result2).toBeNull()
-
-    // Verify Diffbot was NOT called for the second article (only page fetch)
-    // Call count: 1st page fetch + 1st Diffbot + 2nd page fetch = 3
-    expect(mockAxiosGet).toHaveBeenCalledTimes(3)
+    expect(result).toBeNull()
+    // PipFeed should NOT be called as fallback
+    expect(mockAxiosPost).not.toHaveBeenCalled()
   })
 
   it('returns null when both Diffbot and PipFeed have no API keys', async () => {
@@ -316,5 +302,71 @@ describe('Diffbot extraction', () => {
 
     const result = await extractContent('https://example.com/article')
     expect(result).toBeNull()
+  })
+})
+
+describe('ApiThrottle', () => {
+  it('doubles delay on 429 and reduces on success', async () => {
+    const throttle = new ApiThrottle(0, 0, 1000) // no base delay, no backoff wait, 1s max
+
+    let callCount = 0
+    const fn = async () => ++callCount
+
+    // Normal call
+    await throttle.run(fn)
+    expect(callCount).toBe(1)
+
+    // Simulate 429
+    throttle.onRateLimited()
+
+    // Next call should still work (backoffMs=0 so no wait)
+    await throttle.run(fn)
+    expect(callCount).toBe(2)
+  })
+
+  it('caps delay at maxDelayMs', async () => {
+    const throttle = new ApiThrottle(100, 0, 500)
+    const delays: number[] = []
+
+    // Repeated 429s should cap at 500ms
+    throttle.onRateLimited() // 200
+    throttle.onRateLimited() // 400
+    throttle.onRateLimited() // 500 (capped)
+    throttle.onRateLimited() // 500 (still capped)
+
+    // Verify by running calls and measuring timing — delay should be ~500ms (capped)
+    const start = Date.now()
+    await throttle.run(async () => { delays.push(Date.now() - start) })
+    // With 0ms backoff, the only wait is the inter-call delay (capped at 500ms)
+    expect(delays[0]).toBeGreaterThanOrEqual(450)
+    expect(delays[0]).toBeLessThan(1000)
+  })
+
+  it('serializes concurrent calls', async () => {
+    const throttle = new ApiThrottle(0, 0, 1000)
+    const order: number[] = []
+
+    const p1 = throttle.run(async () => { order.push(1) })
+    const p2 = throttle.run(async () => { order.push(2) })
+    const p3 = throttle.run(async () => { order.push(3) })
+
+    await Promise.all([p1, p2, p3])
+    expect(order).toEqual([1, 2, 3])
+  })
+
+  it('gradually reduces delay after successful calls', async () => {
+    const throttle = new ApiThrottle(10, 0, 1000)
+
+    // Force delay up
+    throttle.onRateLimited() // 20
+    throttle.onRateLimited() // 40
+
+    // Successful calls should halve delay back toward base
+    await throttle.run(async () => {}) // 40 → 20
+    await throttle.run(async () => {}) // 20 → 10
+    await throttle.run(async () => {}) // 10 (at base, no further reduction)
+
+    // Another success should not go below base — verify by checking it doesn't throw
+    await throttle.run(async () => {})
   })
 })

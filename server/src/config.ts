@@ -36,6 +36,8 @@ export const config = {
     pipfeedTimeoutMs: parseInt(process.env.PIPFEED_TIMEOUT_MS || '15000', 10),
     maxConcurrencyPerDomain: parseInt(process.env.MAX_CONCURRENCY_PER_DOMAIN || '2', 10),
     minDelayPerDomainMs: parseInt(process.env.MIN_DELAY_PER_DOMAIN_MS || '200', 10),
+    localFailThreshold: parseInt(process.env.LOCAL_FAIL_THRESHOLD || '3', 10),
+    totalFailThreshold: parseInt(process.env.TOTAL_FAIL_THRESHOLD || '3', 10),
   },
   content: {
     storyAssignmentDays: parseInt(process.env.STORY_ASSIGNMENT_DAYS || '7', 10),

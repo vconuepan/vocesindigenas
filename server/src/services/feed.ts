@@ -82,6 +82,7 @@ export interface CrawlOutcome {
   newItemCount: number
   rssItemCount: number
   crawlResult?: string
+  notModified?: boolean
 }
 
 export async function updateCrawlStatus(id: string, outcome: CrawlOutcome): Promise<void> {
@@ -96,9 +97,18 @@ export async function updateCrawlStatus(id: string, outcome: CrawlOutcome): Prom
   const isTotalFailure = !hadSuccess && newItemCount > 0
 
   const data: Record<string, unknown> = {
-    lastCrawlError: errorMessage || null,
-    lastCrawlErrorAt: errorMessage ? now : null,
     lastCrawlResult: outcome.crawlResult || null,
+  }
+
+  // Only update error fields if there's a new error or a genuine success.
+  // When !hadSuccess && !errorMessage (e.g., all items skipped after a previous error),
+  // leave lastCrawlError/lastCrawlErrorAt unchanged so the error persists.
+  if (errorMessage) {
+    data.lastCrawlError = errorMessage
+    data.lastCrawlErrorAt = now
+  } else if (hadSuccess) {
+    data.lastCrawlError = null
+    data.lastCrawlErrorAt = null
   }
 
   if (isTotalFailure) {
@@ -117,8 +127,9 @@ export async function updateCrawlStatus(id: string, outcome: CrawlOutcome): Prom
     data.consecutiveFailedCrawls = 0
   }
 
-  // Health metrics: track empty crawls (RSS returned zero items)
-  if (rssItemCount === 0) {
+  // Health metrics: track empty crawls (RSS returned zero items).
+  // 304 Not Modified is not an empty crawl — it means the feed is using caching correctly.
+  if (rssItemCount === 0 && !outcome.notModified) {
     data.consecutiveEmptyCrawls = { increment: 1 }
   } else if (hadSuccess) {
     data.consecutiveEmptyCrawls = 0

@@ -5,7 +5,6 @@ import {
   TrashIcon,
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
-  ExclamationTriangleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline'
 import type { Feed, Issue } from '@shared/types'
@@ -61,9 +60,12 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
                   {feed.lastCrawlError && (
                     <span
                       title={`${feed.lastCrawlError}${feed.lastCrawlErrorAt ? ` (${formatDateWithTime(feed.lastCrawlErrorAt)})` : ''}`}
-                      className="shrink-0 text-amber-500"
+                      aria-label={`Crawl error: ${feed.lastCrawlError}`}
+                      className="shrink-0 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700"
                     >
-                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      {feed.lastCrawlError.length > 30
+                        ? feed.lastCrawlError.slice(0, 30) + '\u2026'
+                        : feed.lastCrawlError}
                     </span>
                   )}
                   {feed.consecutiveEmptyCrawls >= 5 && (

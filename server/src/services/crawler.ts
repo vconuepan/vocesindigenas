@@ -41,9 +41,10 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
     await updateFeedCacheHeaders(feedId, rssResult.cacheHeaders)
   }
 
-  // 304 Not Modified — nothing to do
+  // 304 Not Modified — nothing to do. hadSuccess=false so existing errors are preserved
+  // (no errorMessage + !hadSuccess leaves lastCrawlError untouched in updateCrawlStatus)
   if (rssResult.notModified) {
-    await updateCrawlStatus(feedId, { hadSuccess: true, newItemCount: 0, rssItemCount: 0, crawlResult: '304 not modified' })
+    await updateCrawlStatus(feedId, { hadSuccess: false, newItemCount: 0, rssItemCount: 0, crawlResult: '304 not modified', notModified: true })
     return result
   }
 
@@ -59,21 +60,49 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
   const newItems = rssItems.filter(item => !existingUrls.has(item.url))
   result.skipped = rssItems.length - newItems.length
 
-  // Extract content and create stories (parallel with concurrency limit)
+  // Extract content and create stories (parallel with concurrency limit).
+  // The fail counters below are shared across concurrent tasks. This is safe because
+  // Node.js is single-threaded: mutations happen synchronously between await points,
+  // so concurrent tasks never interleave mid-increment. The first concurrent batch
+  // (size = crawlArticles) all read the initial values; thresholds take effect for
+  // subsequent batches after the first batch completes.
   const articleSemaphore = new Semaphore(config.concurrency.crawlArticles)
   const totalArticles = newItems.length
+  let localFailCount = 0
+  let totalFailCount = 0
+  let skipLocal = false
+  let skipAll = false
   await Promise.allSettled(
     newItems.map(item => articleSemaphore.run(async () => {
+      if (skipAll) {
+        log.info({ url: item.url }, 'skipping article, too many consecutive total failures')
+        result.errors++
+        return
+      }
       try {
         const extracted = await extractContent(item.url, {
           htmlSelector: feed.htmlSelector,
+          skipLocalExtraction: skipLocal,
         })
 
         if (!extracted) {
+          totalFailCount++
+          if (totalFailCount >= config.crawl.totalFailThreshold) {
+            skipAll = true
+            log.warn({ feed: feed.title, totalFailCount }, 'all extraction methods failing, skipping remaining articles')
+          }
           log.warn({ url: item.url }, 'no content extracted')
           result.errors++
           return
         }
+
+        totalFailCount = 0
+        if (extracted.method === 'selector' || extracted.method === 'readability') {
+          localFailCount = 0
+        } else {
+          localFailCount++
+        }
+        if (localFailCount >= config.crawl.localFailThreshold) skipLocal = true
 
         await createStory({
           sourceUrl: item.url,
