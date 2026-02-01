@@ -4,14 +4,13 @@ import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
 import { formatDate } from '../lib/format'
 import FeedFavicon from './FeedFavicon'
-import UpliftingBadge from './UpliftingBadge'
 
 interface StoryCardProps {
   story: PublicStory
   variant?: 'featured' | 'compact' | 'horizontal' | 'equal'
 }
 
-function StoryMeta({ story, size = 'sm', issueColor }: { story: PublicStory; size?: 'sm' | 'xs'; issueColor?: string }) {
+function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
   return (
     <div className={`flex flex-wrap items-center gap-x-2 text-neutral-500 ${size === 'xs' ? 'text-xs' : 'text-sm'}`}>
@@ -28,50 +27,6 @@ function StoryMeta({ story, size = 'sm', issueColor }: { story: PublicStory; siz
         </a>
         {dateStr && <> · {dateStr}</>}
       </span>
-      {/* Mobile: inline pill badge */}
-      {story.emotionTag === 'uplifting' && (
-        <span className="md:hidden">
-          <UpliftingBadge size={size} color={issueColor} />
-        </span>
-      )}
-    </div>
-  )
-}
-
-/**
- * Corner ribbon for uplifting stories on desktop.
- * Shows a small triangular fold in the top-right corner with a sun icon.
- * Color matches the issue category.
- */
-function UpliftingRibbon({ color }: { color: string }) {
-  return (
-    <div
-      className="hidden md:block absolute top-0 right-0 z-20 overflow-hidden w-7 h-7"
-      title="Uplifting story"
-      role="img"
-      aria-label="Uplifting story"
-    >
-      {/* Triangle background */}
-      <div className="absolute top-0 right-0 w-0 h-0" style={{
-        borderTop: `28px solid ${color}`,
-        borderLeft: '28px solid transparent',
-      }} />
-      {/* Sun icon */}
-      <svg
-        className="absolute top-[3px] right-[3px] w-2.5 h-2.5 text-white"
-        viewBox="0 0 16 16"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <circle cx="8" cy="8" r="3.5" />
-        <path
-          d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
     </div>
   )
 }
@@ -80,7 +35,6 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   const issueSlug = story.feed?.issue?.slug ?? 'general-news'
   const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
-  const isUplifting = story.emotionTag === 'uplifting'
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
 
@@ -92,7 +46,6 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         style={hoverStyle}
       >
         <Pattern opacity={0.15} />
-        {isUplifting && <UpliftingRibbon color={colors.hex} />}
         <div className="relative z-10 flex flex-col md:flex-row md:items-stretch">
           {/* Left: title + meta */}
           <div className="p-6 md:p-8 md:flex-1">
@@ -104,7 +57,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
                 {story.title || story.sourceTitle}
               </h3>
             </Link>
-            <StoryMeta story={story} issueColor={colors.hex} />
+            <StoryMeta story={story} />
           </div>
 
           {/* Right: quote or summary */}
@@ -135,7 +88,6 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
       >
         <div className={`rounded-t-lg ${colors.dotBg}`} style={{ height: '4px' }} aria-hidden="true" />
         <Pattern opacity={0.12} />
-        {isUplifting && <UpliftingRibbon color={colors.hex} />}
         <div className="relative z-10 p-6 md:p-8">
           <Link
             to={`/stories/${story.slug}`}
@@ -146,7 +98,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             </h3>
           </Link>
 
-          <StoryMeta story={story} issueColor={colors.hex} />
+          <StoryMeta story={story} />
 
           {story.quote && (
             <div className="decorative-quote mt-4">
@@ -171,7 +123,6 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         className={`group story-card-hover relative overflow-hidden rounded-r-lg border border-neutral-200 border-l-4 ${colors.border} bg-white hover:shadow-xl hover:shadow-brand-100/50 hover:scale-[1.01] transition-all duration-200 h-full`}
         style={hoverStyle}
       >
-        {isUplifting && <UpliftingRibbon color={colors.hex} />}
         <div className="relative z-10 p-5">
           <Link
             to={`/stories/${story.slug}`}
@@ -182,7 +133,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             </h3>
           </Link>
 
-          <StoryMeta story={story} size="xs" issueColor={colors.hex} />
+          <StoryMeta story={story} size="xs" />
 
           {story.quote && (
             <p className="text-sm italic text-neutral-600 leading-relaxed mt-3 line-clamp-3">
@@ -204,7 +155,6 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
       className={`group story-card-hover relative overflow-hidden border-l-4 ${colors.border} rounded-r-lg bg-white pl-4 pr-4 py-4 hover:shadow-md hover:shadow-brand-100/30 hover:scale-[1.005] transition-all duration-200`}
       style={hoverStyle}
     >
-      {isUplifting && <UpliftingRibbon color={colors.hex} />}
       <Link
         to={`/stories/${story.slug}`}
         className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
@@ -214,7 +164,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         </h3>
       </Link>
 
-      <StoryMeta story={story} size="xs" issueColor={colors.hex} />
+      <StoryMeta story={story} size="xs" />
     </article>
   )
 }

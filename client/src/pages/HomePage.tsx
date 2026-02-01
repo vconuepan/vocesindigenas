@@ -4,7 +4,6 @@ import { usePublicIssues } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
 import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
-import UpliftingBadge from '../components/UpliftingBadge'
 import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
@@ -34,7 +33,6 @@ function HeroSection({ story }: { story: PublicStory }) {
           >
             {issueName}
           </Link>
-          {story.emotionTag === 'uplifting' && <UpliftingBadge color={colors.hex} />}
         </div>
 
         <h1 className="text-3xl md:text-5xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">

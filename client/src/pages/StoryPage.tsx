@@ -4,7 +4,6 @@ import Markdown from 'react-markdown'
 import { usePublicStory } from '../hooks/usePublicStories'
 import { getCategoryColor, shiftHex } from '../lib/category-colors'
 import FeedFavicon from '../components/FeedFavicon'
-import UpliftingBadge from '../components/UpliftingBadge'
 
 /**
  * Parse a markdown string into individual points.
@@ -173,7 +172,6 @@ export default function StoryPage() {
               >
                 {issueName}
               </Link>
-              {story.emotionTag === 'uplifting' && <UpliftingBadge color={colors.hex} />}
             </div>
 
             {/* Title */}
