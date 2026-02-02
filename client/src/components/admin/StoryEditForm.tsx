@@ -34,6 +34,7 @@ function buildFormState(story: Story) {
     quoteAttribution: story.quoteAttribution ?? '',
     marketingBlurb: story.marketingBlurb ?? '',
     relevanceReasons: story.relevanceReasons ?? '',
+    relevanceSummary: story.relevanceSummary ?? '',
     antifactors: story.antifactors ?? '',
     relevanceCalculation: story.relevanceCalculation ?? '',
   }
@@ -63,6 +64,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
       quoteAttribution: f.quoteAttribution || null,
       marketingBlurb: f.marketingBlurb || null,
       relevanceReasons: f.relevanceReasons || null,
+      relevanceSummary: f.relevanceSummary || null,
       antifactors: f.antifactors || null,
       relevanceCalculation: f.relevanceCalculation || null,
     }),
@@ -114,6 +116,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
       <Input id="edit-quote-attribution" label="Quote Attribution" value={form.quoteAttribution} onChange={e => set('quoteAttribution', e.target.value)} placeholder="e.g. Dr. Smith, University of Oxford" />
       <Textarea id="edit-blurb" label="Marketing Blurb" rows={3} value={form.marketingBlurb} onChange={e => set('marketingBlurb', e.target.value)} />
       <Textarea id="edit-reasons" label="Relevance Reasons" rows={3} value={form.relevanceReasons} onChange={e => set('relevanceReasons', e.target.value)} />
+      <Textarea id="edit-relevance-summary" label="Relevance Summary" rows={2} value={form.relevanceSummary} onChange={e => set('relevanceSummary', e.target.value)} />
       <Textarea id="edit-antifactors" label="Antifactors" rows={3} value={form.antifactors} onChange={e => set('antifactors', e.target.value)} />
       <Textarea id="edit-calculation" label="Relevance Calculation" rows={3} value={form.relevanceCalculation} onChange={e => set('relevanceCalculation', e.target.value)} />
 

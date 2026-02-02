@@ -59,6 +59,7 @@ export interface Story {
   quoteAttribution: string | null
   marketingBlurb: string | null
   relevanceReasons: string | null
+  relevanceSummary: string | null
   antifactors: string | null
   relevanceCalculation: string | null
   crawlMethod: string | null

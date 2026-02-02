@@ -22,7 +22,9 @@
     "migration:backfill-title-label": "tsx src/scripts/migrations/backfill-title-label.ts",
     "migration:backfill-title-label:test": "tsx src/scripts/migrations/backfill-title-label.ts --test",
     "migration:backfill-quote-attribution": "tsx src/scripts/migrations/backfill-quote-attribution.ts",
-    "migration:backfill-quote-attribution:test": "tsx src/scripts/migrations/backfill-quote-attribution.ts --test"
+    "migration:backfill-quote-attribution:test": "tsx src/scripts/migrations/backfill-quote-attribution.ts --test",
+    "migration:backfill-relevance-summary": "tsx src/scripts/migrations/backfill-relevance-summary.ts",
+    "migration:backfill-relevance-summary:test": "tsx src/scripts/migrations/backfill-relevance-summary.ts --test"
   },
   "dependencies": {
     "@langchain/core": "^1.1.17",

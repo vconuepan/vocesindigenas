@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
-import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/parse-points'
 import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import FeedFavicon from './FeedFavicon'
@@ -12,18 +11,10 @@ interface StoryCardProps {
   variant?: 'featured' | 'compact' | 'horizontal' | 'equal'
 }
 
-/** Deterministic per-story coin flip based on character code sum. */
+/** Deterministic per-story check: 2 out of 3 stories show relevance summary. */
 export function shouldShowRelevance(storyId: string): boolean {
   const hash = storyId.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0)
-  return hash % 2 === 0
-}
-
-/** Extract the first relevance reason from the story, stripped of markdown. */
-function getFirstRelevanceReason(story: PublicStory, maxSentences: number): string | null {
-  if (!story.relevanceReasons) return null
-  const points = parsePoints(story.relevanceReasons)
-  if (points.length === 0) return null
-  return limitSentences(stripPrefix(stripMarkdown(points[0])), maxSentences)
+  return hash % 3 !== 0
 }
 
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
@@ -54,11 +45,10 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
 
-  // For featured/horizontal: decide whether to show a relevance reason
-  // Featured cards are larger so allow 2 sentences; horizontal gets 1
-  const relevanceReason =
+  // For featured/horizontal: show relevance summary ~2/3 of the time
+  const relevanceSummary =
     (variant === 'featured' || variant === 'horizontal') && shouldShowRelevance(story.id)
-      ? getFirstRelevanceReason(story, variant === 'featured' ? 2 : 1)
+      ? (story.relevanceSummary || null)
       : null
 
   // === HORIZONTAL variant (Layout B full-width) ===
@@ -87,10 +77,10 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
           </div>
 
           {/* Right: relevance reason, quote, or summary */}
-          {(relevanceReason || story.quote || story.summary) && (
+          {(relevanceSummary || story.quote || story.summary) && (
             <div className="px-6 pb-6 md:p-8 md:flex-1 md:border-l md:border-neutral-200/50 flex items-center">
-              {relevanceReason ? (
-                <p className="text-neutral-600 leading-relaxed">{relevanceReason}</p>
+              {relevanceSummary ? (
+                <p className="text-neutral-600 leading-relaxed">{relevanceSummary}</p>
               ) : story.quote ? (
                 <div className="decorative-quote">
                   <p className="text-lg italic text-neutral-700 leading-relaxed">
@@ -134,8 +124,8 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
           <StoryMeta story={story} />
 
-          {relevanceReason ? (
-            <p className="text-neutral-600 leading-relaxed mt-3">{relevanceReason}</p>
+          {relevanceSummary ? (
+            <p className="text-neutral-600 leading-relaxed mt-3">{relevanceSummary}</p>
           ) : (
             <>
               {story.quote && (

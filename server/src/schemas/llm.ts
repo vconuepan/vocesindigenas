@@ -61,12 +61,14 @@ export const assessResultSchema = z.object({
     .string()
     .describe(
       "Plain text summary of the article, 40-70 words. " +
-        "Include the key quote with attribution. Avoid redundancy with the title."
+        "Use plain language a general audience can understand. " +
+        "Avoid redundancy with the title."
     ),
   factors: z
     .array(z.string())
     .describe(
       "4 Markdown bullet points explaining why the article is relevant for humanity. " +
+        "Use plain, concrete language — explain mechanisms in everyday terms. " +
         'Each bullet: "- **[Factor name from article context]:** [1 sentence: assessment.] ' +
         "[for the first two bullets only: 1 additional sentence, e.g. quantification or additional detail.] " +
         '[for the first bullet only: 1 additional sentence, e.g. on the mechanism or context of the impact.]" ' +
@@ -76,6 +78,7 @@ export const assessResultSchema = z.object({
     .array(z.string())
     .describe(
       "Markdown bullet points on why the article might not be so relevant. " +
+        "Use plain, specific language anyone can understand. " +
         'Each bullet: "- **[Limiting factor]:** [1 sentence: assessment.] ' +
         '[for the first bullet only: 1 additional sentence, e.g. context or further detail.]" ' +
         "Include applicable generic limiting factors (opinion piece, click-bait, early-stage tech, etc.) " +
@@ -101,7 +104,8 @@ export const assessResultSchema = z.object({
     .string()
     .describe(
       "20-25 word summary of the relevance analysis. " +
-        'Do not refer to "the article"; focus on the subject matter. '
+        'Do not refer to "the article"; focus on the subject matter. ' +
+        "Plain language, no jargon. Include concrete numbers when available. "
     ),
   titleLabel: z
     .string()
@@ -213,6 +217,18 @@ export const extractQuoteAttributionSchema = z.object({
 
 export type ExtractQuoteAttribution = z.infer<
   typeof extractQuoteAttributionSchema
+>;
+export const extractRelevanceSummarySchema = z.object({
+  relevanceSummary: z
+    .string()
+    .describe(
+      "20-25 word summary of the relevance analysis. " +
+        'Do not refer to "the article"; focus on the subject matter. ' +
+        "Plain language, no jargon. Include concrete numbers when available. "
+    ),
+});
+export type ExtractRelevanceSummary = z.infer<
+  typeof extractRelevanceSummarySchema
 >;
 export type ExtractTitleLabel = z.infer<typeof extractTitleLabelSchema>;
 export type PreAssessResult = z.infer<typeof preAssessResultSchema>;

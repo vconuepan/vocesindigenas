@@ -416,6 +416,7 @@ const PUBLIC_STORY_SELECT = {
   quoteAttribution: true,
   marketingBlurb: true,
   relevanceReasons: true,
+  relevanceSummary: true,
   antifactors: true,
   issue: {
     select: { name: true, slug: true },

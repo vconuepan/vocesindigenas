@@ -42,6 +42,7 @@ export const updateStorySchema = z.object({
   quoteAttribution: z.string().nullable().optional(),
   marketingBlurb: z.string().nullable().optional(),
   relevanceReasons: z.string().nullable().optional(),
+  relevanceSummary: z.string().nullable().optional(),
   antifactors: z.string().nullable().optional(),
   relevanceCalculation: z.string().nullable().optional(),
 })

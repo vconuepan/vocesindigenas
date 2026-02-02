@@ -63,7 +63,7 @@ Quote attribution
 - If the quote is a striking sentence (not a direct quote from a person): "Original article".
 
 Summary (40-70 words)
-- 
+- Use plain language a general audience can understand. Replace noun stacks and jargon with simpler words.
 - Minimize redundancy with the key quote and the title.
 
 Factors (exactly 4 bullet points, each 1-3 sentences)
@@ -71,6 +71,7 @@ Factors (exactly 4 bullet points, each 1-3 sentences)
 - Write 3 sentences for the first bullet point, 2 sentences for the second bullet point, and 1 sentence for the remaining bullet points.
 - Only include <FACTORS> that increase relevance. If fewer than 4 factors apply, write multiple bullets on the most relevant ones.
 - Name each factor specifically based on the article content — do not repeat generic factor names.
+- Use plain, concrete language. Explain mechanisms in everyday terms so a non-expert grasps why this matters.
 - Each bullet: assessment of the factor, classification against the <CRITERIA> (without citing numerical ratings — describe the impact level), mechanism or context, and an example or further detail.
   Good: '**International cooperation:** The program creates goodwill among participating states and promotes global collaboration and knowledge sharing. It also reinforces rich countries' commitment to achieving the UN Sustainable Development Goals, which is an important norm in international politics. Once established, many international norms and agreements are hard to reverse.'
   Good: '**General purpose technology:** Quantum computation that is resistant to errors could lead to more reliable quantum computing technologies, making it a notable advancement in an important, general-purpose technology. For example, more reliable quantum computing could allow clinical experiments to be fully simulated in so-called silico clinical trials, which could speed up drug development.'
@@ -79,6 +80,7 @@ Limiting factors (1-4 bullet points, each 1-2 sentences)
 - Examine the factors identified above: in what ways are they limited or uncertain?
 - Check applicable <TOPIC-SPECIFIC LIMITING FACTORS> and <GENERIC_LIMITING_FACTORS>.
 - Only include factors that genuinely reduce relevance. Do not use the term 'limiting factor' in the output.
+- Keep language plain and specific — explain why something limits relevance in terms anyone can understand.
 - Each bullet: assessment, specific mechanism or context, and an example or detail.
 
 Relevance calculation (3-5 bullet points)
@@ -97,6 +99,8 @@ Relevance summary (20-25 words)
   Good: 'The legal action could lead to stricter climate policies in 32 countries.'
 - Summarize the relevance analysis into one high-level sentence.
   Good: 'Overall, the event slows down progress toward SDG 3 in Sub-Saharan Africa but is unlikely to change the underlying positive trend.'
+- Write for a general audience — plain words, no jargon. Include concrete numbers when available (people affected, dollar amounts, percentages).
+  Good: 'Cutting $4.5 billion in PEPFAR funding threatens HIV treatment for 20 million people across sub-Saharan Africa.'
 
 Title label + Title — these two fields work as a pair
 - The label sets the topic; the title tells the story. Together they read like one thought. Neither should make the other redundant.
@@ -142,7 +146,9 @@ Some variation of "[Publisher] reports [key point]. [Relevance summary]."
 </ANALYSIS_REQUIREMENTS>
 
 <GUIDELINES>
+- Write for a smart 16-year-old, not an expert. Avoid jargon, insider terms, and acronyms unless they're household names. Replace technical terms with plain words.
 - Quantify affected people on a logarithmic scale: 'millions', 'tens of millions', 'hundreds of millions', 'billions'.
+- Include concrete numbers when available (people affected, dollar amounts, percentages). A number often beats an adjective.
 - Draw on your knowledge beyond what is written in the article.
 - Always respond in English, no matter the language of the article.
 </GUIDELINES>

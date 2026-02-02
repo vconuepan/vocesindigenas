@@ -66,6 +66,7 @@ model Story {
   quoteAttribution       String?      @map("quote_attribution")
   marketingBlurb         String?      @map("marketing_blurb")
   relevanceReasons       String?      @map("relevance_reasons")
+  relevanceSummary       String?      @map("relevance_summary")
   antifactors            String?
   relevanceCalculation   String?      @map("relevance_calculation")
   crawlMethod            String?      @map("crawl_method")

@@ -245,6 +245,7 @@ export async function assessStory(storyId: string): Promise<void> {
       quote: parsed.quote || null,
       quoteAttribution: parsed.quoteAttribution || null,
       marketingBlurb: parsed.marketingBlurb || null,
+      relevanceSummary: parsed.relevanceSummary || null,
       relevanceReasons: parsed.factors.join('\n'),
       antifactors: parsed.limitingFactors.join('\n'),
       relevanceCalculation: parsed.relevanceCalculation.join('\n'),
