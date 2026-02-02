@@ -11,11 +11,6 @@ interface StoryCardProps {
   variant?: 'featured' | 'compact' | 'horizontal' | 'equal'
 }
 
-/** Deterministic per-story check: 2 out of 3 stories show relevance summary. */
-export function shouldShowRelevance(storyId: string): boolean {
-  const hash = storyId.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0)
-  return hash % 3 !== 0
-}
 
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
@@ -45,12 +40,6 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
 
-  // Show relevance summary ~2/3 of the time (featured, horizontal, equal)
-  const relevanceSummary =
-    (variant === 'featured' || variant === 'horizontal' || variant === 'equal') && shouldShowRelevance(story.id)
-      ? (story.relevanceSummary || null)
-      : null
-
   // === HORIZONTAL variant (Layout B full-width) ===
   if (variant === 'horizontal') {
     return (
@@ -76,23 +65,10 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             <StoryMeta story={story} />
           </div>
 
-          {/* Right: relevance reason, quote, or summary */}
-          {(relevanceSummary || story.quote || story.summary) && (
+          {/* Right: relevance summary or plain summary */}
+          {(story.relevanceSummary || story.summary) && (
             <div className="px-6 pb-6 md:p-8 md:flex-1 md:border-l md:border-neutral-200/50 flex items-center">
-              {relevanceSummary ? (
-                <p className="text-neutral-600 leading-relaxed">{relevanceSummary}</p>
-              ) : story.quote ? (
-                <div className="decorative-quote">
-                  <p className="text-lg italic text-neutral-700 leading-relaxed">
-                    &ldquo;{story.quote}&rdquo;
-                  </p>
-                  {story.quoteAttribution && (
-                    <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-neutral-600 leading-relaxed">{story.summary}</p>
-              )}
+              <p className="text-neutral-600 leading-relaxed">{story.relevanceSummary || story.summary}</p>
             </div>
           )}
         </div>
@@ -124,25 +100,8 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
           <StoryMeta story={story} />
 
-          {relevanceSummary ? (
-            <p className="text-neutral-600 leading-relaxed mt-3">{relevanceSummary}</p>
-          ) : (
-            <>
-              {story.quote && (
-                <div className="decorative-quote mt-4">
-                  <p className="text-lg italic text-neutral-700 leading-relaxed">
-                    &ldquo;{story.quote}&rdquo;
-                  </p>
-                  {story.quoteAttribution && (
-                    <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
-                  )}
-                </div>
-              )}
-
-              {!story.quote && story.summary && (
-                <p className="text-neutral-600 leading-relaxed mt-3">{story.summary}</p>
-              )}
-            </>
+          {(story.relevanceSummary || story.summary) && (
+            <p className="text-neutral-600 leading-relaxed mt-3">{story.relevanceSummary || story.summary}</p>
           )}
         </div>
       </article>
@@ -171,20 +130,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
           <StoryMeta story={story} size="xs" />
 
-          {relevanceSummary ? (
-            <p className="text-sm text-neutral-600 leading-relaxed mt-2">{relevanceSummary}</p>
-          ) : story.quote ? (
-            <div className="mt-3">
-              <p className="text-sm italic text-neutral-600 leading-relaxed">
-                &ldquo;{story.quote}&rdquo;
-              </p>
-              {story.quoteAttribution && (
-                <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
-              )}
-            </div>
-          ) : story.summary ? (
-            <p className="text-sm text-neutral-500 leading-relaxed mt-2">{story.summary}</p>
-          ) : null}
+          {(story.relevanceSummary || story.summary) && (
+            <p className="text-sm text-neutral-600 leading-relaxed mt-2">{story.relevanceSummary || story.summary}</p>
+          )}
         </div>
       </article>
     )

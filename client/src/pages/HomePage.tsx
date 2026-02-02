@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { usePublicIssues } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
-import StoryCard, { shouldShowRelevance } from '../components/StoryCard'
+import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
@@ -131,20 +131,6 @@ function IssueSection({
 
   const [featured, ...rest] = stories
 
-  // Determine which stories already show their quote on a card,
-  // so the pull-quote divider can pick a different one.
-  const cardQuoteIds = new Set<string>()
-  const showsQuote = (s: PublicStory) =>
-    s.quote && (!shouldShowRelevance(s.id) || !s.relevanceReasons)
-
-  if (layout === 'A' || layout === 'B') {
-    // Featured/horizontal card: shows quote unless in relevance mode
-    if (showsQuote(featured)) cardQuoteIds.add(featured.id)
-  } else {
-    // Layout C: equal cards show quotes only when not in relevance mode
-    stories.slice(0, 3).forEach((s) => { if (showsQuote(s)) cardQuoteIds.add(s.id) })
-  }
-
   return (
     <>
       <section className="relative mb-6 mt-14 md:mt-28">
@@ -208,7 +194,7 @@ function IssueSection({
 
       {/* Section divider */}
       {divider === 'quote' && (
-        <QuoteDivider stories={allStories} excludeIds={cardQuoteIds} variantIndex={quoteVariantIndex ?? 0} />
+        <QuoteDivider stories={allStories} variantIndex={quoteVariantIndex ?? 0} />
       )}
       {divider === 'diamond' && <hr className="section-divider" />}
     </>
@@ -219,8 +205,8 @@ function IssueSection({
 // Quote divider using the new PullQuote component
 // ---------------------------------------------------------------------------
 
-function QuoteDivider({ stories, excludeIds, variantIndex }: { stories: PublicStory[]; excludeIds: Set<string>; variantIndex: number }) {
-  const storyWithQuote = stories.find((s) => s.quote && !excludeIds.has(s.id))
+function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; variantIndex: number }) {
+  const storyWithQuote = stories.find((s) => s.quote)
   if (!storyWithQuote) return null
 
   return <PullQuote story={storyWithQuote} variant={getQuoteVariant(variantIndex)} />
@@ -241,9 +227,9 @@ const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
 
 export default function HomePage() {
   const { data: issues } = usePublicIssues()
-  const sortedIssues = [...(issues ?? [])].sort(
-    (a, b) => ISSUE_ORDER.indexOf(a.slug) - ISSUE_ORDER.indexOf(b.slug),
-  )
+  const sortedIssues = [...(issues ?? [])]
+    .filter((i) => ISSUE_ORDER.includes(i.slug))
+    .sort((a, b) => ISSUE_ORDER.indexOf(a.slug) - ISSUE_ORDER.indexOf(b.slug))
 
   // Fetch the most recent story across all categories for the hero
   const { data: latestData } = usePublicStories({ pageSize: 1 })

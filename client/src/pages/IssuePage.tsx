@@ -5,7 +5,7 @@ import { API_BASE } from '../lib/api'
 import { usePublicIssue } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
 import { getCategoryColor } from '../lib/category-colors'
-import StoryCard, { shouldShowRelevance } from '../components/StoryCard'
+import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import Pagination from '../components/Pagination'
 import type { PublicStory } from '@shared/types'
@@ -85,8 +85,8 @@ function StoryGroup({
 // Quote divider using the PullQuote component
 // ---------------------------------------------------------------------------
 
-function QuoteDivider({ stories, excludeIds, variantIndex }: { stories: PublicStory[]; excludeIds: Set<string>; variantIndex: number }) {
-  const storyWithQuote = stories.find((s) => s.quote && !excludeIds.has(s.id))
+function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; variantIndex: number }) {
+  const storyWithQuote = stories.find((s) => s.quote)
   if (!storyWithQuote) return null
 
   return <PullQuote story={storyWithQuote} variant={getQuoteVariant(variantIndex)} />
@@ -224,16 +224,6 @@ export default function IssuePage() {
               const isLast = idx === storyGroups.length - 1
               const useQuote = idx % 2 === 0
 
-              // IDs of stories whose quotes are already visible on cards
-              const cardQuoteIds = new Set<string>()
-              if (layout === 'A' || layout === 'B') {
-                const first = group[0]
-                if (first?.quote && (!shouldShowRelevance(first.id) || !first.relevanceReasons))
-                  cardQuoteIds.add(first.id)
-              } else {
-                group.slice(0, 3).forEach((s) => { if (s.quote) cardQuoteIds.add(s.id) })
-              }
-
               return (
                 <div key={idx}>
                   <StoryGroup stories={group} layout={layout} />
@@ -241,7 +231,7 @@ export default function IssuePage() {
                   {/* Divider between groups */}
                   {!isLast && (
                     useQuote
-                      ? <QuoteDivider stories={group} excludeIds={cardQuoteIds} variantIndex={idx} />
+                      ? <QuoteDivider stories={group} variantIndex={idx} />
                       : <hr className="section-divider" />
                   )}
                 </div>
