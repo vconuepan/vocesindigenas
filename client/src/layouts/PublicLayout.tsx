@@ -109,18 +109,21 @@ export default function PublicLayout() {
       <header>
         {/* Logo bar — centered logo, engagement actions right */}
         <div className="bg-white border-b border-neutral-100">
-          <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-center justify-center relative">
+          <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-start justify-center relative">
             {/* Logo */}
-            <Link to="/" className="flex items-center shrink-0">
+            <Link to="/" className="flex flex-col items-center shrink-0">
               <img
                 src="/images/logo-text-horizontal.png"
                 alt="Actually Relevant"
                 className="h-14 md:h-16"
               />
+              <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-400 mt-1">
+                News that matters to humanity
+              </span>
             </Link>
 
-            {/* Desktop: subscribe button */}
-            <div className="hidden lg:flex items-center absolute right-12">
+            {/* Desktop: subscribe button — vertically centered on logo */}
+            <div className="hidden lg:flex items-center absolute right-12 top-4 h-16">
               <button
                 onClick={() => setSubscribeOpen(true)}
                 className="inline-flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
@@ -130,8 +133,8 @@ export default function PublicLayout() {
               </button>
             </div>
 
-            {/* Mobile: search on left, menu on right */}
-            <div className="lg:hidden absolute left-4">
+            {/* Mobile: search on left, menu on right — vertically centered on logo */}
+            <div className="lg:hidden absolute left-4 top-3 h-14 flex items-center">
               <button
                 onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false) }}
                 className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${
@@ -143,7 +146,7 @@ export default function PublicLayout() {
                 <SearchIcon className="w-5 h-5" />
               </button>
             </div>
-            <div className="lg:hidden absolute right-4">
+            <div className="lg:hidden absolute right-4 top-3 h-14 flex items-center">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
