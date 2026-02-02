@@ -100,32 +100,35 @@ export const assessResultSchema = z.object({
   relevanceSummary: z
     .string()
     .describe(
-      "Markdown-formatted summary explaining the relevance rating, 75-100 words. " +
-        "Reference the key factor and most important factors and limiting factors. " +
-        'Do not refer to "the article"; focus on the subject matter. ' +
-        "End with an overall high-level assessment."
+      "20-25 word summary of the relevance analysis. " +
+        'Do not refer to "the article"; focus on the subject matter. '
     ),
   titleLabel: z
     .string()
     .describe(
-      "Ultra-short topic label (1-3 short words, sentence case). Must be a tight noun phrase — no conjunctions, no 'and'. " +
-        "Keep words simple and short. " +
-        "Good: 'EU AI Act', 'Carbon inequality', 'Deepfake laws', 'Nuclear risk', 'Ocean health'. " +
+      "Ultra-short topic label (1-3 short words, sentence case). " +
+        "A tight noun phrase — no conjunctions, no 'and'. Keep words simple and short. " +
+        "The label and title work as a pair: the label sets the topic, the title tells the story. " +
+        "No word or phrase should appear in both. " +
+        "Good: 'EU AI Act', 'Carbon inequality', 'Deepfake laws'. " +
         "Bad: 'Carbon inequality and climate policy' (too long). " +
-        "Bad: 'Non-consensual deepfake nudification' (words too long/complex, use 'Deepfake laws')."
+        "Bad: 'Non-consensual deepfake nudification' (too complex — use 'Deepfake laws')."
     ),
   relevanceTitle: z
     .string()
     .describe(
-      "Standalone headline in sentence case (capitalize first word and proper nouns only). " +
-        "NEVER use the 'Label: headline' colon pattern — the label is a separate field. " +
-        "Be descriptive and avoid sensationalist language."
+      "Standalone headline, max 10 words, sentence case (capitalize first word and proper nouns only). " +
+        "Write for a smart 16-year-old — no jargon or insider terms. " +
+        "Must make sense to someone with no background. " +
+        "One story per headline. Don't echo the label — use that word budget to say something new. " +
+        "No word or phrase should appear in both the label and the title. " +
+        "Be concrete: name the actor, action, or stakes. Cut hedge words like 'could shape' or 'may impact'. " +
+        "NEVER use the 'Label: headline' colon pattern — the label is a separate field."
     ),
   marketingBlurb: z
     .string()
     .describe(
-      "Plain text, up to 230 characters. Start with the publisher name. " +
-        "Mention the key point of the article and key point of the assessment."
+      "Plain text, up to 230 characters, summarizing the key point of the original article and the relevance analysis."
     ),
 });
 
@@ -173,6 +176,8 @@ export const extractTitleLabelSchema = z.object({
     .describe(
       "Ultra-short topic label (1-3 short words, sentence case). Must be a tight noun phrase — no conjunctions, no 'and'. " +
         "Keep words simple and short. " +
+        "The label and title work as a pair: the label sets the topic, the title tells the story. " +
+        "No word or phrase should appear in both. " +
         "Good: 'EU AI Act', 'Carbon inequality', 'Deepfake laws', 'Nuclear risk', 'Ocean health'. " +
         "Bad: 'Carbon inequality and climate policy' (too long). " +
         "Bad: 'Non-consensual deepfake nudification' (words too long/complex, use 'Deepfake laws')."
@@ -180,18 +185,22 @@ export const extractTitleLabelSchema = z.object({
   title: z
     .string()
     .describe(
-      "Standalone headline in sentence case (capitalize first word and proper nouns only). " +
-        "NEVER use the 'Label: headline' colon pattern — the label is a separate field. " +
-        "Strip any topic label prefix from the original. " +
-        "Bad: 'EU AI Act: whistleblower channel could shape enforcement'. " +
-        "Good: 'Whistleblower channel and proposed timeline changes could shape AI Act enforcement'."
+      "Standalone headline, max 10 words, sentence case (capitalize first word and proper nouns only). " +
+        "Write for a smart 16-year-old — no jargon or insider terms. " +
+        "Must make sense to someone with no background. " +
+        "One story per headline. Don't echo the label — use that word budget to say something new. " +
+        "No word or phrase should appear in both the label and the title. " +
+        "Be concrete: name the actor, action, or stakes. Cut hedge words like 'could shape' or 'may impact'. " +
+        "NEVER use the 'Label: headline' colon pattern — the label is a separate field."
     ),
 });
 
 export const extractQuoteAttributionSchema = z.object({
   quote: z
     .string()
-    .describe("The key quote, cleaned up. Strip embedded speaker/publication name, surrounding quotation marks, and leftover punctuation. Replace any inner double quotes with single quotes (' ')."),
+    .describe(
+      "The key quote, cleaned up. Strip embedded speaker/publication name, surrounding quotation marks, and leftover punctuation. Replace any inner double quotes with single quotes (' ')."
+    ),
   quoteAttribution: z
     .string()
     .describe(
@@ -202,7 +211,9 @@ export const extractQuoteAttributionSchema = z.object({
     ),
 });
 
-export type ExtractQuoteAttribution = z.infer<typeof extractQuoteAttributionSchema>;
+export type ExtractQuoteAttribution = z.infer<
+  typeof extractQuoteAttributionSchema
+>;
 export type ExtractTitleLabel = z.infer<typeof extractTitleLabelSchema>;
 export type PreAssessResult = z.infer<typeof preAssessResultSchema>;
 export type AssessResult = z.infer<typeof assessResultSchema>;

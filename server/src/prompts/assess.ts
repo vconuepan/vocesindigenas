@@ -63,15 +63,10 @@ Quote attribution
 - If the quote is a striking sentence (not a direct quote from a person): "Original article".
 
 Summary (40-70 words)
-- Include the key quote in quotation marks with attribution.
-- Do not paraphrase quotes indirectly.
-  Bad: 'The FAO Deputy Director emphasized the fund's importance, stating that it places agrifood systems at the center of the challenge.'
-  Good: '"The fund places agrifood systems at the center of the challenge," said FAO Deputy Director Maria Helena Semedo.'
-  Bad: 'The most significant point is the unprecedented use of Ukrainian drones in large numbers, as the quote suggests.'
-  Good: 'Guardian: "Never have drones been used so much in a military conflict."'
+- 
 - Minimize redundancy with the key quote and the title.
 
-Factors (exactly 4 bullet points, each 2-3 sentences)
+Factors (exactly 4 bullet points, each 1-3 sentences)
 - Order by importance. The first bullet is the 'key factor' with the greatest weight.
 - Write 3 sentences for the first bullet point, 2 sentences for the second bullet point, and 1 sentence for the remaining bullet points.
 - Only include <FACTORS> that increase relevance. If fewer than 4 factors apply, write multiple bullets on the most relevant ones.
@@ -80,7 +75,7 @@ Factors (exactly 4 bullet points, each 2-3 sentences)
   Good: '**International cooperation:** The program creates goodwill among participating states and promotes global collaboration and knowledge sharing. It also reinforces rich countries' commitment to achieving the UN Sustainable Development Goals, which is an important norm in international politics. Once established, many international norms and agreements are hard to reverse.'
   Good: '**General purpose technology:** Quantum computation that is resistant to errors could lead to more reliable quantum computing technologies, making it a notable advancement in an important, general-purpose technology. For example, more reliable quantum computing could allow clinical experiments to be fully simulated in so-called silico clinical trials, which could speed up drug development.'
 
-Limiting factors (1-4 bullet points, each 2 sentences)
+Limiting factors (1-4 bullet points, each 1-2 sentences)
 - Examine the factors identified above: in what ways are they limited or uncertain?
 - Check applicable <TOPIC-SPECIFIC LIMITING FACTORS> and <GENERIC_LIMITING_FACTORS>.
 - Only include factors that genuinely reduce relevance. Do not use the term 'limiting factor' in the output.
@@ -96,35 +91,54 @@ Relevance calculation (3-5 bullet points)
 Conservative rating
 - A single integer 1-10 derived from the relevance calculation.
 
-Relevance summary (75-100 words)
+Relevance summary (20-25 words)
 - Do not refer to 'the article'. Focus on the subject matter itself.
   Bad: 'The article is relevant because it reports on a significant legal action ...'
   Good: 'The legal action could lead to stricter climate policies in 32 countries.'
-- Reference the key factor and most important factors and limiting factors.
-- End with an overall high-level assessment.
+- Summarize the relevance analysis into one high-level sentence.
   Good: 'Overall, the event slows down progress toward SDG 3 in Sub-Saharan Africa but is unlikely to change the underlying positive trend.'
 
+Title label + Title — these two fields work as a pair
+- The label sets the topic; the title tells the story. Together they read like one thought. Neither should make the other redundant.
+- No word or phrase should appear in both the label and the title. If the label says 'EU AI Act', the title must not say 'AI Act' again.
+
 Title label (1-3 short words, sentence case)
-- An ultra-short topic tag that identifies the key subject. Must be a tight noun phrase — no conjunctions, no 'and'. Keep words simple and short.
+- An ultra-short topic tag that identifies the key subject.
+- Must be a tight noun phrase — no conjunctions, no 'and'.
+- Keep words simple and short.
   Good: 'EU AI Act'; 'Carbon inequality'; 'Deepfake laws'; 'Nuclear risk'; 'Ocean health'
   Bad: 'Carbon inequality and climate policy' (too long — just 'Carbon inequality')
-  Bad: 'Non-consensual deepfake nudification' (words too long/complex — just 'Deepfake laws')
-  Bad: 'Major shift in global politics' (too long, sounds like a headline)
+  Bad: 'Non-consensual deepfake nudification' (words too complex — just 'Deepfake laws')
+  Bad: 'Major shift in global politics' (sounds like a headline, not a label)
 
 Title (sentence case)
-- A standalone headline. NEVER use the 'Label: headline' colon pattern. The title label is a separate field.
-  Bad: 'EU AI Act: whistleblower channel and proposed timeline changes could shape enforcement'
-  Good: 'Whistleblower channel and proposed timeline changes could shape AI Act enforcement'
-- Be descriptive. Mention the specific information that makes this relevant.
-- Avoid sensationalist language ('breakthrough' → 'development'; 'crisis' → 'challenge'; 'revolution' → 'shift').
+- A standalone headline. Max 10 words — if you hit 10, cut something.
+- Write for a smart 16-year-old, not an expert. Avoid jargon and insider terms unless they're household names.
+- The headline must make sense on its own — a reader with no background should grasp the basic story.
+- One story per headline. If there are two developments, lead with the bigger one.
+- Don't echo the label — the label already sets the topic. Use that word budget to say something new.
+- Be concrete: name the actor, the action, or the stakes. A number often beats an adjective.
+- Replace noun stacks with plain words ('whistleblower channel' → 'hotline'; 'timeline changes' → 'delays').
+- Cut hedge words: 'could shape,' 'may impact' → say what's actually happening or proposed.
+- NEVER use the 'Label: headline' colon pattern. The title label is a separate field.
 - Capitalize first word and proper nouns only.
   Bad: 'Brics Club Might Get Six New Members'
   Good: 'Brics club might get six new members'
-- A key number can strengthens the headline.
-- Minimize redundancy with the summary and quote.
+
+Examples (read label + title together as one unit):
+  Label: 'EU AI Act'
+  Bad: 'Whistleblower channel and proposed timeline changes could shape AI Act enforcement'
+  Problems: too long (11 words), vague hedge ('could shape'), two stories crammed together, repeats 'AI Act' from label
+  Good: 'EU proposes whistleblower hotline to enforce new rules'
+
+  Label: 'Climate finance'
+  Bad: 'New policy could reshape climate finance mechanisms'
+  Problems: repeats 'climate finance' from label, vague hedge ('could reshape')
+  Good: 'World Bank to double green loans by 2030'
 
 Marketing blurb (up to 230 characters)
-- Start with the publisher name. Include the key point and assessment.
+A condensed version of the summary and relevance analysis that can be used on social media and in newsletters.
+Some variation of "[Publisher] reports [key point]. [Relevance summary]."
 </ANALYSIS_REQUIREMENTS>
 
 <GUIDELINES>
