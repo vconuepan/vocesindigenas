@@ -7,6 +7,7 @@ export interface StoryForSelect {
   relevanceReasons: string | null
   antifactors: string | null
   relevanceCalculation: string | null
+  emotionTag: string | null
 }
 
 export function buildSelectPrompt(
@@ -31,6 +32,7 @@ All candidates are worthy of publication. Your job is to choose among them — p
 - Systemic change over isolated events: Prefer stories about shifts in policies, international agreements, norms, or systems over isolated incidents — these have compounding, ongoing effects. (Particularly important incidents can of course be relevant, too.)
 - Concrete over speculative: Prefer stories with demonstrated real-world impact over announcements, proposals, or early-stage research that hasn't yet materialized. (Promising early research that excites an entire field can of course be relevant, too.)
 - Scale and reach: Prefer stories where the number of people significantly affected is larger (including future generations), or the consequences are more lasting.
+- Uplifting stories: When choosing between stories of similar relevance, give a slight preference to uplifting stories (tagged "uplifting" in the Emotion field). The final selection should include uplifting stories where possible, without sacrificing overall relevance.
 </SELECTION_CRITERIA>
 
 `
@@ -39,6 +41,7 @@ All candidates are worthy of publication. Your job is to choose among them — p
     query += '<ARTICLE>\n'
       + `<ID>${story.id}</ID>\n`
       + `<Title>${escapeXml(story.title || '')}</Title>\n`
+      + `<Emotion>${escapeXml(story.emotionTag || 'calm')}</Emotion>\n`
       + `<Summary>${escapeXml(story.summary || '')}</Summary>\n`
       + `<Relevance>${escapeXml(story.relevanceReasons || '')}</Relevance>\n`
       + `<Antifactors>${escapeXml(story.antifactors || '')}</Antifactors>\n`

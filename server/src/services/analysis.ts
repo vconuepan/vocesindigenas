@@ -8,7 +8,7 @@ import { Semaphore } from '../lib/semaphore.js'
 import { splitIntoGroups } from '../lib/utils.js'
 import { createLogger } from '../lib/logger.js'
 import { taskRegistry } from '../lib/taskRegistry.js'
-import { getSmallLLM, getMediumLLM, getLargeLLM, rateLimitDelay } from './llm.js'
+import { getSmallLLM, getMediumLLM, getLLMByTier, rateLimitDelay } from './llm.js'
 import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
 import type { StoryForPreassess, IssueForPreassess } from '../prompts/index.js'
 import { preAssessResultSchema, reclassifyResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
@@ -230,7 +230,7 @@ export async function assessStory(storyId: string): Promise<void> {
   const prompt = buildAssessPrompt(story.sourceTitle, story.sourceContent, publisher, story.sourceUrl, guidelines)
 
   await rateLimitDelay()
-  const llm = getLargeLLM()
+  const llm = getLLMByTier(config.assess.modelTier)
   const structuredLlm = llm.withStructuredOutput(assessResultSchema)
   const parsed = await structuredLlm.invoke([new HumanMessage(prompt)])
 
@@ -304,12 +304,13 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
       relevanceReasons: s.relevanceReasons,
       antifactors: s.antifactors,
       relevanceCalculation: s.relevanceCalculation,
+      emotionTag: s.emotionTag,
     })),
     toSelect,
   )
 
   await rateLimitDelay()
-  const llm = getLargeLLM()
+  const llm = getLLMByTier(config.selection.modelTier)
   const structuredLlm = llm.withStructuredOutput(selectResultSchema)
   const response = await structuredLlm.invoke([new HumanMessage(prompt)])
 

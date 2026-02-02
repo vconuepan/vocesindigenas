@@ -49,3 +49,11 @@ export function getLargeLLM(): ChatOpenAI {
   }
   return _largeLLM
 }
+
+export function getLLMByTier(tier: 'small' | 'medium' | 'large'): ChatOpenAI {
+  switch (tier) {
+    case 'small': return getSmallLLM()
+    case 'medium': return getMediumLLM()
+    case 'large': return getLargeLLM()
+  }
+}

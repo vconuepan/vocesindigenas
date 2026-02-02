@@ -5,6 +5,7 @@ export interface StoryForNewsletterSelect {
   title: string | null
   summary: string | null
   issueName: string
+  emotionTag: string | null
 }
 
 export function buildNewsletterSelectPrompt(
@@ -31,6 +32,7 @@ If a category has fewer than ${storiesPerIssue} stories available, select all of
 - Prefer stories about systemic shifts (policy changes, new norms, international agreements) over isolated incidents.
 - Prefer stories with broad scale and lasting consequences.
 - Within each category, aim for a mix of tone and subject matter to keep the newsletter engaging.
+- Uplifting stories: Aim for at least one third to one half of the total selected stories to be uplifting (tagged "uplifting" in the Emotion field). When choosing between stories of similar relevance, prefer the uplifting one. This does not mean forcing low-relevance uplifting stories over high-relevance alternatives — relevance still matters.
 </SELECTION_CRITERIA>
 
 <ARTICLES>
@@ -40,6 +42,7 @@ If a category has fewer than ${storiesPerIssue} stories available, select all of
     query += `<ARTICLE>\n`
       + `<ID>${story.id}</ID>\n`
       + `<ISSUE>${escapeXml(story.issueName)}</ISSUE>\n`
+      + `<EMOTION>${escapeXml(story.emotionTag || 'calm')}</EMOTION>\n`
       + `<TITLE>${escapeXml(story.title || '')}</TITLE>\n`
       + `<SUMMARY>${escapeXml(story.summary || '')}</SUMMARY>\n`
       + `</ARTICLE>\n`

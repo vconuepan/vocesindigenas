@@ -8,7 +8,7 @@ import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 import * as plunk from './plunk.js'
 import { createLogger } from '../lib/logger.js'
-import { getLargeLLM, rateLimitDelay } from './llm.js'
+import { getLLMByTier, rateLimitDelay } from './llm.js'
 import { withRetry } from '../lib/retry.js'
 import { buildNewsletterSelectPrompt } from '../prompts/index.js'
 import { newsletterSelectResultSchema } from '../schemas/llm.js'
@@ -93,6 +93,7 @@ export async function selectStoriesForNewsletter(newsletterId: string) {
       title: true,
       sourceTitle: true,
       summary: true,
+      emotionTag: true,
       issue: { select: { id: true, name: true, parentId: true, parent: { select: { name: true } } } },
       feed: { select: { issue: { select: { name: true, parentId: true, parent: { select: { name: true } } } } } },
     },
@@ -109,6 +110,7 @@ export async function selectStoriesForNewsletter(newsletterId: string) {
       title: s.title || s.sourceTitle,
       summary: s.summary,
       issueName,
+      emotionTag: s.emotionTag,
     }
   })
 
@@ -127,7 +129,7 @@ export async function selectStoriesForNewsletter(newsletterId: string) {
   )
 
   await rateLimitDelay()
-  const llm = getLargeLLM()
+  const llm = getLLMByTier(config.newsletter.selectModelTier)
   const structuredLlm = llm.withStructuredOutput(newsletterSelectResultSchema)
   const response = await withRetry(
     () => structuredLlm.invoke([new HumanMessage(prompt)]),

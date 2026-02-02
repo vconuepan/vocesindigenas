@@ -23,7 +23,7 @@ describe('runAssessStories', () => {
 
     await runAssessStories()
 
-    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 4 })
+    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 5 })
     expect(mockAssessStories).toHaveBeenCalledWith(['story-1', 'story-2'])
   })
 
@@ -32,7 +32,7 @@ describe('runAssessStories', () => {
 
     await runAssessStories()
 
-    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 4 })
+    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('pre_analyzed', { ratingMin: 5 })
     expect(mockAssessStories).not.toHaveBeenCalled()
   })
 

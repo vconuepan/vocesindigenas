@@ -24,6 +24,13 @@ vi.mock('./llm.js', () => ({
   getSmallLLM: mockGetSmallLLM,
   getMediumLLM: mockGetMediumLLM,
   getLargeLLM: mockGetLargeLLM,
+  getLLMByTier: vi.fn((tier: string) => {
+    switch (tier) {
+      case 'small': return mockGetSmallLLM()
+      case 'medium': return mockGetMediumLLM()
+      case 'large': return mockGetLargeLLM()
+    }
+  }),
   rateLimitDelay: mockRateLimitDelay,
 }))
 
@@ -207,7 +214,7 @@ describe('assessStory', () => {
     const mockStructuredLlm = {
       invoke: vi.fn().mockResolvedValue(structuredResponse),
     }
-    mockGetLargeLLM.mockReturnValue({
+    mockGetMediumLLM.mockReturnValue({
       withStructuredOutput: () => mockStructuredLlm,
     })
 

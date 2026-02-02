@@ -189,6 +189,7 @@ describe('buildSelectPrompt', () => {
       relevanceReasons: 'Factor 1\nFactor 2',
       antifactors: 'Limiting factor 1',
       relevanceCalculation: 'Key factor: 6',
+      emotionTag: 'uplifting',
     },
     {
       id: 'story-2',
@@ -197,6 +198,7 @@ describe('buildSelectPrompt', () => {
       relevanceReasons: 'Factor A',
       antifactors: 'Limiting factor A',
       relevanceCalculation: 'Key factor: 4',
+      emotionTag: 'frustrating',
     },
   ]
 
@@ -238,6 +240,7 @@ describe('buildSelectPrompt', () => {
       relevanceReasons: null,
       antifactors: null,
       relevanceCalculation: null,
+      emotionTag: null,
     }]
     const prompt = buildSelectPrompt(storiesWithSpecial, 1)
     expect(prompt).toContain('&amp;')

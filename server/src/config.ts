@@ -19,15 +19,18 @@ export const config = {
   preassess: {
     batchSize: 10,
     contentMaxLength: 1200,
+    modelTier: "medium" as const,
   },
   assess: {
     contentMaxLength: 4000,
     fullAssessmentThreshold: 5,
+    modelTier: "medium" as const,
   },
   selection: {
     maxGroupSize: parseInt(process.env.SELECT_MAX_GROUP_SIZE || "20", 10),
     ratio: parseFloat(process.env.SELECT_RATIO || "0.5"),
     relevanceMin: parseInt(process.env.SELECT_RELEVANCE_MIN || "5", 10),
+    modelTier: "large" as const,
   },
   crawl: {
     rssItemLimit: parseInt(process.env.RSS_ITEM_LIMIT || "30", 10),
@@ -62,6 +65,8 @@ export const config = {
       process.env.NEWSLETTER_STORIES_PER_ISSUE || "2",
       10
     ),
+    selectModelTier: "large" as const,
+    contentModelTier: "large" as const,
   },
   feed: {
     size: parseInt(process.env.RSS_FEED_SIZE || "50", 10),
