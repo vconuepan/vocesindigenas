@@ -136,8 +136,10 @@ model Newsletter {
   id        String           @id @default(uuid())
   title     String
   content   String           @default("")
-  storyIds  String[]         @map("story_ids")
-  status    ContentStatus    @default(draft)
+  html      String           @default("")
+  storyIds          String[]         @map("story_ids")
+  selectedStoryIds  String[]         @default([]) @map("selected_story_ids")
+  status            ContentStatus    @default(draft)
   sends     NewsletterSend[]
   createdAt DateTime         @default(now()) @map("created_at")
   updatedAt DateTime         @updatedAt @map("updated_at")
@@ -214,21 +216,6 @@ model PendingSubscription {
   @@map("pending_subscriptions")
 }
 
-model EmailEvent {
-  id            String   @id @default(uuid())
-  eventType     String   @map("event_type")
-  contactEmail  String?  @map("contact_email")
-  contactId     String?  @map("contact_id")
-  campaignId    String?  @map("campaign_id")
-  payload       Json
-  occurredAt    DateTime @default(now()) @map("occurred_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  @@index([campaignId])
-  @@index([eventType])
-  @@index([occurredAt])
-  @@map("email_events")
-}
 
 // --- Auth Tables ---
 

@@ -11,7 +11,7 @@ import healthRouter from './routes/health.js'
 import authRouter from './routes/auth.js'
 import adminRouter from './routes/admin/index.js'
 import publicRouter from './routes/public/index.js'
-import plunkWebhookRouter from './routes/webhooks/plunk.js'
+
 
 const httpLog = createLogger('http')
 
@@ -86,7 +86,7 @@ app.use('/health', healthRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api', publicRouter)
-app.use('/api/webhooks/plunk', plunkWebhookRouter)
+
 
 // 404 handler for unmatched routes
 app.use((_req: Request, res: Response) => {

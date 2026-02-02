@@ -7,7 +7,9 @@ export const createNewsletterSchema = z.object({
 export const updateNewsletterSchema = z.object({
   title: z.string().min(1).optional(),
   content: z.string().optional(),
+  html: z.string().optional(),
   storyIds: z.array(z.string().uuid()).optional(),
+  selectedStoryIds: z.array(z.string().uuid()).optional(),
   status: z.enum(['draft', 'published']).optional(),
 })
 

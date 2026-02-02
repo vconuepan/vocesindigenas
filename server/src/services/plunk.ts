@@ -16,6 +16,14 @@ client.interceptors.request.use((cfg) => {
   return cfg
 })
 
+// Plunk "next" API wraps responses in { success, data }; unwrap automatically
+client.interceptors.response.use((res) => {
+  if (res.data && typeof res.data === 'object' && 'success' in res.data && 'data' in res.data) {
+    res.data = res.data.data
+  }
+  return res
+})
+
 // --- Campaign types ---
 
 export interface CreateCampaignOpts {
@@ -102,16 +110,6 @@ export async function sendCampaign(id: string, scheduledFor?: string): Promise<v
   )
 }
 
-export async function testCampaign(id: string): Promise<void> {
-  return withRetry(
-    async () => {
-      log.info({ campaignId: id }, 'sending test campaign')
-      await client.post(`/campaigns/${id}/test`)
-      log.info({ campaignId: id }, 'test campaign sent')
-    },
-    { retries: 3, retryOn: isRetryableError },
-  )
-}
 
 export async function getCampaignStats(id: string): Promise<CampaignStats> {
   return withRetry(
@@ -176,7 +174,7 @@ export async function deleteContact(id: string): Promise<void> {
   )
 }
 
-export async function listContacts(cursor?: string, limit = 50): Promise<{ data: Contact[]; cursor: string | null }> {
+export async function listContacts(cursor?: string, limit = 50): Promise<{ items: Contact[]; nextCursor: string | null; hasMore: boolean; total: number }> {
   return withRetry(
     async () => {
       const params: Record<string, string | number> = { limit }

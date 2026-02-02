@@ -171,7 +171,33 @@ export async function getStoriesByIds(ids: string[]) {
   if (ids.length === 0) return []
   return prisma.story.findMany({
     where: { id: { in: ids } },
-    select: { id: true, title: true },
+    select: {
+      ...ADMIN_LIST_SELECT,
+      issue: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          parentId: true,
+          parent: { select: { id: true, name: true, slug: true } },
+        },
+      },
+      feed: {
+        select: {
+          id: true,
+          title: true,
+          issue: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              parentId: true,
+              parent: { select: { id: true, name: true, slug: true } },
+            },
+          },
+        },
+      },
+    },
   })
 }
 

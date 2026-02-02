@@ -1,5 +1,6 @@
 import { tmpdir } from 'os'
 import { join } from 'path'
+import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
 import { config } from '../config.js'
 import { type Prisma, ContentStatus, StoryStatus, NewsletterSendStatus } from '@prisma/client'
@@ -7,6 +8,10 @@ import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
 import * as plunk from './plunk.js'
 import { createLogger } from '../lib/logger.js'
+import { getLargeLLM, rateLimitDelay } from './llm.js'
+import { withRetry } from '../lib/retry.js'
+import { buildNewsletterSelectPrompt } from '../prompts/index.js'
+import { newsletterSelectResultSchema } from '../schemas/llm.js'
 
 const log = createLogger('newsletter')
 
@@ -56,10 +61,10 @@ export async function assignStories(newsletterId: string) {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
 
-  // Find recently published/selected stories from the last 7 days
+  // Find recently published stories from the last N days
   const stories = await prisma.story.findMany({
     where: {
-      status: { in: [StoryStatus.published, StoryStatus.selected] },
+      status: StoryStatus.published,
       dateCrawled: { gte: new Date(Date.now() - config.content.storyAssignmentDays * 24 * 60 * 60 * 1000) },
     },
     orderBy: { dateCrawled: 'desc' },
@@ -75,27 +80,96 @@ export async function assignStories(newsletterId: string) {
   })
 }
 
+export async function selectStoriesForNewsletter(newsletterId: string) {
+  const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
+  if (!newsletter) throw new Error('Newsletter not found')
+  if (newsletter.storyIds.length === 0) throw new Error('No stories in longlist')
+
+  // Fetch stories with title, summary, and issue info
+  const stories = await prisma.story.findMany({
+    where: { id: { in: newsletter.storyIds } },
+    select: {
+      id: true,
+      title: true,
+      sourceTitle: true,
+      summary: true,
+      issue: { select: { id: true, name: true, parentId: true, parent: { select: { name: true } } } },
+      feed: { select: { issue: { select: { name: true, parentId: true, parent: { select: { name: true } } } } } },
+    },
+  })
+
+  // Resolve top-level issue name for each story
+  const storiesForPrompt = stories.map(s => {
+    const issue = s.issue ?? s.feed?.issue
+    const issueName = issue?.parentId && issue.parent
+      ? issue.parent.name
+      : issue?.name ?? 'General'
+    return {
+      id: s.id,
+      title: s.title || s.sourceTitle,
+      summary: s.summary,
+      issueName,
+    }
+  })
+
+  // Get distinct top-level issue names
+  const issueNames = [...new Set(storiesForPrompt.map(s => s.issueName))].sort()
+
+  log.info(
+    { newsletterId, storyCount: stories.length, issueCount: issueNames.length },
+    'selecting stories for newsletter',
+  )
+
+  const prompt = buildNewsletterSelectPrompt(
+    storiesForPrompt,
+    config.newsletter.storiesPerIssue,
+    issueNames,
+  )
+
+  await rateLimitDelay()
+  const llm = getLargeLLM()
+  const structuredLlm = llm.withStructuredOutput(newsletterSelectResultSchema)
+  const response = await withRetry(
+    () => structuredLlm.invoke([new HumanMessage(prompt)]),
+    { retries: 3 },
+  )
+
+  // Only keep IDs that exist in the longlist
+  const longlistSet = new Set(newsletter.storyIds)
+  const selectedIds = response.selectedIds.filter(id => longlistSet.has(id))
+
+  log.info(
+    { newsletterId, selectedCount: selectedIds.length, requestedCount: config.newsletter.storiesPerIssue * issueNames.length },
+    'newsletter story selection complete',
+  )
+
+  return prisma.newsletter.update({
+    where: { id: newsletterId },
+    data: { selectedStoryIds: selectedIds },
+  })
+}
+
 export async function generateContent(newsletterId: string) {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
-  if (newsletter.storyIds.length === 0) throw new Error('No stories assigned')
+  if (newsletter.selectedStoryIds.length === 0) throw new Error('No stories selected')
 
   const stories = await prisma.story.findMany({
-    where: { id: { in: newsletter.storyIds } },
-    include: { feed: { include: { issue: true } } },
+    where: { id: { in: newsletter.selectedStoryIds } },
+    include: { feed: { include: { issue: true } }, issue: true },
     orderBy: { dateCrawled: 'desc' },
   })
 
   // Sort by issue name for grouping
   stories.sort((a, b) => {
-    const nameA = a.feed?.issue?.name || ''
-    const nameB = b.feed?.issue?.name || ''
+    const nameA = a.issue?.name || a.feed?.issue?.name || ''
+    const nameB = b.issue?.name || b.feed?.issue?.name || ''
     return nameA.localeCompare(nameB)
   })
 
   let content = ''
   for (const story of stories) {
-    const category = story.feed?.issue?.name || 'General'
+    const category = story.issue?.name || story.feed?.issue?.name || 'General'
     const publisher = story.feed?.title || 'Unknown'
     const blurb = story.marketingBlurb || ''
     const summary = story.summary || ''
@@ -118,24 +192,24 @@ export async function generateContent(newsletterId: string) {
 export async function generateCarouselForNewsletter(newsletterId: string): Promise<string> {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
-  if (newsletter.storyIds.length === 0) throw new Error('No stories assigned')
+  if (newsletter.selectedStoryIds.length === 0) throw new Error('No stories selected')
 
   const stories = await prisma.story.findMany({
-    where: { id: { in: newsletter.storyIds } },
-    include: { feed: { include: { issue: true } } },
+    where: { id: { in: newsletter.selectedStoryIds } },
+    include: { feed: { include: { issue: true } }, issue: true },
     orderBy: { dateCrawled: 'desc' },
   })
 
   // Sort by issue name for grouping
   stories.sort((a, b) => {
-    const nameA = a.feed?.issue?.name || ''
-    const nameB = b.feed?.issue?.name || ''
+    const nameA = a.issue?.name || a.feed?.issue?.name || ''
+    const nameB = b.issue?.name || b.feed?.issue?.name || ''
     return nameA.localeCompare(nameB)
   })
 
   const carouselStories: CarouselStory[] = stories.map(s => ({
     title: s.title || s.sourceTitle,
-    category: s.feed?.issue?.name || 'General',
+    category: s.issue?.name || s.feed?.issue?.name || 'General',
     summary: s.summary || '',
     publisher: s.feed?.title || 'Unknown',
     date: s.sourceDatePublished?.toISOString() || null,
@@ -155,46 +229,54 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
 }
 
+/**
+ * Converts newsletter markdown content into an HTML email template.
+ * Parses the markdown structure produced by generateContent() — each story
+ * is an h2 heading followed by metadata, paragraphs, and a "Read original" link.
+ */
 export async function generateHtmlContent(newsletterId: string): Promise<string> {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
-  if (newsletter.storyIds.length === 0) throw new Error('No stories assigned')
+  if (!newsletter.content) throw new Error('No content to convert')
 
-  const stories = await prisma.story.findMany({
-    where: { id: { in: newsletter.storyIds } },
-    include: {
-      feed: { include: { issue: true } },
-      issue: true,
-    },
-    orderBy: { dateCrawled: 'desc' },
-  })
+  // Parse the markdown content into story blocks (split on --- separator)
+  const sections = newsletter.content.split(/\n---\n/).filter(s => s.trim())
 
-  stories.sort((a, b) => {
-    const nameA = a.issue?.name || a.feed?.issue?.name || ''
-    const nameB = b.issue?.name || b.feed?.issue?.name || ''
-    return nameA.localeCompare(nameB)
-  })
+  const storyBlocks = sections.map(section => {
+    const lines = section.trim().split('\n').filter(l => l.trim())
+    let title = ''
+    let meta = ''
+    const bodyParts: string[] = []
+    let readMoreUrl = ''
 
-  const storyBlocks = stories.map((story) => {
-    const category = escapeHtml(story.issue?.name || story.feed?.issue?.name || 'General')
-    const publisher = escapeHtml(story.feed?.title || 'Unknown')
-    const title = escapeHtml(story.title || story.sourceTitle)
-    const blurb = story.marketingBlurb ? escapeHtml(story.marketingBlurb) : ''
-    const summary = story.summary ? escapeHtml(story.summary) : ''
-    const relevance = story.relevanceReasons ? escapeHtml(story.relevanceReasons) : ''
-    const slug = story.slug ? `https://actuallyrelevant.news/stories/${story.slug}` : story.sourceUrl
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith('## ')) {
+        title = trimmed.slice(3)
+      } else if (trimmed.startsWith('**') && trimmed.includes('|') && !meta) {
+        meta = trimmed.replace(/\*\*/g, '')
+      } else if (trimmed.startsWith('[Read original]') || trimmed.startsWith('[Read more]')) {
+        const match = trimmed.match(/\((https?:\/\/[^)]+)\)/)
+        if (match) readMoreUrl = match[1]
+      } else if (trimmed.startsWith('**Why it matters:**')) {
+        const reason = trimmed.replace('**Why it matters:**', '').trim()
+        if (reason) bodyParts.push(`<p style="margin: 0 0 10px; font-size: 14px; color: #525252;"><strong style="color: #171717;">Why it matters:</strong> ${escapeHtml(reason)}</p>`)
+      } else if (trimmed) {
+        bodyParts.push(`<p style="margin: 0 0 10px; font-size: 15px; color: #525252; line-height: 1.6;">${escapeHtml(trimmed)}</p>`)
+      }
+    }
+
+    const titleHtml = readMoreUrl
+      ? `<a href="${escapeHtml(readMoreUrl)}" style="color: #171717; text-decoration: none;">${escapeHtml(title)}</a>`
+      : escapeHtml(title)
 
     return `
     <tr>
       <td style="padding: 24px 0; border-bottom: 1px solid #e5e5e5;">
-        <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #171717;">
-          <a href="${escapeHtml(slug)}" style="color: #171717; text-decoration: none;">${title}</a>
-        </h2>
-        <p style="margin: 0 0 12px; font-size: 13px; color: #737373;">${category} &middot; ${publisher}</p>
-        ${blurb ? `<p style="margin: 0 0 10px; font-size: 15px; color: #404040; font-style: italic;">${blurb}</p>` : ''}
-        ${summary ? `<p style="margin: 0 0 10px; font-size: 15px; color: #525252; line-height: 1.6;">${summary}</p>` : ''}
-        ${relevance ? `<p style="margin: 0 0 10px; font-size: 14px; color: #525252;"><strong style="color: #171717;">Why it matters:</strong> ${relevance}</p>` : ''}
-        <a href="${escapeHtml(slug)}" style="display: inline-block; font-size: 14px; font-weight: 600; color: #2563eb; text-decoration: none;">Read more &rarr;</a>
+        <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #171717;">${titleHtml}</h2>
+        ${meta ? `<p style="margin: 0 0 12px; font-size: 13px; color: #737373;">${escapeHtml(meta)}</p>` : ''}
+        ${bodyParts.join('\n        ')}
+        ${readMoreUrl ? `<a href="${escapeHtml(readMoreUrl)}" style="display: inline-block; font-size: 14px; font-weight: 600; color: #2563eb; text-decoration: none;">Read more &rarr;</a>` : ''}
       </td>
     </tr>`
   })
@@ -257,8 +339,9 @@ export async function getNewsletterSends(newsletterId: string) {
 }
 
 export async function sendTest(newsletterId: string) {
-  const html = await generateHtmlContent(newsletterId)
   const newsletter = await prisma.newsletter.findUniqueOrThrow({ where: { id: newsletterId } })
+  if (!newsletter.html) throw new Error('No HTML content — generate HTML first')
+  const html = newsletter.html
 
   log.info({ newsletterId }, 'creating test campaign in Plunk')
   const campaign = await plunk.createCampaign({
@@ -269,7 +352,7 @@ export async function sendTest(newsletterId: string) {
     segmentId: config.plunk.testSegmentId || undefined,
   })
 
-  await plunk.testCampaign(campaign.id)
+  await plunk.sendCampaign(campaign.id)
 
   return prisma.newsletterSend.create({
     data: {
@@ -284,8 +367,9 @@ export async function sendTest(newsletterId: string) {
 }
 
 export async function sendLive(newsletterId: string, scheduledFor?: string) {
-  const html = await generateHtmlContent(newsletterId)
   const newsletter = await prisma.newsletter.findUniqueOrThrow({ where: { id: newsletterId } })
+  if (!newsletter.html) throw new Error('No HTML content — generate HTML first')
+  const html = newsletter.html
 
   log.info({ newsletterId, scheduledFor }, 'creating live campaign in Plunk')
   const campaign = await plunk.createCampaign({

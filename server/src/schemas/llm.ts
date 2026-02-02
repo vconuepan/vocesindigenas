@@ -79,6 +79,12 @@ export const selectResultSchema = z.object({
   ),
 })
 
+export const newsletterSelectResultSchema = z.object({
+  selectedIds: z.array(z.string()).describe(
+    'IDs of the selected articles. Must contain exactly the number of articles requested.',
+  ),
+})
+
 export const podcastScriptSchema = z.object({
   script: z.string().describe('Full podcast script text ready for text-to-speech'),
 })
@@ -97,4 +103,5 @@ export type PreAssessResult = z.infer<typeof preAssessResultSchema>
 export type AssessResult = z.infer<typeof assessResultSchema>
 export type SelectResult = z.infer<typeof selectResultSchema>
 export type ReclassifyResult = z.infer<typeof reclassifyResultSchema>
+export type NewsletterSelectResult = z.infer<typeof newsletterSelectResultSchema>
 export type PodcastScript = z.infer<typeof podcastScriptSchema>

@@ -42,6 +42,9 @@ export const config = {
   content: {
     storyAssignmentDays: parseInt(process.env.STORY_ASSIGNMENT_DAYS || '7', 10),
   },
+  newsletter: {
+    storiesPerIssue: parseInt(process.env.NEWSLETTER_STORIES_PER_ISSUE || '2', 10),
+  },
   feed: {
     size: parseInt(process.env.RSS_FEED_SIZE || '50', 10),
     cacheMaxAge: parseInt(process.env.RSS_CACHE_MAX_AGE || '900', 10),
@@ -66,7 +69,7 @@ export const config = {
     fromEmail: process.env.PLUNK_FROM_EMAIL || '',
     fromName: process.env.PLUNK_FROM_NAME || 'Actually Relevant',
     testSegmentId: process.env.PLUNK_TEST_SEGMENT_ID || '',
-    webhookSecret: process.env.PLUNK_WEBHOOK_SECRET || '',
+
     baseUrl: 'https://next-api.useplunk.com',
   },
   subscribe: {

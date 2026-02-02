@@ -62,13 +62,16 @@ export interface Story {
   crawlMethod: string | null
   createdAt: string
   updatedAt: string
-  issue?: { id: string; name: string; slug: string } | null
+  issue?: { id: string; name: string; slug: string; parentId?: string | null; parent?: { id: string; name: string; slug: string } | null } | null
   feed?: {
     title: string
     displayTitle?: string | null
     issue?: {
+      id?: string
       name: string
       slug: string
+      parentId?: string | null
+      parent?: { id: string; name: string; slug: string } | null
     }
   }
 }
@@ -143,7 +146,9 @@ export interface Newsletter {
   id: string
   title: string
   content: string
+  html: string
   storyIds: string[]
+  selectedStoryIds: string[]
   status: 'draft' | 'published'
   createdAt: string
   updatedAt: string
@@ -175,16 +180,6 @@ export interface PendingSubscription {
   createdAt: string
 }
 
-export interface EmailEvent {
-  id: string
-  eventType: string
-  contactEmail: string | null
-  contactId: string | null
-  campaignId: string | null
-  payload: Record<string, unknown>
-  occurredAt: string
-  createdAt: string
-}
 
 export interface Podcast {
   id: string

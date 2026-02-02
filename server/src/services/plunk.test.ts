@@ -20,7 +20,7 @@ vi.mock('axios', () => ({
 const {
   createCampaign,
   sendCampaign,
-  testCampaign,
+
   getCampaignStats,
   createContact,
   updateContact,
@@ -65,13 +65,6 @@ describe('Plunk API client', () => {
     })
   })
 
-  describe('testCampaign', () => {
-    it('sends a test campaign', async () => {
-      mockAxiosInstance.post.mockResolvedValue({ data: {} })
-      await testCampaign('campaign-1')
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/campaigns/campaign-1/test')
-    })
-  })
 
   describe('getCampaignStats', () => {
     it('returns campaign stats', async () => {

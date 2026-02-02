@@ -92,6 +92,24 @@ router.post('/:id/assign', async (req, res) => {
   }
 })
 
+router.post('/:id/select', expensiveOpLimiter, async (req, res) => {
+  try {
+    const newsletter = await newsletterService.selectStoriesForNewsletter(req.params.id)
+    res.json(newsletter)
+  } catch (err: any) {
+    if (err.message === 'Newsletter not found') {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    if (err.message === 'No stories in longlist') {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    log.error({ err }, 'failed to select stories for newsletter')
+    res.status(500).json({ error: 'Failed to select stories' })
+  }
+})
+
 router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
   try {
     const newsletter = await newsletterService.generateContent(req.params.id)
@@ -101,7 +119,7 @@ router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
-    if (err.message === 'No stories assigned') {
+    if (err.message === 'No stories selected') {
       res.status(400).json({ error: err.message })
       return
     }
@@ -125,7 +143,7 @@ router.post('/:id/carousel', async (req, res) => {
       res.status(404).json({ error: err.message })
       return
     }
-    if (err.message === 'No stories assigned') {
+    if (err.message === 'No stories selected') {
       res.status(400).json({ error: err.message })
       return
     }
@@ -139,13 +157,15 @@ router.post('/:id/carousel', async (req, res) => {
 router.post('/:id/html', async (req, res) => {
   try {
     const html = await newsletterService.generateHtmlContent(req.params.id)
-    res.json({ html })
+    // Save generated HTML to the newsletter
+    const newsletter = await newsletterService.updateNewsletter(req.params.id, { html })
+    res.json({ html: newsletter.html })
   } catch (err: any) {
     if (err.message === 'Newsletter not found') {
       res.status(404).json({ error: err.message })
       return
     }
-    if (err.message === 'No stories assigned') {
+    if (err.message === 'No content to convert') {
       res.status(400).json({ error: err.message })
       return
     }

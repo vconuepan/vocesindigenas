@@ -185,7 +185,7 @@ describe('Admin Newsletters API', () => {
 
   describe('POST /api/admin/newsletters/:id/generate', () => {
     it('generates newsletter content', async () => {
-      const newsletter = sampleNewsletter({ storyIds: ['story-1'] })
+      const newsletter = sampleNewsletter({ selectedStoryIds: ['story-1'] })
       const story = sampleStory({
         status: 'published',
         summary: 'Test summary',
@@ -214,8 +214,8 @@ describe('Admin Newsletters API', () => {
       expect(res.status).toBe(404)
     })
 
-    it('returns 400 when no stories assigned', async () => {
-      mockPrisma.newsletter.findUnique.mockResolvedValue(sampleNewsletter({ storyIds: [] }))
+    it('returns 400 when no stories selected', async () => {
+      mockPrisma.newsletter.findUnique.mockResolvedValue(sampleNewsletter({ selectedStoryIds: [] }))
 
       const res = await request(app)
         .post('/api/admin/newsletters/newsletter-1/generate')
