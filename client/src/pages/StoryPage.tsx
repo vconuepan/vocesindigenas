@@ -219,6 +219,9 @@ export default function StoryPage() {
                     {story.quote}
                   </p>
                 </blockquote>
+                {story.quoteAttribution && (
+                  <p className="text-sm text-neutral-500 mt-3">&mdash; {story.quoteAttribution}</p>
+                )}
               </div>
             </div>
           )}

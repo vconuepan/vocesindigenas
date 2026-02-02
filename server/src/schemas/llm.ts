@@ -44,8 +44,18 @@ export const assessResultSchema = z.object({
   quote: z
     .string()
     .describe(
-      "Key quote from the article translated to English if needed, with attribution. " +
-        "Use quotation marks and name the speaker or publication."
+      "Key quote from the article, translated to English if needed. " +
+        "No speaker/publication name — attribution is a separate field. " +
+        "No surrounding quotation marks — the UI adds those. " +
+        "Use single quotes (' ') for any nested quotation within the text."
+    ),
+  quoteAttribution: z
+    .string()
+    .describe(
+      "Attribution for the key quote. If quoting a person, use their full name and title/role " +
+        "(e.g. 'Maria Helena Semedo, FAO Deputy Director'). If quoting an organization or publication, " +
+        "use the organization name (e.g. 'World Health Organization'). If the quote is a striking " +
+        "sentence from the article rather than a direct quote, use 'Original article'."
     ),
   summary: z
     .string()
@@ -178,6 +188,21 @@ export const extractTitleLabelSchema = z.object({
     ),
 });
 
+export const extractQuoteAttributionSchema = z.object({
+  quote: z
+    .string()
+    .describe("The key quote, cleaned up. Strip embedded speaker/publication name, surrounding quotation marks, and leftover punctuation. Replace any inner double quotes with single quotes (' ')."),
+  quoteAttribution: z
+    .string()
+    .describe(
+      "Attribution for the key quote. If quoting a person, use their full name and title/role " +
+        "(e.g. 'Maria Helena Semedo, FAO Deputy Director'). If quoting an organization or publication, " +
+        "use the organization name (e.g. 'World Health Organization'). If the quote is a striking " +
+        "sentence from the article rather than a direct quote, use 'Original article'."
+    ),
+});
+
+export type ExtractQuoteAttribution = z.infer<typeof extractQuoteAttributionSchema>;
 export type ExtractTitleLabel = z.infer<typeof extractTitleLabelSchema>;
 export type PreAssessResult = z.infer<typeof preAssessResultSchema>;
 export type AssessResult = z.infer<typeof assessResultSchema>;

@@ -20,7 +20,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:populate-issue-content": "tsx src/scripts/migrate/populate-issue-content.ts",
     "migration:backfill-title-label": "tsx src/scripts/migrations/backfill-title-label.ts",
-    "migration:backfill-title-label:test": "tsx src/scripts/migrations/backfill-title-label.ts --test"
+    "migration:backfill-title-label:test": "tsx src/scripts/migrations/backfill-title-label.ts --test",
+    "migration:backfill-quote-attribution": "tsx src/scripts/migrations/backfill-quote-attribution.ts",
+    "migration:backfill-quote-attribution:test": "tsx src/scripts/migrations/backfill-quote-attribution.ts --test"
   },
   "dependencies": {
     "@langchain/core": "^1.1.17",

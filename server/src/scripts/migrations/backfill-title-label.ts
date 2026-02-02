@@ -14,6 +14,7 @@ import { extractTitleLabelSchema } from '../../schemas/llm.js'
 import { config } from '../../config.js'
 
 const TEST_MODE = process.argv.includes('--test')
+const OVERRIDE_MODE = process.argv.includes('--override')
 const CONCURRENCY = 10
 const BATCH_SIZE = 100
 
@@ -51,7 +52,8 @@ async function processSingle(story: { id: string; title: string }): Promise<{
 }
 
 async function main() {
-  console.log(`Mode: ${TEST_MODE ? 'TEST (no DB writes)' : 'BATCH'}`)
+  const mode = TEST_MODE ? 'TEST (no DB writes)' : OVERRIDE_MODE ? 'OVERRIDE' : 'BATCH'
+  console.log(`Mode: ${mode}`)
   console.log(`Concurrency: ${CONCURRENCY}`)
   console.log(`Model: ${config.llm.models.small.name}`)
 
@@ -61,10 +63,10 @@ async function main() {
 
   while (true) {
     const stories = await prisma.story.findMany({
-      where: {
-        title: { not: null, contains: ':' },
-      },
-      select: { id: true, title: true },
+      where: OVERRIDE_MODE
+        ? { status: 'published', title: { not: null } }
+        : { title: { not: null, contains: ':' } },
+      select: { id: true, title: true, titleLabel: true },
       take: TEST_MODE ? 3 : BATCH_SIZE,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { id: 'asc' },
@@ -77,11 +79,13 @@ async function main() {
         semaphore.run(async () => {
           const result = await processSingle(story as { id: string; title: string })
 
-          if (TEST_MODE) {
-            console.log(`\n  "${result.originalTitle}"`)
-            console.log(`  → Label: "${result.titleLabel}"`)
-            console.log(`  → Title: "${result.title}"`)
-          } else {
+          const labelChanged = result.titleLabel !== (story as any).titleLabel
+          const titleChanged = result.title !== result.originalTitle
+          console.log(`\n  Original:  "${result.originalTitle}"`)
+          console.log(`  Label:     "${result.titleLabel}"${labelChanged ? ' ← CHANGED' : ''}`)
+          console.log(`  Title:     "${result.title}"${titleChanged ? ' ← CHANGED' : ''}`)
+
+          if (!TEST_MODE) {
             await prisma.story.update({
               where: { id: result.id },
               data: { titleLabel: result.titleLabel, title: result.title },
@@ -89,9 +93,6 @@ async function main() {
           }
 
           processed++
-          if (!TEST_MODE && processed % 50 === 0) {
-            console.log(`Processed: ${processed}`)
-          }
 
           return result
         }),

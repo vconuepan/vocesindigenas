@@ -243,6 +243,7 @@ export async function assessStory(storyId: string): Promise<void> {
       title: parsed.relevanceTitle || null,
       summary: parsed.summary || null,
       quote: parsed.quote || null,
+      quoteAttribution: parsed.quoteAttribution || null,
       marketingBlurb: parsed.marketingBlurb || null,
       relevanceReasons: parsed.factors.join('\n'),
       antifactors: parsed.limitingFactors.join('\n'),

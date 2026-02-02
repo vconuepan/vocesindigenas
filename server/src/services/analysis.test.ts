@@ -192,12 +192,14 @@ describe('assessStory', () => {
     const structuredResponse = {
       publicationDate: '2024-01-15 00:00:00',
       quote: '"Test quote" said Expert',
+      quoteAttribution: 'Dr. Smith, University of Oxford',
       summary: 'Test summary with key information.',
       factors: ['Factor one: Detailed explanation.', 'Factor two: Detailed explanation.'],
       limitingFactors: ['Limiting factor: Explanation of limitation.'],
       relevanceCalculation: ['Key factor: 5', 'Limitation: -2'],
       conservativeRating: 3,
       relevanceSummary: 'Test relevance summary explaining the rating.',
+      titleLabel: 'Test topic',
       relevanceTitle: 'Test title: subtitle here',
       marketingBlurb: 'Publisher reports on test topic with assessment.',
     }
@@ -214,8 +216,10 @@ describe('assessStory', () => {
     expect(mockPrisma.story.update).toHaveBeenCalledWith({
       where: { id: 'story-1' },
       data: expect.objectContaining({
+        titleLabel: 'Test topic',
         summary: 'Test summary with key information.',
         quote: '"Test quote" said Expert',
+        quoteAttribution: 'Dr. Smith, University of Oxford',
         relevanceReasons: 'Factor one: Detailed explanation.\nFactor two: Detailed explanation.',
         antifactors: 'Limiting factor: Explanation of limitation.',
         relevanceCalculation: 'Key factor: 5\nLimitation: -2',

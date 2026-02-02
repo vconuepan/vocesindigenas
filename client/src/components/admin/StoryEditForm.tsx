@@ -31,6 +31,7 @@ function buildFormState(story: Story) {
     emotionTag: story.emotionTag ?? '',
     summary: story.summary ?? '',
     quote: story.quote ?? '',
+    quoteAttribution: story.quoteAttribution ?? '',
     marketingBlurb: story.marketingBlurb ?? '',
     relevanceReasons: story.relevanceReasons ?? '',
     antifactors: story.antifactors ?? '',
@@ -59,6 +60,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
       emotionTag: (f.emotionTag || null) as EmotionTag | null,
       summary: f.summary || null,
       quote: f.quote || null,
+      quoteAttribution: f.quoteAttribution || null,
       marketingBlurb: f.marketingBlurb || null,
       relevanceReasons: f.relevanceReasons || null,
       antifactors: f.antifactors || null,
@@ -109,6 +111,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
       </div>
       <Textarea id="edit-summary" label="Summary" rows={3} value={form.summary} onChange={e => set('summary', e.target.value)} />
       <Input id="edit-quote" label="Quote" value={form.quote} onChange={e => set('quote', e.target.value)} />
+      <Input id="edit-quote-attribution" label="Quote Attribution" value={form.quoteAttribution} onChange={e => set('quoteAttribution', e.target.value)} placeholder="e.g. Dr. Smith, University of Oxford" />
       <Textarea id="edit-blurb" label="Marketing Blurb" rows={3} value={form.marketingBlurb} onChange={e => set('marketingBlurb', e.target.value)} />
       <Textarea id="edit-reasons" label="Relevance Reasons" rows={3} value={form.relevanceReasons} onChange={e => set('relevanceReasons', e.target.value)} />
       <Textarea id="edit-antifactors" label="Antifactors" rows={3} value={form.antifactors} onChange={e => set('antifactors', e.target.value)} />

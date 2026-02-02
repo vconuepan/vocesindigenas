@@ -72,6 +72,9 @@ function HeroSection({ story }: { story: PublicStory }) {
             <p className="text-lg md:text-xl italic text-neutral-700 leading-relaxed">
               &ldquo;{story.quote}&rdquo;
             </p>
+            {story.quoteAttribution && (
+              <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
+            )}
           </blockquote>
         ) : story.summary ? (
           <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">

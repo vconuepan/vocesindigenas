@@ -96,6 +96,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
                   <p className="text-lg italic text-neutral-700 leading-relaxed">
                     &ldquo;{story.quote}&rdquo;
                   </p>
+                  {story.quoteAttribution && (
+                    <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
+                  )}
                 </div>
               ) : (
                 <p className="text-neutral-600 leading-relaxed">{story.summary}</p>
@@ -140,6 +143,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
                   <p className="text-lg italic text-neutral-700 leading-relaxed">
                     &ldquo;{story.quote}&rdquo;
                   </p>
+                  {story.quoteAttribution && (
+                    <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
+                  )}
                 </div>
               )}
 
@@ -176,9 +182,14 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
           <StoryMeta story={story} size="xs" />
 
           {story.quote && (
-            <p className="text-sm italic text-neutral-600 leading-relaxed mt-3">
-              &ldquo;{story.quote}&rdquo;
-            </p>
+            <div className="mt-3">
+              <p className="text-sm italic text-neutral-600 leading-relaxed">
+                &ldquo;{story.quote}&rdquo;
+              </p>
+              {story.quoteAttribution && (
+                <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
+              )}
+            </div>
           )}
 
           {!story.quote && story.summary && (

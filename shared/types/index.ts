@@ -56,6 +56,7 @@ export interface Story {
   titleLabel: string | null
   summary: string | null
   quote: string | null
+  quoteAttribution: string | null
   marketingBlurb: string | null
   relevanceReasons: string | null
   antifactors: string | null

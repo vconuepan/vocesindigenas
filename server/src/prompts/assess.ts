@@ -53,9 +53,14 @@ Publication date
 - Look for the date in the article body or URL.
 
 Key quote
-- The most important exact quote, with attribution.
-- If no quote exists, use a sentence that highlights a key point.
+- The most important exact quote.
+- If no quote exists, use a striking sentence from the article.
 - Translate to English if needed.
+
+Quote attribution
+- If quoting a person: their full name and title/role (e.g. "Maria Helena Semedo, FAO Deputy Director").
+- If quoting an organization or publication: the organization name.
+- If the quote is a striking sentence (not a direct quote from a person): "Original article".
 
 Summary (40-70 words)
 - Include the key quote in quotation marks with attribution.
@@ -83,10 +88,10 @@ Limiting factors (1-4 bullet points, each 2 sentences)
 
 Relevance calculation (3-5 bullet points)
 - Start with the key factor and assign a base rating (1-10) against the <CRITERIA>. Before assigning 5+, verify the impact truly meets the 5-6 criteria threshold.
-- Apply modifiers from <GENERIC_LIMITING_FACTORS> (+0 to -4) and remaining factors/limiting factors combined (+/- 0-2).
+- Apply modifiers from <GENERIC_LIMITING_FACTORS> and remaining factors/limiting factors combined.
 - Non-key factors should contribute only small adjustments, if any.
-  Example: Key factor rated 7 → call to action (generic limiting factor) -3 → final rating 4.
-  Example: Key factor rated 5 → early-stage technology -2 → final rating 3.
+  Example: Key factor rated 7 → call to action and exxagerated claims → final rating 4.
+  Example: Key factor rated 5 → early-stage technology with unclear buy-in from scientists and investors → final rating 3.
 
 Conservative rating
 - A single integer 1-10 derived from the relevance calculation.
@@ -104,20 +109,18 @@ Title label (1-3 short words, sentence case)
   Good: 'EU AI Act'; 'Carbon inequality'; 'Deepfake laws'; 'Nuclear risk'; 'Ocean health'
   Bad: 'Carbon inequality and climate policy' (too long — just 'Carbon inequality')
   Bad: 'Non-consensual deepfake nudification' (words too long/complex — just 'Deepfake laws')
-  Bad: 'Major shift in global politics' (too vague, sounds like a headline)
+  Bad: 'Major shift in global politics' (too long, sounds like a headline)
 
 Title (sentence case)
 - A standalone headline. NEVER use the 'Label: headline' colon pattern. The title label is a separate field.
   Bad: 'EU AI Act: whistleblower channel and proposed timeline changes could shape enforcement'
-  Bad: 'New payment systems: How Russia's alternatives to SWIFT affect the global economy'
   Good: 'Whistleblower channel and proposed timeline changes could shape AI Act enforcement'
-  Good: 'Russia's alternatives to SWIFT signal a shift toward more fragmented financial infrastructure'
 - Be descriptive. Mention the specific information that makes this relevant.
 - Avoid sensationalist language ('breakthrough' → 'development'; 'crisis' → 'challenge'; 'revolution' → 'shift').
 - Capitalize first word and proper nouns only.
   Bad: 'Brics Club Might Get Six New Members'
   Good: 'Brics club might get six new members'
-- Try to include a number or the key quote if it strengthens the headline.
+- A key number can strengthens the headline.
 - Minimize redundancy with the summary and quote.
 
 Marketing blurb (up to 230 characters)

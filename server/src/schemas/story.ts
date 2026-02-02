@@ -39,6 +39,7 @@ export const updateStorySchema = z.object({
   emotionTag: emotionTagEnum.nullable().optional(),
   summary: z.string().nullable().optional(),
   quote: z.string().nullable().optional(),
+  quoteAttribution: z.string().nullable().optional(),
   marketingBlurb: z.string().nullable().optional(),
   relevanceReasons: z.string().nullable().optional(),
   antifactors: z.string().nullable().optional(),

@@ -21,15 +21,32 @@ export default function PullQuote({ story, variant = 'centered' }: PullQuoteProp
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const colors = getCategoryColor(issueSlug)
 
+  const hasPersonAttribution = story.quoteAttribution && story.quoteAttribution !== 'Original article'
+
   const attribution = (
     <footer className="mt-3 text-sm text-neutral-500">
-      &mdash; from{' '}
-      <Link
-        to={`/stories/${story.slug}`}
-        className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-      >
-        {story.title || story.sourceTitle}
-      </Link>
+      &mdash;{' '}
+      {hasPersonAttribution ? (
+        <>
+          {story.quoteAttribution}, via{' '}
+          <Link
+            to={`/stories/${story.slug}`}
+            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          >
+            {story.title || story.sourceTitle}
+          </Link>
+        </>
+      ) : (
+        <>
+          from{' '}
+          <Link
+            to={`/stories/${story.slug}`}
+            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          >
+            {story.title || story.sourceTitle}
+          </Link>
+        </>
+      )}
     </footer>
   )
 

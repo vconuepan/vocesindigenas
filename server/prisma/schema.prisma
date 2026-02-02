@@ -63,6 +63,7 @@ model Story {
   titleLabel             String?      @map("title_label")
   summary                String?
   quote                  String?
+  quoteAttribution       String?      @map("quote_attribution")
   marketingBlurb         String?      @map("marketing_blurb")
   relevanceReasons       String?      @map("relevance_reasons")
   antifactors            String?

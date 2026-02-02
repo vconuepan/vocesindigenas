@@ -95,6 +95,7 @@ Stories carry both crawled data and AI-generated analysis:
 - `relevance` — single relevance rating (1-10)
 - `summary` — 40-70 word summary
 - `quote` — key quote with attribution
+- `quoteAttribution` — speaker name/title, organization name, or "Original article" for non-quotes
 - `marketingBlurb` — up to 230 chars, starts with publisher name
 - `relevanceReasons` — detailed factor bullet points (newline-separated)
 - `antifactors` — limiting factor bullet points (newline-separated)
