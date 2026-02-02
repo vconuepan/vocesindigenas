@@ -11,7 +11,8 @@
       "WebFetch(domain:developers.openai.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.diffbot.com)",
-      "WebFetch(domain:next-wiki.useplunk.com)"
+      "WebFetch(domain:next-wiki.useplunk.com)",
+      "WebFetch(domain:docs.useplunk.com)"
     ],
     "deny": [
       "Bash(npx prisma*)",

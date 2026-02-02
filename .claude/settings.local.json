@@ -1,11 +1,5 @@
 {
   "permissions": {
-    "deny": [
-      "Bash(echo *)",
-      "Bash(* && echo *)",
-      "Bash(* ; echo *)",
-      "Bash(* || echo *)"
-    ],
     "allow": [
       "Bash(wc *)",
       "Bash(tree *)",
@@ -16,11 +10,13 @@
       "Bash(npm view *)",
       "Bash(npm audit*)",
       "Bash(npx vitest*)",
-      "Bash(npm ls*)",
-      "Bash(npm install*)",
-      "Bash(git commit *)",
-      "Bash(git stash*)",
-      "Bash(git pop *)"
+      "Bash(npm ls*)"
+    ],
+    "deny": [
+      "Bash(echo *)",
+      "Bash(* && echo *)",
+      "Bash(* ; echo *)",
+      "Bash(* || echo *)"
     ]
   }
 }
