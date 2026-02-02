@@ -11,7 +11,7 @@ export function buildAssessPrompt(
   const guidelinesXml = buildGuidelinesXml(guidelines);
   const truncatedContent = content.substring(
     0,
-    config.llm.assessContentMaxLength
+    config.assess.contentMaxLength
   );
 
   return `<ROLE>

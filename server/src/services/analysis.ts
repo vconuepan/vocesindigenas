@@ -174,7 +174,7 @@ export async function preAssessStories(
       status: 'pre_analyzed',
     }),
     onProgress,
-    batchSize: config.llm.preassessBatchSize,
+    batchSize: config.preassess.batchSize,
     concurrency: config.concurrency.preassess,
     label: 'pre-assessment',
   })
@@ -203,7 +203,7 @@ export async function reclassifyStories(
     }),
     fallbackToFeedIssue: false,
     onProgress,
-    batchSize: config.llm.preassessBatchSize,
+    batchSize: config.preassess.batchSize,
     concurrency: config.concurrency.reclassify,
     label: 'reclassification',
   })

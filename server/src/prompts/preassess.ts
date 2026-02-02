@@ -44,7 +44,7 @@ For each article: classify it into the single most relevant issue, rate its rele
 
 <ARTICLES>`
 
-  let capacity = config.llm.preassessBatchSize
+  let capacity = config.preassess.batchSize
   for (const story of stories) {
     if (containsChineseCharacters(story.content)) {
       capacity -= 1.5
@@ -54,7 +54,7 @@ For each article: classify it into the single most relevant issue, rate its rele
     if (capacity > 0) {
       query += `\n\n-----\nArticle ID: ${story.id}`
       query += `\nTitle: ${story.title}`
-      query += `\n${story.content.substring(0, config.llm.preassessContentMaxLength)} ...`
+      query += `\n${story.content.substring(0, config.preassess.contentMaxLength)} ...`
     }
   }
 
