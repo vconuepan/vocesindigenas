@@ -30,6 +30,7 @@ export const updateStorySchema = z.object({
   sourceContent: z.string().optional(),
   sourceDatePublished: z.string().datetime().nullable().optional(),
   title: z.string().min(1).nullable().optional(),
+  titleLabel: z.string().min(1).nullable().optional(),
   slug: z.string().min(1).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase letters, numbers, and hyphens').optional(),
   issueId: z.string().uuid().nullable().optional(),
   status: storyStatusEnum.optional(),

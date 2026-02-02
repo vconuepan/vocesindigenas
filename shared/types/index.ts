@@ -53,6 +53,7 @@ export interface Story {
   emotionTag: EmotionTag | null
   slug: string | null
   title: string | null
+  titleLabel: string | null
   summary: string | null
   quote: string | null
   marketingBlurb: string | null

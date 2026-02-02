@@ -2,14 +2,16 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { usePublicIssues } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
-import StoryCard from '../components/StoryCard'
+import StoryCard, { shouldShowRelevance } from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
 import { getCategoryIllustration } from '../lib/category-illustrations'
+import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/parse-points'
 import { formatDate } from '../lib/format'
+import { getTitleLabel, getHeadline } from '../lib/title-label'
 
 // ---------------------------------------------------------------------------
 // Hero
@@ -36,12 +38,15 @@ function HeroSection({ story }: { story: PublicStory }) {
           </Link>
         </div>
 
+        {getTitleLabel(story) && (
+          <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(story)}</span>
+        )}
         <h1 className="text-3xl md:text-5xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
           <Link
             to={`/stories/${story.slug}`}
             className="hover:text-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           >
-            {story.title || story.sourceTitle}
+            {getHeadline(story)}
           </Link>
         </h1>
 
@@ -58,7 +63,11 @@ function HeroSection({ story }: { story: PublicStory }) {
           {dateStr && <> · {dateStr}</>}
         </div>
 
-        {story.quote ? (
+        {story.relevanceReasons && parsePoints(story.relevanceReasons)[0] ? (
+          <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
+            {limitSentences(stripPrefix(stripMarkdown(parsePoints(story.relevanceReasons)[0])), 2)}
+          </p>
+        ) : story.quote ? (
           <blockquote className="decorative-quote max-w-2xl">
             <p className="text-lg md:text-xl italic text-neutral-700 leading-relaxed">
               &ldquo;{story.quote}&rdquo;
@@ -131,6 +140,20 @@ function IssueSection({
 
   const [featured, ...rest] = stories
 
+  // Determine which stories already show their quote on a card,
+  // so the pull-quote divider can pick a different one.
+  const cardQuoteIds = new Set<string>()
+  const showsQuote = (s: PublicStory) =>
+    s.quote && (!shouldShowRelevance(s.id) || !s.relevanceReasons)
+
+  if (layout === 'A' || layout === 'B') {
+    // Featured/horizontal card: shows quote unless in relevance mode
+    if (showsQuote(featured)) cardQuoteIds.add(featured.id)
+  } else {
+    // Layout C: equal cards always show quotes
+    stories.slice(0, 3).forEach((s) => { if (s.quote) cardQuoteIds.add(s.id) })
+  }
+
   return (
     <>
       <section className="relative mb-6 mt-14 md:mt-28">
@@ -194,7 +217,7 @@ function IssueSection({
 
       {/* Section divider */}
       {divider === 'quote' && (
-        <QuoteDivider stories={allStories} variantIndex={quoteVariantIndex ?? 0} />
+        <QuoteDivider stories={allStories} excludeIds={cardQuoteIds} variantIndex={quoteVariantIndex ?? 0} />
       )}
       {divider === 'diamond' && <hr className="section-divider" />}
     </>
@@ -205,8 +228,8 @@ function IssueSection({
 // Quote divider using the new PullQuote component
 // ---------------------------------------------------------------------------
 
-function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; variantIndex: number }) {
-  const storyWithQuote = stories.find((s) => s.quote)
+function QuoteDivider({ stories, excludeIds, variantIndex }: { stories: PublicStory[]; excludeIds: Set<string>; variantIndex: number }) {
+  const storyWithQuote = stories.find((s) => s.quote && !excludeIds.has(s.id))
   if (!storyWithQuote) return null
 
   return <PullQuote story={storyWithQuote} variant={getQuoteVariant(variantIndex)} />

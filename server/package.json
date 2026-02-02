@@ -18,7 +18,9 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:populate-issue-content": "tsx src/scripts/migrate/populate-issue-content.ts"
+    "db:populate-issue-content": "tsx src/scripts/migrate/populate-issue-content.ts",
+    "migration:backfill-title-label": "tsx src/scripts/migrations/backfill-title-label.ts",
+    "migration:backfill-title-label:test": "tsx src/scripts/migrations/backfill-title-label.ts --test"
   },
   "dependencies": {
     "@langchain/core": "^1.1.17",

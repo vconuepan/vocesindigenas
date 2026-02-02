@@ -21,6 +21,7 @@ interface StoryEditFormProps {
 
 function buildFormState(story: Story) {
   return {
+    titleLabel: story.titleLabel ?? '',
     title: story.title ?? '',
     slug: story.slug ?? '',
     issueId: story.issueId ?? '',
@@ -48,6 +49,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
     initialState,
     mutation: updateStory,
     toPayload: (f) => ({
+      titleLabel: f.titleLabel || null,
       title: f.title || null,
       slug: f.slug || undefined,
       issueId: f.issueId || null,
@@ -69,6 +71,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
 
   const fields = (
     <>
+      <Input id="edit-title-label" label="Title Label" value={form.titleLabel} onChange={e => set('titleLabel', e.target.value)} placeholder="e.g. EU AI Act" />
       <Input id="edit-title" label="Title" value={form.title} onChange={e => set('title', e.target.value)} />
       {story.slug && (
         story.datePublished

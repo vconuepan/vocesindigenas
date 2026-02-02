@@ -60,6 +60,7 @@ model Story {
   emotionTag             EmotionTag?  @map("emotion_tag")
   slug                   String?      @unique
   title                  String?
+  titleLabel             String?      @map("title_label")
   summary                String?
   quote                  String?
   marketingBlurb         String?      @map("marketing_blurb")

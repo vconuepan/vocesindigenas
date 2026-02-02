@@ -2,12 +2,28 @@ import { Link } from 'react-router-dom'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
+import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/parse-points'
 import { formatDate } from '../lib/format'
+import { getTitleLabel, getHeadline } from '../lib/title-label'
 import FeedFavicon from './FeedFavicon'
 
 interface StoryCardProps {
   story: PublicStory
   variant?: 'featured' | 'compact' | 'horizontal' | 'equal'
+}
+
+/** Deterministic per-story coin flip based on character code sum. */
+export function shouldShowRelevance(storyId: string): boolean {
+  const hash = storyId.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0)
+  return hash % 2 === 0
+}
+
+/** Extract the first relevance reason from the story, stripped of markdown. */
+function getFirstRelevanceReason(story: PublicStory, maxSentences: number): string | null {
+  if (!story.relevanceReasons) return null
+  const points = parsePoints(story.relevanceReasons)
+  if (points.length === 0) return null
+  return limitSentences(stripPrefix(stripMarkdown(points[0])), maxSentences)
 }
 
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
@@ -38,6 +54,13 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
 
+  // For featured/horizontal: decide whether to show a relevance reason
+  // Featured cards are larger so allow 2 sentences; horizontal gets 1
+  const relevanceReason =
+    (variant === 'featured' || variant === 'horizontal') && shouldShowRelevance(story.id)
+      ? getFirstRelevanceReason(story, variant === 'featured' ? 2 : 1)
+      : null
+
   // === HORIZONTAL variant (Layout B full-width) ===
   if (variant === 'horizontal') {
     return (
@@ -53,24 +76,29 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
               to={`/stories/${story.slug}`}
               className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
+              {getTitleLabel(story) && (
+                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+              )}
               <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors">
-                {story.title || story.sourceTitle}
+                {getHeadline(story)}
               </h3>
             </Link>
             <StoryMeta story={story} />
           </div>
 
-          {/* Right: quote or summary */}
-          {(story.quote || story.summary) && (
+          {/* Right: relevance reason, quote, or summary */}
+          {(relevanceReason || story.quote || story.summary) && (
             <div className="px-6 pb-6 md:p-8 md:flex-1 md:border-l md:border-neutral-200/50 flex items-center">
-              {story.quote ? (
+              {relevanceReason ? (
+                <p className="text-neutral-600 leading-relaxed">{relevanceReason}</p>
+              ) : story.quote ? (
                 <div className="decorative-quote">
                   <p className="text-lg italic text-neutral-700 leading-relaxed">
                     &ldquo;{story.quote}&rdquo;
                   </p>
                 </div>
               ) : (
-                <p className="text-neutral-600 leading-relaxed line-clamp-3">{story.summary}</p>
+                <p className="text-neutral-600 leading-relaxed">{story.summary}</p>
               )}
             </div>
           )}
@@ -93,23 +121,32 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             to={`/stories/${story.slug}`}
             className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           >
+            {getTitleLabel(story) && (
+              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+            )}
             <h3 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight">
-              {story.title || story.sourceTitle}
+              {getHeadline(story)}
             </h3>
           </Link>
 
           <StoryMeta story={story} />
 
-          {story.quote && (
-            <div className="decorative-quote mt-4">
-              <p className="text-lg italic text-neutral-700 leading-relaxed">
-                &ldquo;{story.quote}&rdquo;
-              </p>
-            </div>
-          )}
+          {relevanceReason ? (
+            <p className="text-neutral-600 leading-relaxed mt-3">{relevanceReason}</p>
+          ) : (
+            <>
+              {story.quote && (
+                <div className="decorative-quote mt-4">
+                  <p className="text-lg italic text-neutral-700 leading-relaxed">
+                    &ldquo;{story.quote}&rdquo;
+                  </p>
+                </div>
+              )}
 
-          {!story.quote && story.summary && (
-            <p className="text-neutral-600 leading-relaxed line-clamp-3 mt-3">{story.summary}</p>
+              {!story.quote && story.summary && (
+                <p className="text-neutral-600 leading-relaxed mt-3">{story.summary}</p>
+              )}
+            </>
           )}
         </div>
       </article>
@@ -128,21 +165,24 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             to={`/stories/${story.slug}`}
             className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           >
+            {getTitleLabel(story) && (
+              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+            )}
             <h3 className="text-lg font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-snug">
-              {story.title || story.sourceTitle}
+              {getHeadline(story)}
             </h3>
           </Link>
 
           <StoryMeta story={story} size="xs" />
 
           {story.quote && (
-            <p className="text-sm italic text-neutral-600 leading-relaxed mt-3 line-clamp-3">
+            <p className="text-sm italic text-neutral-600 leading-relaxed mt-3">
               &ldquo;{story.quote}&rdquo;
             </p>
           )}
 
           {!story.quote && story.summary && (
-            <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2 mt-2">{story.summary}</p>
+            <p className="text-sm text-neutral-500 leading-relaxed mt-2">{story.summary}</p>
           )}
         </div>
       </article>
@@ -159,8 +199,11 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         to={`/stories/${story.slug}`}
         className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
       >
+        {getTitleLabel(story) && (
+          <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-0.5">{getTitleLabel(story)}</span>
+        )}
         <h3 className="text-base font-bold text-neutral-900 mb-1.5 group-hover:text-brand-800 transition-colors leading-snug">
-          {story.title || story.sourceTitle}
+          {getHeadline(story)}
         </h3>
       </Link>
 

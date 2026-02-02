@@ -3,6 +3,7 @@
   "permissions": {
     "allow": [
       "Bash(npm run db:migrate:resolve*)",
+      "Bash(npm run migration*test --prefix server)",
       "Bash(npm run images:*)",
       "WebFetch(domain:actuallyrelevant.news)",
       "WebFetch(domain:render.com)",

@@ -239,6 +239,7 @@ export async function assessStory(storyId: string): Promise<void> {
   await prisma.story.update({
     where: { id: storyId },
     data: {
+      titleLabel: parsed.titleLabel || null,
       title: parsed.relevanceTitle || null,
       summary: parsed.summary || null,
       quote: parsed.quote || null,

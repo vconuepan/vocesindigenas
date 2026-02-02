@@ -1,15 +1,18 @@
-import { config } from '../config.js'
-import { Guidelines, buildGuidelinesXml } from './shared.js'
+import { config } from "../config.js";
+import { Guidelines, buildGuidelinesXml } from "./shared.js";
 
 export function buildAssessPrompt(
   title: string,
   content: string,
   publisher: string,
   url: string,
-  guidelines: Guidelines,
+  guidelines: Guidelines
 ): string {
-  const guidelinesXml = buildGuidelinesXml(guidelines)
-  const truncatedContent = content.substring(0, config.llm.assessContentMaxLength)
+  const guidelinesXml = buildGuidelinesXml(guidelines);
+  const truncatedContent = content.substring(
+    0,
+    config.llm.assessContentMaxLength
+  );
 
   return `<ROLE>
 You are a relevance analyst evaluating a news article for its importance to humanity and its long-term future. You produce structured assessments that are clear, evidence-based, and written for a general audience.
@@ -65,7 +68,7 @@ Summary (40-70 words)
 
 Factors (exactly 4 bullet points, each 2-3 sentences)
 - Order by importance. The first bullet is the 'key factor' with the greatest weight.
-- Add 3 sentences to the first two bullet points each and 2 sentences to the third and fourth bullet points each.
+- Write 3 sentences for the first bullet point, 2 sentences for the second bullet point, and 1 sentence for the remaining bullet points.
 - Only include <FACTORS> that increase relevance. If fewer than 4 factors apply, write multiple bullets on the most relevant ones.
 - Name each factor specifically based on the article content — do not repeat generic factor names.
 - Each bullet: assessment of the factor, classification against the <CRITERIA> (without citing numerical ratings — describe the impact level), mechanism or context, and an example or further detail.
@@ -96,15 +99,25 @@ Relevance summary (75-100 words)
 - End with an overall high-level assessment.
   Good: 'Overall, the event slows down progress toward SDG 3 in Sub-Saharan Africa but is unlikely to change the underlying positive trend.'
 
-Title (two parts separated by a colon, sentence case)
-- Be descriptive. Mention the specific information that makes this relevant.
+Title label (1-3 short words, sentence case)
+- An ultra-short topic tag that identifies the key subject. Must be a tight noun phrase — no conjunctions, no 'and'. Keep words simple and short.
+  Good: 'EU AI Act'; 'Carbon inequality'; 'Deepfake laws'; 'Nuclear risk'; 'Ocean health'
+  Bad: 'Carbon inequality and climate policy' (too long — just 'Carbon inequality')
+  Bad: 'Non-consensual deepfake nudification' (words too long/complex — just 'Deepfake laws')
+  Bad: 'Major shift in global politics' (too vague, sounds like a headline)
+
+Title (sentence case)
+- A standalone headline. NEVER use the 'Label: headline' colon pattern. The title label is a separate field.
+  Bad: 'EU AI Act: whistleblower channel and proposed timeline changes could shape enforcement'
   Bad: 'New payment systems: How Russia's alternatives to SWIFT affect the global economy'
-  Good: 'New payment systems: Russia's alternatives to SWIFT signal a shift toward more fragmented financial infrastructure'
+  Good: 'Whistleblower channel and proposed timeline changes could shape AI Act enforcement'
+  Good: 'Russia's alternatives to SWIFT signal a shift toward more fragmented financial infrastructure'
+- Be descriptive. Mention the specific information that makes this relevant.
 - Avoid sensationalist language ('breakthrough' → 'development'; 'crisis' → 'challenge'; 'revolution' → 'shift').
 - Capitalize first word and proper nouns only.
-  Bad: 'Major Shift In Global Politics: Brics Club Might Get Six New Members'
-  Good: 'Major shift in global politics: Brics club might get six new members'
-- Try to include the key topic and, if it makes the headline stronger, a number or the key quote.
+  Bad: 'Brics Club Might Get Six New Members'
+  Good: 'Brics club might get six new members'
+- Try to include a number or the key quote if it strengthens the headline.
 - Minimize redundancy with the summary and quote.
 
 Marketing blurb (up to 230 characters)
@@ -116,5 +129,5 @@ Marketing blurb (up to 230 characters)
 - Draw on your knowledge beyond what is written in the article.
 - Always respond in English, no matter the language of the article.
 </GUIDELINES>
-`
+`;
 }
