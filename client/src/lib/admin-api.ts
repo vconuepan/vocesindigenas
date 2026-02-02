@@ -216,7 +216,7 @@ export const adminApi = {
     crawlUrl: (url: string, feedId: string) =>
       request<Story>('/stories/crawl-url', { method: 'POST', body: JSON.stringify({ url, feedId }) }),
     batch: (ids: string[]) =>
-      request<{ id: string; title: string }[]>(`/stories/batch?ids=${ids.join(',')}`),
+      request<Story[]>(`/stories/batch?ids=${ids.join(',')}`),
     bulkPreassess: (storyIds: string[]) =>
       request<{ taskId: string }>('/stories/bulk-preassess', { method: 'POST', body: JSON.stringify({ storyIds }) }),
     bulkReclassify: (storyIds: string[]) =>
@@ -267,6 +267,7 @@ export const adminApi = {
       request<Newsletter>(`/newsletters/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/newsletters/${id}`, { method: 'DELETE' }),
     assign: (id: string) => request<Newsletter>(`/newsletters/${id}/assign`, { method: 'POST' }),
+    select: (id: string) => request<Newsletter>(`/newsletters/${id}/select`, { method: 'POST' }),
     generate: (id: string) => request<Newsletter>(`/newsletters/${id}/generate`, { method: 'POST' }),
     carousel: (id: string) => requestBlob(`/newsletters/${id}/carousel`, { method: 'POST' }),
     generateHtml: (id: string) => request<{ html: string }>(`/newsletters/${id}/html`, { method: 'POST' }),

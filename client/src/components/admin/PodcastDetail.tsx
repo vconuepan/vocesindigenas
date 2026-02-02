@@ -87,7 +87,7 @@ export function PodcastDetail({ podcast }: PodcastDetailProps) {
       </div>
 
       {/* Assigned stories */}
-      <AssignedStoriesList storyIds={podcast.storyIds} />
+      <AssignedStoriesList label="Assigned stories" storyIds={podcast.storyIds} />
 
       {/* Script */}
       <div className="bg-white rounded-lg border border-neutral-200 p-4">

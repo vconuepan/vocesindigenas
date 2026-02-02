@@ -60,6 +60,17 @@ export function useAssignNewsletterStories() {
   })
 }
 
+export function useSelectNewsletterStories() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => adminApi.newsletters.select(id),
+    onSuccess: (newsletter) => {
+      queryClient.setQueryData(['newsletter', newsletter.id], newsletter)
+      queryClient.invalidateQueries({ queryKey: ['newsletters'] })
+    },
+  })
+}
+
 export function useGenerateNewsletter() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -86,8 +97,12 @@ export function useGenerateCarousel() {
 }
 
 export function useGenerateHtml() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => adminApi.newsletters.generateHtml(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['newsletter', id] })
+    },
   })
 }
 
