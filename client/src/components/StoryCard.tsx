@@ -45,9 +45,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
 
-  // For featured/horizontal: show relevance summary ~2/3 of the time
+  // Show relevance summary ~2/3 of the time (featured, horizontal, equal)
   const relevanceSummary =
-    (variant === 'featured' || variant === 'horizontal') && shouldShowRelevance(story.id)
+    (variant === 'featured' || variant === 'horizontal' || variant === 'equal') && shouldShowRelevance(story.id)
       ? (story.relevanceSummary || null)
       : null
 
@@ -171,7 +171,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
           <StoryMeta story={story} size="xs" />
 
-          {story.quote && (
+          {relevanceSummary ? (
+            <p className="text-sm text-neutral-600 leading-relaxed mt-2">{relevanceSummary}</p>
+          ) : story.quote ? (
             <div className="mt-3">
               <p className="text-sm italic text-neutral-600 leading-relaxed">
                 &ldquo;{story.quote}&rdquo;
@@ -180,11 +182,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
                 <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
               )}
             </div>
-          )}
-
-          {!story.quote && story.summary && (
+          ) : story.summary ? (
             <p className="text-sm text-neutral-500 leading-relaxed mt-2">{story.summary}</p>
-          )}
+          ) : null}
         </div>
       </article>
     )

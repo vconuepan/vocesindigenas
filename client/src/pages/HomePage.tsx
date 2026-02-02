@@ -19,8 +19,6 @@ import { getTitleLabel, getHeadline } from '../lib/title-label'
 
 function HeroSection({ story }: { story: PublicStory }) {
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
-  const issueName = story.issue?.name ?? story.feed?.issue?.name ?? 'News'
-  const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
 
@@ -28,16 +26,6 @@ function HeroSection({ story }: { story: PublicStory }) {
     <section className="hero-section">
       <Pattern opacity={0.2} />
       <div className="hero-section-inner">
-        <div className="flex items-center gap-2 mb-4">
-          <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
-          <Link
-            to={`/issues/${issueSlug}`}
-            className="text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-          >
-            {issueName}
-          </Link>
-        </div>
-
         {getTitleLabel(story) && (
           <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(story)}</span>
         )}
@@ -153,8 +141,8 @@ function IssueSection({
     // Featured/horizontal card: shows quote unless in relevance mode
     if (showsQuote(featured)) cardQuoteIds.add(featured.id)
   } else {
-    // Layout C: equal cards always show quotes
-    stories.slice(0, 3).forEach((s) => { if (s.quote) cardQuoteIds.add(s.id) })
+    // Layout C: equal cards show quotes only when not in relevance mode
+    stories.slice(0, 3).forEach((s) => { if (showsQuote(s)) cardQuoteIds.add(s.id) })
   }
 
   return (

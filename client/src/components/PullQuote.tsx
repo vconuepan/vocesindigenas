@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import type { PublicStory } from '@shared/types'
-import { getCategoryColor } from '../lib/category-colors'
 
 type PullQuoteVariant = 'centered' | 'highlight'
 
@@ -17,9 +16,6 @@ interface PullQuoteProps {
  */
 export default function PullQuote({ story, variant = 'centered' }: PullQuoteProps) {
   if (!story.quote) return null
-
-  const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
-  const colors = getCategoryColor(issueSlug)
 
   const hasPersonAttribution = story.quoteAttribution && story.quoteAttribution !== 'Original article'
 
@@ -74,26 +70,14 @@ export default function PullQuote({ story, variant = 'centered' }: PullQuoteProp
     )
   }
 
-  // === HIGHLIGHT variant (colored strip) ===
-  return (
-    <div className={`py-8 md:py-10 my-6 md:my-8 ${colors.bg} rounded-lg`}>
-      <div className="max-w-2xl mx-auto text-center px-6">
-        <blockquote>
-          <p className="text-xl md:text-2xl italic text-neutral-800 leading-relaxed">
-            &ldquo;{story.quote}&rdquo;
-          </p>
-        </blockquote>
-        {attribution}
-      </div>
-    </div>
-  )
+  // Only centered variant is used — always the big decorative quotation mark style.
+  return null
 }
 
 /**
  * Select a pull-quote variant based on section index for visual rotation.
+ * Currently always returns 'centered' (large decorative quotation mark).
  */
-const VARIANT_ROTATION: PullQuoteVariant[] = ['centered', 'highlight']
-
-export function getQuoteVariant(index: number): PullQuoteVariant {
-  return VARIANT_ROTATION[index % VARIANT_ROTATION.length]
+export function getQuoteVariant(_index: number): PullQuoteVariant {
+  return 'centered'
 }
