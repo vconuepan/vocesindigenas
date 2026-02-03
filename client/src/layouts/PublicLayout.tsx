@@ -270,7 +270,7 @@ function PublicLayoutInner() {
                     }
                   >
                     <span
-                      className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} ${
+                      className={`w-2.5 h-2.5 rounded-full -translate-y-px ${colors.dotBg} ${
                         active ? "opacity-100" : "opacity-60"
                       }`}
                       aria-hidden="true"
