@@ -165,7 +165,7 @@ function PublicLayoutInner() {
                   alt="Actually Relevant"
                   width={160}
                   height={64}
-                  className="h-14 md:h-16 w-auto"
+                  className="h-14 md:h-16 aspect-[5/2]"
                 />
               </picture>
               <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
