@@ -108,7 +108,7 @@
   /* Editorial magazine elements */
 
   .hero-section {
-    @apply relative py-8 md:py-14 px-4 overflow-hidden;
+    @apply relative py-8 md:py-14 px-4 overflow-hidden min-h-[280px] md:min-h-0;
     background-color: #fafafa;
   }
 
