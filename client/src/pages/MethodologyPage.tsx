@@ -22,10 +22,6 @@ export default function MethodologyPage() {
 
       <div className="page-section">
         <h1 className="page-title">Our Methodology</h1>
-        <p className="page-intro">
-          How we decide what news actually matters for humanity.
-        </p>
-
         <div className="prose max-w-none">
           <h2 className="section-heading mt-8">What Does "Relevant" Mean?</h2>
           <p>
@@ -35,67 +31,71 @@ export default function MethodologyPage() {
             genuine progress in our understanding of the world.
           </p>
 
-          <h2 className="section-heading mt-8">Issue-Specific Evaluation Criteria</h2>
+          <h2 className="section-heading mt-8">Our Process</h2>
           <p>
-            Each issue area defines its own evaluation criteria tailored to what matters
-            most in that domain. Stories are scored against these criteria on a 1–10 scale.
-          </p>
-          <p>
-            For example, stories in the{' '}
-            <Link to="/issues/human-development" className="text-brand-700 hover:text-brand-800 font-medium">
-              Human Development
-            </Link>
-            {' '}issue are evaluated on:
-          </p>
-          <ol className="list-decimal list-inside space-y-4 my-4 text-neutral-600">
-            <li className="leading-relaxed">
-              The number of people directly affected in terms of their basic human needs
-              (nutrition, shelter), foundations of wellbeing (healthcare, schooling), and
-              opportunities (personal rights, equal access)
-            </li>
-            <li className="leading-relaxed">
-              Changes in social, political, economic, and legal trends, norms, and systems
-              that have an ongoing effect on people's access to basic needs, wellbeing, and
-              opportunities
-            </li>
-            <li className="leading-relaxed">
-              Technological advancements or innovations that affect access to basic needs,
-              foundations of wellbeing, and opportunities
-            </li>
-          </ol>
-          <p>
-            You can see the full evaluation criteria for each issue on its dedicated page.
+            We use AI to find the most relevant news for you:
           </p>
 
-          <h2 className="section-heading mt-8">How AI Analysis Works</h2>
-          <p>
-            We use a multi-stage AI pipeline to evaluate every article we collect:
-          </p>
-          <ol className="list-decimal list-inside space-y-4 my-4 text-neutral-600">
-            <li className="leading-relaxed">
-              <strong>Collection</strong> — We crawl dozens of curated news sources across
-              our four issue areas, extracting article content automatically.
-            </li>
-            <li className="leading-relaxed">
-              <strong>Pre-screening</strong> — Each article is assigned to the issue it
-              best belongs to and receives a quick assessment to determine whether it
-              merits a full evaluation. Articles below a minimum relevance threshold are
-              filtered out.
-            </li>
-            <li className="leading-relaxed">
-              <strong>Full analysis</strong> — Qualifying articles receive detailed
-              evaluation: relevance factors and antifactors are identified, a rating is
-              assigned, and a summary is generated.
-            </li>
-            <li className="leading-relaxed">
-              <strong>Selection</strong> — From the pool of worthy candidates, the
-              most relevant stories are selected for publication.
-            </li>
-          </ol>
+          {/* Process funnel */}
+          <div className="my-6">
+            {/* Legend */}
+            <div className="flex items-center gap-1.5 justify-end mb-4 text-xs text-neutral-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0" aria-hidden="true" />
+              <span>= story</span>
+            </div>
+
+            <div>
+              {[
+                {
+                  label: 'Collection',
+                  desc: 'We crawl over 50 curated news sources across our four Issue areas, extracting article content automatically.',
+                  dots: 20,
+                },
+                {
+                  label: 'Pre-screening',
+                  desc: 'Articles that clearly don\u2019t meet our criteria are filtered out.',
+                  dots: 10,
+                },
+                {
+                  label: 'Analysis',
+                  desc: 'We identify the Issue area that a story belongs to, assess how relevant it is for humanity based on that Issue\u2019s criteria, give a rating, and generate a summary.',
+                  dots: 4,
+                },
+                {
+                  label: 'Comparison',
+                  desc: 'We compare stories against each other and select the most relevant ones for publication.',
+                  dots: 2,
+                },
+                {
+                  label: 'Newsletter curation',
+                  desc: 'We identify the 8 most relevant stories of the week, 2 from each Issue.',
+                  dots: 1,
+                },
+              ].map((step) => (
+                <div key={step.label} className="flex gap-4 md:gap-6 items-center py-3">
+                  <div className="flex-1">
+                    <strong className="text-neutral-800">{step.label}</strong>
+                    <p className="text-sm text-neutral-500 mt-1 leading-relaxed">{step.desc}</p>
+                  </div>
+                  {/* Dot cluster — fewer stories = stronger color */}
+                  <div className="w-16 md:w-20 shrink-0 flex flex-wrap justify-end gap-[5px]" aria-label={`~${step.dots} stories remaining`}>
+                    {Array.from({ length: step.dots }).map((_, j) => (
+                      <span
+                        key={j}
+                        className="w-2.5 h-2.5 rounded-full bg-brand-500"
+                        style={{ opacity: 0.25 + 0.75 * (1 - step.dots / 20) }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <h2 className="section-heading mt-8">Issue Areas</h2>
           <p>
-            We cover four issue areas, each with adapted evaluation criteria:
+            We cover four Issue areas, each with adapted evaluation criteria:
           </p>
           <ul className="space-y-2 my-4">
             <li>
