@@ -177,7 +177,7 @@ function PublicLayoutInner() {
             <div className="hidden lg:flex items-center absolute right-12 top-4 h-16">
               <button
                 onClick={() => openSubscribe()}
-                className="inline-flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
+                className="inline-flex items-center gap-1.5 text-sm font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
               >
                 <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                 Subscribe
@@ -320,7 +320,7 @@ function PublicLayoutInner() {
                     setMenuOpen(false);
                     openSubscribe();
                   }}
-                  className="inline-flex items-center gap-2 py-2.5 text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className="inline-flex items-center gap-2 py-2.5 text-sm font-normal text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                   Subscribe to Newsletter

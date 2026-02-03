@@ -47,7 +47,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
                 <Link
                   key={child.slug}
                   to={`/issues/${child.slug}`}
-                  className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-normal px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${childColors.dotBg}`} aria-hidden="true" />
                   {child.name}
@@ -118,7 +118,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
         <div>
           <Link
             to={`/issues/${issue.slug}`}
-            className={`inline-flex items-center gap-2 text-sm font-medium ${colors.dot} hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5`}
+            className={`inline-flex items-center gap-2 text-sm font-normal ${colors.dot} hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5`}
           >
             View stories &rarr;
           </Link>

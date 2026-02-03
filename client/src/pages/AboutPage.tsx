@@ -54,25 +54,25 @@ export default function AboutPage() {
           <p>We focus on four issue areas:</p>
           <ul className="space-y-2 my-4">
             <li>
-              <Link to="/issues/existential-threats" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/existential-threats" className="text-brand-700 hover:text-brand-800 font-normal">
                 Existential Threats
               </Link>
               {' '}— Risks that could cause civilizational collapse or human extinction
             </li>
             <li>
-              <Link to="/issues/planet-climate" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/planet-climate" className="text-brand-700 hover:text-brand-800 font-normal">
                 Planet &amp; Climate
               </Link>
               {' '}— Climate change, environmental destruction, and biodiversity loss
             </li>
             <li>
-              <Link to="/issues/human-development" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/human-development" className="text-brand-700 hover:text-brand-800 font-normal">
                 Human Development
               </Link>
               {' '}— Poverty, health, education, and human rights
             </li>
             <li>
-              <Link to="/issues/science-technology" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/science-technology" className="text-brand-700 hover:text-brand-800 font-normal">
                 Science &amp; Technology
               </Link>
               {' '}— Breakthroughs and innovations shaping our future
@@ -82,11 +82,11 @@ export default function AboutPage() {
           <h2 className="section-heading mt-8">Learn More</h2>
           <p>
             Read about{' '}
-            <Link to="/methodology" className="text-brand-700 hover:text-brand-800 font-medium">
+            <Link to="/methodology" className="text-brand-700 hover:text-brand-800 font-normal">
               our methodology
             </Link>{' '}
             to understand how we evaluate relevance, or{' '}
-            <Link to="/imprint" className="text-brand-700 hover:text-brand-800 font-medium">
+            <Link to="/imprint" className="text-brand-700 hover:text-brand-800 font-normal">
               get in touch
             </Link>{' '}
             if you have questions or suggestions.

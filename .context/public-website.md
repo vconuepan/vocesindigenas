@@ -47,8 +47,7 @@ Feed items include: title, link to story page, AI-generated summary, publish dat
 
 ## Shared Components
 
-- `StoryCard` — Story card with title, emotion badge, rating, summary (used on homepage + issue pages)
-- `EmotionBadge` — Colored badge per emotion tag
+- `StoryCard` — Story card with title, rating, summary (used on homepage + issue pages)
 - `RatingDisplay` — Relevance rating with color coding
 - `Pagination` — Page navigation with ellipsis
 
@@ -72,10 +71,9 @@ Self-hosted from `/fonts/`. Only these fonts are loaded (adding more increases p
 |------|--------|----------------|---------|
 | Nexa Bold | 700 | `font-nexa font-bold` | Headings, logo text |
 | Roboto Regular | 400 | (default body) | Body text |
-| Roboto Medium | 500 | `font-medium` | Semi-bold UI elements |
 | Roboto Bold | 700 | `font-bold` | Bold body text |
 
-**Do NOT use:** `font-light`, `font-thin`, `font-black`, or `font-nexa` without `font-bold` — these weights are not loaded and will trigger browser fallback or extra downloads.
+**Do NOT use:** `font-light`, `font-thin`, `font-black`, `font-medium`, or `font-nexa` without `font-bold` — these weights are not loaded and will trigger browser fallback or extra downloads.
 
 Font definitions: `client/src/index.css` (@font-face)
 Preload hints: `client/index.html`

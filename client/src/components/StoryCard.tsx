@@ -44,7 +44,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   if (variant === 'horizontal') {
     return (
       <article
-        className={`group story-card-hover relative overflow-hidden ${colors.borderThick} rounded-r-lg bg-white hover:shadow-xl hover:shadow-brand-100/50 hover:scale-[1.005] transition-all duration-200`}
+        className={`group story-card-hover relative overflow-hidden ${colors.borderThick} rounded-r-lg bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200`}
         style={hoverStyle}
       >
         <Pattern opacity={0.15} />
@@ -80,7 +80,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   if (variant === 'featured') {
     return (
       <article
-        className={`group story-card-hover relative overflow-hidden rounded-lg border border-neutral-200 bg-white hover:shadow-xl hover:shadow-brand-100/50 hover:scale-[1.005] transition-all duration-200`}
+        className={`group story-card-hover relative overflow-hidden rounded-lg border border-neutral-200 bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200`}
         style={hoverStyle}
       >
         <div className={`rounded-t-lg ${colors.dotBg}`} style={{ height: '4px' }} aria-hidden="true" />
@@ -112,7 +112,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   if (variant === 'equal') {
     return (
       <article
-        className={`group story-card-hover relative overflow-hidden rounded-r-lg border border-neutral-200 border-l-4 ${colors.border} bg-white hover:shadow-xl hover:shadow-brand-100/50 hover:scale-[1.01] transition-all duration-200 h-full`}
+        className={`group story-card-hover relative overflow-hidden rounded-r-lg border border-neutral-200 border-l-4 ${colors.border} bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200 h-full`}
         style={hoverStyle}
       >
         <div className="relative z-10 p-5">
@@ -141,7 +141,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   // === COMPACT variant ===
   return (
     <article
-      className={`group story-card-hover relative overflow-hidden border-l-4 ${colors.border} rounded-r-lg bg-white pl-4 pr-4 py-4 hover:shadow-md hover:shadow-brand-100/30 hover:scale-[1.005] transition-all duration-200`}
+      className={`group story-card-hover relative overflow-hidden border-l-4 ${colors.border} rounded-r-lg bg-white pl-4 pr-4 py-4 hover:shadow-md hover:shadow-brand-100/30 transition-all duration-200`}
       style={hoverStyle}
     >
       <Link

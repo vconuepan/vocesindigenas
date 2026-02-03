@@ -80,7 +80,7 @@ export default function StoryPage() {
         </p>
         <Link
           to="/"
-          className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+          className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
           &larr; Back to home
         </Link>
@@ -247,13 +247,13 @@ export default function StoryPage() {
           <div className="border-t border-neutral-200 pt-6 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Link
               to="/"
-              className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               &larr; Back to all stories
             </Link>
             <Link
               to={`/issues/${issueSlug}`}
-              className="self-end sm:self-auto text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="self-end sm:self-auto text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               More in {issueName} &rarr;
             </Link>

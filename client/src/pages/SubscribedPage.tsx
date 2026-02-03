@@ -19,7 +19,7 @@ export default function SubscribedPage() {
           </p>
           <Link
             to="/"
-            className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+            className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
           >
             &larr; Back to home
           </Link>
@@ -42,7 +42,7 @@ export default function SubscribedPage() {
           </p>
           <Link
             to="/"
-            className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+            className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
           >
             &larr; Back to home
           </Link>
@@ -64,8 +64,10 @@ export default function SubscribedPage() {
           </svg>
         </div>
         <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">Welcome to the newsletter!</h1>
-        <p className="text-neutral-500 text-sm mb-3 max-w-md mx-auto">
-          News that matters to humanity. Weekly to your inbox. Curated with care by AI.
+        <p className="text-neutral-600 mb-4 max-w-md mx-auto">
+          News that matters to humanity.<br className="sm:hidden" />
+          Weekly to your inbox.<br />
+          Curated with care by AI.
         </p>
         <p className="text-neutral-600 mb-8 max-w-md mx-auto">
           Your subscription is confirmed. In the meantime, explore what's making headlines right now.

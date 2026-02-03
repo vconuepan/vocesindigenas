@@ -100,25 +100,25 @@ export default function MethodologyPage() {
           </p>
           <ul className="space-y-2 my-4">
             <li>
-              <Link to="/issues/existential-threats" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/existential-threats" className="text-brand-700 hover:text-brand-800 font-normal">
                 Existential Threats
               </Link>
               {' '}— Nuclear weapons, pandemics, AI risks
             </li>
             <li>
-              <Link to="/issues/planet-climate" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/planet-climate" className="text-brand-700 hover:text-brand-800 font-normal">
                 Planet &amp; Climate
               </Link>
               {' '}— Climate change, biodiversity, ecosystems
             </li>
             <li>
-              <Link to="/issues/human-development" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/human-development" className="text-brand-700 hover:text-brand-800 font-normal">
                 Human Development
               </Link>
               {' '}— Poverty, health, education, rights
             </li>
             <li>
-              <Link to="/issues/science-technology" className="text-brand-700 hover:text-brand-800 font-medium">
+              <Link to="/issues/science-technology" className="text-brand-700 hover:text-brand-800 font-normal">
                 Science &amp; Technology
               </Link>
               {' '}— Research breakthroughs, innovation

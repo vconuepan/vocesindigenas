@@ -36,7 +36,7 @@ export default function PrivacyPage() {
 
           <h2 className="section-heading mt-10">What We Collect</h2>
 
-          <h3 className="text-lg font-medium mt-6 mb-2">Website Analytics</h3>
+          <h3 className="text-lg font-normal mt-6 mb-2">Website Analytics</h3>
           <p>
             We use{' '}
             <a
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h3 className="text-lg font-medium mt-6 mb-2">Newsletter (Optional)</h3>
+          <h3 className="text-lg font-normal mt-6 mb-2">Newsletter (Optional)</h3>
           <p>If you choose to subscribe to our newsletter, we collect:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
             <li>
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
             You can unsubscribe at any time using the unsubscribe link included in every email.
           </p>
 
-          <h3 className="text-lg font-medium mt-6 mb-2">Server Logs</h3>
+          <h3 className="text-lg font-normal mt-6 mb-2">Server Logs</h3>
           <p>
             Our server records basic request metadata (URL path, HTTP status, response time) for
             operational monitoring. These logs are retained for 14 days and then automatically
@@ -123,9 +123,9 @@ export default function PrivacyPage() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="border-b border-neutral-200">
-                  <th scope="col" className="text-left py-2 pr-4 font-medium">Service</th>
-                  <th scope="col" className="text-left py-2 pr-4 font-medium">Purpose</th>
-                  <th scope="col" className="text-left py-2 font-medium">Data Shared</th>
+                  <th scope="col" className="text-left py-2 pr-4 font-normal">Service</th>
+                  <th scope="col" className="text-left py-2 pr-4 font-normal">Purpose</th>
+                  <th scope="col" className="text-left py-2 font-normal">Data Shared</th>
                 </tr>
               </thead>
               <tbody className="text-neutral-600">

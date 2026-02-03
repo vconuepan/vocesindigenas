@@ -128,7 +128,7 @@ export default function IssuePage() {
         <p className="text-neutral-500 mb-6">This issue category does not exist.</p>
         <Link
           to="/issues"
-          className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+          className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
           &larr; View all issues
         </Link>
@@ -172,7 +172,7 @@ export default function IssuePage() {
           {issue.parent && (
             <Link
               to={`/issues/${issue.parent.slug}`}
-              className="text-xs text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 mb-1 inline-block"
+              className="text-xs text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 mb-1 inline-block"
             >
               &larr; {issue.parent.name}
             </Link>
@@ -204,7 +204,7 @@ export default function IssuePage() {
                 <Link
                   key={child.slug}
                   to={`/issues/${child.slug}`}
-                  className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-normal px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${childColors.dotBg}`} aria-hidden="true" />
                   {child.name}

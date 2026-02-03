@@ -60,7 +60,7 @@ export default function SearchPage() {
             <p className="text-neutral-500 mb-4">No results found for &ldquo;{q}&rdquo;.</p>
             <Link
               to="/"
-              className="text-brand-700 hover:text-brand-800 font-medium focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               &larr; Back to home
             </Link>
