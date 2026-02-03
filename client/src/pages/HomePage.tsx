@@ -90,7 +90,7 @@ function RuledHeading({ issue }: { issue: PublicIssue }) {
           className="flex items-center gap-2 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
         >
           <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
-          <span className="text-lg font-bold uppercase tracking-wider md:text-xl">{issue.name}</span>
+          <h2 className="text-lg font-bold uppercase tracking-wider md:text-xl">{issue.name}</h2>
         </Link>
         <span className="hidden md:block flex-1 border-t border-neutral-200" aria-hidden="true" />
       </div>
@@ -259,7 +259,7 @@ export default function HomePage() {
       {heroStory && <HeroSection story={heroStory} />}
 
       {/* Issue sections with rotating layouts */}
-      <div className="page-section-wide md:-mt-14">
+      <div className="page-section-wide md:-mt-14 min-h-screen">
         {sortedIssues.map((issue, idx) => {
           const layout = LAYOUTS[idx % LAYOUTS.length]
           const isLast = idx === sortedIssues.length - 1

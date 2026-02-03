@@ -163,7 +163,9 @@ function PublicLayoutInner() {
                 <img
                   src="/images/logo-text-horizontal.png"
                   alt="Actually Relevant"
-                  className="h-14 md:h-16"
+                  width={160}
+                  height={64}
+                  className="h-14 md:h-16 w-auto"
                 />
               </picture>
               <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-400 mt-1">

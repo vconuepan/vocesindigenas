@@ -25,7 +25,7 @@
   src: url('/fonts/NexaBold/Nexa Light.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 /* Roboto — body text */
@@ -42,7 +42,7 @@
   src: url('/fonts/Roboto/Roboto-Italic.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
@@ -50,7 +50,7 @@
   src: url('/fonts/Roboto/Roboto-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {

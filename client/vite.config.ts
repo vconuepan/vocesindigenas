@@ -36,6 +36,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    modulePreload: {
+      resolveDependencies: (_filename, deps) =>
+        deps.filter((dep) => !dep.includes('admin-vendor')),
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

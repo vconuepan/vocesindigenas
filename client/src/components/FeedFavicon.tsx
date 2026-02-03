@@ -24,6 +24,7 @@ export default function FeedFavicon({ feedId, size = 16, className = '' }: FeedF
       loading="lazy"
       decoding="async"
       className={`inline-block rounded-sm ${className}`}
+      style={{ width: size, height: size }}
       onError={() => setFailed(true)}
     />
   )
