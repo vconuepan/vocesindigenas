@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { usePublicStories } from '../hooks/usePublicStories'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
+import { SearchResultsSkeleton } from '../components/skeletons'
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams()
@@ -49,7 +50,7 @@ export default function SearchPage() {
         {!q ? (
           <p className="text-neutral-500 text-center py-8">Enter a search term to find stories.</p>
         ) : isLoading ? (
-          <p className="text-neutral-500 text-center py-8">Searching...</p>
+          <SearchResultsSkeleton />
         ) : stories.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-neutral-500 mb-4">No results found for &ldquo;{q}&rdquo;.</p>

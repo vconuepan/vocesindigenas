@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { usePublicIssues } from '../hooks/usePublicIssues'
 import { getCategoryColor } from '../lib/category-colors'
+import { IssueAccordionSkeleton } from '../components/skeletons'
 import type { PublicIssue } from '../lib/api'
 
 function IssueAccordion({ issue }: { issue: PublicIssue }) {
@@ -162,12 +163,20 @@ export default function IssuesPage() {
           </p>
         </header>
 
-        {isLoading && <p className="text-center text-neutral-500 py-12">Loading...</p>}
-
         <div className="divide-y divide-neutral-200">
-          {sorted.map((issue) => (
-            <IssueAccordion key={issue.slug} issue={issue} />
-          ))}
+          {isLoading ? (
+            // Show skeleton accordions while loading
+            <>
+              <IssueAccordionSkeleton />
+              <IssueAccordionSkeleton />
+              <IssueAccordionSkeleton />
+              <IssueAccordionSkeleton />
+            </>
+          ) : (
+            sorted.map((issue) => (
+              <IssueAccordion key={issue.slug} issue={issue} />
+            ))
+          )}
         </div>
       </div>
     </>

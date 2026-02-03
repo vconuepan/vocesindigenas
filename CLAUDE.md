@@ -160,14 +160,13 @@ Defined in `client/src/index.css`:
 
 ## Bundle Splitting
 
-The client uses `React.lazy()` to split admin code from the public bundle. Public visitors never download admin pages, `@headlessui/react`, or `@heroicons/react`.
+The client uses `React.lazy()` to split admin code from the public bundle. Public visitors never download admin pages or their dependencies (`@headlessui/react`, `@heroicons/react`).
 
 **Rules:**
 
 - **Public pages** (`client/src/pages/*.tsx`): Always use **static imports** in `App.tsx` (required for prerendering)
 - **Admin pages** (`client/src/pages/admin/*.tsx`): Always use **`React.lazy()`** in `App.tsx`. Must use `export default` (not named exports).
-- **Admin-only npm packages** (`@headlessui/react`, `@heroicons/react`): Grouped into the `admin-vendor` chunk via `manualChunks` in `vite.config.ts`. If adding a new admin-only dependency, add it there too.
-- **Shared npm packages** (`@tanstack/react-query`, `react-markdown`, `date-fns`, `react-router-dom`): Stay in the main bundle — do not add them to `manualChunks`.
+- **Admin-only npm packages** (`@headlessui/react`, `@heroicons/react`): Automatically code-split via lazy loading. No `manualChunks` config needed — Rollup handles chunking automatically based on dynamic imports.
 - **Error boundary:** `ChunkErrorBoundary` wraps admin routes to catch chunk load failures (e.g. after deployments) and offer a reload button.
 - **Preloading:** `LoginPage` calls `preloadAdminChunks()` on mount so the admin layout and dashboard are fetched while the user types credentials.
 
@@ -204,6 +203,7 @@ All hardcoded static text (UI labels, headings, descriptions, error messages, to
 - **`.context/logging.md`** — Use `createLogger('module')` from `server/src/lib/logger.ts` for all server logging; never use `console.log` in application code (scripts are exempt). Log important steps, including all external API calls, LLM interactions, admin task and Job progress, etc. Covers Pino configuration, structured data patterns, log levels, rotating file transport, and environment variables (`LOG_LEVEL`, `LOG_DIR`, `LOG_RETENTION_DAYS`).
 - **`.context/task-queue.md`** — Bulk LLM operations use server-side task queue with polling; submit story IDs via `POST /stories/bulk-*` and poll `GET /stories/tasks/:taskId` for progress. Covers task registry, bulk analysis wrappers, client polling hook (`launchPolledTask`), processing indicators in StoryTable, and concurrency configuration.
 - **`.context/database-migrations.md`** — **MANDATORY:** Never use `npx prisma` directly (skips `.env`), never use `--no-engine` on generate (breaks all queries), never run `prisma migrate dev` (DLL locks), and never run `db:generate` without asking the user to stop their dev server first (DLL lock); always use `npm run db:*` scripts with `--prefix server`. Covers the full SQL-first migration workflow, allowed/banned command tables, and troubleshooting for advisory locks, failed migrations, and schema drift.
+- **`client/.context/skeletons.md`** — All components loading data dynamically must show skeletons while loading to prevent CLS; use `isLoading` from TanStack Query hooks. Covers available skeleton components, creation guidelines, usage patterns, and design principles.
 
 ## Implementation Workflow
 

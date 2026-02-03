@@ -4,6 +4,7 @@ import { usePublicIssues } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
 import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
+import { HeroSkeleton, IssueSectionSkeleton } from '../components/skeletons'
 import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
@@ -57,7 +58,8 @@ function HeroSection({ story }: { story: PublicStory }) {
           </p>
         ) : story.quote ? (
           <blockquote className="decorative-quote max-w-2xl">
-            <p className="text-lg md:text-xl italic text-neutral-700 leading-relaxed">
+            {/* No italic class here — avoids loading Roboto-Italic in critical path */}
+            <p className="text-lg md:text-xl text-neutral-700 leading-relaxed">
               &ldquo;{story.quote}&rdquo;
             </p>
             {story.quoteAttribution && (
@@ -117,10 +119,15 @@ function IssueSection({
   divider?: 'quote' | 'diamond' | 'none'
   quoteVariantIndex?: number
 }) {
-  const { data } = usePublicStories({ issueSlug: issue.slug, pageSize: 5 })
+  const { data, isLoading } = usePublicStories({ issueSlug: issue.slug, pageSize: 5 })
   const allStories = data?.data ?? []
   const colors = getCategoryColor(issue.slug)
   const Illustration = getCategoryIllustration(issue.slug)
+
+  // Show skeleton while loading
+  if (isLoading) {
+    return <IssueSectionSkeleton layout={layout} />
+  }
 
   // Exclude the hero story from this section
   const stories = heroStoryId
@@ -226,13 +233,13 @@ const ISSUE_ORDER = [
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
 
 export default function HomePage() {
-  const { data: issues } = usePublicIssues()
+  const { data: issues, isLoading: issuesLoading } = usePublicIssues()
   const sortedIssues = [...(issues ?? [])]
     .filter((i) => ISSUE_ORDER.includes(i.slug))
     .sort((a, b) => ISSUE_ORDER.indexOf(a.slug) - ISSUE_ORDER.indexOf(b.slug))
 
   // Fetch the most recent story across all categories for the hero
-  const { data: latestData } = usePublicStories({ pageSize: 1 })
+  const { data: latestData, isLoading: heroLoading } = usePublicStories({ pageSize: 1 })
   const heroStory = latestData?.data?.[0] ?? null
 
   let quoteIdx = 0
@@ -255,35 +262,43 @@ export default function HomePage() {
         <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
       </Helmet>
 
-      {/* Hero */}
-      {heroStory && <HeroSection story={heroStory} />}
+      {/* Hero — show skeleton while loading */}
+      {heroLoading ? <HeroSkeleton /> : heroStory ? <HeroSection story={heroStory} /> : null}
 
       {/* Issue sections with rotating layouts */}
       <div className="page-section-wide md:-mt-14 min-h-screen">
-        {sortedIssues.map((issue, idx) => {
-          const layout = LAYOUTS[idx % LAYOUTS.length]
-          const isLast = idx === sortedIssues.length - 1
-          const divider: 'quote' | 'diamond' | 'none' = isLast
-            ? 'none'
-            : idx % 2 === 0
-              ? 'quote'
-              : 'none'
+        {issuesLoading ? (
+          // Show skeleton sections while issues load
+          <>
+            <IssueSectionSkeleton layout="A" />
+            <IssueSectionSkeleton layout="B" />
+            <IssueSectionSkeleton layout="C" />
+            <IssueSectionSkeleton layout="A" />
+          </>
+        ) : sortedIssues.length > 0 ? (
+          sortedIssues.map((issue, idx) => {
+            const layout = LAYOUTS[idx % LAYOUTS.length]
+            const isLast = idx === sortedIssues.length - 1
+            const divider: 'quote' | 'diamond' | 'none' = isLast
+              ? 'none'
+              : idx % 2 === 0
+                ? 'quote'
+                : 'none'
 
-          const currentQuoteIdx = divider === 'quote' ? quoteIdx++ : 0
+            const currentQuoteIdx = divider === 'quote' ? quoteIdx++ : 0
 
-          return (
-            <IssueSection
-              key={issue.id}
-              issue={issue}
-              heroStoryId={heroStory?.id ?? null}
-              layout={layout}
-              divider={divider}
-              quoteVariantIndex={currentQuoteIdx}
-            />
-          )
-        })}
-
-        {issues?.length === 0 && (
+            return (
+              <IssueSection
+                key={issue.id}
+                issue={issue}
+                heroStoryId={heroStory?.id ?? null}
+                layout={layout}
+                divider={divider}
+                quoteVariantIndex={currentQuoteIdx}
+              />
+            )
+          })
+        ) : (
           <p className="text-center text-neutral-500 py-12">
             No stories published yet. Check back soon.
           </p>

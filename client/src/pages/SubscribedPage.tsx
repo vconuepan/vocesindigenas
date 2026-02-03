@@ -64,7 +64,7 @@ export default function SubscribedPage() {
           </svg>
         </div>
         <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">Welcome to the newsletter!</h1>
-        <p className="text-neutral-500 text-sm italic mb-3 max-w-md mx-auto">
+        <p className="text-neutral-500 text-sm mb-3 max-w-md mx-auto">
           News that matters to humanity. Weekly to your inbox. Curated with care by AI.
         </p>
         <p className="text-neutral-600 mb-8 max-w-md mx-auto">

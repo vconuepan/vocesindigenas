@@ -8,6 +8,7 @@ import { getCategoryColor } from '../lib/category-colors'
 import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import Pagination from '../components/Pagination'
+import { IssuePageSkeleton } from '../components/skeletons'
 import type { PublicStory } from '@shared/types'
 
 // ---------------------------------------------------------------------------
@@ -116,11 +117,7 @@ export default function IssuePage() {
   })
 
   if (isLoading) {
-    return (
-      <div className="page-section text-center">
-        <p className="text-neutral-500">Loading...</p>
-      </div>
-    )
+    return <IssuePageSkeleton />
   }
 
   if (isError || !issue) {

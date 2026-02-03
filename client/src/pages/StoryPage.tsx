@@ -6,6 +6,7 @@ import { getCategoryColor, shiftHex } from '../lib/category-colors'
 import { parsePoints } from '../lib/parse-points'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import FeedFavicon from '../components/FeedFavicon'
+import { StoryPageSkeleton } from '../components/skeletons'
 
 // ---------------------------------------------------------------------------
 // Analysis section with ruled heading + numbered points
@@ -66,11 +67,7 @@ export default function StoryPage() {
   const { data: story, isLoading, error } = usePublicStory(slug || '')
 
   if (isLoading) {
-    return (
-      <div className="page-section text-center text-neutral-500">
-        Loading story...
-      </div>
-    )
+    return <StoryPageSkeleton />
   }
 
   if (error || !story) {
@@ -215,7 +212,8 @@ export default function StoryPage() {
                   &ldquo;
                 </span>
                 <blockquote className="-mt-8">
-                  <p className="text-xl md:text-2xl italic text-neutral-700 leading-relaxed px-4">
+                  {/* No italic — avoids loading Roboto-Italic; decorative quotes provide visual distinction */}
+                  <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed px-4">
                     {story.quote}
                   </p>
                 </blockquote>

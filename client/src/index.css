@@ -37,13 +37,7 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Roboto';
-  src: url('/fonts/Roboto/Roboto-Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-  font-display: optional;
-}
+/* Roboto-Italic removed — not used on public pages, saves 72KB */
 
 @font-face {
   font-family: 'Roboto';
@@ -133,7 +127,8 @@
   }
 
   .pull-quote p {
-    @apply text-lg md:text-xl italic text-neutral-700 leading-relaxed;
+    /* No italic — avoids loading Roboto-Italic in critical path */
+    @apply text-lg md:text-xl text-neutral-700 leading-relaxed;
   }
 
   .section-divider {

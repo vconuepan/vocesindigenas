@@ -38,22 +38,10 @@ export default defineConfig({
     sourcemap: false,
 rollupOptions: {
       output: {
-        // Isolate admin UI libs (@headlessui, @heroicons, their deps) into a
-        // separate chunk. Public visitors still download it (Rollup creates a
-        // shared dependency reference) but it loads in parallel with the main
-        // bundle and doesn't block initial render.
-        manualChunks(id) {
-          if (
-            id.includes('node_modules/@headlessui/') ||
-            id.includes('node_modules/@heroicons/') ||
-            id.includes('node_modules/@react-aria/') ||
-            id.includes('node_modules/@react-stately/') ||
-            id.includes('node_modules/@floating-ui/') ||
-            id.includes('node_modules/@internationalized/')
-          ) {
-            return 'admin-vendor'
-          }
-        },
+        // Let Rollup handle chunking automatically. Admin code will be
+        // code-split via React.lazy() dynamic imports in App.tsx.
+        // No manualChunks needed - this avoids the React internals issue
+        // where admin-vendor would pull in shared React code.
       },
     },
   },
