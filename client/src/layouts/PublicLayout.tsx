@@ -411,7 +411,7 @@ function PublicLayoutInner() {
             <span className="text-brand-300 text-sm">&#9670;</span>
             <span className="flex-1 border-t border-neutral-200" />
           </div>
-          <p className="font-nexa font-light text-lg italic text-neutral-500 leading-relaxed">
+          <p className="text-lg italic text-neutral-500 leading-relaxed">
             Curated with care by AI.
           </p>
         </div>

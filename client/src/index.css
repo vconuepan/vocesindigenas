@@ -20,13 +20,7 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Nexa';
-  src: url('/fonts/NexaBold/Nexa Light.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: optional;
-}
+/* Nexa Light removed — only used in one decorative place, saves 20KB */
 
 /* Roboto — body text */
 @font-face {
