@@ -19,6 +19,9 @@ coverage
 # Log files
 logs/
 
+# Backups
+.backups/
+
 # AI development artifacts
 nul
 .playwright-mcp

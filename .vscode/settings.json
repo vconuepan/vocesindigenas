@@ -9,6 +9,7 @@
     "**/dist": true,
     "**/node_modules": true,
     ".playwright-mcp": true,
-    "nul": true
+    "nul": true,
+    ".backups": true
   }
 }
