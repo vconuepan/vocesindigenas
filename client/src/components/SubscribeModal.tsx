@@ -7,11 +7,12 @@ interface SubscribeModalProps {
 }
 
 export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
+  const [firstName, setFirstName] = useState('')
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const firstInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -19,7 +20,7 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
 
     if (open) {
       dialog.showModal()
-      requestAnimationFrame(() => inputRef.current?.focus())
+      requestAnimationFrame(() => firstInputRef.current?.focus())
     } else {
       dialog.close()
     }
@@ -57,7 +58,15 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
     setStatus('loading')
     setErrorMessage('')
     try {
-      await publicApi.subscribe(email.trim())
+      const result = await publicApi.subscribe({
+        email: email.trim(),
+        ...(firstName.trim() ? { firstName: firstName.trim() } : {}),
+      })
+      if (!result.success) {
+        setStatus('error')
+        setErrorMessage(result.message || 'Something went wrong. Please try again.')
+        return
+      }
       setStatus('success')
     } catch {
       setStatus('error')
@@ -69,6 +78,7 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
     onClose()
     // Reset state after close animation
     setTimeout(() => {
+      setFirstName('')
       setEmail('')
       setStatus('idle')
       setErrorMessage('')
@@ -91,7 +101,7 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
             </div>
             <h2 className="text-xl font-bold text-neutral-900 mb-2">Check your email</h2>
             <p className="text-neutral-600 text-sm mb-6">
-              We sent a confirmation link to <strong>{email}</strong>. Click the link to complete your subscription.
+              We sent a confirmation link to <strong>{email}</strong>. Click the link to start receiving our weekly newsletter.
             </p>
             <button
               onClick={handleClose}
@@ -107,21 +117,34 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
                 Stay informed
               </h2>
               <p className="text-neutral-500 text-sm">
-                Get AI-curated news that matters, delivered to your inbox.
+                News that matters to humanity. Weekly to your inbox. Curated with care by AI.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label htmlFor="subscribe-first-name" className="sr-only">First name (optional)</label>
+                <input
+                  ref={firstInputRef}
+                  id="subscribe-first-name"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="First name (optional)"
+                  autoComplete="given-name"
+                  className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
+                />
+              </div>
+              <div>
                 <label htmlFor="subscribe-email" className="sr-only">Email address</label>
                 <input
-                  ref={inputRef}
                   id="subscribe-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
+                  autoComplete="email"
                   className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
                   aria-describedby={errorMessage ? 'subscribe-error' : undefined}
                 />

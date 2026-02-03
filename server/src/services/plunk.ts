@@ -213,6 +213,26 @@ export async function sendTransactional(opts: SendTransactionalOpts): Promise<vo
   )
 }
 
+// --- Email verification ---
+
+export interface EmailVerifyResult {
+  valid: boolean
+  domainExists: boolean
+  isDisposable: boolean
+}
+
+export async function verifyEmail(email: string): Promise<EmailVerifyResult> {
+  return withRetry(
+    async () => {
+      log.info({ email }, 'verifying email')
+      const { data } = await client.post('/v1/verify', { email })
+      log.info({ email, result: data }, 'email verification result')
+      return data
+    },
+    { retries: 3, retryOn: isRetryableError },
+  )
+}
+
 // --- Event tracking ---
 
 export async function trackEvent(email: string, event: string, data?: Record<string, unknown>): Promise<void> {

@@ -1,101 +1,144 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react'
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
-import { getCategoryColor } from '../lib/category-colors'
-import { API_BASE } from '../lib/api'
-import SubscribeModal from '../components/SubscribeModal'
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { getCategoryColor } from "../lib/category-colors";
+import { API_BASE } from "../lib/api";
+import SubscribeProvider, {
+  useSubscribe,
+} from "../components/SubscribeProvider";
 
 const ISSUE_LINKS = [
-  { label: 'Human Development', slug: 'human-development', href: '/issues/human-development' },
-  { label: 'Planet & Climate', slug: 'planet-climate', href: '/issues/planet-climate' },
-  { label: 'Existential Threats', slug: 'existential-threats', href: '/issues/existential-threats' },
-  { label: 'Science & Technology', slug: 'science-technology', href: '/issues/science-technology' },
-]
+  {
+    label: "Human Development",
+    slug: "human-development",
+    href: "/issues/human-development",
+  },
+  {
+    label: "Planet & Climate",
+    slug: "planet-climate",
+    href: "/issues/planet-climate",
+  },
+  {
+    label: "Existential Threats",
+    slug: "existential-threats",
+    href: "/issues/existential-threats",
+  },
+  {
+    label: "Science & Technology",
+    slug: "science-technology",
+    href: "/issues/science-technology",
+  },
+];
 
 const FOOTER_NAV = [
-  { label: 'All Issues', href: '/issues' },
-  { label: 'Methodology', href: '/methodology' },
-  { label: 'About', href: '/about' },
-]
+  { label: "Methodology", href: "/methodology" },
+  { label: "Issues", href: "/issues" },
+  { label: "About", href: "/about" },
+];
 
 const FOOTER_LEGAL = [
-  { label: 'Legal Notice / Impressum', href: '/imprint' },
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'No Cookies', href: '/privacy' },
-]
+  { label: "Legal Notice / Impressum", href: "/imprint" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "No Cookies", href: "/privacy" },
+];
 
 function NewsletterIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" />
     </svg>
-  )
+  );
 }
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+      />
     </svg>
-  )
+  );
 }
 
-
 export default function PublicLayout() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [subscribeOpen, setSubscribeOpen] = useState(false)
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
+  return (
+    <SubscribeProvider>
+      <PublicLayoutInner />
+    </SubscribeProvider>
+  );
+}
 
-  const location = useLocation()
+function PublicLayoutInner() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { openSubscribe } = useSubscribe();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  const location = useLocation();
 
   const isActiveIssue = (href: string) =>
-    location.pathname === href || location.pathname.startsWith(href + '/')
+    location.pathname === href || location.pathname.startsWith(href + "/");
 
   // Close mobile menu and search on Escape
   useEffect(() => {
-    if (!menuOpen && !searchOpen) return
+    if (!menuOpen && !searchOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMenuOpen(false)
+      if (e.key === "Escape") {
+        setMenuOpen(false);
         if (searchQuery) {
-          setSearchQuery('')
+          setSearchQuery("");
         } else {
-          setSearchOpen(false)
+          setSearchOpen(false);
         }
       }
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [menuOpen, searchOpen, searchQuery])
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [menuOpen, searchOpen, searchQuery]);
 
   // Auto-focus search input when opened
   useEffect(() => {
     if (searchOpen) {
       // Small delay to allow the DOM to render
-      requestAnimationFrame(() => searchInputRef.current?.focus())
+      requestAnimationFrame(() => searchInputRef.current?.focus());
     }
-  }, [searchOpen])
+  }, [searchOpen]);
 
   // Close search on route change and scroll to top
   useEffect(() => {
-    setSearchOpen(false)
-    setSearchQuery('')
-  }, [location.pathname])
+    setSearchOpen(false);
+    setSearchQuery("");
+  }, [location.pathname]);
 
   useLayoutEffect(() => {
-    window.scrollTo(0, 0)
-  }, [location.pathname])
-
-
-
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <link rel="alternate" type="application/rss+xml" title="Actually Relevant RSS Feed" href={`${API_BASE}/feed`} />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Actually Relevant RSS Feed"
+          href={`${API_BASE}/feed`}
+        />
       </Helmet>
 
       {/* Skip to content */}
@@ -125,7 +168,7 @@ export default function PublicLayout() {
             {/* Desktop: subscribe button — vertically centered on logo */}
             <div className="hidden lg:flex items-center absolute right-12 top-4 h-16">
               <button
-                onClick={() => setSubscribeOpen(true)}
+                onClick={() => openSubscribe()}
                 className="inline-flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
               >
                 <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
@@ -136,11 +179,16 @@ export default function PublicLayout() {
             {/* Mobile: search on left, menu on right — vertically centered on logo */}
             <div className="lg:hidden absolute left-4 top-3 h-14 flex items-center">
               <button
-                onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false) }}
+                onClick={() => {
+                  setSearchOpen(!searchOpen);
+                  setMenuOpen(false);
+                }}
                 className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                  searchOpen ? 'text-brand-700' : 'text-neutral-400 hover:text-neutral-600'
+                  searchOpen
+                    ? "text-brand-700"
+                    : "text-neutral-400 hover:text-neutral-600"
                 }`}
-                aria-label={searchOpen ? 'Close search' : 'Open search'}
+                aria-label={searchOpen ? "Close search" : "Open search"}
                 aria-expanded={searchOpen}
               >
                 <SearchIcon className="w-5 h-5" />
@@ -151,13 +199,29 @@ export default function PublicLayout() {
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
                 aria-expanded={menuOpen}
-                aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
                   {menuOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   )}
                 </svg>
               </button>
@@ -166,35 +230,47 @@ export default function PublicLayout() {
         </div>
 
         {/* Issue category navigation — desktop */}
-        <nav className="hidden lg:block border-b border-neutral-200" aria-label="Issue categories">
+        <nav
+          className="hidden lg:block border-b border-neutral-200"
+          aria-label="Issue categories"
+        >
           <ul className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-0">
             {/* Search button as first item */}
             <li>
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className={`issue-nav-link ${searchOpen ? '!text-brand-700' : ''}`}
-                aria-label={searchOpen ? 'Close search' : 'Open search'}
+                className={`issue-nav-link ${
+                  searchOpen ? "!text-brand-700" : ""
+                }`}
+                aria-label={searchOpen ? "Close search" : "Open search"}
                 aria-expanded={searchOpen}
               >
                 <SearchIcon className="w-5 h-5" />
               </button>
             </li>
             {ISSUE_LINKS.map((link) => {
-              const colors = getCategoryColor(link.slug)
-              const active = isActiveIssue(link.href)
+              const colors = getCategoryColor(link.slug);
+              const active = isActiveIssue(link.href);
               return (
                 <li key={link.href}>
                   <Link
                     to={link.href}
                     className="issue-nav-link"
                     data-active={active}
-                    style={{ '--issue-color': colors.hex } as React.CSSProperties}
+                    style={
+                      { "--issue-color": colors.hex } as React.CSSProperties
+                    }
                   >
-                    <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} ${active ? 'opacity-100' : 'opacity-60'}`} aria-hidden="true" />
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} ${
+                        active ? "opacity-100" : "opacity-60"
+                      }`}
+                      aria-hidden="true"
+                    />
                     {link.label}
                   </Link>
                 </li>
-              )
+              );
             })}
           </ul>
         </nav>
@@ -206,7 +282,7 @@ export default function PublicLayout() {
               {/* Issue categories */}
               <ul className="mb-3">
                 {ISSUE_LINKS.map((link) => {
-                  const colors = getCategoryColor(link.slug)
+                  const colors = getCategoryColor(link.slug);
                   return (
                     <li key={link.href}>
                       <Link
@@ -214,22 +290,28 @@ export default function PublicLayout() {
                         onClick={() => setMenuOpen(false)}
                         className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${
                           isActiveIssue(link.href)
-                            ? 'text-neutral-900'
-                            : 'text-neutral-600 hover:text-neutral-900'
+                            ? "text-neutral-900"
+                            : "text-neutral-600 hover:text-neutral-900"
                         }`}
                       >
-                        <span className={`w-2 h-2 rounded-full ${colors.dotBg}`} aria-hidden="true" />
+                        <span
+                          className={`w-2 h-2 rounded-full ${colors.dotBg}`}
+                          aria-hidden="true"
+                        />
                         {link.label}
                       </Link>
                     </li>
-                  )
+                  );
                 })}
               </ul>
 
               {/* Subscribe */}
               <div className="border-t border-neutral-100 pt-3 px-2">
                 <button
-                  onClick={() => { setMenuOpen(false); setSubscribeOpen(true) }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    openSubscribe();
+                  }}
                   className="inline-flex items-center gap-2 py-2.5 text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
@@ -246,10 +328,12 @@ export default function PublicLayout() {
             <div className="max-w-3xl mx-auto px-4 py-4">
               <form
                 onSubmit={(e) => {
-                  e.preventDefault()
+                  e.preventDefault();
                   if (searchQuery.trim()) {
-                    navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-                    setSearchOpen(false)
+                    navigate(
+                      `/search?q=${encodeURIComponent(searchQuery.trim())}`
+                    );
+                    setSearchOpen(false);
                   }
                 }}
                 className="relative"
@@ -266,16 +350,31 @@ export default function PublicLayout() {
                 />
                 <button
                   type="button"
-                  onClick={() => { searchQuery ? setSearchQuery('') : setSearchOpen(false) }}
+                  onClick={() => {
+                    searchQuery ? setSearchQuery("") : setSearchOpen(false);
+                  }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   aria-label="Close search"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </form>
-              <p className="text-xs text-neutral-400 mt-2 text-center">Search published stories by title or summary.</p>
+              <p className="text-xs text-neutral-400 mt-2 text-center">
+                Search published stories by title or summary.
+              </p>
             </div>
           </div>
         )}
@@ -294,7 +393,10 @@ export default function PublicLayout() {
       </main>
 
       {/* Editorial sign-off */}
-      <div className="bg-neutral-50 border-t border-neutral-200 py-10 md:py-14 text-center" aria-hidden="true">
+      <div
+        className="bg-neutral-50 border-t border-neutral-200 py-10 md:py-14 text-center"
+        aria-hidden="true"
+      >
         <div className="max-w-md mx-auto px-4">
           <div className="flex items-center justify-center gap-4 mb-4">
             <span className="flex-1 border-t border-neutral-200" />
@@ -321,11 +423,14 @@ export default function PublicLayout() {
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 md:gap-10">
             {/* Brand column */}
             <div className="col-span-2">
-              <Link to="/" className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+              <Link
+                to="/"
+                className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              >
                 Actually Relevant
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
-                AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity.
+                News that matters to humanity.
               </p>
               <ul className="hidden md:flex gap-4 mt-4">
                 {FOOTER_LEGAL.map((link) => (
@@ -340,13 +445,16 @@ export default function PublicLayout() {
                 ))}
               </ul>
               <p className="hidden md:block text-xs text-neutral-600 mt-2">
-                &copy; {new Date().getFullYear()} Actually Relevant. All rights reserved.
+                &copy; {new Date().getFullYear()} Actually Relevant. All rights
+                reserved.
               </p>
             </div>
 
             {/* Navigation column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Navigate</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">
+                Navigate
+              </h3>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 {FOOTER_NAV.map((link) => (
                   <li key={link.label} className="flex items-center">
@@ -363,11 +471,13 @@ export default function PublicLayout() {
 
             {/* Subscribe column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Subscribe</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">
+                Subscribe
+              </h3>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 <li className="flex items-center">
                   <button
-                    onClick={() => setSubscribeOpen(true)}
+                    onClick={() => openSubscribe()}
                     className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
                     <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
@@ -379,7 +489,12 @@ export default function PublicLayout() {
                     href={`${API_BASE}/feed`}
                     className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      className="w-3.5 h-3.5 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z" />
                     </svg>
                     RSS Feed
@@ -390,21 +505,26 @@ export default function PublicLayout() {
 
             {/* Issues column */}
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">Issues</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">
+                Issues
+              </h3>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1 auto-rows-[1.25rem]">
                 {ISSUE_LINKS.map((link) => {
-                  const colors = getCategoryColor(link.slug)
+                  const colors = getCategoryColor(link.slug);
                   return (
                     <li key={link.href} className="flex items-center">
                       <Link
                         to={link.href}
                         className="inline-flex items-center gap-2 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${colors.dotBg} opacity-70 shrink-0`} aria-hidden="true" />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${colors.dotBg} opacity-70 shrink-0`}
+                          aria-hidden="true"
+                        />
                         {link.label}
                       </Link>
                     </li>
-                  )
+                  );
                 })}
               </ul>
             </div>
@@ -425,13 +545,12 @@ export default function PublicLayout() {
               ))}
             </ul>
             <p className="text-xs text-neutral-600 mt-3">
-              &copy; {new Date().getFullYear()} Actually Relevant. All rights reserved.
+              &copy; {new Date().getFullYear()} Actually Relevant. All rights
+              reserved.
             </p>
           </div>
         </div>
       </footer>
-
-      <SubscribeModal open={subscribeOpen} onClose={() => setSubscribeOpen(false)} />
     </div>
-  )
+  );
 }

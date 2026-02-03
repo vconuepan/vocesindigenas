@@ -25,6 +25,7 @@ const {
   createContact,
   updateContact,
   sendTransactional,
+  verifyEmail,
 } = await import('./plunk.js')
 
 describe('Plunk API client', () => {
@@ -97,6 +98,24 @@ describe('Plunk API client', () => {
 
       const result = await updateContact('contact-1', { subscribed: true })
       expect(result.subscribed).toBe(true)
+    })
+  })
+
+  describe('verifyEmail', () => {
+    it('calls POST /v1/verify and returns the result', async () => {
+      const verifyResult = { valid: true, domainExists: true, isDisposable: false }
+      mockAxiosInstance.post.mockResolvedValue({ data: verifyResult })
+
+      const result = await verifyEmail('test@example.com')
+
+      expect(result).toEqual(verifyResult)
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/v1/verify', { email: 'test@example.com' })
+    })
+
+    it('propagates errors from the API', async () => {
+      mockAxiosInstance.post.mockRejectedValue(new Error('Network error'))
+
+      await expect(verifyEmail('bad@example.com')).rejects.toThrow('Network error')
     })
   })
 

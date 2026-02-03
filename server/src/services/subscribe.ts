@@ -9,7 +9,19 @@ const log = createLogger('subscribe')
 const CLIENT_URL = process.env.CLIENT_URL || 'https://actuallyrelevant.news'
 const API_URL = process.env.API_URL || 'https://api.actuallyrelevant.news'
 
-export async function subscribe(email: string) {
+export class EmailValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'EmailValidationError'
+  }
+}
+
+interface SubscribeParams {
+  email: string
+  firstName?: string
+}
+
+export async function subscribe({ email, firstName }: SubscribeParams) {
   const token = randomUUID()
   const expiresAt = new Date(Date.now() + config.subscribe.confirmTokenExpiryHours * 60 * 60 * 1000)
 
@@ -22,13 +34,30 @@ export async function subscribe(email: string) {
     return
   }
 
+  // Verify email via Plunk (graceful degradation — skip if API fails)
+  try {
+    const result = await plunk.verifyEmail(email)
+    if (!result.valid) {
+      throw new EmailValidationError('Please enter a valid email address.')
+    }
+    if (!result.domainExists) {
+      throw new EmailValidationError('Please enter a valid email address.')
+    }
+    if (result.isDisposable) {
+      throw new EmailValidationError('Disposable email addresses are not allowed. Please use a permanent email.')
+    }
+  } catch (err) {
+    if (err instanceof EmailValidationError) throw err
+    log.warn({ err, email }, 'email verification failed, skipping check')
+  }
+
   // Create contact in Plunk (subscribed: false until confirmed)
   let plunkContactId: string | null = null
   try {
     const contact = await plunk.createContact({
       email,
       subscribed: false,
-      data: { pendingConfirmation: true },
+      data: { ...(firstName ? { firstName } : {}), pendingConfirmation: true },
     })
     plunkContactId = contact.id
   } catch (err) {
@@ -47,27 +76,29 @@ export async function subscribe(email: string) {
 
   // Send confirmation email
   const confirmUrl = `${API_URL}/api/subscribe/confirm?token=${token}&email=${encodeURIComponent(email)}`
+  const greeting = firstName ? `Hi ${firstName},` : 'Hi,'
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;">
+<body style="margin:0;padding:0;background-color:#fdf2f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f8;">
     <tr>
       <td align="center" style="padding:32px 16px;">
         <table role="presentation" width="500" cellpadding="0" cellspacing="0" style="max-width:500px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;">
           <tr>
-            <td style="padding:32px 32px 24px;text-align:center;border-bottom:3px solid #2563eb;">
+            <td style="padding:32px 32px 24px;text-align:center;border-bottom:3px solid #ec268f;">
               <h1 style="margin:0;font-size:22px;font-weight:800;color:#171717;">Actually Relevant</h1>
             </td>
           </tr>
           <tr>
             <td style="padding:32px;">
               <h2 style="margin:0 0 16px;font-size:20px;color:#171717;">Confirm your subscription</h2>
-              <p style="margin:0 0 24px;font-size:15px;color:#525252;line-height:1.6;">Click the button below to confirm your subscription to Actually Relevant. You'll receive our newsletter with AI-curated news that matters.</p>
+              <p style="margin:0 0 8px;font-size:15px;color:#525252;line-height:1.6;">${greeting} Click the button below to confirm your subscription.</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#737373;line-height:1.5;font-style:italic;">News that matters to humanity. Weekly to your inbox. Curated with care by AI.</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
                 <tr>
-                  <td style="border-radius:6px;background-color:#2563eb;">
+                  <td style="border-radius:6px;background-color:#d41f7f;">
                     <a href="${confirmUrl}" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;">Confirm Subscription</a>
                   </td>
                 </tr>

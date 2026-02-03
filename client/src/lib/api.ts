@@ -62,10 +62,10 @@ export const publicApi = {
     get: (slug: string) => request<PublicIssue>(`/issues/${slug}`),
   },
 
-  subscribe: (email: string) =>
+  subscribe: (data: { email: string; firstName?: string }) =>
     request<{ success: boolean; message: string }>('/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify(data),
     }),
 }

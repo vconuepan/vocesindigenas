@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { config } from '../../config.js'
 import { validateBody } from '../../middleware/validate.js'
 import * as subscribeService from '../../services/subscribe.js'
+import { EmailValidationError } from '../../services/subscribe.js'
 import { createLogger } from '../../lib/logger.js'
 
 const router = Router()
@@ -19,14 +20,20 @@ const subscribeLimiter = rateLimit({
 
 const subscribeSchema = z.object({
   email: z.string().email('Invalid email address').max(255),
+  firstName: z.string().max(100).optional(),
 })
 
 router.post('/', subscribeLimiter, validateBody(subscribeSchema), async (req, res) => {
   try {
-    await subscribeService.subscribe(req.body.email)
+    const { email, firstName } = req.body
+    await subscribeService.subscribe({ email, firstName })
     // Always return success to avoid information leaks
     res.json({ success: true, message: 'Check your email to confirm your subscription.' })
   } catch (err) {
+    if (err instanceof EmailValidationError) {
+      res.json({ success: false, message: err.message })
+      return
+    }
     log.error({ err }, 'subscribe error')
     // Still return success to avoid leaking whether an email exists
     res.json({ success: true, message: 'Check your email to confirm your subscription.' })
