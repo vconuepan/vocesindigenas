@@ -83,11 +83,11 @@ function RuledHeading({ issue }: { issue: PublicIssue }) {
 
   return (
     <div className="relative z-20 mb-5">
-      <div className="flex items-center justify-center gap-4 text-neutral-400">
+      <div className="flex items-center justify-center gap-4 text-neutral-600">
         <span className="hidden md:block flex-1 border-t border-neutral-200" aria-hidden="true" />
         <Link
           to={`/issues/${issue.slug}`}
-          className="flex items-center gap-2 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          className="flex items-center gap-2 hover:text-neutral-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
         >
           <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
           <h2 className="text-lg font-bold uppercase tracking-wider md:text-xl">{issue.name}</h2>

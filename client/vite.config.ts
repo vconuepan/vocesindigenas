@@ -36,16 +36,20 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    modulePreload: {
-      resolveDependencies: (_filename, deps) =>
-        deps.filter((dep) => !dep.includes('admin-vendor')),
-    },
-    rollupOptions: {
+rollupOptions: {
       output: {
+        // Isolate admin UI libs (@headlessui, @heroicons, their deps) into a
+        // separate chunk. Public visitors still download it (Rollup creates a
+        // shared dependency reference) but it loads in parallel with the main
+        // bundle and doesn't block initial render.
         manualChunks(id) {
           if (
             id.includes('node_modules/@headlessui/') ||
-            id.includes('node_modules/@heroicons/')
+            id.includes('node_modules/@heroicons/') ||
+            id.includes('node_modules/@react-aria/') ||
+            id.includes('node_modules/@react-stately/') ||
+            id.includes('node_modules/@floating-ui/') ||
+            id.includes('node_modules/@internationalized/')
           ) {
             return 'admin-vendor'
           }

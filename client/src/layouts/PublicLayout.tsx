@@ -168,7 +168,7 @@ function PublicLayoutInner() {
                   className="h-14 md:h-16 w-auto"
                 />
               </picture>
-              <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-400 mt-1">
+              <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
                 News that matters to humanity
               </span>
             </Link>
@@ -411,7 +411,7 @@ function PublicLayoutInner() {
             <span className="text-brand-300 text-sm">&#9670;</span>
             <span className="flex-1 border-t border-neutral-200" />
           </div>
-          <p className="font-nexa font-light text-lg italic text-neutral-400 leading-relaxed">
+          <p className="font-nexa font-light text-lg italic text-neutral-500 leading-relaxed">
             Curated with care by AI.
           </p>
         </div>
@@ -445,14 +445,14 @@ function PublicLayoutInner() {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                      className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                     >
                       {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-              <p className="hidden md:block text-xs text-neutral-600 mt-2">
+              <p className="hidden md:block text-xs text-neutral-400 mt-2">
                 &copy; {new Date().getFullYear()} Actually Relevant. All rights
                 reserved.
               </p>
@@ -460,7 +460,7 @@ function PublicLayoutInner() {
 
             {/* Navigation column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
                 Navigate
               </h3>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
@@ -479,7 +479,7 @@ function PublicLayoutInner() {
 
             {/* Subscribe column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
                 Subscribe
               </h3>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
@@ -513,7 +513,7 @@ function PublicLayoutInner() {
 
             {/* Issues column */}
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3 leading-none">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
                 Issues
               </h3>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1 auto-rows-[1.25rem]">
@@ -545,14 +545,14 @@ function PublicLayoutInner() {
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-neutral-600 mt-3">
+            <p className="text-xs text-neutral-400 mt-3">
               &copy; {new Date().getFullYear()} Actually Relevant. All rights
               reserved.
             </p>
