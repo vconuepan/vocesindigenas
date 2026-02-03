@@ -12,5 +12,5 @@
     "declaration": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/scripts/migrate"]
+  "exclude": ["node_modules", "dist", "src/scripts/migrate", "src/**/*.test.ts"]
 }

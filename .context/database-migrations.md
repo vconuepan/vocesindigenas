@@ -6,6 +6,22 @@ Prisma's `migrate dev` command causes persistent issues on Windows: DLL engine f
 
 **Claude Code must follow this workflow for all database migrations. Do not run `prisma migrate dev` or `npm run db:migrate` directly.**
 
+## Production Migrations
+
+On Render (Linux), none of the Windows DLL-locking issues apply. Migrations run automatically during the build step:
+
+```
+npm install && npx prisma generate && npx prisma migrate deploy && npm run build
+```
+
+`prisma migrate deploy` applies pending migrations from `server/prisma/migrations/` without generating new ones or prompting. It's a no-op when there are nothing pending. If a migration fails, the build fails and Render does not start the new version.
+
+**Considerations:**
+
+- **No automatic rollback.** Prisma doesn't generate down migrations. Destructive DDL (drop column/table) should be deployed in two phases: remove code references first, drop the column in a later deploy.
+- **Advisory lock contention.** Overlapping deploys will compete for a Postgres advisory lock. One will wait — shouldn't deadlock, but avoid triggering manual deploys while an auto-deploy is in progress.
+- **Migration ordering.** Concurrent branches adding migrations will apply in timestamp order. Avoid touching the same table in conflicting ways across branches.
+
 ## Critical Rules
 
 1. **Never use `npx prisma` directly.** Always use the `npm run db:*` scripts with `--prefix server`. The npm scripts run from the `server/` directory where `.env` is loaded automatically. Direct `npx prisma` commands cannot access `.env` and will fail with `DATABASE_URL` not found errors.
