@@ -160,15 +160,16 @@ Defined in `client/src/index.css`:
 
 ## Bundle Splitting
 
-The client uses `React.lazy()` to split admin code from the public bundle. Public visitors never download admin pages or their dependencies (`@headlessui/react`, `@heroicons/react`).
+The client uses `React.lazy()` to split code and reduce initial bundle size. Homepage visitors only download homepage code; other pages load on demand.
 
 **Rules:**
 
-- **Public pages** (`client/src/pages/*.tsx`): Always use **static imports** in `App.tsx` (required for prerendering)
-- **Admin pages** (`client/src/pages/admin/*.tsx`): Always use **`React.lazy()`** in `App.tsx`. Must use `export default` (not named exports).
-- **Admin-only npm packages** (`@headlessui/react`, `@heroicons/react`): Automatically code-split via lazy loading. No `manualChunks` config needed — Rollup handles chunking automatically based on dynamic imports.
-- **Error boundary:** `ChunkErrorBoundary` wraps admin routes to catch chunk load failures (e.g. after deployments) and offer a reload button.
-- **Preloading:** `LoginPage` calls `preloadAdminChunks()` on mount so the admin layout and dashboard are fetched while the user types credentials.
+- **HomePage** (`client/src/pages/HomePage.tsx`): Static import in `App.tsx` — this is the critical landing page
+- **Other public pages** (`client/src/pages/*.tsx`): Use **`React.lazy()`** in `App.tsx` — prerendering still works (Puppeteer waits for chunks)
+- **Admin pages** (`client/src/pages/admin/*.tsx`): Use **`React.lazy()`** in `App.tsx`. Must use `export default` (not named exports).
+- **Admin-only npm packages** (`@headlessui/react`, `@heroicons/react`): Automatically code-split via lazy loading.
+- **Error boundary:** `ChunkErrorBoundary` and `LazyPage` wrapper handle chunk load failures with reload button.
+- **Preloading:** `LoginPage` calls `preloadAdminChunks()` on mount.
 
 ## Accessibility (WCAG 2.2 AA)
 

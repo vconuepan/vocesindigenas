@@ -2,18 +2,21 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout'
 import HomePage from './pages/HomePage'
-import StoryPage from './pages/StoryPage'
-import IssuePage from './pages/IssuePage'
-import IssuesIndexPage from './pages/IssuesPage'
-import MethodologyPage from './pages/MethodologyPage'
-import AboutPage from './pages/AboutPage'
-import ImprintPage from './pages/ImprintPage'
-import PrivacyPage from './pages/PrivacyPage'
-import SearchPage from './pages/SearchPage'
-import SubscribedPage from './pages/SubscribedPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 import { ChunkErrorBoundary } from './components/ui/ChunkErrorBoundary'
+
+// Public pages — lazy-loaded to reduce homepage bundle size
+// Puppeteer prerenderer waits for chunks to load, so prerendering still works
+const StoryPage = lazy(() => import('./pages/StoryPage'))
+const IssuePage = lazy(() => import('./pages/IssuePage'))
+const IssuesIndexPage = lazy(() => import('./pages/IssuesPage'))
+const MethodologyPage = lazy(() => import('./pages/MethodologyPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ImprintPage = lazy(() => import('./pages/ImprintPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const SearchPage = lazy(() => import('./pages/SearchPage'))
+const SubscribedPage = lazy(() => import('./pages/SubscribedPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -37,7 +40,7 @@ export function preloadAdminChunks() {
   import('./pages/admin/DashboardPage')
 }
 
-function AdminFallback() {
+function PageFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <LoadingSpinner size="lg" />
@@ -45,21 +48,30 @@ function AdminFallback() {
   )
 }
 
+/** Wrap lazy-loaded page in Suspense with error boundary */
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return (
+    <ChunkErrorBoundary>
+      <Suspense fallback={<PageFallback />}>{children}</Suspense>
+    </ChunkErrorBoundary>
+  )
+}
+
 export default function App() {
   return (
     <Routes>
-      {/* Public routes — static imports for prerendering */}
+      {/* Public routes — homepage static, others lazy-loaded */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/stories/:slug" element={<StoryPage />} />
-        <Route path="/issues" element={<IssuesIndexPage />} />
-        <Route path="/issues/:slug" element={<IssuePage />} />
-        <Route path="/methodology" element={<MethodologyPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/imprint" element={<ImprintPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/search" element={<SearchPage />} />
-        <Route path="/subscribed" element={<SubscribedPage />} />
+        <Route path="/stories/:slug" element={<LazyPage><StoryPage /></LazyPage>} />
+        <Route path="/issues" element={<LazyPage><IssuesIndexPage /></LazyPage>} />
+        <Route path="/issues/:slug" element={<LazyPage><IssuePage /></LazyPage>} />
+        <Route path="/methodology" element={<LazyPage><MethodologyPage /></LazyPage>} />
+        <Route path="/about" element={<LazyPage><AboutPage /></LazyPage>} />
+        <Route path="/imprint" element={<LazyPage><ImprintPage /></LazyPage>} />
+        <Route path="/privacy" element={<LazyPage><PrivacyPage /></LazyPage>} />
+        <Route path="/search" element={<LazyPage><SearchPage /></LazyPage>} />
+        <Route path="/subscribed" element={<LazyPage><SubscribedPage /></LazyPage>} />
       </Route>
 
       {/* Admin routes — lazy-loaded with error boundary for chunk failures */}
@@ -67,7 +79,7 @@ export default function App() {
         path="/admin/login"
         element={
           <ChunkErrorBoundary>
-            <Suspense fallback={<AdminFallback />}><LoginPage /></Suspense>
+            <Suspense fallback={<PageFallback />}><LoginPage /></Suspense>
           </ChunkErrorBoundary>
         }
       />
@@ -75,7 +87,7 @@ export default function App() {
         path="/admin"
         element={
           <ChunkErrorBoundary>
-            <Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense>
+            <Suspense fallback={<PageFallback />}><AdminLayout /></Suspense>
           </ChunkErrorBoundary>
         }
       >
