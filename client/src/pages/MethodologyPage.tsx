@@ -1,23 +1,24 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 export default function MethodologyPage() {
   return (
     <>
       <Helmet>
-        <title>Methodology - Actually Relevant</title>
+        <title>Methodology - {SEO.siteName}</title>
         <meta
           name="description"
           content="How we evaluate news relevance using AI. Each issue area has its own evaluation criteria, and a multi-stage pipeline filters for what truly matters."
         />
-        <meta property="og:title" content="Methodology - Actually Relevant" />
+        <meta property="og:title" content={`Methodology - ${SEO.siteName}`} />
         <meta
           property="og:description"
           content="How we evaluate news relevance using AI. Each issue area has its own evaluation criteria, and a multi-stage pipeline filters for what truly matters."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/methodology" />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/methodology`} />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section">

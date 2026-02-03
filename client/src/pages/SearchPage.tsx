@@ -5,6 +5,7 @@ import { usePublicStories } from '../hooks/usePublicStories'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
 import { SearchResultsSkeleton } from '../components/skeletons'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams()
@@ -27,8 +28,11 @@ export default function SearchPage() {
   return (
     <>
       <Helmet>
-        <title>{q ? `Search: ${q}` : 'Search'} - Actually Relevant</title>
+        <title>{q ? `Search: ${q}` : 'Search'} - {SEO.siteName}</title>
         <meta name="description" content={q ? `Search results for "${q}" on Actually Relevant` : 'Search stories on Actually Relevant'} />
+        <meta property="og:title" content={q ? `Search: ${q} - ${SEO.siteName}` : `Search - ${SEO.siteName}`} />
+        <meta property="og:type" content="website" />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section-wide">

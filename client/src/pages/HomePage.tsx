@@ -12,6 +12,7 @@ import { getCategoryIllustration } from '../lib/category-illustrations'
 import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/parse-points'
 import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 // ---------------------------------------------------------------------------
 // Hero
@@ -243,19 +244,13 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>Actually Relevant - News That Matters</title>
-        <meta
-          name="description"
-          content="AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity."
-        />
-        <meta property="og:title" content="Actually Relevant - News That Matters" />
-        <meta
-          property="og:description"
-          content="AI-curated news that matters. We evaluate thousands of articles to surface the stories most relevant to humanity."
-        />
+        <title>{SEO.defaultTitle}</title>
+        <meta name="description" content={SEO.defaultDescription} />
+        <meta property="og:title" content={SEO.defaultTitle} />
+        <meta property="og:description" content={SEO.defaultDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/" />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/`} />
+        {CommonOgTags({})}
       </Helmet>
 
       {/* Hero — show skeleton while loading */}

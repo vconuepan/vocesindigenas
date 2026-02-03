@@ -1,23 +1,24 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 export default function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>About - Actually Relevant</title>
+        <title>About - {SEO.siteName}</title>
         <meta
           name="description"
-          content="Actually Relevant is an AI-curated news platform that evaluates thousands of articles to surface the stories most relevant to humanity's future."
+          content="Actually Relevant surfaces news that matters to humanity. Curated with care by AI."
         />
-        <meta property="og:title" content="About - Actually Relevant" />
+        <meta property="og:title" content={`About - ${SEO.siteName}`} />
         <meta
           property="og:description"
-          content="An AI-curated news platform that surfaces the stories most relevant to humanity's future."
+          content="Actually Relevant surfaces news that matters to humanity. Curated with care by AI."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/about" />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/about`} />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section">

@@ -2,21 +2,22 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import ObfuscatedAddress from '../components/ObfuscatedAddress'
 import ObfuscatedEmail from '../components/ObfuscatedEmail'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 export default function ImprintPage() {
   return (
     <>
       <Helmet>
-        <title>Legal Notice - Actually Relevant</title>
+        <title>Legal Notice - {SEO.siteName}</title>
         <meta
           name="description"
           content="Legal notice and contact information for Actually Relevant."
         />
-        <meta property="og:title" content="Legal Notice - Actually Relevant" />
+        <meta property="og:title" content={`Legal Notice - ${SEO.siteName}`} />
         <meta property="og:description" content="Legal notice and contact information for Actually Relevant." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/imprint" />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/imprint`} />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section">

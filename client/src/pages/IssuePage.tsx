@@ -9,6 +9,7 @@ import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import Pagination from '../components/Pagination'
 import { IssuePageSkeleton } from '../components/skeletons'
+import { SEO, CommonOgTags } from '../lib/seo'
 import type { PublicStory } from '@shared/types'
 
 // ---------------------------------------------------------------------------
@@ -155,13 +156,13 @@ export default function IssuePage() {
   return (
     <>
       <Helmet>
-        <title>{issue.name} - Actually Relevant</title>
+        <title>{issue.name} - {SEO.siteName}</title>
         <meta name="description" content={(issue.intro || issue.description).slice(0, 160)} />
-        <meta property="og:title" content={`${issue.name} - Actually Relevant`} />
+        <meta property="og:title" content={`${issue.name} - ${SEO.siteName}`} />
         <meta property="og:description" content={(issue.intro || issue.description).slice(0, 200)} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://actuallyrelevant.news/issues/${slug}`} />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/issues/${slug}`} />
+        {CommonOgTags({})}
         <link rel="alternate" type="application/rss+xml" title={`${issue.name} RSS Feed`} href={`${API_BASE}/feed/${slug}`} />
       </Helmet>
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { usePublicIssues } from '../hooks/usePublicIssues'
 import { getCategoryColor } from '../lib/category-colors'
 import { IssueAccordionSkeleton } from '../components/skeletons'
+import { SEO, CommonOgTags } from '../lib/seo'
 import type { PublicIssue } from '../lib/api'
 
 function IssueAccordion({ issue }: { issue: PublicIssue }) {
@@ -143,16 +144,16 @@ export default function IssuesPage() {
   return (
     <>
       <Helmet>
-        <title>All Issues - Actually Relevant</title>
+        <title>All Issues - {SEO.siteName}</title>
         <meta
           name="description"
           content="We cover issue areas critical to humanity, each evaluated with a rigorous framework."
         />
-        <meta property="og:title" content="All Issues - Actually Relevant" />
+        <meta property="og:title" content={`All Issues - ${SEO.siteName}`} />
         <meta property="og:description" content="We cover issue areas critical to humanity." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/issues" />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/issues`} />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section-wide">

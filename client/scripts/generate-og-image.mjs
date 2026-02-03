@@ -9,41 +9,65 @@ const publicDir = path.join(__dirname, '..', 'public');
 const WIDTH = 1200;
 const HEIGHT = 630;
 
-// Brand colors
-const BRAND_700 = '#b91c1c';
-const NEUTRAL_800 = '#262626';
+// Brand colors (from tailwind.config.js)
+const BRAND_500 = '#ec268f';
+const NEUTRAL_600 = '#525252';
 
 async function generateOgImage() {
   const outputPath = path.join(publicDir, 'images', 'og-image.png');
+  const logoPath = path.join(publicDir, 'images', 'logo-text-horizontal.png');
+
+  // Resize logo to fit nicely (roughly 400px wide)
+  const logo = await sharp(logoPath)
+    .resize({ width: 400 })
+    .toBuffer();
+
+  const logoMeta = await sharp(logo).metadata();
+  const logoHeight = logoMeta.height || 160;
+
+  // Center the logo horizontally, position in upper portion
+  const logoLeft = Math.round((WIDTH - 400) / 2);
+  const logoTop = 140;
+
+  // Taglines positioned below logo
+  const taglineY = logoTop + logoHeight + 60;
+  const subtitleY = taglineY + 50;
+  const urlY = subtitleY + 70;
 
   const textSvg = `
     <svg width="${WIDTH}" height="${HEIGHT}">
       <style>
-        .name {
-          font-family: system-ui, -apple-system, sans-serif;
-          font-size: 72px;
-          font-weight: 700;
-          fill: ${NEUTRAL_800};
-        }
         .tagline {
           font-family: system-ui, -apple-system, sans-serif;
-          font-size: 36px;
-          font-weight: 400;
-          fill: #525252;
+          font-size: 42px;
+          font-weight: 500;
+          fill: ${NEUTRAL_600};
         }
-        .highlight {
+        .subtitle {
           font-family: system-ui, -apple-system, sans-serif;
           font-size: 28px;
+          font-weight: 400;
+          fill: #737373;
+        }
+        .url {
+          font-family: system-ui, -apple-system, sans-serif;
+          font-size: 24px;
           font-weight: 500;
-          fill: ${BRAND_700};
+          fill: ${BRAND_500};
         }
       </style>
-      <text x="80" y="240" class="name">Actually Relevant</text>
-      <text x="80" y="310" class="tagline">AI-curated news that matters.</text>
-      <text x="80" y="380" class="tagline">Stories most relevant to humanity's future.</text>
-      <text x="80" y="460" class="highlight">actuallyrelevant.news</text>
+      <text x="${WIDTH / 2}" y="${taglineY}" text-anchor="middle" class="tagline">News that matters to humanity</text>
+      <text x="${WIDTH / 2}" y="${subtitleY}" text-anchor="middle" class="subtitle">Curated with care by AI</text>
+      <text x="${WIDTH / 2}" y="${urlY}" text-anchor="middle" class="url">actuallyrelevant.news</text>
     </svg>
   `;
+
+  // Color strip at top using brand pink
+  const topStrip = Buffer.from(
+    `<svg width="${WIDTH}" height="8">
+      <rect width="${WIDTH}" height="8" fill="${BRAND_500}"/>
+    </svg>`
+  );
 
   await sharp({
     create: {
@@ -54,20 +78,9 @@ async function generateOgImage() {
     }
   })
     .composite([
-      {
-        input: Buffer.from(
-          `<svg width="${WIDTH}" height="8">
-            <rect width="${WIDTH}" height="8" fill="${BRAND_700}"/>
-          </svg>`
-        ),
-        top: 0,
-        left: 0
-      },
-      {
-        input: Buffer.from(textSvg),
-        top: 0,
-        left: 0
-      }
+      { input: topStrip, top: 0, left: 0 },
+      { input: logo, top: logoTop, left: logoLeft },
+      { input: Buffer.from(textSvg), top: 0, left: 0 }
     ])
     .png()
     .toFile(outputPath);

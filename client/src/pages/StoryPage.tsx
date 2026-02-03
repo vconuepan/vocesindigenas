@@ -7,6 +7,7 @@ import { parsePoints } from '../lib/parse-points'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import FeedFavicon from '../components/FeedFavicon'
 import { StoryPageSkeleton } from '../components/skeletons'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 // ---------------------------------------------------------------------------
 // Analysis section with ruled heading + numbered points
@@ -113,16 +114,16 @@ export default function StoryPage() {
   return (
     <>
       <Helmet>
-        <title>{displayTitle} - Actually Relevant</title>
+        <title>{displayTitle} - {SEO.siteName}</title>
         <meta name="description" content={description.slice(0, 160)} />
         <meta property="og:title" content={displayTitle} />
         <meta property="og:description" content={description.slice(0, 200)} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://actuallyrelevant.news/stories/${story.slug}`} />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/stories/${story.slug}`} />
         {story.datePublished && (
           <meta property="article:published_time" content={story.datePublished} />
         )}
+        {CommonOgTags({})}
       </Helmet>
 
       <article>

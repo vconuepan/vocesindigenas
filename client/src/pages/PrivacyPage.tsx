@@ -1,23 +1,24 @@
 import { Helmet } from 'react-helmet-async'
 import ObfuscatedEmail from '../components/ObfuscatedEmail'
+import { SEO, CommonOgTags } from '../lib/seo'
 
 export default function PrivacyPage() {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy - Actually Relevant</title>
+        <title>Privacy Policy - {SEO.siteName}</title>
         <meta
           name="description"
           content="Actually Relevant respects your privacy. No cookies, no tracking pixels, no invasive analytics. Learn what minimal data we collect."
         />
-        <meta property="og:title" content="Privacy Policy - Actually Relevant" />
+        <meta property="og:title" content={`Privacy Policy - ${SEO.siteName}`} />
         <meta
           property="og:description"
           content="Actually Relevant respects your privacy. No cookies, no tracking pixels, no invasive analytics."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://actuallyrelevant.news/privacy" />
-        <meta property="og:image" content="https://actuallyrelevant.news/images/logo-text-square.jpg" />
+        <meta property="og:url" content={`${SEO.siteUrl}/privacy`} />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section">
