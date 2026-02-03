@@ -1,9 +1,29 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import prerender from '@prerenderer/rollup-plugin'
 import { routePaths } from './src/routes'
 import path from 'path'
+
+// Plugin to inject preconnect for cross-origin API
+function apiPreconnectPlugin(): Plugin {
+  return {
+    name: 'api-preconnect',
+    transformIndexHtml(html) {
+      const apiUrl = process.env.VITE_API_URL
+      if (!apiUrl) return html
+
+      // Extract origin from API URL
+      const origin = new URL(apiUrl).origin
+      const preconnectTags = `
+    <link rel="preconnect" href="${origin}" crossorigin />
+    <link rel="dns-prefetch" href="${origin}" />`
+
+      // Insert after opening <head> tag
+      return html.replace('<head>', '<head>' + preconnectTags)
+    },
+  }
+}
 
 export default defineConfig({
   resolve: {
@@ -12,6 +32,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    apiPreconnectPlugin(),
     react(),
     prerender({
       routes: routePaths,

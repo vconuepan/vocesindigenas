@@ -570,3 +570,48 @@ export async function getPublishedStoryBySlug(slug: string) {
     select: PUBLIC_STORY_SELECT,
   })
 }
+
+/**
+ * Get all data needed for the homepage in a single query.
+ * Returns the hero story and stories grouped by issue slug.
+ */
+export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 5) {
+  // Build issue slug conditions for stories (includes child issues)
+  const buildIssueCondition = (slug: string) => ({
+    OR: [
+      { issue: { OR: [{ slug }, { parent: { slug } }] } },
+      { issue: null, feed: { issue: { OR: [{ slug }, { parent: { slug } }] } } },
+    ],
+  })
+
+  // Fetch hero story (most recent across all issues)
+  const heroPromise = prisma.story.findFirst({
+    where: { status: 'published' },
+    select: PUBLIC_STORY_SELECT,
+    orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
+  })
+
+  // Fetch stories for each issue in parallel
+  const storiesPromises = issueSlugs.map(async (slug) => {
+    const stories = await prisma.story.findMany({
+      where: {
+        status: 'published',
+        ...buildIssueCondition(slug),
+      },
+      select: PUBLIC_STORY_SELECT,
+      orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
+      take: storiesPerIssue,
+    })
+    return { slug, stories }
+  })
+
+  const [hero, ...issueResults] = await Promise.all([heroPromise, ...storiesPromises])
+
+  // Convert to object keyed by issue slug
+  const storiesByIssue: Record<string, typeof hero[]> = {}
+  for (const { slug, stories } of issueResults) {
+    storiesByIssue[slug] = stories
+  }
+
+  return { hero, storiesByIssue }
+}

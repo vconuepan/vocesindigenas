@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
-import { usePublicIssues } from '../hooks/usePublicIssues'
-import { usePublicStories } from '../hooks/usePublicStories'
+import { useHomepageData } from '../hooks/useHomepageData'
 import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import { HeroSkeleton, IssueSectionSkeleton } from '../components/skeletons'
@@ -108,26 +107,21 @@ type LayoutVariant = 'A' | 'B' | 'C'
 
 function IssueSection({
   issue,
+  allStories,
   heroStoryId,
   layout,
   divider,
   quoteVariantIndex,
 }: {
   issue: PublicIssue
+  allStories: PublicStory[]
   heroStoryId: string | null
   layout: LayoutVariant
   divider?: 'quote' | 'diamond' | 'none'
   quoteVariantIndex?: number
 }) {
-  const { data, isLoading } = usePublicStories({ issueSlug: issue.slug, pageSize: 5 })
-  const allStories = data?.data ?? []
   const colors = getCategoryColor(issue.slug)
   const Illustration = getCategoryIllustration(issue.slug)
-
-  // Show skeleton while loading
-  if (isLoading) {
-    return <IssueSectionSkeleton layout={layout} />
-  }
 
   // Exclude the hero story from this section
   const stories = heroStoryId
@@ -233,14 +227,16 @@ const ISSUE_ORDER = [
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
 
 export default function HomePage() {
-  const { data: issues, isLoading: issuesLoading } = usePublicIssues()
-  const sortedIssues = [...(issues ?? [])]
+  // Single API call for all homepage data
+  const { data, isLoading } = useHomepageData()
+
+  const issues = data?.issues ?? []
+  const heroStory = data?.hero ?? null
+  const storiesByIssue = data?.storiesByIssue ?? {}
+
+  const sortedIssues = [...issues]
     .filter((i) => ISSUE_ORDER.includes(i.slug))
     .sort((a, b) => ISSUE_ORDER.indexOf(a.slug) - ISSUE_ORDER.indexOf(b.slug))
-
-  // Fetch the most recent story across all categories for the hero
-  const { data: latestData, isLoading: heroLoading } = usePublicStories({ pageSize: 1 })
-  const heroStory = latestData?.data?.[0] ?? null
 
   let quoteIdx = 0
 
@@ -263,12 +259,12 @@ export default function HomePage() {
       </Helmet>
 
       {/* Hero — show skeleton while loading */}
-      {heroLoading ? <HeroSkeleton /> : heroStory ? <HeroSection story={heroStory} /> : null}
+      {isLoading ? <HeroSkeleton /> : heroStory ? <HeroSection story={heroStory} /> : null}
 
       {/* Issue sections with rotating layouts */}
       <div className="page-section-wide md:-mt-14 min-h-screen">
-        {issuesLoading ? (
-          // Show skeleton sections while issues load
+        {isLoading ? (
+          // Show skeleton sections while data loads
           <>
             <IssueSectionSkeleton layout="A" />
             <IssueSectionSkeleton layout="B" />
@@ -291,6 +287,7 @@ export default function HomePage() {
               <IssueSection
                 key={issue.id}
                 issue={issue}
+                allStories={storiesByIssue[issue.slug] ?? []}
                 heroStoryId={heroStory?.id ?? null}
                 layout={layout}
                 divider={divider}

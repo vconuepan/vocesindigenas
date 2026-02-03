@@ -50,7 +50,15 @@ export interface PublicIssue {
   parent?: { id: string; name: string; slug: string } | null
 }
 
+export interface HomepageData {
+  issues: PublicIssue[]
+  hero: PublicStory | null
+  storiesByIssue: Record<string, PublicStory[]>
+}
+
 export const publicApi = {
+  homepage: () => request<HomepageData>('/homepage'),
+
   stories: {
     list: (params?: { page?: number; pageSize?: number; issueSlug?: string; search?: string }) =>
       request<PaginatedResponse<PublicStory>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),

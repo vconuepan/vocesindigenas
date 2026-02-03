@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, Outlet, Navigate } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import {
@@ -87,8 +87,13 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export default function AdminLayout() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, tryRestoreSession } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Try to restore session when accessing admin routes directly
+  useEffect(() => {
+    tryRestoreSession()
+  }, [tryRestoreSession])
 
   if (isLoading) {
     return (

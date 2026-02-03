@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import type { UserRole } from '@shared/types'
 import { authApi, setAccessToken, ApiError } from './admin-api'
@@ -16,36 +16,44 @@ interface AuthContextValue {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  /** Call this when entering admin routes to restore session if available */
+  tryRestoreSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  // Start with isLoading=false since we don't auto-refresh on public pages
+  const [isLoading, setIsLoading] = useState(false)
+  const hasAttemptedRestore = useRef(false)
 
-  // On mount, try to restore session via refresh token cookie
-  useEffect(() => {
-    // Clean up old localStorage-based auth
+  // Clean up old localStorage-based auth (one-time)
+  if (typeof window !== 'undefined') {
     localStorage.removeItem('admin_api_key')
+  }
 
-    authApi.refresh()
-      .then(token => {
-        if (token) {
-          return authApi.me()
-        }
-        return null
-      })
-      .then(userData => {
+  // Called when entering admin routes to restore session
+  const tryRestoreSession = useCallback(async () => {
+    // Only attempt once per page load
+    if (hasAttemptedRestore.current) return
+    hasAttemptedRestore.current = true
+    setIsLoading(true)
+
+    try {
+      const token = await authApi.refresh()
+      if (token) {
+        const userData = await authApi.me()
         if (userData) {
           setUser(userData as AuthUser)
         }
-      })
-      .catch(() => {
-        setUser(null)
-        setAccessToken(null)
-      })
-      .finally(() => setIsLoading(false))
+      }
+    } catch {
+      setUser(null)
+      setAccessToken(null)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -75,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       logout,
+      tryRestoreSession,
     }}>
       {children}
     </AuthContext.Provider>

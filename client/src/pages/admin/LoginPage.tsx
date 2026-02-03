@@ -6,17 +6,18 @@ import { Button } from '../../components/ui/Button'
 import { preloadAdminChunks } from '../../App'
 
 export default function LoginPage() {
-  const { isAuthenticated, isLoading, login } = useAuth()
+  const { isAuthenticated, isLoading, login, tryRestoreSession } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // Preload admin chunks while user types credentials
+  // On mount, try to restore existing session and preload admin chunks
   useEffect(() => {
+    tryRestoreSession()
     preloadAdminChunks()
-  }, [])
+  }, [tryRestoreSession])
 
   if (isLoading) return null
 
