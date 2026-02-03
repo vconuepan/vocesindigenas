@@ -45,6 +45,14 @@ export default defineConfig({
         if (!renderedRoute.html.startsWith('<!DOCTYPE')) {
           renderedRoute.html = '<!DOCTYPE html>' + renderedRoute.html
         }
+
+        // Preload homepage API data to avoid JS→API chain
+        const apiUrl = process.env.VITE_API_URL
+        if (renderedRoute.route === '/' && apiUrl) {
+          const preloadTag = `<link rel="preload" href="${apiUrl}/api/homepage" as="fetch" crossorigin />`
+          renderedRoute.html = renderedRoute.html.replace('</head>', preloadTag + '\n</head>')
+        }
+
         return renderedRoute
       },
     }),
