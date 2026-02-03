@@ -155,11 +155,17 @@ function PublicLayoutInner() {
           <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-start justify-center relative">
             {/* Logo */}
             <Link to="/" className="flex flex-col items-center shrink-0">
-              <img
-                src="/images/logo-text-horizontal.png"
-                alt="Actually Relevant"
-                className="h-14 md:h-16"
-              />
+              <picture>
+                <source
+                  srcSet="/images/optimized/logo-text-horizontal-small-h.webp"
+                  type="image/webp"
+                />
+                <img
+                  src="/images/logo-text-horizontal.png"
+                  alt="Actually Relevant"
+                  className="h-14 md:h-16"
+                />
+              </picture>
               <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-400 mt-1">
                 News that matters to humanity
               </span>
