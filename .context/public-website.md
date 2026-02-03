@@ -60,10 +60,25 @@ Current issue slugs: `existential-threats`, `planet-climate`, `human-development
 
 ## Design
 
-- **Fonts:** Nexa Bold (headings), Roboto (body) — self-hosted from `/fonts/`
 - **Colors:** Pink/magenta brand palette (`#ec268f` primary, `#661845` deep)
 - **Layout:** Sticky header, dark footer, max-w-5xl content area
 - **Mobile:** Hamburger menu at `lg` breakpoint
+
+### Fonts
+
+Self-hosted from `/fonts/`. Only these fonts are loaded (adding more increases page load):
+
+| Font | Weight | Tailwind Class | Use For |
+|------|--------|----------------|---------|
+| Nexa Bold | 700 | `font-nexa font-bold` | Headings, logo text |
+| Roboto Regular | 400 | (default body) | Body text |
+| Roboto Medium | 500 | `font-medium` | Semi-bold UI elements |
+| Roboto Bold | 700 | `font-bold` | Bold body text |
+
+**Do NOT use:** `font-light`, `font-thin`, `font-black`, or `font-nexa` without `font-bold` — these weights are not loaded and will trigger browser fallback or extra downloads.
+
+Font definitions: `client/src/index.css` (@font-face)
+Preload hints: `client/index.html`
 
 ## Key Files
 
