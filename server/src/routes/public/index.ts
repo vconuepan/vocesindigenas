@@ -4,6 +4,7 @@ import storiesRouter from './stories.js'
 import issuesRouter from './issues.js'
 import feedRouter from './feed.js'
 import subscribeRouter from './subscribe.js'
+import sitemapRouter from './sitemap.js'
 
 const router = Router()
 
@@ -14,5 +15,6 @@ router.use('/stories', storiesRouter)
 router.use('/issues', issuesRouter)
 router.use('/feed', feedRouter)
 router.use('/subscribe', subscribeRouter)
+router.use('/sitemap.xml', sitemapRouter)
 
 export default router

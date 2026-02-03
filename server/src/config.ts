@@ -72,6 +72,9 @@ export const config = {
     size: parseInt(process.env.RSS_FEED_SIZE || "50", 10),
     cacheMaxAge: parseInt(process.env.RSS_CACHE_MAX_AGE || "900", 10),
   },
+  sitemap: {
+    cacheMaxAge: parseInt(process.env.SITEMAP_CACHE_MAX_AGE || "3600", 10),
+  },
   rateLimit: {
     publicWindowMs: parseInt(
       process.env.RATE_LIMIT_PUBLIC_WINDOW_MS || String(15 * 60 * 1000),

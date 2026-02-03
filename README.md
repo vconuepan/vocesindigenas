@@ -62,32 +62,47 @@ AI-curated news platform that evaluates article relevance to humanity using LLM 
 
 ## Deploying to Render.com
 
-This project requires **three services** on Render:
+This project requires **three services** on Render: a managed PostgreSQL database, an Express backend (web service), and a React frontend (static site). The backend and frontend run on separate origins.
 
 ### 1. PostgreSQL Database
 
 1. Create a new PostgreSQL instance on Render
-2. Note the connection string (Internal Database URL)
-3. Enable pgvector: Connect and run `CREATE EXTENSION IF NOT EXISTS vector;`
+2. Note the **Internal Database URL** (used by the backend service)
+3. Enable pgvector — connect to the database and run:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
 
 ### 2. Backend (Web Service)
 
 | Field | Value |
 |-------|-------|
 | **Root Directory** | `server` |
-| **Build Command** | `npm install && npx prisma generate && npm run build` |
+| **Build Command** | `npm install --include=dev && npx prisma generate && npx prisma migrate deploy && npm run build` |
 | **Start Command** | `npm start` |
+| **Health Check Path** | `/health` |
+
+The build generates the Prisma client, applies any pending database migrations, and compiles TypeScript. Migrations run automatically on every deploy via `prisma migrate deploy`, which is a no-op when there are no pending migrations.
 
 **Environment Variables:**
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string from step 1 |
-| `OPENAI_API_KEY` | Yes | OpenAI API key |
-| `FRONTEND_URL` | Yes (prod) | Frontend URL for CORS |
-| `PORT` | No | Defaults to 10000 (Render) / 3001 (local) |
-| `JWT_SECRET` | Yes | Random string (32+ chars) for signing JWTs |
-| `PUBLIC_API_KEY` | No | API key for public content access (mobile apps, etc.) |
+| `DATABASE_URL` | Yes | Internal PostgreSQL connection string from step 1 |
+| `OPENAI_API_KEY` | Yes | OpenAI API key for LLM analysis |
+| `FRONTEND_URL` | Yes | Frontend URL for CORS (e.g. `https://actuallyrelevant.com`) |
+| `JWT_SECRET` | Yes | Random string (32+ chars) for signing auth tokens |
+| `NODE_ENV` | Yes | Set to `production` (enables secure cross-origin cookies) |
+| `PORT` | No | Render sets this automatically (defaults to 10000) |
+| `PUBLIC_API_KEY` | No | Static API key for public consumers (mobile apps, etc.) |
+| `LOG_LEVEL` | No | Logging verbosity (default: `info`) |
+
+**Architecture notes:**
+
+- **Cron jobs** run in-process via node-cron — no separate worker service is needed. Job configuration lives in the `job_runs` database table and is managed from the admin dashboard.
+- **Graceful shutdown** handles `SIGTERM` (sent by Render on deploy) by draining in-flight LLM tasks before disconnecting from the database.
+- **Reverse proxy** trust is configured (`trust proxy: 1`) for correct client IP detection behind Render's load balancer.
+- **Cross-origin cookies** use `sameSite: 'none'` + `secure: true` in production, which is required because the frontend and backend are on different Render origins. This is why `NODE_ENV=production` is mandatory.
 
 ### 3. Frontend (Static Site)
 
@@ -97,13 +112,34 @@ This project requires **three services** on Render:
 | **Build Command** | `npm install && npm run build` |
 | **Publish Directory** | `dist` |
 
+The build type-checks, bundles with Vite, and prerenders public routes using Puppeteer. Render's build environment includes Chromium, so prerendering works without extra setup.
+
+**Rewrite rules:** Add these rewrites in the Render dashboard (order matters — specific rules first):
+
+| Source | Destination | Action |
+|--------|-------------|--------|
+| `/sitemap.xml` | `https://<backend-service>.onrender.com/api/sitemap.xml` | Rewrite |
+| `/*` | `/index.html` | Rewrite |
+
+The sitemap rewrite proxies requests to the backend, which generates the sitemap dynamically from published stories. No static `sitemap.xml` file should exist in `client/public/` — Render serves static files before applying rewrite rules.
+
 **Environment Variables:**
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | Yes (prod) | Backend API URL |
+| `VITE_API_URL` | Yes | Backend URL (e.g. `https://api.actuallyrelevant.com`) |
 
-After deploying the frontend, update the backend's `FRONTEND_URL` to match.
+### Post-deploy Steps
+
+1. Set backend `FRONTEND_URL` to match the frontend URL (and vice versa for `VITE_API_URL`)
+2. Database migrations run automatically during the build step — no manual action needed
+3. Create the first admin user from the Render shell:
+   ```bash
+   npx tsx src/scripts/create-admin.ts
+   ```
+4. Add the `/sitemap.xml` rewrite rule to the static site (see Frontend section above)
+5. Verify the health endpoint: `curl https://<backend-url>/health`
+6. Verify the sitemap: `curl https://<frontend-url>/sitemap.xml`
 
 ## Project Structure
 

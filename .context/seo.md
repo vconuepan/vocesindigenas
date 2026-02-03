@@ -5,7 +5,7 @@
 | File | Location | Type |
 |------|----------|------|
 | `robots.txt` | `client/public/robots.txt` | Static |
-| `sitemap.xml` | `client/public/sitemap.xml` | Generated |
+| `sitemap.xml` | `server/src/routes/public/sitemap.ts` | Dynamic (server-generated) |
 
 ## robots.txt
 
@@ -20,56 +20,59 @@ Sitemap: https://actuallyrelevant.news/sitemap.xml
 
 ## sitemap.xml
 
-Generated automatically from `client/src/routes.ts` + published story slugs during build.
+Served dynamically by the backend at `GET /api/sitemap.xml`. In production, a Render rewrite rule proxies `/sitemap.xml` to the backend endpoint so crawlers see it at the canonical URL.
 
 ### How It Works
 
-1. Static route metadata (path, priority, changefreq) is defined in `routes.ts`
-2. `npm run build` runs `sitemap:generate` before building
-3. Script reads static routes and fetches published story slugs from the API (`/api/stories`)
-4. Story routes are added with priority 0.6 and changefreq `monthly`
-5. If the API is unavailable, the script gracefully falls back to static routes only
-6. Sitemap is written to `public/sitemap.xml` and copied to `dist/` during build
+1. `GET /api/sitemap.xml` queries all published stories (slug + datePublished) from the database
+2. Combines with hardcoded static routes (same list as `client/src/routes.ts`)
+3. Generates XML with `<lastmod>` for stories using `datePublished`
+4. Response is cached in-memory (TTL: `config.sitemap.cacheMaxAge`, default 1 hour)
+5. `Cache-Control: public, max-age=3600` header allows CDN/proxy caching
+6. New stories appear in the sitemap automatically within the cache TTL
 
-The API URL defaults to `http://localhost:3001` but can be overridden via the `VITE_API_URL` environment variable.
+### Render Rewrite Rule
 
-### Manual Generation
+| Field | Value |
+|-------|-------|
+| Source | `/sitemap.xml` |
+| Destination | `https://<backend-service>.onrender.com/api/sitemap.xml` |
+| Action | **Rewrite** |
 
-```bash
-npm run sitemap:generate --prefix client
-```
+**Important:** No static `sitemap.xml` file should exist in `client/public/` — Render serves static files before applying rewrite rules.
+
+### Configuration
+
+| Config Key | Env Var | Default | Description |
+|-----------|---------|---------|-------------|
+| `config.sitemap.cacheMaxAge` | `SITEMAP_CACHE_MAX_AGE` | `3600` | Cache TTL in seconds |
+
+### Legacy Build-Time Generation
+
+The build-time sitemap generator (`client/scripts/generate-sitemap.ts`) is kept for local development/testing but is no longer part of the client build command.
 
 ## Adding a New Route
 
-When adding a page, include sitemap metadata in `routes.ts`:
+When adding a page, add sitemap metadata in **two places**:
 
-```ts
-export const routes: RouteConfig[] = [
-  // ... existing routes
-  { path: '/new-page', priority: 0.7, changefreq: 'monthly' },
-]
-```
+1. `client/src/routes.ts` — for prerendering
+2. `server/src/routes/public/sitemap.ts` `STATIC_ROUTES` array — for the dynamic sitemap
 
 ### Priority Guidelines
 
 | Priority | Use For |
 |----------|---------|
 | 1.0 | Homepage only |
-| 0.9 | Core content pages (story listings by issue) |
-| 0.8 | Important static pages (methodology, about) |
-| 0.7 | Individual published stories |
-| 0.6 | Secondary content |
-| 0.5 | Utility pages (contact) |
+| 0.8 | Issue pages |
+| 0.7 | Important static pages (methodology, about) |
+| 0.6 | Individual published stories |
+| 0.5 | Utility pages (imprint, privacy) |
+| 0.3 | Low-priority pages (search) |
+| 0.2 | Non-indexable pages (subscribed confirmation) |
 
 ### Change Frequency Options
 
-- `daily` - Homepage, story listings (new stories published regularly)
-- `weekly` - Issue/category pages
-- `monthly` - Static pages (methodology, about)
-- `yearly` - Pages that rarely change (contact)
-
-## Script Location
-
-`client/scripts/generate-sitemap.ts`
-
-The script reads the `BASE_URL` constant (currently `https://actuallyrelevant.news`). If the domain changes, update this constant.
+- `daily` — Homepage, search (new stories published regularly)
+- `weekly` — Issue/category pages
+- `monthly` — Static pages (methodology, about), individual stories
+- `yearly` — Pages that rarely change (imprint, privacy, subscribed)
