@@ -43,7 +43,7 @@ function HeroSection({ story }: { story: PublicStory }) {
             href={story.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-neutral-700 transition-colors"
+            className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           >
             {story.feed.displayTitle || story.feed.title}
             <span className="sr-only"> (opens in new tab)</span>

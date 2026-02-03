@@ -45,10 +45,10 @@ export function IssueTable({ issues, onEdit, onDelete }: IssueTableProps) {
       <table className="min-w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Name</th>
-            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Slug</th>
-            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Published</th>
-            <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Name</th>
+            <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Slug</th>
+            <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Published</th>
+            <th scope="col" className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>

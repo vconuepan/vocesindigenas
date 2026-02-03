@@ -15,11 +15,11 @@ export function PodcastTable({ podcasts, onView, onDelete }: PodcastTableProps) 
       <table className="min-w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Status</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Stories</th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Created</th>
-            <th className="text-right px-3 py-2 font-medium text-neutral-500">Actions</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Status</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Stories</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Created</th>
+            <th scope="col" className="text-right px-3 py-2 font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>

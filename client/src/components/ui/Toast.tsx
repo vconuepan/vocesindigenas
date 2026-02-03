@@ -93,19 +93,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             }`}
           >
             {t.type === 'success' ? (
-              <CheckCircleIcon className="h-5 w-5 text-green-500 shrink-0" />
+              <CheckCircleIcon className="h-5 w-5 text-green-500 shrink-0" aria-hidden="true" />
             ) : t.type === 'error' ? (
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500 shrink-0" />
+              <ExclamationCircleIcon className="h-5 w-5 text-red-500 shrink-0" aria-hidden="true" />
             ) : (
-              <ArrowPathIcon className="h-5 w-5 text-blue-500 shrink-0 animate-spin" />
+              <ArrowPathIcon className="h-5 w-5 text-blue-500 shrink-0 animate-spin" aria-hidden="true" />
             )}
             <span>{t.message}</span>
             <button
               onClick={() => removeToast(t.id)}
-              className="ml-2 shrink-0 text-current opacity-50 hover:opacity-100"
+              className="ml-2 shrink-0 p-1 rounded text-current opacity-50 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:opacity-100"
               aria-label="Dismiss"
             >
-              <XMarkIcon className="h-4 w-4" />
+              <XMarkIcon className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         ))}

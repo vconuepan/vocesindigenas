@@ -106,14 +106,14 @@ export function JobsTable({ jobs }: JobsTableProps) {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50">
-              <th className="text-left px-3 py-2 font-medium text-neutral-500">Job</th>
-              <th className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Cron</th>
-              <th className="text-left px-3 py-2 font-medium text-neutral-500">Enabled</th>
-              <th className="text-left px-3 py-2 font-medium text-neutral-500">Status</th>
-              <th className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Last Started</th>
-              <th className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Last Completed</th>
-              <th className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Error</th>
-              <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Job</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Cron</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Enabled</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Status</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Last Started</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Last Completed</th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500 hidden lg:table-cell">Error</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
             </tr>
           </thead>
           <tbody>

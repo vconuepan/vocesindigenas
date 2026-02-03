@@ -99,7 +99,7 @@ export function StoryTable({
       <table className="min-w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
-            <th className="w-10 px-3 py-2">
+            <th scope="col" className="w-10 px-3 py-2">
               <input
                 type="checkbox"
                 checked={allSelected && stories.length > 0}
@@ -108,12 +108,12 @@ export function StoryTable({
                 aria-label="Select all stories"
               />
             </th>
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
-            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Status</th>
-            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Rating</th>
-            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Emotion</th>
-            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Crawled</th>
-            <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
+            <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Status</th>
+            <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Rating</th>
+            <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Emotion</th>
+            <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Crawled</th>
+            <th scope="col" className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>

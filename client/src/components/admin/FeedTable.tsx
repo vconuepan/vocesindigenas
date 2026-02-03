@@ -28,12 +28,12 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
       <table className="min-w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
-            <th className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
-            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
-            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
-            <th className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
-            <th className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Last Crawled</th>
-            <th className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
+            <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Title</th>
+            <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
+            <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
+            <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
+            <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Last Crawled</th>
+            <th scope="col" className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
         </thead>
         <tbody>

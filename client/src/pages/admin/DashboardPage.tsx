@@ -72,11 +72,11 @@ export default function DashboardPage() {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-neutral-200">
-                    <th className="text-left py-2 px-4 font-medium text-neutral-500">Job</th>
-                    <th className="text-left py-2 px-4 font-medium text-neutral-500">Status</th>
-                    <th className="text-left py-2 px-4 font-medium text-neutral-500">Last Run</th>
-                    <th className="text-left py-2 px-4 font-medium text-neutral-500 hidden sm:table-cell">Error</th>
-                    <th className="py-2 px-4"></th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Job</th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Status</th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Last Run</th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500 hidden sm:table-cell">Error</th>
+                    <th scope="col" className="py-2 px-4"></th>
                   </tr>
                 </thead>
                 <tbody>

@@ -76,7 +76,7 @@
   }
 
   .prose a {
-    @apply text-brand-700 hover:text-brand-800 underline underline-offset-2 transition-colors;
+    @apply text-brand-700 hover:text-brand-800 underline underline-offset-2 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded;
   }
 }
 

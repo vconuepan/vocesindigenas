@@ -166,12 +166,12 @@ export function AssignedStoriesList({
                     <table className="min-w-full text-sm">
                       <thead>
                         <tr className="border-b border-neutral-200 bg-neutral-50">
-                          <th className="text-left px-3 py-1.5 font-medium text-neutral-500">Title</th>
-                          <th className="hidden md:table-cell text-left px-3 py-1.5 font-medium text-neutral-500">Rating</th>
-                          <th className="hidden lg:table-cell text-left px-3 py-1.5 font-medium text-neutral-500">Emotion</th>
-                          <th className="hidden lg:table-cell text-left px-3 py-1.5 font-medium text-neutral-500">Crawled</th>
+                          <th scope="col" className="text-left px-3 py-1.5 font-medium text-neutral-500">Title</th>
+                          <th scope="col" className="hidden md:table-cell text-left px-3 py-1.5 font-medium text-neutral-500">Rating</th>
+                          <th scope="col" className="hidden lg:table-cell text-left px-3 py-1.5 font-medium text-neutral-500">Emotion</th>
+                          <th scope="col" className="hidden lg:table-cell text-left px-3 py-1.5 font-medium text-neutral-500">Crawled</th>
                           {actions && actions.length > 0 && (
-                            <th className="px-1 py-1.5" style={{ width: `${actions.length * 28 + 4}px` }} />
+                            <th scope="col" className="px-1 py-1.5" style={{ width: `${actions.length * 28 + 4}px` }} />
                           )}
                         </tr>
                       </thead>
