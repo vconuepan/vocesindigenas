@@ -2,11 +2,8 @@
 
 ## Code
 
-- Lighthouse performance and WCAG issues
-- og: images and info
-
 - Emotion slider (how much uplifting/calm?)
-- **Semantic search** — pgvector infrastructure is in place; build search UI and query endpoint for similarity search over story content/embeddings
+- **Similar stories widget** — Show related articles on story pages using embedding similarity; cache similar story IDs with timestamp and regenerate periodically when visitors access the page (newer articles may be more relevant)
 - **Reader comments / feedback** — Allow public feedback
 
 - **Story deduplication** — Detect and merge duplicate stories across different feeds covering the same event
@@ -16,6 +13,4 @@
 
 ## Orga
 
-- Change DNS
-- After DNS is up: confirm Simple Analytics at https://dashboard.simpleanalytics.com/install?hostname=actuallyrelevant.news
 - Check verification status on Google
