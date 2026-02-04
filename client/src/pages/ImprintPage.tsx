@@ -1,8 +1,8 @@
-import { Helmet } from 'react-helmet-async'
-import { Link } from 'react-router-dom'
-import ObfuscatedAddress from '../components/ObfuscatedAddress'
-import ObfuscatedEmail from '../components/ObfuscatedEmail'
-import { SEO, CommonOgTags } from '../lib/seo'
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+import ObfuscatedAddress from "../components/ObfuscatedAddress";
+import ObfuscatedEmail from "../components/ObfuscatedEmail";
+import { SEO, CommonOgTags } from "../lib/seo";
 
 export default function ImprintPage() {
   return (
@@ -14,7 +14,10 @@ export default function ImprintPage() {
           content="Legal notice and contact information for Actually Relevant."
         />
         <meta property="og:title" content={`Legal Notice - ${SEO.siteName}`} />
-        <meta property="og:description" content="Legal notice and contact information for Actually Relevant." />
+        <meta
+          property="og:description"
+          content="Legal notice and contact information for Actually Relevant."
+        />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/imprint`} />
         {CommonOgTags({})}
@@ -29,22 +32,26 @@ export default function ImprintPage() {
           </h2>
           <ObfuscatedAddress className="not-italic text-neutral-600 leading-relaxed" />
           <p className="mt-2">
-            Email: <ObfuscatedEmail className="text-brand-700 hover:text-brand-800" />
+            Email:{" "}
+            <ObfuscatedEmail className="text-brand-700 hover:text-brand-800" />
           </p>
 
-          <h2 className="section-heading mt-8">Editorially Responsible (German § 18 Abs. 2 MStV)</h2>
+          <h2 className="section-heading mt-8">
+            Editorially Responsible (German § 18 Abs. 2 MStV)
+          </h2>
           <ObfuscatedAddress className="not-italic text-neutral-600 leading-relaxed" />
 
           <hr className="my-10 border-neutral-200" />
 
           <p>
-            For information about data collection and privacy, see our{' '}
+            For information about data collection and privacy, see our{" "}
             <Link to="/privacy" className="text-brand-700 hover:text-brand-800">
               Privacy Policy
-            </Link>. (Spoiler: we collect almost nothing.)
+            </Link>
+            . (You will be pleasantly surprised.)
           </p>
         </div>
       </div>
     </>
-  )
+  );
 }
