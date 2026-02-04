@@ -114,12 +114,14 @@ The build generates the Prisma client, applies any pending database migrations, 
 
 The build type-checks, bundles with Vite, and prerenders public routes using Puppeteer. Render's build environment includes Chromium, so prerendering works without extra setup.
 
-**Rewrite rules:** Add these rewrites in the Render dashboard (order matters — specific rules first):
+**Rewrite rules:** Add these rewrites in the Render dashboard **in this exact order** (Render evaluates rules top-to-bottom, first match wins):
 
 | Source | Destination | Action |
 |--------|-------------|--------|
 | `/sitemap.xml` | `https://<backend-service>.onrender.com/api/sitemap.xml` | Rewrite |
 | `/*` | `/index.html` | Rewrite |
+
+**Order is critical:** The `/sitemap.xml` rule must appear *before* the catch-all `/*` rule. If reversed, the catch-all matches first and serves the SPA shell, resulting in a 404.
 
 The sitemap rewrite proxies requests to the backend, which generates the sitemap dynamically from published stories. No static `sitemap.xml` file should exist in `client/public/` — Render serves static files before applying rewrite rules.
 

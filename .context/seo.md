@@ -39,6 +39,11 @@ Served dynamically by the backend at `GET /api/sitemap.xml`. In production, a Re
 | Destination | `https://<backend-service>.onrender.com/api/sitemap.xml` |
 | Action | **Rewrite** |
 
+**Critical — Rule Order:**
+- Render evaluates rewrite rules **top-to-bottom, first match wins**
+- The `/sitemap.xml` rule must appear **before** the SPA catch-all rule (`/*` → `/index.html`)
+- If reversed, the catch-all matches first and serves the SPA shell, which then 404s on the client
+
 **Important:** No static `sitemap.xml` file should exist in `client/public/` — Render serves static files before applying rewrite rules.
 
 ### Configuration
