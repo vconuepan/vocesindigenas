@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { publicApi } from '../lib/api'
+import { BRAND } from '../config'
 
 interface SubscribeModalProps {
   open: boolean
@@ -117,7 +118,7 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
                 Stay informed
               </h2>
               <p className="text-neutral-500 text-sm">
-                News that matters to humanity. Weekly to your inbox. Curated with care by AI.
+                {BRAND.claim} Weekly to your inbox. {BRAND.claimSupport}
               </p>
             </div>
 

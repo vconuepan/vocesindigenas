@@ -1,11 +1,12 @@
 import { ReactNode } from 'react'
+import { BRAND } from '../config'
 
 // Shared SEO constants
 export const SEO = {
   siteName: 'Actually Relevant',
   siteUrl: 'https://actuallyrelevant.news',
   defaultTitle: 'Actually Relevant - News That Matters to Humanity',
-  defaultDescription: 'News that matters to humanity. Curated with care by AI.',
+  defaultDescription: `${BRAND.claim} ${BRAND.claimSupport}`,
   ogImage: 'https://actuallyrelevant.news/images/og-image.png',
   ogImageWidth: '1200',
   ogImageHeight: '630',

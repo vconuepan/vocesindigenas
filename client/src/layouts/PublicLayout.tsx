@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { getCategoryColor } from "../lib/category-colors";
 import { API_BASE } from "../lib/api";
+import { BRAND } from "../config";
 import SubscribeProvider, {
   useSubscribe,
 } from "../components/SubscribeProvider";
@@ -37,9 +38,9 @@ const FOOTER_NAV = [
 ];
 
 const FOOTER_LEGAL = [
-  { label: "Legal Notice / Impressum", href: "/imprint" },
+  { label: "Legal notice / Impressum", href: "/imprint" },
   { label: "Privacy", href: "/privacy" },
-  { label: "No Cookies", href: "/privacy" },
+  { label: "No cookies", href: "/privacy" },
 ];
 
 function NewsletterIcon({ className }: { className?: string }) {
@@ -167,7 +168,7 @@ function PublicLayoutInner() {
                 />
               </picture>
               <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
-                News that matters to humanity
+                {BRAND.claim.replace(/\.$/, "")}
               </span>
             </Link>
 
@@ -268,9 +269,9 @@ function PublicLayoutInner() {
                     }
                   >
                     <span
-                      className={`w-2.5 h-2.5 rounded-full -translate-y-px ${colors.dotBg} ${
-                        active ? "opacity-100" : "opacity-60"
-                      }`}
+                      className={`w-2.5 h-2.5 rounded-full -translate-y-px ${
+                        colors.dotBg
+                      } ${active ? "opacity-100" : "opacity-60"}`}
                       aria-hidden="true"
                     />
                     {link.label}
@@ -410,7 +411,7 @@ function PublicLayoutInner() {
             <span className="flex-1 border-t border-neutral-200" />
           </div>
           <p className="text-lg italic text-neutral-500 leading-relaxed">
-            Curated with care by AI.
+            {BRAND.claimSupport}
           </p>
         </div>
       </div>
@@ -436,7 +437,7 @@ function PublicLayoutInner() {
                 Actually Relevant
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
-                News that matters to humanity.
+                {BRAND.claim}
               </p>
               <ul className="hidden md:flex gap-4 mt-4">
                 {FOOTER_LEGAL.map((link) => (

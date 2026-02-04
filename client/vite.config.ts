@@ -3,24 +3,28 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import prerender from '@prerenderer/rollup-plugin'
 import { routePaths } from './src/routes'
+import { BRAND } from './src/config'
 import path from 'path'
 
-// Plugin to inject preconnect for cross-origin API
-function apiPreconnectPlugin(): Plugin {
+// Plugin to inject preconnect for cross-origin API and brand copy
+function htmlTransformPlugin(): Plugin {
   return {
-    name: 'api-preconnect',
+    name: 'html-transform',
     transformIndexHtml(html) {
-      const apiUrl = process.env.VITE_API_URL
-      if (!apiUrl) return html
+      // Inject brand description
+      html = html.replace('__BRAND_DESCRIPTION__', `${BRAND.claim} ${BRAND.claimSupport}`)
 
-      // Extract origin from API URL
-      const origin = new URL(apiUrl).origin
-      const preconnectTags = `
+      // Inject preconnect for cross-origin API
+      const apiUrl = process.env.VITE_API_URL
+      if (apiUrl) {
+        const origin = new URL(apiUrl).origin
+        const preconnectTags = `
     <link rel="preconnect" href="${origin}" crossorigin />
     <link rel="dns-prefetch" href="${origin}" />`
+        html = html.replace('<head>', '<head>' + preconnectTags)
+      }
 
-      // Insert after opening <head> tag
-      return html.replace('<head>', '<head>' + preconnectTags)
+      return html
     },
   }
 }
@@ -32,7 +36,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    apiPreconnectPlugin(),
+    htmlTransformPlugin(),
     react(),
     prerender({
       routes: routePaths,

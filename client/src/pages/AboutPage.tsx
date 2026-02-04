@@ -7,15 +7,9 @@ export default function AboutPage() {
     <>
       <Helmet>
         <title>About - {SEO.siteName}</title>
-        <meta
-          name="description"
-          content="Actually Relevant surfaces news that matters to humanity. Curated with care by AI."
-        />
+        <meta name="description" content={SEO.defaultDescription} />
         <meta property="og:title" content={`About - ${SEO.siteName}`} />
-        <meta
-          property="og:description"
-          content="Actually Relevant surfaces news that matters to humanity. Curated with care by AI."
-        />
+        <meta property="og:description" content={SEO.defaultDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/about`} />
         {CommonOgTags({})}

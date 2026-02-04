@@ -1,5 +1,6 @@
 import { useSearchParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { BRAND } from '../config'
 
 export default function SubscribedPage() {
   const [searchParams] = useSearchParams()
@@ -65,9 +66,9 @@ export default function SubscribedPage() {
         </div>
         <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">Welcome to the newsletter!</h1>
         <p className="text-neutral-600 mb-4 max-w-md mx-auto">
-          News that matters to humanity.<br className="sm:hidden" />
+          {BRAND.claim}<br className="sm:hidden" />
           Weekly to your inbox.<br />
-          Curated with care by AI.
+          {BRAND.claimSupport}
         </p>
         <p className="text-neutral-600 mb-8 max-w-md mx-auto">
           Your subscription is confirmed. In the meantime, explore what's making headlines right now.
