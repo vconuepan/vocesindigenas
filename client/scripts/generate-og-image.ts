@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { BRAND } from '../src/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, '..', 'public');
@@ -34,6 +35,10 @@ async function generateOgImage() {
   const subtitleY = taglineY + 50;
   const urlY = subtitleY + 70;
 
+  // Strip trailing period for display
+  const claim = BRAND.claim.replace(/\.$/, '');
+  const claimSupport = BRAND.claimSupport.replace(/\.$/, '');
+
   const textSvg = `
     <svg width="${WIDTH}" height="${HEIGHT}">
       <style>
@@ -56,8 +61,8 @@ async function generateOgImage() {
           fill: ${BRAND_500};
         }
       </style>
-      <text x="${WIDTH / 2}" y="${taglineY}" text-anchor="middle" class="tagline">News that matters to humanity</text>
-      <text x="${WIDTH / 2}" y="${subtitleY}" text-anchor="middle" class="subtitle">Curated with care by AI</text>
+      <text x="${WIDTH / 2}" y="${taglineY}" text-anchor="middle" class="tagline">${claim}</text>
+      <text x="${WIDTH / 2}" y="${subtitleY}" text-anchor="middle" class="subtitle">${claimSupport}</text>
       <text x="${WIDTH / 2}" y="${urlY}" text-anchor="middle" class="url">actuallyrelevant.news</text>
     </svg>
   `;
