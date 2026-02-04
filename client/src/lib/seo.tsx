@@ -16,16 +16,15 @@ export const SEO = {
 /**
  * Common OG meta tags that should appear on every page.
  * Use inside <Helmet> after page-specific tags.
+ * Returns an array (not fragment) for react-helmet-async compatibility.
  */
 export function CommonOgTags({ image = SEO.ogImage }: { image?: string }): ReactNode {
-  return (
-    <>
-      <meta property="og:site_name" content={SEO.siteName} />
-      <meta property="og:image" content={image} />
-      <meta property="og:image:width" content={SEO.ogImageWidth} />
-      <meta property="og:image:height" content={SEO.ogImageHeight} />
-      <meta name="twitter:card" content={SEO.twitterCard} />
-      <meta name="twitter:image" content={image} />
-    </>
-  )
+  return [
+    <meta key="og:site_name" property="og:site_name" content={SEO.siteName} />,
+    <meta key="og:image" property="og:image" content={image} />,
+    <meta key="og:image:width" property="og:image:width" content={SEO.ogImageWidth} />,
+    <meta key="og:image:height" property="og:image:height" content={SEO.ogImageHeight} />,
+    <meta key="twitter:card" name="twitter:card" content={SEO.twitterCard} />,
+    <meta key="twitter:image" name="twitter:image" content={image} />,
+  ]
 }
