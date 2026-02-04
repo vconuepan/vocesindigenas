@@ -116,10 +116,12 @@ export default function StoryPage() {
       <Helmet>
         <title>{displayTitle} - {SEO.siteName}</title>
         <meta name="description" content={description.slice(0, 160)} />
+        <meta name="author" content="RelevanceAI by Actually Relevant" />
         <meta property="og:title" content={displayTitle} />
         <meta property="og:description" content={description.slice(0, 200)} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`${SEO.siteUrl}/stories/${story.slug}`} />
+        <meta property="article:author" content="RelevanceAI by Actually Relevant" />
         {story.datePublished && (
           <meta property="article:published_time" content={story.datePublished} />
         )}
