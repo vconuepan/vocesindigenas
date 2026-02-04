@@ -44,6 +44,14 @@ export default defineConfig({
       rendererOptions: {
         maxConcurrentRoutes: 1,
         renderAfterDocumentEvent: 'render-complete',
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+          ],
+        },
       },
       postProcess(renderedRoute) {
         if (!renderedRoute.html.startsWith('<!DOCTYPE')) {

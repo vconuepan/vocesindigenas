@@ -32,14 +32,7 @@
 }
 
 /* Roboto-Italic removed — not used on public pages, saves 72KB */
-
-@font-face {
-  font-family: 'Roboto';
-  src: url('/fonts/Roboto/Roboto-Medium.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: optional;
-}
+/* Roboto-Medium removed — font-weight 500 synthesized from Regular */
 
 @font-face {
   font-family: 'Roboto';
