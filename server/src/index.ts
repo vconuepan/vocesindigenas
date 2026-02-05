@@ -24,6 +24,7 @@ const server = app.listen(PORT, () => {
 })
 
 const tokenCleanupTimer = setInterval(async () => {
+  if (shuttingDown) return
   try {
     const count = await cleanupExpiredTokens()
     if (count > 0) log.info({ count }, 'cleaned up expired refresh tokens')
