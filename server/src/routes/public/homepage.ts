@@ -25,7 +25,7 @@ router.get('/', async (_req, res) => {
       // Fetch issues and stories in parallel
       const [issues, storyData] = await Promise.all([
         issueService.getPublicIssues(),
-        storyService.getHomepageData(HOMEPAGE_ISSUE_SLUGS, 5),
+        storyService.getHomepageData(HOMEPAGE_ISSUE_SLUGS, 7),
       ])
 
       return {

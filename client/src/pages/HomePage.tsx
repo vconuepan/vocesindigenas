@@ -13,6 +13,7 @@ import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/
 import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { SEO, CommonOgTags } from '../lib/seo'
+import SupportBanner from '../components/SupportBanner'
 
 // ---------------------------------------------------------------------------
 // Hero
@@ -184,7 +185,7 @@ function IssueSection({
               </div>
               {stories.length > 3 && (
                 <div className="grid gap-5 md:grid-cols-3">
-                  {stories.slice(3).map((story) => (
+                  {stories.slice(3, 6).map((story) => (
                     <StoryCard key={story.id} story={story} variant="compact" />
                   ))}
                 </div>
@@ -289,7 +290,16 @@ export default function HomePage() {
                 quoteVariantIndex={currentQuoteIdx}
               />
             )
-          })
+          }).reduce<React.ReactNode[]>((acc, section, idx) => {
+            acc.push(section)
+            // Insert support banner after the 2nd issue section
+            if (idx === 1) {
+              acc.push(
+                <SupportBanner key="support-banner" />
+              )
+            }
+            return acc
+          }, [])
         ) : (
           <p className="text-center text-neutral-500 py-12">
             No stories published yet. Check back soon.

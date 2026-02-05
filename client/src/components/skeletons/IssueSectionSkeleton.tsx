@@ -52,13 +52,18 @@ export default function IssueSectionSkeleton({ layout }: IssueSectionSkeletonPro
         </div>
       )}
 
-      {/* Layout C: three equal columns */}
+      {/* Layout C: three equal columns + compact row */}
       {layout === 'C' && (
         <div className="space-y-5">
           <div className="grid gap-5 md:grid-cols-3">
             <StoryCardSkeleton variant="equal" />
             <StoryCardSkeleton variant="equal" />
             <StoryCardSkeleton variant="equal" />
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            <StoryCardSkeleton variant="compact" />
+            <StoryCardSkeleton variant="compact" />
+            <StoryCardSkeleton variant="compact" />
           </div>
         </div>
       )}
