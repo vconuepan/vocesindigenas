@@ -308,9 +308,14 @@ export const adminApi = {
     get: (id: string) => request<User>(`/users/${id}`),
     create: (data: { email: string; name: string; password: string; role?: string }) =>
       request<User>('/users', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: { name?: string; role?: string }) =>
+    update: (id: string, data: { email?: string; name?: string; role?: string }) =>
       request<User>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/users/${id}`, { method: 'DELETE' }),
+    resetPassword: (id: string, password: string) =>
+      request<{ message: string }>(`/users/${id}/password`, {
+        method: 'PUT',
+        body: JSON.stringify({ password }),
+      }),
   },
 }
 

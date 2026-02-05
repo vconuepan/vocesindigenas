@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import React, { useMemo, useState, useCallback, type FormEvent } from 'react'
 import type { UserRole } from '@shared/types'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
-import { useUser, useUpdateUser } from '../../hooks/useUsers'
+import { useUser, useUpdateUser, useResetPassword } from '../../hooks/useUsers'
 import { useEditForm } from '../../hooks/useEditForm'
+import { useToast } from '../ui/Toast'
 import { EditPanel, PANEL_BODY } from './EditPanel'
 import { PanelFooter } from './PanelFooter'
 
@@ -13,12 +14,110 @@ const ROLE_OPTIONS = [
   { value: 'admin', label: 'Admin' },
 ]
 
+function PasswordResetSection({ userId }: { userId: string }) {
+  const [open, setOpen] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [mismatch, setMismatch] = useState(false)
+  const resetPassword = useResetPassword()
+  const { toast } = useToast()
+
+  const reset = useCallback(() => {
+    setPassword('')
+    setConfirm('')
+    setMismatch(false)
+    setOpen(false)
+  }, [])
+
+  const handleSubmit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (password !== confirm) {
+        setMismatch(true)
+        return
+      }
+      try {
+        await resetPassword.mutateAsync({ id: userId, password })
+        toast('success', 'Password updated')
+        reset()
+      } catch (err) {
+        toast('error', err instanceof Error ? err.message : 'Failed to reset password')
+      }
+    },
+    [userId, password, confirm, resetPassword, toast, reset],
+  )
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+      >
+        Set password...
+      </button>
+    )
+  }
+
+  const preventParentSubmit = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') e.preventDefault()
+    },
+    [],
+  )
+
+  return (
+    <div className="border border-neutral-200 rounded-lg p-3 space-y-3">
+      <p className="text-sm font-medium text-neutral-700">Set new password</p>
+      <Input
+        id="reset-password"
+        label="New password"
+        type="password"
+        value={password}
+        onChange={e => { setPassword(e.target.value); setMismatch(false) }}
+        onKeyDown={preventParentSubmit}
+        minLength={8}
+        autoComplete="new-password"
+      />
+      <Input
+        id="reset-confirm"
+        label="Confirm password"
+        type="password"
+        value={confirm}
+        onChange={e => { setConfirm(e.target.value); setMismatch(false) }}
+        onKeyDown={preventParentSubmit}
+        error={mismatch ? 'Passwords do not match' : undefined}
+        minLength={8}
+        autoComplete="new-password"
+      />
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={resetPassword.isPending || password.length < 8 || confirm.length < 8}
+          className="px-3 py-1.5 text-sm font-medium text-white bg-brand-600 rounded-md hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        >
+          {resetPassword.isPending ? 'Saving...' : 'Save password'}
+        </button>
+        <button
+          type="button"
+          onClick={reset}
+          className="px-3 py-1.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-md"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void }) {
   const { data: user } = useUser(userId)
   const updateUser = useUpdateUser()
 
   const initialState = useMemo(
-    () => ({ name: user!.name, role: user!.role }),
+    () => ({ email: user!.email, name: user!.name, role: user!.role }),
     [user],
   )
 
@@ -26,7 +125,7 @@ function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void
     entityId: userId,
     initialState,
     mutation: updateUser,
-    toPayload: (f) => ({ name: f.name, role: f.role }),
+    toPayload: (f) => ({ email: f.email, name: f.name, role: f.role }),
     successMessage: 'User updated',
     entityName: 'user',
     onSuccess: onClose,
@@ -42,10 +141,14 @@ function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void
           onChange={e => set('name', e.target.value)}
           required
         />
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
-          <p className="text-sm text-neutral-500">{user!.email}</p>
-        </div>
+        <Input
+          id="edit-email"
+          label="Email"
+          type="email"
+          value={form.email}
+          onChange={e => set('email', e.target.value)}
+          required
+        />
         <Select
           id="edit-role"
           label="Role"
@@ -53,6 +156,7 @@ function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void
           value={form.role}
           onChange={e => set('role', e.target.value as UserRole)}
         />
+        <PasswordResetSection userId={userId} />
       </div>
       <PanelFooter isPending={isPending} isDirty={isDirty} onCancel={onClose} />
     </form>

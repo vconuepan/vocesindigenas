@@ -13,6 +13,7 @@ import {
   ClockIcon,
   UsersIcon,
   ArrowRightStartOnRectangleIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
@@ -68,6 +69,16 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <NavItems onClick={onNavigate} />
       </nav>
       <div className="border-t border-neutral-200 px-3 py-3">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 mb-1"
+        >
+          <ArrowTopRightOnSquareIcon className="h-5 w-5 shrink-0" />
+          View Website
+          <span className="sr-only">(opens in new tab)</span>
+        </a>
         {user && (
           <div className="px-3 py-2 mb-1">
             <p className="text-sm font-medium text-neutral-900 truncate">{user.name}</p>

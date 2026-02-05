@@ -56,6 +56,10 @@ router.put('/:id', validateBody(updateUserSchema), async (req, res) => {
     const user = await userService.updateUser(req.params.id, req.body)
     res.json(user)
   } catch (err: any) {
+    if (err.code === 'P2002') {
+      res.status(409).json({ error: 'A user with this email already exists' })
+      return
+    }
     if (err.code === 'P2025') {
       res.status(404).json({ error: 'User not found' })
       return

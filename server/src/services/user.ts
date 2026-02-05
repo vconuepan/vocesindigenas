@@ -49,7 +49,7 @@ export async function listUsers() {
   })
 }
 
-export async function updateUser(id: string, data: { name?: string; role?: UserRole }) {
+export async function updateUser(id: string, data: { email?: string; name?: string; role?: UserRole }) {
   return prisma.user.update({
     where: { id },
     data,

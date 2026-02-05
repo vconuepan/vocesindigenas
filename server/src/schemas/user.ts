@@ -8,6 +8,7 @@ export const createUserSchema = z.object({
 })
 
 export const updateUserSchema = z.object({
+  email: z.string().email().optional(),
   name: z.string().min(1).optional(),
   role: z.enum(['admin', 'editor', 'viewer']).optional(),
 }).refine(data => Object.keys(data).length > 0, {
