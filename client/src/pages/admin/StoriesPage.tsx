@@ -22,6 +22,8 @@ import { StoryDetail } from '../../components/admin/StoryDetail'
 import { CrawlUrlForm } from '../../components/admin/CrawlUrlForm'
 import { useToast } from '../../components/ui/Toast'
 
+const DEFAULT_PAGE_SIZE = 25
+
 function useFiltersFromParams(): StoryFilters {
   const [searchParams] = useSearchParams()
   return {
@@ -32,7 +34,7 @@ function useFiltersFromParams(): StoryFilters {
     rating: searchParams.get('rating') || undefined,
     sort: (searchParams.get('sort') as StorySort) || 'date_desc',
     page: Number(searchParams.get('page')) || 1,
-    pageSize: 25,
+    pageSize: Number(searchParams.get('pageSize')) || DEFAULT_PAGE_SIZE,
   }
 }
 
@@ -72,14 +74,23 @@ export default function StoriesPage() {
   }, [])
 
   const toggleSelectAll = useCallback(() => {
-    setSelectedIds(prev =>
-      prev.size === stories.length ? new Set() : new Set(stories.map(s => s.id)),
-    )
+    setSelectedIds(prev => {
+      const allOnPageSelected = stories.length > 0 && stories.every(s => prev.has(s.id))
+      return allOnPageSelected ? new Set() : new Set(stories.map(s => s.id))
+    })
   }, [stories])
 
   const setPage = (page: number) => {
     const next = new URLSearchParams(searchParams)
     next.set('page', String(page))
+    setSearchParams(next)
+    setSelectedIds(new Set())
+  }
+
+  const setPageSize = (size: number) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('pageSize', String(size))
+    next.set('page', '1')
     setSearchParams(next)
     setSelectedIds(new Set())
   }
@@ -264,7 +275,7 @@ export default function StoriesPage() {
             processingIds={processingIds}
             onToggleSelect={toggleSelect}
             onToggleSelectAll={toggleSelectAll}
-            allSelected={selectedIds.size === stories.length}
+            allSelected={stories.length > 0 && stories.every(s => selectedIds.has(s.id))}
             onView={setDetailId}
             onStatusChange={handleSingleStatusChange}
             onDelete={handleDelete}
@@ -277,6 +288,8 @@ export default function StoriesPage() {
             page={storiesQuery.data.page}
             totalPages={storiesQuery.data.totalPages}
             onPageChange={setPage}
+            pageSize={filters.pageSize}
+            onPageSizeChange={setPageSize}
           />
         </>
       )}
