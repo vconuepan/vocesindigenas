@@ -277,6 +277,46 @@ describe('crawlFeed', () => {
     }))
   })
 
+  it('deduplicates items within the same RSS batch', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    mockParseFeed.mockResolvedValue(rssResult([
+      { url: 'https://example.com/article', title: 'First', datePublished: null, description: null },
+      { url: 'https://example.com/article', title: 'Duplicate', datePublished: null, description: null },
+    ]))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    mockExtractContent.mockResolvedValue({
+      title: 'Article', content: 'Content', datePublished: null, method: 'readability',
+    })
+    mockCreateStory.mockResolvedValue({ id: 'story-1' })
+
+    const result = await crawlFeed('feed-1')
+
+    expect(result.newStories).toBe(1)
+    expect(result.skipped).toBe(1)
+    expect(mockExtractContent).toHaveBeenCalledTimes(1)
+    expect(mockCreateStory).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles P2002 unique constraint as skip instead of error', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    mockParseFeed.mockResolvedValue(rssResult([
+      { url: 'https://example.com/race', title: 'Race', datePublished: null, description: null },
+    ]))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    mockExtractContent.mockResolvedValue({
+      title: 'Race', content: 'Content', datePublished: null, method: 'readability',
+    })
+    const prismaError = new Error('Unique constraint failed') as any
+    prismaError.code = 'P2002'
+    mockCreateStory.mockRejectedValue(prismaError)
+
+    const result = await crawlFeed('feed-1')
+
+    expect(result.errors).toBe(0)
+    expect(result.skipped).toBe(1)
+    expect(result.newStories).toBe(0)
+  })
+
   it('passes htmlSelector to extractor', async () => {
     const feedWithSelector = { ...sampleFeed, htmlSelector: '.article-body' }
     mockGetFeedById.mockResolvedValue(feedWithSelector)
@@ -293,7 +333,7 @@ describe('crawlFeed', () => {
 
     expect(mockExtractContent).toHaveBeenCalledWith(
       'https://example.com/a',
-      { htmlSelector: '.article-body', skipLocalExtraction: false }
+      expect.objectContaining({ htmlSelector: '.article-body', skipLocalExtraction: false })
     )
   })
 
@@ -323,12 +363,12 @@ describe('crawlFeed', () => {
     const calls = mockExtractContent.mock.calls
     expect(calls).toHaveLength(5)
     // First 3 calls: skipLocalExtraction=false (concurrent batch)
-    expect(calls[0][1]).toEqual({ htmlSelector: null, skipLocalExtraction: false })
-    expect(calls[1][1]).toEqual({ htmlSelector: null, skipLocalExtraction: false })
-    expect(calls[2][1]).toEqual({ htmlSelector: null, skipLocalExtraction: false })
+    expect(calls[0][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: false })
+    expect(calls[1][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: false })
+    expect(calls[2][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: false })
     // Remaining calls: skipLocalExtraction=true
-    expect(calls[3][1]).toEqual({ htmlSelector: null, skipLocalExtraction: true })
-    expect(calls[4][1]).toEqual({ htmlSelector: null, skipLocalExtraction: true })
+    expect(calls[3][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: true })
+    expect(calls[4][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: true })
   })
 
   it('skips remaining articles after consecutive total extraction failures', async () => {

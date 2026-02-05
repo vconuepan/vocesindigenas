@@ -54,11 +54,22 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
     return result
   }
 
+  // Normalize URLs and deduplicate within the RSS batch
+  for (const item of rssItems) {
+    item.url = normalizeUrl(item.url)
+  }
+  const seenUrls = new Set<string>()
+  const uniqueItems = rssItems.filter(item => {
+    if (seenUrls.has(item.url)) return false
+    seenUrls.add(item.url)
+    return true
+  })
+
   // Deduplicate against existing stories
-  const rssUrls = rssItems.map(item => item.url)
+  const rssUrls = uniqueItems.map(item => item.url)
   const existingUrls = await getExistingUrls(rssUrls)
-  const newItems = rssItems.filter(item => !existingUrls.has(item.url))
-  result.skipped = rssItems.length - newItems.length
+  const newItems = uniqueItems.filter(item => !existingUrls.has(item.url))
+  result.skipped = rssItems.length - newItems.length  // includes RSS duplicates + DB matches
 
   // Extract content and create stories (parallel with concurrency limit).
   // The fail counters below are shared across concurrent tasks. This is safe because
@@ -83,10 +94,14 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
         const extracted = await extractContent(item.url, {
           htmlSelector: feed.htmlSelector,
           skipLocalExtraction: skipLocal,
+          shouldAbort: () => skipAll,
         })
 
         if (!extracted) {
           totalFailCount++
+          // Local extraction was attempted and failed — count toward skip-local threshold
+          if (!skipLocal) localFailCount++
+          if (localFailCount >= config.crawl.localFailThreshold) skipLocal = true
           if (totalFailCount >= config.crawl.totalFailThreshold) {
             skipAll = true
             log.warn({ feed: feed.title, totalFailCount }, 'all extraction methods failing, skipping remaining articles')
@@ -113,7 +128,13 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
         })
 
         result.newStories++
-      } catch (err) {
+      } catch (err: any) {
+        // Unique constraint violation = URL was inserted by a concurrent crawl; treat as skip
+        if (err?.code === 'P2002') {
+          log.info({ url: item.url }, 'story already exists (concurrent insert), skipping')
+          result.skipped++
+          return
+        }
         log.error({ url: item.url, err }, 'failed to process item')
         result.errors++
       }

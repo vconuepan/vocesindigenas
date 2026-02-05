@@ -32,11 +32,15 @@ All API calls go through a shared `ApiThrottle` that serializes requests and han
 
 ### Local Extraction Skip
 
-When consecutive articles in a feed all fail local extraction (tiers 1+2) and require the API, the crawler skips local extraction for remaining articles (controlled by `config.crawl.localFailThreshold`, default 3). This avoids wasting time on HTTP 403s from sites that block scrapers. The counter resets when any article succeeds via a local method. With the default concurrency of 3, the first batch always attempts local extraction; the threshold takes effect for subsequent articles.
+When consecutive articles in a feed all fail local extraction (tiers 1+2), the crawler skips local extraction for remaining articles (controlled by `config.crawl.localFailThreshold`, default 3). This avoids wasting time on HTTP 403s from sites that block scrapers. The counter increments both when extraction succeeds via API (local failed but API worked) and when extraction fails entirely (local + API both failed). The counter resets when any article succeeds via a local method. With the default concurrency of 3, the first batch always attempts local extraction; the threshold takes effect for subsequent articles.
 
 ### Total Failure Bail-Out
 
 When consecutive articles all fail extraction entirely (local + API both return nothing), the crawler stops attempting remaining articles (controlled by `config.crawl.totalFailThreshold`, default 3). This prevents burning API quota on feeds where the source blocks all extraction methods. The counter resets when any article succeeds.
+
+### Mid-Flight Cancellation
+
+The crawler passes a `shouldAbort` callback (tied to the `skipAll` flag) through `extractContent()` → `extractByApi()` → `ApiThrottle.run()`. This allows in-flight extractions to bail out before making expensive API calls — even if they started before `skipAll` was set. The abort is checked at three points: before the API tier in `extractContent()`, before entering the throttle in `extractByApi()`, and after dequeuing/backoff-waiting inside `ApiThrottle.run()`. This prevents wasting 30+ seconds on API backoff waits for articles in a feed that has already been identified as failing.
 
 ## Crawl Flow
 
@@ -54,7 +58,7 @@ Feeds are crawled in parallel (up to `config.concurrency.crawlFeeds`, default 5)
 
 ### Deduplication
 
-Before extracting any content, the crawler batch-checks all RSS item URLs against existing stories using `getExistingUrls()`. This avoids unnecessary HTTP requests and extraction work for already-crawled articles.
+URLs are normalized (HTTPS, no trailing slash, no tracking params, sorted query) before any dedup logic. The crawler first removes duplicates within the RSS batch itself, then batch-checks remaining URLs against existing stories using `getExistingUrls()`. As a safety net, P2002 unique constraint errors during `createStory` (e.g., from concurrent crawls) are treated as skips rather than errors.
 
 ### Manual Crawling
 
