@@ -12,12 +12,6 @@
       "Bash(npm audit*)",
       "Bash(npx vitest*)",
       "Bash(npm ls*)"
-    ],
-    "deny": [
-      "Bash(echo *)",
-      "Bash(* && echo *)",
-      "Bash(* ; echo *)",
-      "Bash(* || echo *)"
     ]
   }
 }

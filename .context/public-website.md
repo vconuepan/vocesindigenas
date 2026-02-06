@@ -17,7 +17,7 @@ All routes are registered in both `App.tsx` and `routes.ts` (for sitemap generat
 
 ## Public API
 
-- `GET /api/stories` — Paginated published stories, filterable by `issueSlug`
+- `GET /api/stories` — Paginated published stories, filterable by `issueSlug` and `positivity` (0-100)
 - `GET /api/stories/:id` — Single published story
 - `GET /api/issues` — All issues (id, name, slug, description only)
 - `GET /api/issues/:slug` — Single issue by slug
@@ -44,6 +44,25 @@ Feed items include: title, link to story page, AI-generated summary, publish dat
 - `server/src/routes/public/feed.ts` — RSS feed route handler (uses `feed` npm package)
 - `server/src/routes/public/index.ts` — Registers feed router at `/feed`
 - `client/vite.config.ts` — Dev proxy for `/api` to `localhost:3001`
+
+## Positivity Slider
+
+A 5-position slider (0%, 25%, 50%, 75%, 100%) that controls the emotional tone of displayed stories. Default is 50% (balanced). Persisted in localStorage under `ar-positivity`. Filtering is done entirely client-side for instant response — no additional API requests on slider change.
+
+- **Desktop:** Positioned in the logo bar, left side
+- **Mobile:** First item in the hamburger menu (centered), above issue categories
+- **Scope:** Affects homepage and issue pages only. Search is not affected.
+- **Architecture:** Server returns both positive and negative story buckets. Client mixes them based on slider position using helpers in `lib/mix-stories.ts`. No positivity param is sent to the server.
+- **Homepage:** Server returns `storiesPerIssue` stories from each emotion bucket per issue. Client uses `mixHomepageStories()` to pick a fixed-count mix.
+- **Issue pages:** Server returns all stories (no emotion filtering). Client uses `filterStoriesByPositivity()` to filter and paginates locally.
+- **Emojis:** Frustrated/scared (left) to calm/uplifting (right), with text labels ("All FRUSTRATING & SCARY", "Balanced", "All CALM & UPLIFTING")
+- **Info tooltip:** Click info icon next to slider for explanation
+
+**Key files:**
+- `client/src/components/PositivitySlider.tsx` — Slider UI with emoji labels and info tooltip
+- `client/src/contexts/PositivityContext.tsx` — React Context + localStorage persistence
+- `client/src/lib/mix-stories.ts` — `mixHomepageStories()` and `filterStoriesByPositivity()` helpers
+- `server/src/services/story.ts` — `getHomepageData()` returns `{ positive, negative }` per issue
 
 ## Shared Components
 
@@ -80,10 +99,13 @@ Preload hints: `client/index.html`
 
 ## Key Files
 
-- `client/src/layouts/PublicLayout.tsx` — Header, footer, navigation
+- `client/src/layouts/PublicLayout.tsx` — Header, footer, navigation, positivity slider placement
 - `client/src/pages/HomePage.tsx` — Homepage with issue sections
 - `client/src/pages/StoryPage.tsx` — Story detail
 - `client/src/pages/IssuePage.tsx` — Issue page with stories + static content
+- `client/src/components/PositivitySlider.tsx` — Positivity slider UI
+- `client/src/contexts/PositivityContext.tsx` — Positivity state + localStorage
 - `client/src/data/issues-content.ts` — Static evaluation/sources/links per issue
 - `client/src/lib/api.ts` — Public API client
 - `server/src/routes/public/issues.ts` — Public issues endpoint
+- `server/src/routes/public/homepage.ts` — Homepage data with emotion-bucketed stories

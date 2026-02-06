@@ -63,6 +63,7 @@ Stories get a URL slug (e.g. `ai-breakthrough-in-protein-folding`) when they are
 | `POST /api/admin/stories/select` | Trigger selection on given story IDs |
 | `POST /api/admin/stories/:id/publish` | Set status to `published` |
 | `POST /api/admin/stories/:id/reject` | Set status to `rejected` |
+| `POST /api/admin/stories/bulk-tag-emotions` | Backfill emotion tags only (no issue reassignment) |
 
 ## Key Files
 
@@ -89,7 +90,7 @@ Stories carry both crawled data and AI-generated analysis:
 
 **Pre-assessment fields** (set during batch LLM screening):
 - `relevancePre` — conservative rating (1-10), immutable after set
-- `emotionTag` — one of: uplifting, surprising, frustrating, scary, calm
+- `emotionTag` — one of: uplifting, frustrating, scary, calm
 
 **Full assessment fields** (set during in-depth LLM analysis):
 - `relevance` — single relevance rating (1-10)
