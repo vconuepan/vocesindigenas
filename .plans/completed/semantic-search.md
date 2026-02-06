@@ -338,4 +338,11 @@ Create: `.context/embeddings.md`
 
 ---
 
-**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
+**STATUS: IMPLEMENTED**
+
+Implementation notes:
+- Used HNSW index instead of IVFFlat (doesn't require training data)
+- Used raw SQL queries (`$queryRaw`/`$executeRaw`) for all embedding operations to avoid Prisma `Unsupported` type limitations
+- Used `openai` SDK directly (transitive dep via `@langchain/openai`) instead of LangChain for embeddings
+- Issue filter is pushed into both search legs (not applied as post-filter)
+- Bulk publish uses `batchUpdateEmbeddings` with rate limiting instead of individual fire-and-forget calls

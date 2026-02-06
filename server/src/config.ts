@@ -32,6 +32,14 @@ export const config = {
     relevanceMin: parseInt(process.env.SELECT_RELEVANCE_MIN || "5", 10),
     modelTier: "large" as const,
   },
+  embedding: {
+    model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
+    // Changing dimensions requires a DB migration to alter the vector(1536) column and rebuild the index
+    dimensions: 1536,
+    batchSize: parseInt(process.env.EMBEDDING_BATCH_SIZE || '100', 10),
+    concurrency: parseInt(process.env.EMBEDDING_CONCURRENCY || '5', 10),
+    delayMs: parseInt(process.env.EMBEDDING_DELAY_MS || '100', 10),
+  },
   crawl: {
     rssItemLimit: parseInt(process.env.RSS_ITEM_LIMIT || "30", 10),
     httpTimeoutMs: parseInt(process.env.HTTP_TIMEOUT_MS || "10000", 10),

@@ -412,7 +412,7 @@ function PublicLayoutInner() {
                 </button>
               </form>
               <p className="text-xs text-neutral-400 mt-2 text-center">
-                Search published stories by title or summary.
+                Search by meaning, not just keywords.
               </p>
             </div>
           </div>

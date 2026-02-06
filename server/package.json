@@ -26,7 +26,9 @@
     "migration:backfill-relevance-summary": "tsx src/scripts/migrations/backfill-relevance-summary.ts",
     "migration:backfill-relevance-summary:test": "tsx src/scripts/migrations/backfill-relevance-summary.ts --test",
     "migration:backfill-emotion-tag": "tsx src/scripts/migrations/backfill-emotion-tag.ts",
-    "migration:backfill-emotion-tag:test": "tsx src/scripts/migrations/backfill-emotion-tag.ts --test"
+    "migration:backfill-emotion-tag:test": "tsx src/scripts/migrations/backfill-emotion-tag.ts --test",
+    "migration:backfill-embeddings": "tsx src/scripts/migrations/backfill-embeddings.ts",
+    "migration:backfill-embeddings:test": "tsx src/scripts/migrations/backfill-embeddings.ts --test"
   },
   "dependencies": {
     "@langchain/core": "^1.1.17",

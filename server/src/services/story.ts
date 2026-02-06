@@ -1,8 +1,12 @@
 import prisma from '../lib/prisma.js'
-import { type Story, type Prisma, StoryStatus, EmotionTag } from '@prisma/client'
+import { type Story, Prisma, StoryStatus, EmotionTag } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
+import { updateStoryEmbeddingIfNeeded, batchUpdateEmbeddings, generateEmbedding } from './embedding.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('story')
 
 interface StoryFilters {
   status?: string
@@ -254,6 +258,8 @@ async function preparePublishData(id: string): Promise<Record<string, any>> {
   return data
 }
 
+const EMBEDDING_RELEVANT_FIELDS = ['title', 'summary', 'relevanceSummary'] as const
+
 export async function updateStory(id: string, data: Record<string, any>): Promise<Story> {
   const updateData = { ...data }
   // Convert date strings to Date objects if present
@@ -269,7 +275,14 @@ export async function updateStory(id: string, data: Record<string, any>): Promis
     if (!updateData.slug && publishData.slug) updateData.slug = publishData.slug
     if (publishData.datePublished) updateData.datePublished = publishData.datePublished
   }
-  return prisma.story.update({ where: { id }, data: updateData })
+  const story = await prisma.story.update({ where: { id }, data: updateData })
+  // Regenerate embedding if published and embedding-relevant fields changed
+  const isPublished = story.status === 'published' || updateData.status === 'published'
+  const hasRelevantChange = EMBEDDING_RELEVANT_FIELDS.some((f) => f in updateData)
+  if (isPublished && hasRelevantChange) {
+    updateStoryEmbeddingIfNeeded(id).catch(() => {})
+  }
+  return story
 }
 
 export async function updateStoryStatus(id: string, status: string): Promise<Story> {
@@ -352,6 +365,9 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
       }),
     ])
 
+    // Generate embeddings asynchronously with batching and rate limiting
+    batchUpdateEmbeddings(ids).catch(() => {})
+
     return { count: ids.length }
   }
   return prisma.story.updateMany({
@@ -433,6 +449,138 @@ const PUBLIC_STORY_SELECT = {
   },
 } as const
 
+function buildIssueCondition(issueSlug: string): Prisma.StoryWhereInput {
+  return {
+    OR: [
+      {
+        issue: {
+          OR: [
+            { slug: issueSlug },
+            { parent: { slug: issueSlug } },
+          ],
+        },
+      },
+      {
+        issue: null,
+        feed: {
+          issue: {
+            OR: [
+              { slug: issueSlug },
+              { parent: { slug: issueSlug } },
+            ],
+          },
+        },
+      },
+    ],
+  }
+}
+
+const RRF_FETCH_LIMIT = 50
+const RRF_K = 60
+
+async function hybridSearch(options: {
+  query: string
+  issueSlug?: string
+  page: number
+  pageSize: number
+}) {
+  const { query, issueSlug, page, pageSize } = options
+
+  // Build issue filter SQL fragment for semantic search
+  const issueFilter = issueSlug
+    ? Prisma.sql`AND (
+        EXISTS (SELECT 1 FROM issues i WHERE i.id = s.issue_id AND (i.slug = ${issueSlug} OR i.parent_id IN (SELECT pi.id FROM issues pi WHERE pi.slug = ${issueSlug})))
+        OR (s.issue_id IS NULL AND EXISTS (
+          SELECT 1 FROM feeds f2 JOIN issues fi ON fi.id = f2.issue_id
+          WHERE f2.id = s.feed_id AND (fi.slug = ${issueSlug} OR fi.parent_id IN (SELECT pi.id FROM issues pi WHERE pi.slug = ${issueSlug}))
+        ))
+      )`
+    : Prisma.empty
+
+  // Run semantic and text searches in parallel
+  const [semanticIds, textIds] = await Promise.all([
+    // Semantic search leg
+    (async () => {
+      try {
+        const queryEmbedding = await generateEmbedding(query)
+        const vectorStr = `[${queryEmbedding.join(',')}]`
+        const rows = await prisma.$queryRaw<{ id: string }[]>`
+          SELECT s.id
+          FROM stories s
+          WHERE s.status = 'published'
+            AND s.embedding IS NOT NULL
+            ${issueFilter}
+          ORDER BY s.embedding <=> ${vectorStr}::vector
+          LIMIT ${RRF_FETCH_LIMIT}
+        `
+        return rows.map((r) => r.id)
+      } catch (err) {
+        log.warn({ err }, 'semantic search failed, falling back to text-only')
+        return []
+      }
+    })(),
+    // Text search leg
+    (async () => {
+      const conditions: Prisma.StoryWhereInput[] = []
+      conditions.push({
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { summary: { contains: query, mode: 'insensitive' } },
+        ],
+      })
+      if (issueSlug) {
+        conditions.push(buildIssueCondition(issueSlug))
+      }
+      const rows = await prisma.story.findMany({
+        where: { status: 'published', AND: conditions },
+        select: { id: true },
+        orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
+        take: RRF_FETCH_LIMIT,
+      })
+      return rows.map((r) => r.id)
+    })(),
+  ])
+
+  // Compute RRF scores
+  const scores = new Map<string, number>()
+  semanticIds.forEach((id, i) => {
+    scores.set(id, (scores.get(id) || 0) + 1 / (RRF_K + i + 1))
+  })
+  textIds.forEach((id, i) => {
+    scores.set(id, (scores.get(id) || 0) + 1 / (RRF_K + i + 1))
+  })
+
+  // Sort by RRF score
+  const rankedIds = [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id)
+
+  const total = rankedIds.length
+  const pageIds = rankedIds.slice((page - 1) * pageSize, page * pageSize)
+
+  if (pageIds.length === 0) {
+    return { data: [], total, page, pageSize, totalPages: Math.ceil(total / pageSize) }
+  }
+
+  // Fetch full story data in ranked order
+  const stories = await prisma.story.findMany({
+    where: { id: { in: pageIds } },
+    select: PUBLIC_STORY_SELECT,
+  })
+
+  // Restore RRF rank order
+  const storyMap = new Map(stories.map((s) => [s.id, s]))
+  const ordered = pageIds.map((id) => storyMap.get(id)).filter((s): s is NonNullable<typeof s> => s != null)
+
+  return {
+    data: ordered,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  }
+}
+
 export async function getPublishedStories(options: {
   page?: number
   pageSize?: number
@@ -441,39 +589,21 @@ export async function getPublishedStories(options: {
 }) {
   const page = options.page || 1
   const pageSize = options.pageSize || 25
-  const conditions: Prisma.StoryWhereInput[] = []
-  if (options.issueSlug) {
-    conditions.push({
-      OR: [
-        {
-          issue: {
-            OR: [
-              { slug: options.issueSlug },
-              { parent: { slug: options.issueSlug } },
-            ],
-          },
-        },
-        {
-          issue: null,
-          feed: {
-            issue: {
-              OR: [
-                { slug: options.issueSlug },
-                { parent: { slug: options.issueSlug } },
-              ],
-            },
-          },
-        },
-      ],
+
+  // Use hybrid search when search query is provided
+  if (options.search) {
+    return hybridSearch({
+      query: options.search,
+      issueSlug: options.issueSlug,
+      page,
+      pageSize,
     })
   }
-  if (options.search) {
-    conditions.push({
-      OR: [
-        { title: { contains: options.search, mode: 'insensitive' } },
-        { summary: { contains: options.search, mode: 'insensitive' } },
-      ],
-    })
+
+  // Non-search: standard paginated query
+  const conditions: Prisma.StoryWhereInput[] = []
+  if (options.issueSlug) {
+    conditions.push(buildIssueCondition(options.issueSlug))
   }
 
   const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ datePublished: 'desc' }, { dateCrawled: 'desc' }]
@@ -551,13 +681,16 @@ export async function getStoriesByStatus(
 
 export async function publishStory(id: string): Promise<Story> {
   const publishData = await preparePublishData(id)
-  return prisma.story.update({
+  const story = await prisma.story.update({
     where: { id },
     data: {
       status: StoryStatus.published,
       ...publishData,
     },
   })
+  // Generate embedding asynchronously (fire-and-forget, failure is non-blocking)
+  updateStoryEmbeddingIfNeeded(id).catch(() => {})
+  return story
 }
 
 export async function rejectStory(id: string): Promise<Story> {
