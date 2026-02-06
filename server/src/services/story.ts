@@ -475,6 +475,9 @@ export async function getPublishedStories(options: {
       ],
     })
   }
+
+  const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ datePublished: 'desc' }, { dateCrawled: 'desc' }]
+
   const where: Prisma.StoryWhereInput = {
     status: 'published',
     ...(conditions.length > 0 && { AND: conditions }),
@@ -485,7 +488,7 @@ export async function getPublishedStories(options: {
       prisma.story.findMany({
         where,
         select: PUBLIC_STORY_SELECT,
-        orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
+        orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -572,10 +575,14 @@ export async function getPublishedStoryBySlug(slug: string) {
 }
 
 /**
- * Get all data needed for the homepage in a single query.
- * Returns the hero story and stories grouped by issue slug.
+ * Get all data needed for the homepage.
+ * Returns stories grouped by issue slug in three emotion buckets:
+ * uplifting, calm, and negative (frustrating + scary).
+ * Hero is picked client-side from these buckets — no separate queries needed.
  */
-export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 5) {
+const NEGATIVE_EMOTIONS: EmotionTag[] = [EmotionTag.frustrating, EmotionTag.scary]
+
+export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 7) {
   // Build issue slug conditions for stories (includes child issues)
   const buildIssueCondition = (slug: string) => ({
     OR: [
@@ -584,34 +591,38 @@ export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 5)
     ],
   })
 
-  // Fetch hero story (most recent across all issues)
-  const heroPromise = prisma.story.findFirst({
-    where: { status: 'published' },
-    select: PUBLIC_STORY_SELECT,
-    orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
-  })
+  const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ datePublished: 'desc' }, { dateCrawled: 'desc' }]
 
-  // Fetch stories for each issue in parallel
+  // Fetch three emotion buckets per issue for client-side mixing.
+  // Three buckets allow the client to show uplifting-only at 100% positivity
+  // while combining uplifting+calm as "positive" for all other settings.
   const storiesPromises = issueSlugs.map(async (slug) => {
-    const stories = await prisma.story.findMany({
-      where: {
-        status: 'published',
-        ...buildIssueCondition(slug),
-      },
-      select: PUBLIC_STORY_SELECT,
-      orderBy: [{ datePublished: 'desc' }, { dateCrawled: 'desc' }],
-      take: storiesPerIssue,
-    })
-    return { slug, stories }
+    const baseWhere: Prisma.StoryWhereInput = { status: 'published', ...buildIssueCondition(slug) }
+
+    const [uplifting, calm, negative] = await Promise.all([
+      prisma.story.findMany({
+        where: { ...baseWhere, emotionTag: EmotionTag.uplifting },
+        select: PUBLIC_STORY_SELECT, orderBy, take: storiesPerIssue,
+      }),
+      prisma.story.findMany({
+        where: { ...baseWhere, emotionTag: EmotionTag.calm },
+        select: PUBLIC_STORY_SELECT, orderBy, take: storiesPerIssue,
+      }),
+      prisma.story.findMany({
+        where: { ...baseWhere, emotionTag: { in: NEGATIVE_EMOTIONS } },
+        select: PUBLIC_STORY_SELECT, orderBy, take: storiesPerIssue,
+      }),
+    ])
+
+    return { slug, uplifting, calm, negative }
   })
 
-  const [hero, ...issueResults] = await Promise.all([heroPromise, ...storiesPromises])
+  const issueResults = await Promise.all(storiesPromises)
 
-  // Convert to object keyed by issue slug
-  const storiesByIssue: Record<string, typeof hero[]> = {}
-  for (const { slug, stories } of issueResults) {
-    storiesByIssue[slug] = stories
+  const storiesByIssue: Record<string, { uplifting: unknown[]; calm: unknown[]; negative: unknown[] }> = {}
+  for (const { slug, uplifting, calm, negative } of issueResults) {
+    storiesByIssue[slug] = { uplifting, calm, negative }
   }
 
-  return { hero, storiesByIssue }
+  return { storiesByIssue }
 }

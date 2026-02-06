@@ -201,4 +201,37 @@
     color: var(--issue-color);
     border-bottom-color: var(--issue-color);
   }
+
+  /* Positivity slider thumb */
+  .positivity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #737373;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.15s;
+  }
+
+  .positivity-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #737373;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.15s;
+  }
+
+  .positivity-slider::-webkit-slider-thumb:hover {
+    background: #525252;
+  }
+
+  .positivity-slider::-moz-range-thumb:hover {
+    background: #525252;
+  }
 }

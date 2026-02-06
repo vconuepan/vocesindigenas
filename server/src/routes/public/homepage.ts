@@ -19,7 +19,7 @@ const HOMEPAGE_ISSUE_SLUGS = [
   'science-technology',
 ]
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   try {
     const data = await cached(homepageCache, 'homepage-data', async () => {
       // Fetch issues and stories in parallel
@@ -30,7 +30,6 @@ router.get('/', async (_req, res) => {
 
       return {
         issues,
-        hero: storyData.hero,
         storiesByIssue: storyData.storiesByIssue,
       }
     })

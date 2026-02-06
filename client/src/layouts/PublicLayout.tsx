@@ -7,6 +7,9 @@ import { BRAND } from "../config";
 import SubscribeProvider, {
   useSubscribe,
 } from "../components/SubscribeProvider";
+import { PositivityProvider } from "../contexts/PositivityContext";
+import { MoodDialPanel } from "../components/PositivitySlider";
+const KOFI_URL = "https://ko-fi.com/odinmb";
 
 const ISSUE_LINKS = [
   {
@@ -32,9 +35,9 @@ const ISSUE_LINKS = [
 ];
 
 const FOOTER_NAV = [
+  { label: "About", href: "/about" },
   { label: "Methodology", href: "/methodology" },
   { label: "Issues", href: "/issues" },
-  { label: "About", href: "/about" },
 ];
 
 const FOOTER_LEGAL = [
@@ -77,9 +80,11 @@ function SearchIcon({ className }: { className?: string }) {
 
 export default function PublicLayout() {
   return (
-    <SubscribeProvider>
-      <PublicLayoutInner />
-    </SubscribeProvider>
+    <PositivityProvider>
+      <SubscribeProvider>
+        <PublicLayoutInner />
+      </SubscribeProvider>
+    </PositivityProvider>
   );
 }
 
@@ -171,6 +176,11 @@ function PublicLayoutInner() {
                 {BRAND.claim.replace(/\.$/, "")}
               </span>
             </Link>
+
+            {/* Desktop: Mood Dial — vertically centered on logo (top matches py-4, h matches logo h-16) */}
+            <div className="hidden lg:flex items-center absolute left-12 top-4 h-16">
+              <MoodDialPanel />
+            </div>
 
             {/* Desktop: subscribe button — vertically centered on logo */}
             <div className="hidden lg:flex items-center absolute right-12 top-4 h-16">
@@ -286,8 +296,13 @@ function PublicLayoutInner() {
         {menuOpen && (
           <div className="lg:hidden bg-white border-b border-neutral-200 shadow-lg">
             <nav className="px-4 py-3" aria-label="Mobile navigation">
+              {/* Mood Dial — centered */}
+              <div className="mb-3 py-2 flex justify-center">
+                <MoodDialPanel />
+              </div>
+
               {/* Issue categories */}
-              <ul className="mb-3">
+              <ul className="mb-3 border-t border-neutral-100 pt-3">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug);
                   return (
@@ -312,18 +327,35 @@ function PublicLayoutInner() {
                 })}
               </ul>
 
-              {/* Subscribe */}
-              <div className="border-t border-neutral-100 pt-3 px-2">
+              {/* Subscribe & Support — each on its own line */}
+              <div className="border-t border-neutral-100 pt-3 px-2 flex flex-col">
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     openSubscribe();
                   }}
-                  className="inline-flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                   Subscribe
                 </button>
+                <a
+                  href={KOFI_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                >
+                  <svg
+                    className="w-3.5 h-3.5 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                  Support Us
+                  <span className="sr-only">(opens in new tab)</span>
+                </a>
               </div>
             </nav>
           </div>
@@ -507,6 +539,25 @@ function PublicLayoutInner() {
                     RSS Feed
                   </a>
                 </li>
+                <li className="flex items-center">
+                  <a
+                    href={KOFI_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    Support Us
+                    <span className="sr-only">(opens in new tab)</span>
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -558,6 +609,7 @@ function PublicLayoutInner() {
           </div>
         </div>
       </footer>
+
     </div>
   );
 }

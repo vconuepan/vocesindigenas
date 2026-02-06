@@ -97,6 +97,16 @@ describe('Public Stories API', () => {
       expect(res.body.pageSize).toBe(10)
     })
 
+    it('ignores positivity param (filtering is client-side)', async () => {
+      mockPrisma.story.findMany.mockResolvedValue([publicStory])
+      mockPrisma.story.count.mockResolvedValue(1)
+
+      const res = await request(app).get('/api/stories?positivity=100')
+      // Should still return all stories, positivity is not a server concern
+      expect(res.status).toBe(200)
+      expect(res.body.data).toHaveLength(1)
+    })
+
     it('does not expose internal AI fields', async () => {
       mockPrisma.story.findMany.mockResolvedValue([publicStory])
       mockPrisma.story.count.mockResolvedValue(1)

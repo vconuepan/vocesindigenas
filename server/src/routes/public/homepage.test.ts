@@ -92,19 +92,18 @@ describe('Homepage API', () => {
   describe('GET /api/homepage', () => {
     it('returns combined homepage data without auth', async () => {
       mockPrisma.issue.findMany.mockResolvedValue([mockIssue])
-      mockPrisma.story.findFirst.mockResolvedValue(mockStory)
       mockPrisma.story.findMany.mockResolvedValue([mockStory])
 
       const res = await request(app).get('/api/homepage')
       expect(res.status).toBe(200)
       expect(res.body).toHaveProperty('issues')
-      expect(res.body).toHaveProperty('hero')
       expect(res.body).toHaveProperty('storiesByIssue')
+      expect(res.body).not.toHaveProperty('heroPositive')
+      expect(res.body).not.toHaveProperty('heroNegative')
     })
 
     it('returns issues list', async () => {
       mockPrisma.issue.findMany.mockResolvedValue([mockIssue])
-      mockPrisma.story.findFirst.mockResolvedValue(mockStory)
       mockPrisma.story.findMany.mockResolvedValue([mockStory])
 
       const res = await request(app).get('/api/homepage')
@@ -113,43 +112,38 @@ describe('Homepage API', () => {
       expect(res.body.issues[0].slug).toBe('human-development')
     })
 
-    it('returns hero story', async () => {
+    it('returns stories grouped by issue slug with uplifting/calm/negative buckets', async () => {
       mockPrisma.issue.findMany.mockResolvedValue([mockIssue])
-      mockPrisma.story.findFirst.mockResolvedValue(mockStory)
-      mockPrisma.story.findMany.mockResolvedValue([mockStory])
-
-      const res = await request(app).get('/api/homepage')
-      expect(res.status).toBe(200)
-      expect(res.body.hero).not.toBeNull()
-      expect(res.body.hero.title).toBe('Test Story')
-    })
-
-    it('returns stories grouped by issue slug', async () => {
-      mockPrisma.issue.findMany.mockResolvedValue([mockIssue])
-      mockPrisma.story.findFirst.mockResolvedValue(mockStory)
       mockPrisma.story.findMany.mockResolvedValue([mockStory])
 
       const res = await request(app).get('/api/homepage')
       expect(res.status).toBe(200)
       expect(res.body.storiesByIssue).toBeDefined()
-      // Should have entries for each issue slug in HOMEPAGE_ISSUE_SLUGS
       expect(typeof res.body.storiesByIssue).toBe('object')
+
+      // Each issue entry should have uplifting, calm, and negative arrays
+      for (const slug of Object.keys(res.body.storiesByIssue)) {
+        const entry = res.body.storiesByIssue[slug]
+        expect(entry).toHaveProperty('uplifting')
+        expect(entry).toHaveProperty('calm')
+        expect(entry).toHaveProperty('negative')
+        expect(Array.isArray(entry.uplifting)).toBe(true)
+        expect(Array.isArray(entry.calm)).toBe(true)
+        expect(Array.isArray(entry.negative)).toBe(true)
+      }
     })
 
     it('handles empty data gracefully', async () => {
       mockPrisma.issue.findMany.mockResolvedValue([])
-      mockPrisma.story.findFirst.mockResolvedValue(null)
       mockPrisma.story.findMany.mockResolvedValue([])
 
       const res = await request(app).get('/api/homepage')
       expect(res.status).toBe(200)
       expect(res.body.issues).toEqual([])
-      expect(res.body.hero).toBeNull()
     })
 
     it('sets cache headers', async () => {
       mockPrisma.issue.findMany.mockResolvedValue([mockIssue])
-      mockPrisma.story.findFirst.mockResolvedValue(mockStory)
       mockPrisma.story.findMany.mockResolvedValue([mockStory])
 
       const res = await request(app).get('/api/homepage')

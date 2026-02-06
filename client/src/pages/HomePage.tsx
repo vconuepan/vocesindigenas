@@ -14,6 +14,8 @@ import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { SEO, CommonOgTags } from '../lib/seo'
 import SupportBanner from '../components/SupportBanner'
+import { usePositivity } from '../contexts/PositivityContext'
+import { mixHomepageStories, pickHero } from '../lib/mix-stories'
 
 // ---------------------------------------------------------------------------
 // Hero
@@ -229,12 +231,15 @@ const ISSUE_ORDER = [
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
 
 export default function HomePage() {
-  // Single API call for all homepage data
+  const { positivity } = usePositivity()
+  // Single API call — both emotion buckets per issue, mixed client-side
   const { data, isLoading } = useHomepageData()
 
   const issues = data?.issues ?? []
-  const heroStory = data?.hero ?? null
-  const storiesByIssue = data?.storiesByIssue ?? {}
+  const storiesByIssueBuckets = data?.storiesByIssue ?? {}
+
+  // Pick hero client-side from the issue buckets based on positivity
+  const heroStory = pickHero(storiesByIssueBuckets, positivity)
 
   const sortedIssues = [...issues]
     .filter((i) => ISSUE_ORDER.includes(i.slug))
@@ -279,11 +284,16 @@ export default function HomePage() {
 
             const currentQuoteIdx = divider === 'quote' ? quoteIdx++ : 0
 
+            const buckets = storiesByIssueBuckets[issue.slug]
+            const mixed = buckets
+              ? mixHomepageStories(buckets, 7, positivity)
+              : []
+
             return (
               <IssueSection
                 key={issue.id}
                 issue={issue}
-                allStories={storiesByIssue[issue.slug] ?? []}
+                allStories={mixed}
                 heroStoryId={heroStory?.id ?? null}
                 layout={layout}
                 divider={divider}

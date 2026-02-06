@@ -10,6 +10,8 @@ import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import Pagination from '../components/Pagination'
 import { IssuePageSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
+import { usePositivity } from '../contexts/PositivityContext'
+import { filterStoriesByPositivity } from '../lib/mix-stories'
 import type { PublicStory } from '@shared/types'
 
 // ---------------------------------------------------------------------------
@@ -107,14 +109,17 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return chunks
 }
 
+const PAGE_SIZE = 12
+
 export default function IssuePage() {
   const { slug } = useParams<{ slug: string }>()
   const [page, setPage] = useState(1)
+  const { positivity } = usePositivity()
   const { data: issue, isLoading, isError } = usePublicIssue(slug ?? '')
+  // Fetch all stories for the issue — client does filtering + pagination
   const { data: storiesData } = usePublicStories({
     issueSlug: slug,
-    page,
-    pageSize: 12,
+    pageSize: 100,
   })
 
   if (isLoading) {
@@ -136,8 +141,12 @@ export default function IssuePage() {
     )
   }
 
-  const stories = storiesData?.data ?? []
-  const totalPages = storiesData?.totalPages ?? 1
+  // Client-side filtering by positivity, then pagination
+  const allStories = storiesData?.data ?? []
+  const filtered = filterStoriesByPositivity(allStories, positivity)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const stories = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
   const colors = getCategoryColor(slug ?? 'general-news')
 
   // Only show children with published stories
@@ -236,7 +245,7 @@ export default function IssuePage() {
               )
             })}
 
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination page={safePage} totalPages={totalPages} onPageChange={setPage} />
           </>
         ) : (
           <p className="text-neutral-500 py-8 text-center">

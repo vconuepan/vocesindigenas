@@ -52,8 +52,7 @@ export interface PublicIssue {
 
 export interface HomepageData {
   issues: PublicIssue[]
-  hero: PublicStory | null
-  storiesByIssue: Record<string, PublicStory[]>
+  storiesByIssue: Record<string, { uplifting: PublicStory[]; calm: PublicStory[]; negative: PublicStory[] }>
 }
 
 export const publicApi = {
