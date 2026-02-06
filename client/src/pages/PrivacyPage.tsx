@@ -125,14 +125,19 @@ export default function PrivacyPage() {
             What We Store on Your Device
           </h2>
           <p>
-            <strong>Nothing.</strong> We do not set cookies, and we do not use
-            localStorage, sessionStorage, IndexedDB, or any other browser
-            storage mechanism for public visitors.
+            We do not set cookies, and we do not use sessionStorage, IndexedDB,
+            or any other browser storage mechanism for public visitors.
           </p>
           <p>
-            The only exception is our administrative interface, which is not
-            accessible to the public and uses secure, httpOnly authentication
-            cookies.
+            The only data stored on your device is your{" "}
+            <strong>positivity slider preference</strong> (a single number
+            between 0 and 100), saved in localStorage so the slider stays where
+            you left it between visits. This value never leaves your browser and
+            is not sent to our servers.
+          </p>
+          <p>
+            Our administrative interface, which is not accessible to the public,
+            uses secure, httpOnly authentication cookies.
           </p>
 
           <h2 className="section-heading mt-10">Third-Party Services</h2>
