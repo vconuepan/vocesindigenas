@@ -21,7 +21,7 @@ describe('runPreassessStories', () => {
     mockGetStoryIdsByStatus.mockResolvedValue(['story-1', 'story-2'])
     mockPreAssessStories.mockResolvedValue([
       { storyId: 'story-1', rating: 3, emotionTag: 'calm' },
-      { storyId: 'story-2', rating: 5, emotionTag: 'surprising' },
+      { storyId: 'story-2', rating: 5, emotionTag: 'calm' },
     ])
 
     await runPreassessStories()

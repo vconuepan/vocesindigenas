@@ -9,7 +9,7 @@ import { splitIntoGroups } from '../lib/utils.js'
 import { createLogger } from '../lib/logger.js'
 import { taskRegistry } from '../lib/taskRegistry.js'
 import { getSmallLLM, getMediumLLM, getLLMByTier, rateLimitDelay } from './llm.js'
-import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
+import { buildPreassessPrompt, buildReclassifyPrompt, buildEmotionTagPrompt, buildAssessPrompt, buildSelectPrompt } from '../prompts/index.js'
 import type { StoryForPreassess, IssueForPreassess } from '../prompts/index.js'
 import { preAssessResultSchema, reclassifyResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
 import type { Guidelines } from '../prompts/shared.js'
@@ -206,6 +206,33 @@ export async function reclassifyStories(
     batchSize: config.preassess.batchSize,
     concurrency: config.concurrency.reclassify,
     label: 'reclassification',
+  })
+
+  return results.map(r => ({
+    storyId: r.storyId,
+    emotionTag: r.item.emotionTag,
+  }))
+}
+
+// --- Emotion-only tagging ---
+
+export async function tagEmotionOnly(
+  storyIds: string[],
+  onProgress?: ProgressCallback,
+): Promise<{ storyId: string; emotionTag: string }[]> {
+  const results = await runBatchClassification({
+    storyIds,
+    llm: getSmallLLM(),
+    schema: reclassifyResultSchema,
+    buildPrompt: buildEmotionTagPrompt,
+    buildUpdate: (item) => ({
+      emotionTag: item.emotionTag as EmotionTag,
+    }),
+    fallbackToFeedIssue: false,
+    onProgress,
+    batchSize: config.preassess.batchSize,
+    concurrency: config.concurrency.reclassify,
+    label: 'emotion-tagging',
   })
 
   return results.map(r => ({
@@ -423,6 +450,20 @@ export async function bulkReclassify(storyIds: string[], taskId: string): Promis
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
     log.error({ err, taskId }, 'bulk reclassify failed')
+    for (const _id of storyIds) {
+      taskRegistry.increment(taskId, 'failed', msg)
+    }
+  } finally {
+    taskRegistry.complete(taskId)
+  }
+}
+
+export async function bulkTagEmotions(storyIds: string[], taskId: string): Promise<void> {
+  try {
+    await tagEmotionOnly(storyIds, taskProgressCallback(taskId))
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    log.error({ err, taskId }, 'bulk emotion tagging failed')
     for (const _id of storyIds) {
       taskRegistry.increment(taskId, 'failed', msg)
     }

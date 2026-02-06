@@ -4,6 +4,7 @@ export { buildAssessPrompt } from './assess.js'
 export { buildSelectPrompt } from './select.js'
 export { buildPodcastPrompt } from './podcast.js'
 export { buildNewsletterSelectPrompt } from './newsletter-select.js'
+export { buildEmotionTagPrompt } from './emotion-tag.js'
 
 export type { Guidelines } from './shared.js'
 export type { StoryForPreassess, IssueForPreassess } from './preassess.js'

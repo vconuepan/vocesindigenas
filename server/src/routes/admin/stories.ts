@@ -104,6 +104,22 @@ router.post('/bulk-reclassify', expensiveOpLimiter, validateBody(bulkStoryIdsSch
   }
 })
 
+router.post('/bulk-tag-emotions', expensiveOpLimiter, validateBody(bulkStoryIdsSchema), async (req, res) => {
+  try {
+    const { filtered, skipped } = filterProcessingIds(req.body.storyIds)
+    if (filtered.length === 0) {
+      res.status(409).json({ error: 'All stories are already being processed', skipped })
+      return
+    }
+    const taskId = taskRegistry.create('emotion', filtered.length, filtered)
+    analysisService.bulkTagEmotions(filtered, taskId)
+    res.status(202).json({ taskId, ...(skipped.length > 0 ? { skipped } : {}) })
+  } catch (err) {
+    log.error({ err }, 'failed to start bulk emotion tagging')
+    res.status(500).json({ error: 'Failed to start bulk emotion tagging' })
+  }
+})
+
 router.post('/bulk-assess', expensiveOpLimiter, validateBody(bulkStoryIdsSchema), async (req, res) => {
   try {
     const { filtered, skipped } = filterProcessingIds(req.body.storyIds)

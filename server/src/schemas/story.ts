@@ -5,7 +5,7 @@ const storyStatusEnum = z.enum([
 ])
 
 const emotionTagEnum = z.enum([
-  'uplifting', 'surprising', 'frustrating', 'scary', 'calm',
+  'uplifting', 'frustrating', 'scary', 'calm',
 ])
 
 const storySortEnum = z.enum([

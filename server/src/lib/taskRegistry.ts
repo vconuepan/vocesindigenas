@@ -3,7 +3,7 @@ import { createLogger } from './logger.js'
 
 const log = createLogger('taskRegistry')
 
-export type BulkTaskType = 'preassess' | 'assess' | 'select' | 'reclassify'
+export type BulkTaskType = 'preassess' | 'assess' | 'select' | 'reclassify' | 'emotion'
 type BulkTaskStatus = 'running' | 'completed' | 'failed'
 
 export interface TaskStateResponse {

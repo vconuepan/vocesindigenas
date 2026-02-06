@@ -1,12 +1,11 @@
-import { config } from '../config.js'
-import { containsChineseCharacters, escapeXml } from './shared.js'
+import { EMOTION_TAGS_PROMPT_BLOCK, formatIssuesBlock, formatArticlesBlock } from './shared.js'
 import type { StoryForPreassess, IssueForPreassess } from './preassess.js'
 
 export function buildReclassifyPrompt(
   stories: StoryForPreassess[],
   issues: IssueForPreassess[],
 ): string {
-  let query = `<ROLE>
+  return `<ROLE>
 You are a news classifier categorizing articles into thematic issues and assigning emotion tags.
 </ROLE>
 
@@ -14,32 +13,9 @@ You are a news classifier categorizing articles into thematic issues and assigni
 For each article: classify it into the single most relevant issue and assign an emotion tag. Do not rate the articles.
 </GOAL>
 
-<ISSUES>
-`
+${formatIssuesBlock(issues)}
 
-  for (const issue of issues) {
-    query += `<ISSUE slug="${escapeXml(issue.slug)}" name="${escapeXml(issue.name)}">${escapeXml(issue.description)}</ISSUE>\n`
-  }
+${EMOTION_TAGS_PROMPT_BLOCK}
 
-  query += `</ISSUES>
-
-<ARTICLES>`
-
-  let capacity = config.preassess.batchSize
-  for (const story of stories) {
-    if (containsChineseCharacters(story.content)) {
-      capacity -= 1.5
-    } else {
-      capacity -= 1
-    }
-    if (capacity > 0) {
-      query += `\n\n-----\nArticle ID: ${story.id}`
-      query += `\nTitle: ${story.title}`
-      query += `\n${story.content.substring(0, config.preassess.contentMaxLength)} ...`
-    }
-  }
-
-  query += `\n</ARTICLES>`
-
-  return query
+${formatArticlesBlock(stories)}`
 }

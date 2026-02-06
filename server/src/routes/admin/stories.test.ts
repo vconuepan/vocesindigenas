@@ -343,7 +343,7 @@ describe('Admin Stories API', () => {
   describe('POST /api/admin/stories/preassess', () => {
     it('pre-assesses stories with given IDs', async () => {
       mockPreAssessStories.mockResolvedValue([
-        { storyId: '00000000-0000-0000-0000-000000000001', rating: 4, emotionTag: 'surprising' },
+        { storyId: '00000000-0000-0000-0000-000000000001', rating: 4, emotionTag: 'calm' },
       ])
 
       const res = await request(app)

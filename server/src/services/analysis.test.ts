@@ -62,7 +62,7 @@ describe('preAssessStories', () => {
     const mockStructuredLlm = {
       invoke: vi.fn().mockResolvedValue({
         articles: [
-          { articleId: 'story-1', issueSlug: 'ai-technology', rating: 4, emotionTag: 'surprising' },
+          { articleId: 'story-1', issueSlug: 'ai-technology', rating: 4, emotionTag: 'calm' },
           { articleId: 'story-2', issueSlug: 'ai-technology', rating: 2, emotionTag: 'calm' },
         ],
       }),
@@ -75,12 +75,12 @@ describe('preAssessStories', () => {
 
     expect(mockGetMediumLLM).toHaveBeenCalled()
     expect(results).toHaveLength(2)
-    expect(results[0]).toEqual({ storyId: 'story-1', rating: 4, emotionTag: 'surprising' })
+    expect(results[0]).toEqual({ storyId: 'story-1', rating: 4, emotionTag: 'calm' })
     expect(results[1]).toEqual({ storyId: 'story-2', rating: 2, emotionTag: 'calm' })
 
     expect(mockPrisma.story.update).toHaveBeenCalledWith({
       where: { id: 'story-1' },
-      data: { issueId: issue.id, relevancePre: 4, emotionTag: 'surprising', status: 'pre_analyzed' },
+      data: { issueId: issue.id, relevancePre: 4, emotionTag: 'calm', status: 'pre_analyzed' },
     })
     expect(mockPrisma.story.update).toHaveBeenCalledWith({
       where: { id: 'story-2' },

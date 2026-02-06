@@ -1,15 +1,9 @@
 import { z } from "zod";
+import { EMOTION_TAG_SCHEMA_DESCRIPTION } from "../prompts/shared.js";
 
 const EMOTION_TAG_SCHEMA = z
-  .enum(["uplifting", "surprising", "frustrating", "scary", "calm"])
-  .describe(
-    "Emotion tag based on how the article affects readers. " +
-      "uplifting: positive or inspiring stories. " +
-      "surprising: unexpected or counterintuitive stories. " +
-      "frustrating: negative or disappointing stories. " +
-      "scary: frightening stories (e.g. increased existential risks, wars). " +
-      "calm: stories without a strong association with any other emotion tag."
-  );
+  .enum(["uplifting", "frustrating", "scary", "calm"])
+  .describe(EMOTION_TAG_SCHEMA_DESCRIPTION);
 
 export const preAssessItemSchema = z.object({
   articleId: z

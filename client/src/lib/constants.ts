@@ -14,7 +14,6 @@ export const STATUS_VARIANTS: Record<StoryStatus, BadgeVariant> = {
 
 export const EMOTION_VARIANTS: Record<EmotionTag, BadgeVariant> = {
   uplifting: 'green',
-  surprising: 'purple',
   frustrating: 'orange',
   scary: 'red',
   calm: 'blue',

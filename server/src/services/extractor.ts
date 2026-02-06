@@ -29,6 +29,10 @@ function isQuotaError(err: unknown): boolean {
   return false
 }
 
+class ThrottleAbortError extends Error {
+  constructor() { super('Throttle aborted') }
+}
+
 export interface ExtractionResult {
   title: string | null
   content: string
@@ -55,7 +59,7 @@ export class ApiThrottle {
     this.delayMs = baseDelayMs
   }
 
-  async run<T>(fn: () => Promise<T>): Promise<T> {
+  async run<T>(fn: () => Promise<T>, shouldAbort?: () => boolean): Promise<T> {
     // Serialize: only one API call at a time to enforce inter-call delay
     if (this.busy) {
       await new Promise<void>(resolve => this.queue.push(resolve))
@@ -63,6 +67,9 @@ export class ApiThrottle {
     this.busy = true
 
     try {
+      // Bail out if the caller signalled abort (e.g. feed skip-all)
+      if (shouldAbort?.()) throw new ThrottleAbortError()
+
       // Wait out any active backoff
       const now = Date.now()
       if (now < this.backoffUntil) {
@@ -70,6 +77,9 @@ export class ApiThrottle {
         log.info({ waitMs, delayMs: this.delayMs }, 'API throttle: waiting after 429')
         await new Promise(resolve => setTimeout(resolve, waitMs))
       }
+
+      // Re-check after potentially long backoff wait
+      if (shouldAbort?.()) throw new ThrottleAbortError()
 
       // Enforce inter-call delay
       if (this.delayMs > 0) {
@@ -260,11 +270,19 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
  * Calls the configured extraction API with shared throttle.
  * On 429: registers backoff, waits, then lets subsequent calls proceed at reduced pace.
  */
-async function extractByApi(url: string, api: 'diffbot' | 'pipfeed'): Promise<ExtractionResult | null> {
+async function extractByApi(url: string, api: 'diffbot' | 'pipfeed', shouldAbort?: () => boolean): Promise<ExtractionResult | null> {
+  if (shouldAbort?.()) {
+    log.info({ url, api }, 'extraction skipped (feed bail-out)')
+    return null
+  }
   const fn = api === 'diffbot' ? extractByDiffbot : extractByPipfeed
   try {
-    return await apiThrottle.run(() => fn(url))
+    return await apiThrottle.run(() => fn(url), shouldAbort)
   } catch (err) {
+    if (err instanceof ThrottleAbortError) {
+      log.info({ url, api }, 'extraction aborted during throttle wait (feed bail-out)')
+      return null
+    }
     if (isQuotaError(err)) {
       apiThrottle.onRateLimited()
       log.warn({ url, api, reason: summarizeError(err) }, 'API rate limited (429)')
@@ -277,7 +295,7 @@ async function extractByApi(url: string, api: 'diffbot' | 'pipfeed'): Promise<Ex
 
 export async function extractContent(
   url: string,
-  options?: { htmlSelector?: string | null; skipLocalExtraction?: boolean }
+  options?: { htmlSelector?: string | null; skipLocalExtraction?: boolean; shouldAbort?: () => boolean }
 ): Promise<ExtractionResult | null> {
   if (!isAllowedUrl(url)) {
     log.warn({ url }, 'blocked disallowed URL')
@@ -306,8 +324,14 @@ export async function extractContent(
     }
   }
 
+  // Bail out before expensive API call if the feed has already triggered skip-all
+  if (options?.shouldAbort?.()) {
+    log.info({ url }, 'extraction skipped before API tier (feed bail-out)')
+    return null
+  }
+
   // Tier 3: External API extraction
-  const apiResult = await extractByApi(url, config.crawl.extractionApi)
+  const apiResult = await extractByApi(url, config.crawl.extractionApi, options?.shouldAbort)
   if (apiResult) return apiResult
 
   log.warn({ url }, 'all extraction methods failed')

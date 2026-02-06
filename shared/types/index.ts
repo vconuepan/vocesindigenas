@@ -10,7 +10,6 @@ export type StoryStatus =
 
 export type EmotionTag =
   | 'uplifting'
-  | 'surprising'
   | 'frustrating'
   | 'scary'
   | 'calm'
@@ -242,7 +241,7 @@ export interface PaginatedResponse<T> {
 
 // --- Background task types ---
 
-export type BulkTaskType = 'preassess' | 'assess' | 'select' | 'reclassify'
+export type BulkTaskType = 'preassess' | 'assess' | 'select' | 'reclassify' | 'emotion'
 export type BulkTaskStatus = 'running' | 'completed' | 'failed'
 
 export interface TaskState {

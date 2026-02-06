@@ -23,7 +23,6 @@ enum StoryStatus {
 
 enum EmotionTag {
   uplifting
-  surprising
   frustrating
   scary
   calm

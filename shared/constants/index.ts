@@ -12,7 +12,6 @@ export const STORY_STATUSES: StoryStatus[] = [
 
 export const EMOTION_TAGS: EmotionTag[] = [
   'uplifting',
-  'surprising',
   'frustrating',
   'scary',
   'calm',
