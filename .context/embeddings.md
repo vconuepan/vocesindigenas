@@ -2,24 +2,23 @@
 
 ## Overview
 
-Stories get vector embeddings generated from their content (title + summary + relevanceSummary prefixed with issue name) using OpenAI's `text-embedding-3-small` model. These embeddings power hybrid semantic+text search on the public API.
+Stories get vector embeddings generated from their content (titleLabel + title + summary) using OpenAI's `text-embedding-3-small` model. These embeddings power hybrid semantic+text search on the public API.
 
 ## Embedding Generation
 
 ### Content Format
 ```
-[Issue Name]: [Title]
+[Title Label]: [Title]
 [Summary]
-[Relevance Summary]
 ```
-Missing fields are omitted gracefully. The issue name comes from `story.issue ?? story.feed.issue`.
+Missing fields are omitted gracefully. If `titleLabel` is null, the title is used alone.
 
 ### Content Hash Tracking
-A SHA-256 hash of the embedding input string is stored as `embedding_content_hash`. This detects stale embeddings when content changes (including issue reassignment).
+A SHA-256 hash of the embedding input string is stored as `embedding_content_hash`. This detects stale embeddings when content changes.
 
 ### Trigger Points
 1. **On publish** (`publishStory`, `bulkUpdateStatus`): Fire-and-forget embedding generation
-2. **On edit of published story** (`updateStory`): Regenerates if title/summary/relevanceSummary changed
+2. **On edit of published story** (`updateStory`): Regenerates if title/titleLabel/summary changed
 3. **Backfill script**: `npm run migration:backfill-embeddings --prefix server` for existing stories
 
 All embedding operations are non-blocking — failures are logged but don't affect the publish/edit operation.

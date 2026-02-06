@@ -47,77 +47,67 @@ describe('buildEmbeddingContent', () => {
     const story = {
       id: '1',
       title: 'AI Breakthrough',
+      titleLabel: 'Technology',
       summary: 'Researchers achieve major milestone',
-      relevanceSummary: 'Could transform healthcare',
       embeddingContentHash: null,
-      issue: { name: 'Technology' },
-      feed: { issue: { name: 'Fallback Issue' } },
     }
 
     const content = buildEmbeddingContent(story)
     expect(content).toBe(
-      'Technology: AI Breakthrough\nResearchers achieve major milestone\nCould transform healthcare',
+      'Technology: AI Breakthrough\nResearchers achieve major milestone',
     )
   })
 
-  it('uses feed issue name when story issue is null', () => {
+  it('uses title alone when titleLabel is null', () => {
     const story = {
       id: '1',
       title: 'Climate Report',
+      titleLabel: null,
       summary: 'New data published',
-      relevanceSummary: null,
       embeddingContentHash: null,
-      issue: null,
-      feed: { issue: { name: 'Environment' } },
     }
 
     const content = buildEmbeddingContent(story)
-    expect(content).toBe('Environment: Climate Report\nNew data published')
+    expect(content).toBe('Climate Report\nNew data published')
   })
 
   it('handles missing title gracefully', () => {
     const story = {
       id: '1',
       title: null,
+      titleLabel: 'Health',
       summary: 'Some summary',
-      relevanceSummary: null,
       embeddingContentHash: null,
-      issue: { name: 'Health' },
-      feed: { issue: { name: 'Fallback' } },
     }
 
     const content = buildEmbeddingContent(story)
-    expect(content).toBe('Health\nSome summary')
+    expect(content).toBe('Some summary')
   })
 
-  it('handles missing summary and relevanceSummary', () => {
+  it('handles missing summary', () => {
     const story = {
       id: '1',
       title: 'Just a Title',
+      titleLabel: 'Science',
       summary: null,
-      relevanceSummary: null,
       embeddingContentHash: null,
-      issue: { name: 'Science' },
-      feed: { issue: { name: 'Fallback' } },
     }
 
     const content = buildEmbeddingContent(story)
     expect(content).toBe('Science: Just a Title')
   })
 
-  it('handles all fields missing except feed issue', () => {
+  it('handles all fields null', () => {
     const story = {
       id: '1',
       title: null,
+      titleLabel: null,
       summary: null,
-      relevanceSummary: null,
       embeddingContentHash: null,
-      issue: null,
-      feed: { issue: { name: 'General' } },
     }
 
     const content = buildEmbeddingContent(story)
-    expect(content).toBe('General')
+    expect(content).toBe('')
   })
 })
 

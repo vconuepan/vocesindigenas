@@ -28,11 +28,9 @@ const semaphore = new Semaphore(CONCURRENCY)
 interface StoryRow {
   id: string
   title: string | null
+  title_label: string | null
   summary: string | null
-  relevance_summary: string | null
   embedding_content_hash: string | null
-  issue_name: string | null
-  feed_issue_name: string
 }
 
 async function fetchBatch(cursor: string | undefined, limit: number): Promise<StoryRow[]> {
@@ -43,12 +41,8 @@ async function fetchBatch(cursor: string | undefined, limit: number): Promise<St
     ? Prisma.sql`AND s.id > ${cursor}`
     : Prisma.empty
   return prisma.$queryRaw<StoryRow[]>`
-    SELECT s.id, s.title, s.summary, s.relevance_summary, s.embedding_content_hash,
-           i.name as issue_name, fi.name as feed_issue_name
+    SELECT s.id, s.title, s.title_label, s.summary, s.embedding_content_hash
     FROM stories s
-    LEFT JOIN issues i ON i.id = s.issue_id
-    JOIN feeds f ON f.id = s.feed_id
-    JOIN issues fi ON fi.id = f.issue_id
     WHERE s.status = 'published'
     ${hashFilter}
     ${cursorFilter}
@@ -61,11 +55,9 @@ function toEmbeddingInput(row: StoryRow) {
   return {
     id: row.id,
     title: row.title,
+    titleLabel: row.title_label,
     summary: row.summary,
-    relevanceSummary: row.relevance_summary,
     embeddingContentHash: row.embedding_content_hash,
-    issue: row.issue_name ? { name: row.issue_name } : null,
-    feed: { issue: { name: row.feed_issue_name } },
   }
 }
 

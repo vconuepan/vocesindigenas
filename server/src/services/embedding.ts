@@ -12,29 +12,22 @@ const openai = new OpenAI()
 export interface StoryForEmbedding {
   id: string
   title: string | null
+  titleLabel: string | null
   summary: string | null
-  relevanceSummary: string | null
   embeddingContentHash: string | null
-  issue: { name: string } | null
-  feed: { issue: { name: string } }
 }
 
 export function buildEmbeddingContent(story: StoryForEmbedding): string {
-  const issueName = story.issue?.name ?? story.feed.issue.name
   const parts: string[] = []
 
-  if (story.title) {
-    parts.push(`${issueName}: ${story.title}`)
-  } else {
-    parts.push(issueName)
+  if (story.titleLabel && story.title) {
+    parts.push(`${story.titleLabel}: ${story.title}`)
+  } else if (story.title) {
+    parts.push(story.title)
   }
 
   if (story.summary) {
     parts.push(story.summary)
-  }
-
-  if (story.relevanceSummary) {
-    parts.push(story.relevanceSummary)
   }
 
   return parts.join('\n')
@@ -88,33 +81,26 @@ interface StoryRow {
   id: string
   status: string
   title: string | null
+  title_label: string | null
   summary: string | null
-  relevance_summary: string | null
   embedding_content_hash: string | null
-  issue_name: string | null
-  feed_issue_name: string
 }
 
 function rowToStory(row: StoryRow): StoryForEmbedding {
   return {
     id: row.id,
     title: row.title,
+    titleLabel: row.title_label,
     summary: row.summary,
-    relevanceSummary: row.relevance_summary,
     embeddingContentHash: row.embedding_content_hash,
-    issue: row.issue_name ? { name: row.issue_name } : null,
-    feed: { issue: { name: row.feed_issue_name } },
   }
 }
 
 async function fetchStoryForEmbedding(storyId: string): Promise<(StoryForEmbedding & { status: string }) | null> {
   const rows = await prisma.$queryRaw<StoryRow[]>`
-    SELECT s.id, s.status, s.title, s.summary, s.relevance_summary,
-           s.embedding_content_hash, i.name as issue_name, fi.name as feed_issue_name
+    SELECT s.id, s.status, s.title, s.title_label, s.summary,
+           s.embedding_content_hash
     FROM stories s
-    LEFT JOIN issues i ON i.id = s.issue_id
-    JOIN feeds f ON f.id = s.feed_id
-    JOIN issues fi ON fi.id = f.issue_id
     WHERE s.id = ${storyId}
   `
   if (rows.length === 0) return null
@@ -123,12 +109,9 @@ async function fetchStoryForEmbedding(storyId: string): Promise<(StoryForEmbeddi
 
 async function fetchStoriesForEmbedding(storyIds: string[]): Promise<StoryForEmbedding[]> {
   const rows = await prisma.$queryRaw<StoryRow[]>`
-    SELECT s.id, s.status, s.title, s.summary, s.relevance_summary,
-           s.embedding_content_hash, i.name as issue_name, fi.name as feed_issue_name
+    SELECT s.id, s.status, s.title, s.title_label, s.summary,
+           s.embedding_content_hash
     FROM stories s
-    LEFT JOIN issues i ON i.id = s.issue_id
-    JOIN feeds f ON f.id = s.feed_id
-    JOIN issues fi ON fi.id = f.issue_id
     WHERE s.id = ANY(${storyIds}) AND s.status = 'published'
   `
   return rows.map(rowToStory)
