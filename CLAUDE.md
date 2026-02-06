@@ -10,7 +10,8 @@ actually-relevant/
 ├── server/          # Express backend (Prisma + LangChain + OpenAI)
 ├── shared/          # Shared types and constants
 ├── .context/        # Context documentation
-├── .plans/          # Development planning documents
+├── .plans/          # Active development plans
+│   └── completed/   # Archive of all past plans (70+ files)
 ├── BACKLOG.md       # Deferred features
 ├── CLAUDE.md        # This file
 └── README.md        # Project documentation
@@ -77,6 +78,8 @@ npm run db:seed      # Seed database with sample data
 - **Never use `npx prisma` directly** — Always use the `npm run db:*` scripts with `--prefix server`. Direct `npx prisma` commands skip `.env` and fail. Never pass `--no-engine` to `prisma generate` — it produces a client that only works with Prisma Accelerate and breaks all direct PostgreSQL queries.
 
 - **`db:generate` requires the dev server to be stopped** — `prisma generate` replaces a DLL that is locked while the server runs. Before running `npm run db:generate --prefix server`, ask the user to stop their dev server and wait for confirmation. Never run it automatically.
+
+- **Completed plans as context** — `.plans/completed/` contains 70+ implementation plans covering every feature built in this project. When you need to understand how, why, or in what context something was implemented, search these files by topic (e.g. grep for "newsletter", "crawl", "auth"). Filenames are descriptive — use glob/grep to find relevant plans before asking the user for context.
 
 - **Prefer file tools over bash:** Use Read, Write, Edit, Glob, and Grep tools instead of bash commands for file operations.
 
@@ -209,20 +212,4 @@ All hardcoded static text (UI labels, headings, descriptions, error messages, to
 
 ## Implementation Workflow
 
-Follow these steps for every implementation task:
-
-1. **Plan** — Use `/everything-claude-code:plan` to create a plan document. Save it as a `.md` file in `.plans/`.
-
-2. **Implement** — Use TDD via `/everything-claude-code:tdd` for logic using the project's test infrastructure. For UI or data-related work, implement step by step without TDD.
-
-3. **Check** — Run `npm run build --prefix server` and `npm run test --prefix server -- --run` (and/or the client equivalents). Fix any failures before proceeding. For larger UI changes, use playwright tools.
-
-4. **Review** (for non-trivial work) — Use `/everything-claude-code:code-review` and implement the most important improvement suggestions.
-
-5. **Document** — Create or update `.context/` files for any important components, systems, or mechanics that were added or changed. Update the Context Files section in this `CLAUDE.md` if new context files were added. Each context file entry needs:
-   - One sentence with the most actionable information for a coding assistant
-   - One sentence summarizing additional information found in the context file
-
-6. **Update Tracking** — Update any plans, backlog files, or other tracking documents that referenced this work to mark it as completed.
-
-A task is **not done** until steps 3-6 are complete.
+Use `/workflow` by default.
