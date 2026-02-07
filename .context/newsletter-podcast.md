@@ -16,15 +16,24 @@ Newsletters and podcasts are content formats generated from published/selected s
 
 ### Content generation (`POST /api/admin/newsletters/:id/generate`)
 
-Template-based (no LLM). For each assigned story, outputs:
-- Title as heading
-- Category and publisher
-- Marketing blurb
-- AI summary
-- Relevance reasons
-- Link to original article
+Generates markdown content in two phases:
 
-Stories are sorted by issue/category name for grouping.
+1. **LLM editorial intro** — Calls the `contentModelTier` LLM with `buildNewsletterIntroPrompt()` to generate a 2-3 sentence warm, conversational opening that weaves together the edition's key themes. Falls back gracefully to no intro on failure.
+2. **Template-based story blocks** — For each selected story, grouped by issue with section headers:
+   - `# IssueName` section header (when the issue group changes)
+   - Title as `##` heading
+   - Publisher (linked to source) + "Read original article" link on the same line
+   - Body text: alternates between `relevanceSummary` (2/3 of stories) and `quote` + `quoteAttribution` blockquote (1/3)
+
+### HTML email template (`POST /api/admin/newsletters/:id/html`)
+
+Converts the markdown content into a responsive HTML email with:
+- **Header** — Brand name + newsletter title, blue border
+- **Intro** — Editorial intro paragraph(s) if present
+- **Issue sections** — Uppercase category headers between story groups
+- **Story blocks** — Title (linked), publisher (linked) + "Read original article", body text or blockquote
+- **Support Us** — Ko-fi link with "Free. Independent. Without ads." tagline
+- **Footer** — "Curated and written with care by AI." disclosure, website link, Plunk `{{plunk_id}}` unsubscribe link
 
 ### Carousel images (`POST /api/admin/newsletters/:id/carousel`)
 
@@ -95,12 +104,16 @@ After the LLM script, a story list with links is appended.
 | `server/src/routes/admin/podcasts.ts` | Podcast admin API endpoints |
 | `server/src/schemas/newsletter.ts` | Newsletter request validation schemas |
 | `server/src/schemas/podcast.ts` | Podcast request validation schemas |
-| `server/src/schemas/llm.ts` | `podcastScriptSchema` for LLM structured output |
+| `server/src/schemas/llm.ts` | `podcastScriptSchema`, `newsletterIntroSchema` for LLM structured output |
+| `server/src/prompts/newsletter-intro.ts` | `buildNewsletterIntroPrompt` for editorial intro generation |
+| `server/src/prompts/newsletter-select.ts` | `buildNewsletterSelectPrompt` for story selection |
 | `server/src/services/prompts.ts` | `buildPodcastPrompt` for podcast script generation |
 
 ## Modifying
 
-- **To change newsletter format:** Edit the template loop in `newsletter.ts:generateContent()`
+- **To change newsletter format:** Edit the template loop in `newsletter.ts:generateContent()` and the HTML parser in `generateHtmlContent()`
+- **To change newsletter intro prompt:** Edit `buildNewsletterIntroPrompt()` in `prompts/newsletter-intro.ts`
+- **To change newsletter intro output structure:** Update `newsletterIntroSchema` in `schemas/llm.ts` AND the prompt
 - **To change podcast prompt:** Edit `buildPodcastPrompt()` in `prompts.ts`
 - **To change podcast output structure:** Update `podcastScriptSchema` in `schemas/llm.ts` AND the prompt
 - **To add new carousel image layouts:** Edit `createStoryImage()` in `carousel.ts`

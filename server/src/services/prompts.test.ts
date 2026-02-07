@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt } from '../prompts/index.js'
+import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt, buildNewsletterIntroPrompt } from '../prompts/index.js'
 
 const guidelines = {
   factors: 'Technology advancement\nScientific discovery',
@@ -286,5 +286,62 @@ describe('buildPodcastPrompt', () => {
   it('formats antifactors as bullet points', () => {
     const prompt = buildPodcastPrompt(stories)
     expect(prompt).toContain('Limiting factors for the relevance\n- Early stage technology')
+  })
+})
+
+describe('buildNewsletterIntroPrompt', () => {
+  const stories = [
+    { title: 'AI Breakthrough', issueName: 'Technology', blurb: 'Major AI advancement', emotionTag: 'uplifting' },
+    { title: 'Climate Report', issueName: 'Climate', blurb: 'New climate data released', emotionTag: 'calm' },
+  ]
+  const issueNames = ['Climate', 'Technology']
+
+  it('uses XML scaffolding structure', () => {
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
+    expect(prompt).toContain('<ROLE>')
+    expect(prompt).toContain('<GOAL>')
+    expect(prompt).toContain('<GUIDELINES>')
+    expect(prompt).toContain('<STORIES>')
+    expect(prompt).toContain('</STORIES>')
+  })
+
+  it('includes story titles, issues, emotion tags, and blurbs', () => {
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
+    expect(prompt).toContain('<TITLE>AI Breakthrough</TITLE>')
+    expect(prompt).toContain('<ISSUE>Technology</ISSUE>')
+    expect(prompt).toContain('<EMOTION>uplifting</EMOTION>')
+    expect(prompt).toContain('<BLURB>Major AI advancement</BLURB>')
+    expect(prompt).toContain('<TITLE>Climate Report</TITLE>')
+  })
+
+  it('includes issue categories', () => {
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
+    expect(prompt).toContain('<ISSUE_CATEGORIES>')
+    expect(prompt).toContain('- Climate')
+    expect(prompt).toContain('- Technology')
+  })
+
+  it('escapes XML characters in content', () => {
+    const storiesWithSpecial = [
+      { title: 'Test & <special>', issueName: 'Tech', blurb: 'Blurb with "quotes"', emotionTag: 'calm' },
+    ]
+    const prompt = buildNewsletterIntroPrompt(storiesWithSpecial, ['Tech'])
+    expect(prompt).toContain('&amp;')
+    expect(prompt).toContain('&lt;special&gt;')
+  })
+
+  it('does not contain legacy prompting patterns', () => {
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
+    expect(prompt).not.toContain('step by step')
+    expect(prompt).not.toContain('Take a deep breath')
+    expect(prompt).not.toContain('Follow this prompt exactly')
+  })
+
+  it('focuses on creative editorial connection of positive developments', () => {
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
+    expect(prompt).toContain('uplifting')
+    expect(prompt).toContain('positive developments')
+    expect(prompt).toContain('Do not simply list headlines')
+    expect(prompt).toContain('em dashes')
   })
 })

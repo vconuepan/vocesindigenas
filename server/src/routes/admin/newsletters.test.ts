@@ -27,6 +27,17 @@ vi.mock('../../services/crawler.js', () => ({
   crawlAllDueFeeds: vi.fn(),
   crawlUrl: vi.fn(),
 }))
+vi.mock('../../services/llm.js', () => ({
+  getLLMByTier: vi.fn(() => ({
+    withStructuredOutput: vi.fn(() => ({
+      invoke: vi.fn().mockResolvedValue({ intro: 'Editorial intro.' }),
+    })),
+  })),
+  rateLimitDelay: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock('../../lib/retry.js', () => ({
+  withRetry: vi.fn((fn: () => Promise<any>) => fn()),
+}))
 
 process.env.PUBLIC_API_KEY = TEST_API_KEY
 
@@ -191,7 +202,8 @@ describe('Admin Newsletters API', () => {
         summary: 'Test summary',
         marketingBlurb: 'Test blurb',
         relevanceReasons: 'Test reasons',
-        feed: { title: 'BBC', issue: { name: 'AI & Technology' } },
+        feed: { title: 'BBC', displayTitle: 'BBC News', issue: { name: 'Science & Technology', slug: 'science-technology', parentId: null, parent: null } },
+        issue: null,
       })
       mockPrisma.newsletter.findUnique.mockResolvedValue(newsletter)
       mockPrisma.story.findMany.mockResolvedValue([story])

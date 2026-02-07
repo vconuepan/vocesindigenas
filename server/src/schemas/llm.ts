@@ -146,6 +146,15 @@ export const newsletterSelectResultSchema = z.object({
     ),
 });
 
+export const newsletterIntroSchema = z.object({
+  intro: z
+    .string()
+    .describe(
+      "A 2-3 sentence editorial introduction for the newsletter edition. " +
+        "Warm and conversational tone. Plain text only, under 60 words."
+    ),
+});
+
 export const podcastScriptSchema = z.object({
   script: z
     .string()
@@ -232,4 +241,5 @@ export type ReclassifyResult = z.infer<typeof reclassifyResultSchema>;
 export type NewsletterSelectResult = z.infer<
   typeof newsletterSelectResultSchema
 >;
+export type NewsletterIntro = z.infer<typeof newsletterIntroSchema>;
 export type PodcastScript = z.infer<typeof podcastScriptSchema>;

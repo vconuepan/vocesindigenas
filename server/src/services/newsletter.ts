@@ -10,10 +10,31 @@ import * as plunk from './plunk.js'
 import { createLogger } from '../lib/logger.js'
 import { getLLMByTier, rateLimitDelay } from './llm.js'
 import { withRetry } from '../lib/retry.js'
-import { buildNewsletterSelectPrompt } from '../prompts/index.js'
-import { newsletterSelectResultSchema } from '../schemas/llm.js'
+import { buildNewsletterSelectPrompt, buildNewsletterIntroPrompt } from '../prompts/index.js'
+import { newsletterSelectResultSchema, newsletterIntroSchema } from '../schemas/llm.js'
 
 const log = createLogger('newsletter')
+
+/** Issue slug → dot color hex for email HTML (mirrors client/src/lib/category-colors.ts) */
+const ISSUE_DOT_COLORS: Record<string, string> = {
+  'human-development': '#fbbf24',
+  'planet-climate': '#2dd4bf',
+  'existential-threats': '#f87171',
+  'science-technology': '#818cf8',
+}
+const DEFAULT_DOT_COLOR = '#f472b6'
+
+/** Fixed display order for top-level issues in the newsletter */
+const ISSUE_ORDER = ['human-development', 'planet-climate', 'existential-threats', 'science-technology']
+
+function getIssueDotColor(slug: string): string {
+  return ISSUE_DOT_COLORS[slug] ?? DEFAULT_DOT_COLOR
+}
+
+function getIssueSortIndex(slug: string): number {
+  const idx = ISSUE_ORDER.indexOf(slug)
+  return idx >= 0 ? idx : ISSUE_ORDER.length
+}
 
 interface NewsletterFilters {
   status?: string
@@ -158,31 +179,101 @@ export async function generateContent(newsletterId: string) {
 
   const stories = await prisma.story.findMany({
     where: { id: { in: newsletter.selectedStoryIds } },
-    include: { feed: { include: { issue: true } }, issue: true },
+    include: {
+      feed: { include: { issue: { include: { parent: true } } } },
+      issue: { include: { parent: true } },
+    },
     orderBy: { dateCrawled: 'desc' },
   })
 
-  // Sort by issue name for grouping
+  // Resolve each story's top-level (parent) issue
+  function resolveIssue(story: typeof stories[number]) {
+    const issue = story.issue ?? story.feed?.issue
+    if (!issue) return { name: 'General', slug: 'general-news' }
+    if (issue.parentId && issue.parent) {
+      return { name: issue.parent.name, slug: issue.parent.slug }
+    }
+    return { name: issue.name, slug: issue.slug }
+  }
+
+  // Sort by fixed issue order, then by title within each group
   stories.sort((a, b) => {
-    const nameA = a.issue?.name || a.feed?.issue?.name || ''
-    const nameB = b.issue?.name || b.feed?.issue?.name || ''
-    return nameA.localeCompare(nameB)
+    const slugA = resolveIssue(a).slug
+    const slugB = resolveIssue(b).slug
+    const orderDiff = getIssueSortIndex(slugA) - getIssueSortIndex(slugB)
+    if (orderDiff !== 0) return orderDiff
+    const titleA = a.title || a.sourceTitle || ''
+    const titleB = b.title || b.sourceTitle || ''
+    return titleA.localeCompare(titleB)
   })
 
+  // Generate editorial intro via LLM
+  const issueNames = [...new Set(stories.map(s => resolveIssue(s).name))]
+    .sort((a, b) => {
+      const slugA = stories.find(s => resolveIssue(s).name === a)!
+      const slugB = stories.find(s => resolveIssue(s).name === b)!
+      return getIssueSortIndex(resolveIssue(slugA).slug) - getIssueSortIndex(resolveIssue(slugB).slug)
+    })
+  const storiesForIntro = stories.map(s => ({
+    title: s.title || s.sourceTitle,
+    issueName: resolveIssue(s).name,
+    blurb: s.marketingBlurb || s.summary || '',
+    emotionTag: s.emotionTag || 'calm',
+  }))
+
+  let intro = ''
+  try {
+    const introPrompt = buildNewsletterIntroPrompt(storiesForIntro, issueNames)
+    await rateLimitDelay()
+    const llm = getLLMByTier(config.newsletter.contentModelTier)
+    const structuredLlm = llm.withStructuredOutput(newsletterIntroSchema)
+    const introResult = await withRetry(
+      () => structuredLlm.invoke([new HumanMessage(introPrompt)]),
+      { retries: 3 },
+    )
+    intro = introResult.intro
+    log.info({ newsletterId, introLength: intro.length }, 'generated newsletter intro')
+  } catch (err) {
+    log.warn({ newsletterId, err }, 'failed to generate newsletter intro, continuing without it')
+  }
+
+  // Build markdown content with issue section headers
   let content = ''
-  for (const story of stories) {
-    const category = story.issue?.name || story.feed?.issue?.name || 'General'
-    const publisher = story.feed?.title || 'Unknown'
-    const blurb = story.marketingBlurb || ''
-    const summary = story.summary || ''
-    const relevanceSummary = story.relevanceReasons || ''
+  if (intro) {
+    content += `${intro}\n\n---\n\n`
+  }
+
+  let currentIssue = ''
+  for (let i = 0; i < stories.length; i++) {
+    const story = stories[i]
+    const resolved = resolveIssue(story)
+    const issueName = resolved.name
+    const issueSlug = resolved.slug
+    const publisher = story.feed?.displayTitle || story.feed?.title || 'Unknown'
+    const relevanceUrl = story.slug ? `https://actuallyrelevant.news/stories/${story.slug}` : ''
+
+    // Add issue section header when the group changes
+    if (issueName !== currentIssue) {
+      if (currentIssue) content += `---\n\n` // separator between issue groups
+      currentIssue = issueName
+      content += `# ${issueName} {${issueSlug}}\n\n`
+    }
 
     content += `## ${story.title || story.sourceTitle}\n`
-    content += `**${category}** | ${publisher}\n\n`
-    if (blurb) content += `${blurb}\n\n`
-    if (summary) content += `${summary}\n\n`
-    if (relevanceSummary) content += `**Why it matters:** ${relevanceSummary}\n\n`
-    content += `[Read original](${story.sourceUrl})\n\n---\n\n`
+    const linkParts = [publisher]
+    linkParts.push(`[original article](${story.sourceUrl})`)
+    if (relevanceUrl) linkParts.push(`[relevance analysis](${relevanceUrl})`)
+    content += `${linkParts.join(' · ')}\n\n`
+
+    // Alternate between relevanceSummary (2/3) and quote (1/3)
+    const useQuote = i % 3 === 2 && story.quote && story.quoteAttribution
+    if (useQuote) {
+      content += `> "${story.quote}"\n`
+      content += `> — ${story.quoteAttribution}\n\n`
+    } else {
+      const summary = story.relevanceSummary || story.marketingBlurb || ''
+      if (summary) content += `${summary}\n\n`
+    }
   }
 
   return prisma.newsletter.update({
@@ -233,55 +324,165 @@ function escapeHtml(text: string): string {
 
 /**
  * Converts newsletter markdown content into an HTML email template.
- * Parses the markdown structure produced by generateContent() — each story
- * is an h2 heading followed by metadata, paragraphs, and a "Read original" link.
+ * Parses the markdown structure produced by generateContent():
+ * - Optional intro paragraph(s) at the top (before first # heading)
+ * - Issue section headers (# IssueName)
+ * - Story blocks: h2 heading, publisher + "Read original article" link row,
+ *   body text (relevanceSummary or blockquote with quote + attribution)
  */
 export async function generateHtmlContent(newsletterId: string): Promise<string> {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
   if (!newsletter.content) throw new Error('No content to convert')
 
-  // Parse the markdown content into story blocks (split on --- separator)
+  // Split on --- separators to get individual blocks
   const sections = newsletter.content.split(/\n---\n/).filter(s => s.trim())
 
-  const storyBlocks = sections.map(section => {
-    const lines = section.trim().split('\n').filter(l => l.trim())
-    let title = ''
-    let meta = ''
-    const bodyParts: string[] = []
-    let readMoreUrl = ''
+  // Extract intro (sections before the first one containing ## heading)
+  let introHtml = ''
+  const contentSections: string[] = []
+
+  for (const section of sections) {
+    const trimmed = section.trim()
+    if (!introHtml && !trimmed.startsWith('#')) {
+      // This is the intro — plain text before any headings
+      introHtml = trimmed
+        .split('\n')
+        .filter(l => l.trim())
+        .map(l => `<p style="margin: 0 0 8px; font-size: 15px; color: #525252; line-height: 1.6;">${escapeHtml(l.trim())}</p>`)
+        .join('\n              ')
+    } else {
+      contentSections.push(trimmed)
+    }
+  }
+
+  // Parse content sections into HTML blocks (issue headers + stories)
+  const htmlBlocks: string[] = []
+
+  for (const section of contentSections) {
+    const lines = section.split('\n').filter(l => l.trim())
+
+    // Check if this section starts with an issue header (# IssueName {slug})
+    let issueHeader = ''
+    let issueSlug = ''
+    const storyChunks: string[][] = []
+    let currentChunk: string[] = []
 
     for (const line of lines) {
       const trimmed = line.trim()
-      if (trimmed.startsWith('## ')) {
-        title = trimmed.slice(3)
-      } else if (trimmed.startsWith('**') && trimmed.includes('|') && !meta) {
-        meta = trimmed.replace(/\*\*/g, '')
-      } else if (trimmed.startsWith('[Read original]') || trimmed.startsWith('[Read more]')) {
-        const match = trimmed.match(/\((https?:\/\/[^)]+)\)/)
-        if (match) readMoreUrl = match[1]
-      } else if (trimmed.startsWith('**Why it matters:**')) {
-        const reason = trimmed.replace('**Why it matters:**', '').trim()
-        if (reason) bodyParts.push(`<p style="margin: 0 0 10px; font-size: 14px; color: #525252;"><strong style="color: #171717;">Why it matters:</strong> ${escapeHtml(reason)}</p>`)
-      } else if (trimmed) {
-        bodyParts.push(`<p style="margin: 0 0 10px; font-size: 15px; color: #525252; line-height: 1.6;">${escapeHtml(trimmed)}</p>`)
+      if (trimmed.startsWith('# ') && !trimmed.startsWith('## ')) {
+        // Parse "# Issue Name {slug}"
+        const headerMatch = trimmed.slice(2).match(/^(.+?)\s*\{([^}]+)\}\s*$/)
+        if (headerMatch) {
+          issueHeader = headerMatch[1]
+          issueSlug = headerMatch[2]
+        } else {
+          issueHeader = trimmed.slice(2)
+        }
+      } else if (trimmed.startsWith('## ') && currentChunk.length > 0) {
+        // Start of a new story — save previous chunk
+        storyChunks.push(currentChunk)
+        currentChunk = [trimmed]
+      } else {
+        currentChunk.push(trimmed)
       }
     }
+    if (currentChunk.length > 0) storyChunks.push(currentChunk)
 
-    const titleHtml = readMoreUrl
-      ? `<a href="${escapeHtml(readMoreUrl)}" style="color: #171717; text-decoration: none;">${escapeHtml(title)}</a>`
-      : escapeHtml(title)
-
-    return `
+    // Render issue header with colored dot (matching website design)
+    if (issueHeader) {
+      const dotColor = getIssueDotColor(issueSlug)
+      htmlBlocks.push(`
     <tr>
-      <td style="padding: 24px 0; border-bottom: 1px solid #e5e5e5;">
-        <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #171717;">${titleHtml}</h2>
-        ${meta ? `<p style="margin: 0 0 12px; font-size: 13px; color: #737373;">${escapeHtml(meta)}</p>` : ''}
-        ${bodyParts.join('\n        ')}
-        ${readMoreUrl ? `<a href="${escapeHtml(readMoreUrl)}" style="display: inline-block; font-size: 14px; font-weight: 600; color: #2563eb; text-decoration: none;">Read more &rarr;</a>` : ''}
+      <td style="padding: 32px 0 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="width: 40%; vertical-align: middle;"><div style="border-top: 1px solid #e5e5e5;"></div></td>
+          <td style="white-space: nowrap; padding: 0 12px; text-align: center; vertical-align: middle;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${dotColor}; vertical-align: middle; margin-right: 8px;"></span>
+            <span style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #404040; vertical-align: middle;">${escapeHtml(issueHeader)}</span>
+          </td>
+          <td style="width: 40%; vertical-align: middle;"><div style="border-top: 1px solid #e5e5e5;"></div></td>
+        </tr></table>
       </td>
-    </tr>`
-  })
+    </tr>`)
+    }
+
+    // Render each story in this section
+    for (const storyLines of storyChunks) {
+      let title = ''
+      let metaLine = ''
+      const bodyParts: string[] = []
+
+      for (const trimmed of storyLines) {
+        if (trimmed.startsWith('## ')) {
+          title = trimmed.slice(3)
+        } else if (!title) {
+          continue
+        } else if (!metaLine && trimmed.match(/\[.*\]\(https?:\/\//)) {
+          metaLine = trimmed
+        } else if (trimmed.startsWith('> "') || trimmed.startsWith("> \u201C")) {
+          const quoteText = trimmed.slice(2).replace(/^[""\u201C]|[""\u201D]$/g, '').trim()
+          bodyParts.push(`<p style="margin: 0 0 4px; font-size: 15px; font-style: italic; color: #525252; line-height: 1.6;">\u201C${escapeHtml(quoteText)}\u201D</p>`)
+        } else if (trimmed.startsWith('> \u2014') || trimmed.startsWith('> —')) {
+          const attribution = trimmed.replace(/^> [—\u2014]\s*/, '').trim()
+          bodyParts.push(`<p style="margin: 0 0 10px; font-size: 13px; color: #737373;">\u2014 ${escapeHtml(attribution)}</p>`)
+        } else if (trimmed) {
+          bodyParts.push(`<p style="margin: 0 0 10px; font-size: 15px; color: #525252; line-height: 1.6;">${escapeHtml(trimmed)}</p>`)
+        }
+      }
+
+      if (title) {
+        // Parse meta: "Publisher · [original article](sourceUrl) · [relevance analysis](relevanceUrl)"
+        let originalUrl = ''
+        let relevanceUrl = ''
+        let publisherName = ''
+        if (metaLine) {
+          const links = [...metaLine.matchAll(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g)]
+          for (const link of links) {
+            if (link[1] === 'original article') originalUrl = link[2]
+            else if (link[1] === 'relevance analysis') relevanceUrl = link[2]
+          }
+          // Publisher is plain text before the first link
+          const firstBracket = metaLine.indexOf('[')
+          if (firstBracket > 0) {
+            publisherName = metaLine.slice(0, firstBracket).replace(/·\s*$/, '').trim()
+          }
+        }
+
+        const titleHtml = originalUrl
+          ? `<a href="${escapeHtml(originalUrl)}" style="color: #171717; text-decoration: none;">${escapeHtml(title)}</a>`
+          : escapeHtml(title)
+
+        let metaHtml = ''
+        if (publisherName || originalUrl) {
+          const parts: string[] = []
+          if (publisherName) parts.push(escapeHtml(publisherName))
+          if (originalUrl) parts.push(`<a href="${escapeHtml(originalUrl)}" style="color: #2563eb; text-decoration: none;">original article</a>`)
+          if (relevanceUrl) parts.push(`<a href="${escapeHtml(relevanceUrl)}" style="color: #2563eb; text-decoration: none;">relevance analysis</a>`)
+          metaHtml = `<p style="margin: 0 0 12px; font-size: 13px; color: #737373;">${parts.join(' &middot; ')}</p>`
+        }
+
+        htmlBlocks.push(`
+    <tr>
+      <td style="padding: 20px 0 4px;">
+        <h2 style="margin: 0 0 6px; font-size: 20px; font-weight: 700; color: #171717; line-height: 1.3;">${titleHtml}</h2>
+        ${metaHtml}
+        ${bodyParts.join('\n        ')}
+      </td>
+    </tr>`)
+      }
+    }
+  }
+
+  const introSection = introHtml
+    ? `
+          <!-- Intro -->
+          <tr>
+            <td style="padding: 12px 32px 8px;">
+              ${introHtml}
+            </td>
+          </tr>`
+    : ''
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -297,27 +498,47 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
           <!-- Header -->
           <tr>
-            <td style="padding: 32px 32px 24px; text-align: center; border-bottom: 3px solid #2563eb;">
-              <h1 style="margin: 0 0 4px; font-size: 24px; font-weight: 800; color: #171717;">Actually Relevant</h1>
-              <p style="margin: 0; font-size: 14px; color: #737373;">${escapeHtml(newsletter.title)}</p>
+            <td style="padding: 32px 32px 12px; text-align: center;">
+              <a href="https://actuallyrelevant.news" style="text-decoration: none;">
+                <img src="https://actuallyrelevant.news/images/logo-text-horizontal.png" alt="Actually Relevant" width="200" style="display: inline-block; max-width: 200px; height: auto;" />
+              </a>
+              <p style="margin: 0; font-size: 15px; font-style: italic; color: #a3a3a3;">News that matter to humanity</p>
+              <p style="margin: 16px 0 0; font-size: 14px; color: #737373;">${escapeHtml(newsletter.title)}</p>
             </td>
           </tr>
-
+${introSection}
           <!-- Stories -->
           <tr>
             <td style="padding: 8px 32px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                ${storyBlocks.join('\n')}
+                ${htmlBlocks.join('\n')}
               </table>
+            </td>
+          </tr>
+
+          <!-- Support -->
+          <tr>
+            <td style="padding: 28px 32px; text-align: center; border-top: 1px solid #e5e5e5;">
+              <p style="margin: 0 0 14px; font-size: 14px; color: #525252;">Free. Independent. Without ads. Help us keep it that way.</p>
+              <a href="https://ko-fi.com/odinmb" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: #ffffff; background-color: #171717; border-radius: 8px; text-decoration: none;">&#10084; Support Us</a>
+            </td>
+          </tr>
+
+          <!-- AI disclosure -->
+          <tr>
+            <td style="padding: 28px 32px 32px; text-align: center; border-top: 1px solid #e5e5e5;">
+              <p style="margin: 0; font-size: 16px; font-style: italic; color: #737373;">Curated and written with care by AI</p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 24px 32px; text-align: center; background-color: #fafafa; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0 0 8px; font-size: 13px; color: #737373;">AI-curated news that matters.</p>
-              <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
+            <td style="padding: 20px 32px 24px; text-align: center; background-color: #fafafa; border-top: 1px solid #e5e5e5; margin-top: 16px;">
+              <p style="margin: 0 0 8px; font-size: 12px; color: #a3a3a3;">
                 <a href="https://actuallyrelevant.news" style="color: #2563eb; text-decoration: none;">actuallyrelevant.news</a>
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
+                <a href="https://app.useplunk.com/unsubscribe/{{plunk_id}}" style="color: #737373; text-decoration: underline;">Unsubscribe</a>
               </p>
             </td>
           </tr>
