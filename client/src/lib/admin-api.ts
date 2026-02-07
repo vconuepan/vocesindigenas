@@ -17,12 +17,8 @@ import type {
 export interface FeedQualityMetrics {
   totalCrawled: number
   publishedCount: number
-  rejectedCount: number
   publishRate: number
   avgRelevance: number | null
-  avgPreRelevance: number | null
-  recentCrawled: number
-  qualityScore: number | null
 }
 
 const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'

@@ -14,16 +14,24 @@ All 10 plans implemented successfully. No plans needed to be skipped.
 6. **pgvector Typed Wrapper** — Centralized `vectors.ts` for all raw SQL embedding operations
 7. **Related Stories** — `GET /api/stories/:slug/related` endpoint + RelatedStories component on story page
 8. **Social Sharing Buttons** — X, LinkedIn, email, copy link + native Web Share API
-9. **Source Quality Scoring** — Feed quality metrics (publish rate, relevance, activity score) in admin
+9. **Source Quality Scoring** — Feed quality metrics (publish rate, avg relevance) in admin
 10. **Structured Data JSON-LD** — NewsArticle, WebSite, Organization, CollectionPage, BreadcrumbList schemas
 
 ## User Input Needed
 
-None.
+### Related Stories — Redesign needed
+
+Current implementation does real-time cosine distance query on every story page view (cached 5 min). A better architecture:
+
+- **At publish time**: compute 3 nearest already-published stories, store IDs on the story record
+- **When viewing**: also fetch stories published *after* this one that reference it as related (reverse lookup), take 3 most recent
+- **Result**: mix of "older context" + "newer developments"
+
+This needs a DB migration (new field on stories table) and integration into the publish pipeline. Current implementation works as a placeholder but should be redesigned.
 
 ## DB Migrations
 
-None required.
+None applied. Related stories redesign (above) will require one.
 
 ## Files to Be Deleted
 

@@ -106,5 +106,5 @@ export const publicStoryQuerySchema = z.object({
   search: z.string().max(200).optional(),
   emotionTags: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
-  pageSize: z.coerce.number().int().positive().max(100).optional().default(12),
+  pageSize: z.coerce.number().int().positive().max(100).optional().default(25),
 })

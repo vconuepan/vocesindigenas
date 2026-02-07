@@ -80,16 +80,10 @@ function QualityCard({ feedId }: { feedId: string }) {
     <div className="rounded-md bg-neutral-50 border border-neutral-200 p-3 text-sm">
       <p className="font-medium text-neutral-700 mb-2">Feed Quality</p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-neutral-600">
-        <span>Quality Score:</span>
-        <span className="font-medium">{m.qualityScore !== null ? `${m.qualityScore}/100` : 'Insufficient data'}</span>
         <span>Publish Rate:</span>
-        <span className="font-medium">{Math.round(m.publishRate * 100)}%</span>
+        <span className="font-medium">{Math.round(m.publishRate * 100)}% ({m.publishedCount} of {m.totalCrawled})</span>
         <span>Avg Relevance:</span>
         <span className="font-medium">{m.avgRelevance?.toFixed(1) ?? '--'}</span>
-        <span>Published:</span>
-        <span className="font-medium">{m.publishedCount} of {m.totalCrawled} crawled</span>
-        <span>Last 30 days:</span>
-        <span className="font-medium">{m.recentCrawled} stories</span>
       </div>
     </div>
   )

@@ -584,7 +584,7 @@ export async function getPublishedStories(options: {
   emotionTags?: string[]
 }) {
   const page = options.page || 1
-  const pageSize = options.pageSize || 12
+  const pageSize = options.pageSize || 25
 
   // Use hybrid search when search query is provided
   if (options.search) {

@@ -124,12 +124,6 @@ export const config = {
     rateLimitMax: parseInt(process.env.SUBSCRIBE_RATE_LIMIT_MAX || "3", 10),
   },
   feedQuality: {
-    publishRateWeight: 40,
-    relevanceWeight: 40,
-    activityWeight: 20,
-    recentDays: 30,
-    activityThreshold: 5,
-    minStories: 10,
     cacheMinutes: 10,
   },
 } as const;

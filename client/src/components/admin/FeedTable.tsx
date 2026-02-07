@@ -13,19 +13,6 @@ import { FeedFaviconPreview } from '../FeedFavicon'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import { formatDateWithTime } from '../../lib/constants'
 
-function QualityBadge({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-neutral-400 text-xs">--</span>
-  const color =
-    score >= 70 ? 'bg-green-100 text-green-700' :
-    score >= 40 ? 'bg-yellow-100 text-yellow-700' :
-    'bg-red-100 text-red-700'
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
-      {score}
-    </span>
-  )
-}
-
 interface FeedTableProps {
   feeds: Feed[]
   issues: Issue[]
@@ -47,9 +34,8 @@ export function FeedTable({ feeds, issues, qualityMetrics, onEdit, onCrawl, onDe
             <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
             <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
             <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
-            <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Quality</th>
             <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Pub %</th>
-            <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Pub / Total</th>
+            <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Avg Rel.</th>
             <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Last Crawled</th>
             <th scope="col" className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
@@ -108,14 +94,11 @@ export function FeedTable({ feeds, issues, qualityMetrics, onEdit, onCrawl, onDe
                 const m = qualityMetrics?.[feed.id]
                 return (
                   <>
-                    <td className="hidden xl:table-cell px-3 py-2 text-center">
-                      <QualityBadge score={m?.qualityScore ?? null} />
-                    </td>
                     <td className="hidden xl:table-cell px-3 py-2 text-center text-neutral-600 text-xs">
                       {m ? `${Math.round(m.publishRate * 100)}%` : '--'}
                     </td>
                     <td className="hidden xl:table-cell px-3 py-2 text-center text-neutral-600 text-xs">
-                      {m ? `${m.publishedCount} / ${m.totalCrawled}` : '--'}
+                      {m?.avgRelevance?.toFixed(1) ?? '--'}
                     </td>
                   </>
                 )
