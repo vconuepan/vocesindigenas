@@ -14,6 +14,17 @@ import type {
   TaskState,
 } from '@shared/types'
 
+export interface FeedQualityMetrics {
+  totalCrawled: number
+  publishedCount: number
+  rejectedCount: number
+  publishRate: number
+  avgRelevance: number | null
+  avgPreRelevance: number | null
+  recentCrawled: number
+  qualityScore: number | null
+}
+
 const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
 const ADMIN_BASE = `${API_BASE}/admin`
 const AUTH_BASE = `${API_BASE}/auth`
@@ -244,6 +255,7 @@ export const adminApi = {
     crawlAll: () => request<CrawlResult[]>('/feeds/crawl-all', { method: 'POST' }),
     fetchFavicon: (id: string) => request<{ success: boolean; message: string }>(`/feeds/${id}/favicon`, { method: 'POST' }),
     fetchAllFavicons: () => request<{ succeeded: number; failed: number; skipped: number; errors: string[] }>('/feeds/fetch-favicons', { method: 'POST' }),
+    quality: () => request<Record<string, FeedQualityMetrics>>('/feeds/quality'),
   },
 
   // Issues

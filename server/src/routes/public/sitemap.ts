@@ -29,6 +29,7 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/imprint', priority: 0.5, changefreq: 'yearly' },
   { path: '/privacy', priority: 0.5, changefreq: 'yearly' },
   { path: '/search', priority: 0.3, changefreq: 'daily' },
+  { path: '/developers', priority: 0.5, changefreq: 'monthly' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
 ]
 

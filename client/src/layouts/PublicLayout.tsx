@@ -94,6 +94,7 @@ function PublicLayoutInner() {
   const [searchQuery, setSearchQuery] = useState("");
   const { openSubscribe } = useSubscribe();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const menuDialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -101,12 +102,34 @@ function PublicLayoutInner() {
   const isActiveIssue = (href: string) =>
     location.pathname === href || location.pathname.startsWith(href + "/");
 
-  // Close mobile menu and search on Escape
+  // Sync mobile menu dialog open/close
   useEffect(() => {
-    if (!menuOpen && !searchOpen) return;
+    const dialog = menuDialogRef.current;
+    if (!dialog) return;
+    if (menuOpen) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [menuOpen]);
+
+  // Handle dialog cancel (Escape key / native close)
+  useEffect(() => {
+    const dialog = menuDialogRef.current;
+    if (!dialog) return;
+    const handleCancel = (e: Event) => {
+      e.preventDefault();
+      setMenuOpen(false);
+    };
+    dialog.addEventListener("cancel", handleCancel);
+    return () => dialog.removeEventListener("cancel", handleCancel);
+  }, []);
+
+  // Close search on Escape
+  useEffect(() => {
+    if (!searchOpen) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setMenuOpen(false);
         if (searchQuery) {
           setSearchQuery("");
         } else {
@@ -116,7 +139,7 @@ function PublicLayoutInner() {
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [menuOpen, searchOpen, searchQuery]);
+  }, [searchOpen, searchQuery]);
 
   // Auto-focus search input when opened
   useEffect(() => {
@@ -207,6 +230,7 @@ function PublicLayoutInner() {
                 }`}
                 aria-label={searchOpen ? "Close search" : "Open search"}
                 aria-expanded={searchOpen}
+                aria-controls="search-panel"
               >
                 <SearchIcon className="w-5 h-5" />
               </button>
@@ -216,6 +240,7 @@ function PublicLayoutInner() {
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
                 aria-expanded={menuOpen}
+                aria-controls="mobile-nav-menu"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
               >
                 <svg
@@ -261,6 +286,7 @@ function PublicLayoutInner() {
                 }`}
                 aria-label={searchOpen ? "Close search" : "Open search"}
                 aria-expanded={searchOpen}
+                aria-controls="search-panel"
               >
                 <SearchIcon className="w-5 h-5" />
               </button>
@@ -292,10 +318,21 @@ function PublicLayoutInner() {
           </ul>
         </nav>
 
-        {/* Mobile nav */}
-        {menuOpen && (
-          <div className="lg:hidden bg-white border-b border-neutral-200 shadow-lg">
-            <nav className="px-4 py-3" aria-label="Mobile navigation">
+        {/* Mobile nav — dialog for built-in focus trap */}
+        <dialog
+          ref={menuDialogRef}
+          id="mobile-nav-menu"
+          className="lg:hidden fixed top-0 left-0 w-full m-0 p-0 bg-transparent backdrop:bg-black/30 open:flex flex-col"
+          aria-label="Mobile navigation"
+          onClick={(e) => {
+            // Close on backdrop click (click on dialog element itself)
+            if (e.target === e.currentTarget) setMenuOpen(false);
+          }}
+        >
+          {/* Spacer to push menu below the header */}
+          <div className="h-[calc(3.5rem+1px+0.25rem)] md:h-[calc(4rem+1px+0.25rem)] shrink-0 pointer-events-none" aria-hidden="true" />
+          <div className="bg-white border-b border-neutral-200 shadow-lg">
+            <nav className="px-4 py-3">
               {/* Mood Dial — centered */}
               <div className="mb-3 py-2 flex justify-center">
                 <MoodDialPanel />
@@ -359,11 +396,11 @@ function PublicLayoutInner() {
               </div>
             </nav>
           </div>
-        )}
+        </dialog>
 
         {/* Search bar */}
         {searchOpen && (
-          <div className="bg-white border-b border-neutral-200 shadow-lg">
+          <div id="search-panel" className="bg-white border-b border-neutral-200 shadow-lg">
             <div className="max-w-3xl mx-auto px-4 py-4">
               <form
                 onSubmit={(e) => {

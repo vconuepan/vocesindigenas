@@ -194,6 +194,16 @@ See `.context/accessibility.md` for full details.
 
 All hardcoded static text (UI labels, headings, descriptions, error messages, tooltips, meta tags) must use **American English** spelling. Examples: "analyzed" (not "analysed"), "color" (not "colour"), "organize" (not "organise"). Proper nouns that use British spelling (e.g. organization names like "Centre for...") are exempt.
 
+## API Documentation
+
+- **OpenAPI spec** is generated from Zod schemas in `server/src/lib/openapi.ts`
+- When adding or modifying public API endpoints:
+  1. Update the Zod schema in `server/src/schemas/`
+  2. Update the route definition in `server/src/lib/openapi.ts`
+  3. Add `.openapi()` metadata to new Zod fields (description, example)
+- The spec is served at `GET /api/docs/openapi.json` and rendered at `/developers`
+- Run `npm run build --prefix server` to verify the spec compiles without errors
+
 ## Context Files
 
 - **`.context/story-pipeline.md`** — Stories flow through 7 statuses from `fetched` to `published`; pre-assessment first assigns each story to an issue via LLM (stored as `story.issueId`), then groups by issue for batch screening; downstream code uses `story.issue ?? story.feed.issue` for issue lookup. Covers status transitions, automated jobs, manual admin endpoints, source fields, AI-generated fields, issue assignment, and slug generation.

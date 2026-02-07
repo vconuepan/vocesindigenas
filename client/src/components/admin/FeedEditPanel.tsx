@@ -5,7 +5,7 @@ import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
 import { FeedFaviconPreview } from '../FeedFavicon'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { useFeed, useUpdateFeed } from '../../hooks/useFeeds'
+import { useFeed, useUpdateFeed, useFeedQuality } from '../../hooks/useFeeds'
 import { useEditForm } from '../../hooks/useEditForm'
 import { adminApi } from '../../lib/admin-api'
 import { useToast } from '../ui/Toast'
@@ -67,6 +67,30 @@ function FaviconSection({ feedId }: { feedId: string }) {
       ) : (
         <span className="text-xs text-neutral-400">Fetch in dev only</span>
       )}
+    </div>
+  )
+}
+
+function QualityCard({ feedId }: { feedId: string }) {
+  const { data: metrics } = useFeedQuality()
+  const m = metrics?.[feedId]
+  if (!m) return null
+
+  return (
+    <div className="rounded-md bg-neutral-50 border border-neutral-200 p-3 text-sm">
+      <p className="font-medium text-neutral-700 mb-2">Feed Quality</p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-neutral-600">
+        <span>Quality Score:</span>
+        <span className="font-medium">{m.qualityScore !== null ? `${m.qualityScore}/100` : 'Insufficient data'}</span>
+        <span>Publish Rate:</span>
+        <span className="font-medium">{Math.round(m.publishRate * 100)}%</span>
+        <span>Avg Relevance:</span>
+        <span className="font-medium">{m.avgRelevance?.toFixed(1) ?? '--'}</span>
+        <span>Published:</span>
+        <span className="font-medium">{m.publishedCount} of {m.totalCrawled} crawled</span>
+        <span>Last 30 days:</span>
+        <span className="font-medium">{m.recentCrawled} stories</span>
+      </div>
     </div>
   )
 }
@@ -139,6 +163,7 @@ function FeedEditForm({ feedId, issues, onClose }: { feedId: string; issues: Iss
           Active
         </label>
         <FaviconSection feedId={feedId} />
+        <QualityCard feedId={feedId} />
       </div>
       <PanelFooter isPending={isPending} isDirty={isDirty} onCancel={onClose} />
     </form>

@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js'
 import type { Feed, Prisma } from '@prisma/client'
+import { config } from '../config.js'
 
 interface FeedFilters {
   issueId?: string
@@ -161,4 +162,99 @@ export async function deleteFeed(id: string): Promise<{ action: 'deleted' | 'dea
   }
   await prisma.feed.delete({ where: { id } })
   return { action: 'deleted' }
+}
+
+// ──── Feed Quality Metrics ─────────────────────────────────────────────────
+
+export interface FeedQualityMetrics {
+  totalCrawled: number
+  publishedCount: number
+  rejectedCount: number
+  publishRate: number
+  avgRelevance: number | null
+  avgPreRelevance: number | null
+  recentCrawled: number
+  qualityScore: number | null
+}
+
+interface RawQualityRow {
+  feed_id: string
+  total_crawled: bigint
+  published_count: bigint
+  rejected_count: bigint
+  avg_relevance: number | null
+  avg_pre_relevance: number | null
+  recent_crawled: bigint
+}
+
+function computeQualityScore(metrics: {
+  totalCrawled: number
+  publishedCount: number
+  avgRelevance: number | null
+  recentCrawled: number
+}): number | null {
+  if (metrics.totalCrawled < config.feedQuality.minStories) return null
+
+  const publishRate = metrics.publishedCount / metrics.totalCrawled
+  const normalizedRelevance = metrics.avgRelevance ? (metrics.avgRelevance / 10) : 0
+  const activityScore = Math.min(metrics.recentCrawled / config.feedQuality.activityThreshold, 1)
+
+  return Math.round(
+    publishRate * 100 * (config.feedQuality.publishRateWeight / 100) +
+    normalizedRelevance * 100 * (config.feedQuality.relevanceWeight / 100) +
+    activityScore * 100 * (config.feedQuality.activityWeight / 100),
+  )
+}
+
+let qualityCache: { data: Map<string, FeedQualityMetrics>; expiry: number } | null = null
+
+export async function getAllFeedQualityMetrics(): Promise<Map<string, FeedQualityMetrics>> {
+  if (qualityCache && Date.now() < qualityCache.expiry) {
+    return qualityCache.data
+  }
+
+  const recentDays = config.feedQuality.recentDays
+  const rows = await prisma.$queryRaw<RawQualityRow[]>`
+    SELECT
+      f.id AS feed_id,
+      COUNT(s.id) AS total_crawled,
+      COUNT(s.id) FILTER (WHERE s.status = 'published') AS published_count,
+      COUNT(s.id) FILTER (WHERE s.status = 'rejected') AS rejected_count,
+      AVG(s.relevance) FILTER (WHERE s.relevance IS NOT NULL AND s.status IN ('analyzed', 'selected', 'published')) AS avg_relevance,
+      AVG(s.relevance_pre) FILTER (WHERE s.relevance_pre IS NOT NULL) AS avg_pre_relevance,
+      COUNT(s.id) FILTER (WHERE s.date_crawled > NOW() - (${recentDays} || ' days')::interval) AS recent_crawled
+    FROM feeds f
+    LEFT JOIN stories s ON s.feed_id = f.id
+    GROUP BY f.id
+  `
+
+  const result = new Map<string, FeedQualityMetrics>()
+  for (const row of rows) {
+    const totalCrawled = Number(row.total_crawled)
+    const publishedCount = Number(row.published_count)
+    const rejectedCount = Number(row.rejected_count)
+    const recentCrawled = Number(row.recent_crawled)
+    const avgRelevance = row.avg_relevance ? Math.round(row.avg_relevance * 10) / 10 : null
+    const avgPreRelevance = row.avg_pre_relevance ? Math.round(row.avg_pre_relevance * 10) / 10 : null
+    const publishRate = totalCrawled > 0 ? Math.round((publishedCount / totalCrawled) * 1000) / 1000 : 0
+
+    const metrics: FeedQualityMetrics = {
+      totalCrawled,
+      publishedCount,
+      rejectedCount,
+      publishRate,
+      avgRelevance,
+      avgPreRelevance,
+      recentCrawled,
+      qualityScore: computeQualityScore({ totalCrawled, publishedCount, avgRelevance, recentCrawled }),
+    }
+    result.set(row.feed_id, metrics)
+  }
+
+  qualityCache = {
+    data: result,
+    expiry: Date.now() + config.feedQuality.cacheMinutes * 60 * 1000,
+  }
+
+  return result
 }

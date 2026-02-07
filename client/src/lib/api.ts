@@ -59,9 +59,11 @@ export const publicApi = {
   homepage: () => request<HomepageData>('/homepage'),
 
   stories: {
-    list: (params?: { page?: number; pageSize?: number; issueSlug?: string; search?: string }) =>
+    list: (params?: { page?: number; pageSize?: number; issueSlug?: string; search?: string; emotionTags?: string }) =>
       request<PaginatedResponse<PublicStory>>(`/stories${toQueryString((params || {}) as Record<string, unknown>)}`),
     get: (slug: string) => request<PublicStory>(`/stories/${slug}`),
+    related: (slug: string, limit = 4) =>
+      request<PublicStory[]>(`/stories/${slug}/related?limit=${limit}`),
   },
 
   issues: {

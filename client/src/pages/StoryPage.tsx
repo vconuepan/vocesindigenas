@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Markdown from 'react-markdown'
@@ -5,9 +6,14 @@ import { usePublicStory } from '../hooks/usePublicStories'
 import { getCategoryColor, shiftHex } from '../lib/category-colors'
 import { parsePoints } from '../lib/parse-points'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
+import { markAsRead } from '../lib/reading-history'
 import FeedFavicon from '../components/FeedFavicon'
+import BookmarkButton from '../components/BookmarkButton'
+import ShareButtons from '../components/ShareButtons'
+import RelatedStories from '../components/RelatedStories'
 import { StoryPageSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
+import { buildArticleSchema, buildBreadcrumbSchema } from '../lib/structured-data'
 
 // ---------------------------------------------------------------------------
 // Analysis section with ruled heading + numbered points
@@ -66,6 +72,11 @@ function AnalysisSection({
 export default function StoryPage() {
   const { slug } = useParams<{ slug: string }>()
   const { data: story, isLoading, error } = usePublicStory(slug || '')
+
+  // Track reading history
+  useEffect(() => {
+    if (slug && story) markAsRead(slug)
+  }, [slug, story])
 
   if (isLoading) {
     return <StoryPageSkeleton />
@@ -126,6 +137,16 @@ export default function StoryPage() {
           <meta property="article:published_time" content={story.datePublished} />
         )}
         {CommonOgTags({})}
+        <script type="application/ld+json">
+          {JSON.stringify(buildArticleSchema(story))}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(buildBreadcrumbSchema([
+            { name: 'Home', url: SEO.siteUrl },
+            { name: issueName, url: `${SEO.siteUrl}/issues/${issueSlug}` },
+            { name: displayTitle },
+          ]))}
+        </script>
       </Helmet>
 
       <article>
@@ -186,7 +207,19 @@ export default function StoryPage() {
               >
                 AI-generated
               </Link>
+              {story.slug && (
+                <>
+                  <span className="text-neutral-300">|</span>
+                  <BookmarkButton slug={story.slug} size="md" />
+                </>
+              )}
             </div>
+
+            <ShareButtons
+              url={`${SEO.siteUrl}/stories/${story.slug}`}
+              title={displayTitle}
+              description={story.marketingBlurb || story.summary || displayTitle}
+            />
           </div>
         </header>
 
@@ -245,20 +278,31 @@ export default function StoryPage() {
             />
           )}
 
-          {/* Back / category navigation */}
-          <div className="border-t border-neutral-200 pt-6 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+          {/* Related stories */}
+          {story.slug && <RelatedStories slug={story.slug} />}
+
+          {/* Navigation + actions */}
+          <div className="border-t border-neutral-200 pt-6 mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Link
               to="/"
               className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               &larr; Back to all stories
             </Link>
-            <Link
-              to={`/issues/${issueSlug}`}
-              className="self-end sm:self-auto text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
-            >
-              More in {issueName} &rarr;
-            </Link>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 self-end sm:self-auto">
+              <Link
+                to={`/search?q=${encodeURIComponent(headline)}`}
+                className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              >
+                Find similar stories
+              </Link>
+              <Link
+                to={`/issues/${issueSlug}`}
+                className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              >
+                More in {issueName} &rarr;
+              </Link>
+            </div>
           </div>
 
         </div>

@@ -4,6 +4,7 @@ import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
 import { updateStoryEmbeddingIfNeeded, batchUpdateEmbeddings, generateEmbedding } from './embedding.js'
+import { searchByEmbedding } from '../lib/vectors.js'
 import { createLogger } from '../lib/logger.js'
 
 const log = createLogger('story')
@@ -503,16 +504,10 @@ async function hybridSearch(options: {
     (async () => {
       try {
         const queryEmbedding = await generateEmbedding(query)
-        const vectorStr = `[${queryEmbedding.join(',')}]`
-        const rows = await prisma.$queryRaw<{ id: string }[]>`
-          SELECT s.id
-          FROM stories s
-          WHERE s.status = 'published'
-            AND s.embedding IS NOT NULL
-            ${issueFilter}
-          ORDER BY s.embedding <=> ${vectorStr}::vector
-          LIMIT ${RRF_FETCH_LIMIT}
-        `
+        const rows = await searchByEmbedding(queryEmbedding, {
+          limit: RRF_FETCH_LIMIT,
+          issueFilter,
+        })
         return rows.map((r) => r.id)
       } catch (err) {
         log.warn({ err }, 'semantic search failed, falling back to text-only')
@@ -586,9 +581,10 @@ export async function getPublishedStories(options: {
   pageSize?: number
   issueSlug?: string
   search?: string
+  emotionTags?: string[]
 }) {
   const page = options.page || 1
-  const pageSize = options.pageSize || 25
+  const pageSize = options.pageSize || 12
 
   // Use hybrid search when search query is provided
   if (options.search) {
@@ -604,6 +600,9 @@ export async function getPublishedStories(options: {
   const conditions: Prisma.StoryWhereInput[] = []
   if (options.issueSlug) {
     conditions.push(buildIssueCondition(options.issueSlug))
+  }
+  if (options.emotionTags?.length) {
+    conditions.push({ emotionTag: { in: options.emotionTags as EmotionTag[] } })
   }
 
   const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ datePublished: 'desc' }, { dateCrawled: 'desc' }]
@@ -626,6 +625,40 @@ export async function getPublishedStories(options: {
     page,
     pageSize,
   })
+}
+
+export async function getRelatedStories(slug: string, limit = 4) {
+  // 1. Find the source story and verify it has an embedding
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM stories
+    WHERE slug = ${slug} AND status = 'published' AND embedding IS NOT NULL
+    LIMIT 1
+  `
+  if (rows.length === 0) return []
+
+  const sourceId = rows[0].id
+
+  // 2. Find similar stories by cosine distance
+  const related = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT s.id
+    FROM stories s
+    WHERE s.id != ${sourceId}
+      AND s.status = 'published'
+      AND s.embedding IS NOT NULL
+    ORDER BY s.embedding <=> (SELECT embedding FROM stories WHERE id = ${sourceId})
+    LIMIT ${limit}
+  `
+  if (related.length === 0) return []
+
+  // 3. Fetch full story data
+  const stories = await prisma.story.findMany({
+    where: { id: { in: related.map((r) => r.id) } },
+    select: PUBLIC_STORY_SELECT,
+  })
+
+  // 4. Preserve similarity order
+  const storyMap = new Map(stories.map((s) => [s.id, s]))
+  return related.map((r) => storyMap.get(r.id)).filter((s): s is NonNullable<typeof s> => s != null)
 }
 
 interface StatusFilterOptions {

@@ -7,7 +7,7 @@
  *   npm run migration:backfill-embeddings --prefix server -- --override  # override mode (re-generates all)
  */
 
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { Semaphore } from '../../lib/semaphore.js'
 import { config } from '../../config.js'
 import {
@@ -16,6 +16,11 @@ import {
   needsEmbeddingUpdate,
   generateEmbeddingsBatch,
 } from '../../services/embedding.js'
+import {
+  fetchEmbeddingBackfillBatch,
+  saveEmbeddingWithClient,
+  type StoryEmbeddingRow,
+} from '../../lib/vectors.js'
 
 const TEST_MODE = process.argv.includes('--test')
 const OVERRIDE_MODE = process.argv.includes('--override')
@@ -24,42 +29,6 @@ const BATCH_SIZE = config.embedding.batchSize
 
 const prisma = new PrismaClient()
 const semaphore = new Semaphore(CONCURRENCY)
-
-interface StoryRow {
-  id: string
-  title: string | null
-  title_label: string | null
-  summary: string | null
-  embedding_content_hash: string | null
-}
-
-async function fetchBatch(cursor: string | undefined, limit: number): Promise<StoryRow[]> {
-  const hashFilter = OVERRIDE_MODE
-    ? Prisma.empty
-    : Prisma.sql`AND s.embedding_content_hash IS NULL`
-  const cursorFilter = cursor
-    ? Prisma.sql`AND s.id > ${cursor}`
-    : Prisma.empty
-  return prisma.$queryRaw<StoryRow[]>`
-    SELECT s.id, s.title, s.title_label, s.summary, s.embedding_content_hash
-    FROM stories s
-    WHERE s.status = 'published'
-    ${hashFilter}
-    ${cursorFilter}
-    ORDER BY s.id ASC
-    LIMIT ${limit}
-  `
-}
-
-function toEmbeddingInput(row: StoryRow) {
-  return {
-    id: row.id,
-    title: row.title,
-    titleLabel: row.title_label,
-    summary: row.summary,
-    embeddingContentHash: row.embedding_content_hash,
-  }
-}
 
 async function main() {
   const mode = TEST_MODE ? 'TEST (no DB writes)' : OVERRIDE_MODE ? 'OVERRIDE' : 'BATCH'
@@ -74,14 +43,13 @@ async function main() {
   let failed = 0
 
   while (true) {
-    const rows = await fetchBatch(cursor, TEST_MODE ? 3 : BATCH_SIZE)
+    const rows = await fetchEmbeddingBackfillBatch(cursor, TEST_MODE ? 3 : BATCH_SIZE, OVERRIDE_MODE, prisma)
 
     if (rows.length === 0) break
 
     // Filter to only stories that actually need embedding updates
-    const toProcess: { story: ReturnType<typeof toEmbeddingInput>; content: string; hash: string }[] = []
-    for (const row of rows) {
-      const story = toEmbeddingInput(row)
+    const toProcess: { story: StoryEmbeddingRow; content: string; hash: string }[] = []
+    for (const story of rows) {
       const content = buildEmbeddingContent(story)
       const hash = computeContentHash(content)
       if (OVERRIDE_MODE || needsEmbeddingUpdate(story, hash)) {
@@ -90,6 +58,8 @@ async function main() {
         skipped++
       }
     }
+
+    cursor = rows[rows.length - 1].id
 
     if (toProcess.length > 0) {
       // Process in API batch chunks, with semaphore controlling concurrent batches
@@ -110,13 +80,7 @@ async function main() {
 
               if (!TEST_MODE) {
                 try {
-                  await prisma.$executeRaw`
-                    UPDATE stories
-                    SET embedding = ${JSON.stringify(embedding)}::vector,
-                        embedding_content_hash = ${hash},
-                        embedding_generated_at = NOW()
-                    WHERE id = ${story.id}
-                  `
+                  await saveEmbeddingWithClient(prisma, story.id, embedding, hash)
                   processed++
                 } catch (err) {
                   console.error(`  Failed to save embedding for ${story.id}:`, err)
@@ -138,8 +102,6 @@ async function main() {
         }
       }
     }
-
-    cursor = rows[rows.length - 1].id
 
     console.log(`\n  Progress: processed=${processed} skipped=${skipped} failed=${failed}`)
 

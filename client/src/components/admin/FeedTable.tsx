@@ -8,19 +8,34 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline'
 import type { Feed, Issue } from '@shared/types'
+import type { FeedQualityMetrics } from '../../lib/admin-api'
 import { FeedFaviconPreview } from '../FeedFavicon'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import { formatDateWithTime } from '../../lib/constants'
 
+function QualityBadge({ score }: { score: number | null }) {
+  if (score === null) return <span className="text-neutral-400 text-xs">--</span>
+  const color =
+    score >= 70 ? 'bg-green-100 text-green-700' :
+    score >= 40 ? 'bg-yellow-100 text-yellow-700' :
+    'bg-red-100 text-red-700'
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
+      {score}
+    </span>
+  )
+}
+
 interface FeedTableProps {
   feeds: Feed[]
   issues: Issue[]
+  qualityMetrics?: Record<string, FeedQualityMetrics>
   onEdit: (id: string) => void
   onCrawl: (id: string) => void
   onDelete: (id: string) => void
 }
 
-export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTableProps) {
+export function FeedTable({ feeds, issues, qualityMetrics, onEdit, onCrawl, onDelete }: FeedTableProps) {
   const issueMap = new Map(issues.map(i => [i.id, i.name]))
 
   return (
@@ -32,6 +47,9 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
             <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Issue</th>
             <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Lang</th>
             <th scope="col" className="hidden lg:table-cell text-left px-3 py-2 font-medium text-neutral-500">Interval</th>
+            <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Quality</th>
+            <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Pub %</th>
+            <th scope="col" className="hidden xl:table-cell text-center px-3 py-2 font-medium text-neutral-500">Pub / Total</th>
             <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Last Crawled</th>
             <th scope="col" className="px-3 py-2 text-right font-medium text-neutral-500">Actions</th>
           </tr>
@@ -86,6 +104,22 @@ export function FeedTable({ feeds, issues, onEdit, onCrawl, onDelete }: FeedTabl
               <td className="hidden md:table-cell px-3 py-2 text-neutral-600">{issueMap.get(feed.issueId) || '—'}</td>
               <td className="hidden lg:table-cell px-3 py-2 text-neutral-600">{feed.language}</td>
               <td className="hidden lg:table-cell px-3 py-2 text-neutral-600">{feed.crawlIntervalHours}h</td>
+              {(() => {
+                const m = qualityMetrics?.[feed.id]
+                return (
+                  <>
+                    <td className="hidden xl:table-cell px-3 py-2 text-center">
+                      <QualityBadge score={m?.qualityScore ?? null} />
+                    </td>
+                    <td className="hidden xl:table-cell px-3 py-2 text-center text-neutral-600 text-xs">
+                      {m ? `${Math.round(m.publishRate * 100)}%` : '--'}
+                    </td>
+                    <td className="hidden xl:table-cell px-3 py-2 text-center text-neutral-600 text-xs">
+                      {m ? `${m.publishedCount} / ${m.totalCrawled}` : '--'}
+                    </td>
+                  </>
+                )
+              })()}
               <td className="hidden md:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDateWithTime(feed.lastCrawledAt)}</td>
               <td className="px-3 py-2">
                 {/* Desktop actions */}

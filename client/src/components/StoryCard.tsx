@@ -1,10 +1,13 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
 import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
+import { isRead } from '../lib/reading-history'
 import FeedFavicon from './FeedFavicon'
+import BookmarkButton from './BookmarkButton'
 
 interface StoryCardProps {
   story: PublicStory
@@ -37,8 +40,14 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
+  const [read, setRead] = useState(false)
+
+  useEffect(() => {
+    if (story.slug) setRead(isRead(story.slug))
+  }, [story.slug])
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
+  const readClass = read ? 'opacity-70' : ''
 
   // === HORIZONTAL variant (Layout B full-width) ===
   if (variant === 'horizontal') {
@@ -93,12 +102,15 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             {getTitleLabel(story) && (
               <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
             )}
-            <h3 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight">
+            <h3 className={`text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight ${readClass}`}>
               {getHeadline(story)}
             </h3>
           </Link>
 
-          <StoryMeta story={story} />
+          <div className="flex items-center justify-between gap-2">
+            <StoryMeta story={story} />
+            {story.slug && <BookmarkButton slug={story.slug} size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />}
+          </div>
 
           {(story.relevanceSummary || story.summary) && (
             <p className="text-neutral-600 leading-relaxed mt-3">{story.relevanceSummary || story.summary}</p>
@@ -144,19 +156,25 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
       className={`group story-card-hover relative overflow-hidden border-l-4 ${colors.border} rounded-r-lg bg-white pl-4 pr-4 py-4 hover:shadow-md hover:shadow-brand-100/30 transition-all duration-200`}
       style={hoverStyle}
     >
-      <Link
-        to={`/stories/${story.slug}`}
-        className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-      >
-        {getTitleLabel(story) && (
-          <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-0.5">{getTitleLabel(story)}</span>
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <Link
+            to={`/stories/${story.slug}`}
+            className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          >
+            {getTitleLabel(story) && (
+              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-0.5">{getTitleLabel(story)}</span>
+            )}
+            <h3 className={`text-base font-bold text-neutral-900 mb-1.5 group-hover:text-brand-800 transition-colors leading-snug ${readClass}`}>
+              {getHeadline(story)}
+            </h3>
+          </Link>
+          <StoryMeta story={story} size="xs" />
+        </div>
+        {story.slug && (
+          <BookmarkButton slug={story.slug} size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
         )}
-        <h3 className="text-base font-bold text-neutral-900 mb-1.5 group-hover:text-brand-800 transition-colors leading-snug">
-          {getHeadline(story)}
-        </h3>
-      </Link>
-
-      <StoryMeta story={story} size="xs" />
+      </div>
     </article>
   )
 }

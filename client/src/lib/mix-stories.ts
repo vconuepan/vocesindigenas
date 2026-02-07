@@ -134,6 +134,21 @@ export function filterStoriesByPositivity(
   }
 }
 
+/**
+ * Map positivity slider position to emotion tag filters for server-side pagination.
+ * Returns undefined at 50% (no filter — show all stories).
+ */
+export function positivityToEmotionTags(positivity: number): string[] | undefined {
+  switch (positivity) {
+    case 0: return ['frustrating', 'scary']
+    case 25: return ['frustrating', 'scary', 'calm']
+    case 50: return undefined
+    case 75: return ['uplifting', 'calm']
+    case 100: return ['uplifting']
+    default: return undefined
+  }
+}
+
 function byDateDesc(a: PublicStory, b: PublicStory): number {
   const da = new Date(a.datePublished ?? a.dateCrawled).getTime()
   const db = new Date(b.datePublished ?? b.dateCrawled).getTime()

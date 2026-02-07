@@ -19,6 +19,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
+    "@scalar/api-reference-react": "^0.8.52",
     "@tanstack/react-query": "^5.90.20",
     "date-fns": "^4.1.0",
     "react": "^18.3.1",
@@ -28,6 +29,7 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.11.1",
     "@prerenderer/renderer-puppeteer": "^1.2.4",
     "@prerenderer/rollup-plugin": "^0.3.12",
     "@testing-library/jest-dom": "^6.9.1",
@@ -43,6 +45,7 @@
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3",
     "vite": "^7.3.1",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "vitest-axe": "^0.1.0"
   }
 }

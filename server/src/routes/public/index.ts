@@ -6,6 +6,7 @@ import feedRouter from './feed.js'
 import subscribeRouter from './subscribe.js'
 import sitemapRouter from './sitemap.js'
 import homepageRouter from './homepage.js'
+import docsRouter from './docs.js'
 
 const router = Router()
 
@@ -18,5 +19,6 @@ router.use('/issues', issuesRouter)
 router.use('/feed', feedRouter)
 router.use('/subscribe', subscribeRouter)
 router.use('/sitemap.xml', sitemapRouter)
+router.use('/docs', docsRouter)
 
 export default router

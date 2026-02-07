@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { API_BASE } from '../lib/api'
 import { usePublicIssue } from '../hooks/usePublicIssues'
@@ -10,8 +10,9 @@ import PullQuote, { getQuoteVariant } from '../components/PullQuote'
 import Pagination from '../components/Pagination'
 import { IssuePageSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
+import { buildCollectionPageSchema, buildBreadcrumbSchema } from '../lib/structured-data'
 import { usePositivity } from '../contexts/PositivityContext'
-import { filterStoriesByPositivity } from '../lib/mix-stories'
+import { positivityToEmotionTags } from '../lib/mix-stories'
 import type { PublicStory } from '@shared/types'
 
 // ---------------------------------------------------------------------------
@@ -113,14 +114,28 @@ const PAGE_SIZE = 12
 
 export default function IssuePage() {
   const { slug } = useParams<{ slug: string }>()
-  const [page, setPage] = useState(1)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = parseInt(searchParams.get('page') ?? '1', 10) || 1
   const { positivity } = usePositivity()
   const { data: issue, isLoading, isError } = usePublicIssue(slug ?? '')
-  // Fetch all stories for the issue — client does filtering + pagination
+
+  const emotionTags = positivityToEmotionTags(positivity)
+
+  // Server-side pagination with emotion tag filtering
   const { data: storiesData } = usePublicStories({
     issueSlug: slug,
-    pageSize: 100,
+    emotionTags: emotionTags?.join(','),
+    page,
+    pageSize: PAGE_SIZE,
   })
+
+  // Reset to page 1 when positivity changes
+  useEffect(() => {
+    if (page !== 1) {
+      setSearchParams((prev) => { prev.delete('page'); return prev })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positivity])
 
   if (isLoading) {
     return <IssuePageSkeleton />
@@ -141,12 +156,8 @@ export default function IssuePage() {
     )
   }
 
-  // Client-side filtering by positivity, then pagination
-  const allStories = storiesData?.data ?? []
-  const filtered = filterStoriesByPositivity(allStories, positivity)
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const safePage = Math.min(page, totalPages)
-  const stories = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const stories = storiesData?.data ?? []
+  const totalPages = storiesData?.totalPages ?? 1
   const colors = getCategoryColor(slug ?? 'general-news')
 
   // Only show children with published stories
@@ -173,6 +184,16 @@ export default function IssuePage() {
         <meta property="og:url" content={`${SEO.siteUrl}/issues/${slug}`} />
         {CommonOgTags({})}
         <link rel="alternate" type="application/rss+xml" title={`${issue.name} RSS Feed`} href={`${API_BASE}/feed/${slug}`} />
+        <script type="application/ld+json">
+          {JSON.stringify(buildCollectionPageSchema(issue))}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(buildBreadcrumbSchema([
+            { name: 'Home', url: SEO.siteUrl },
+            ...(issue.parent ? [{ name: issue.parent.name, url: `${SEO.siteUrl}/issues/${issue.parent.slug}` }] : []),
+            { name: issue.name },
+          ]))}
+        </script>
       </Helmet>
 
       <div className="page-section-wide">
@@ -245,7 +266,18 @@ export default function IssuePage() {
               )
             })}
 
-            <Pagination page={safePage} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination
+              page={storiesData?.page ?? 1}
+              totalPages={totalPages}
+              onPageChange={(newPage) => {
+                setSearchParams((prev) => {
+                  if (newPage === 1) prev.delete('page')
+                  else prev.set('page', String(newPage))
+                  return prev
+                })
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+            />
           </>
         ) : (
           <p className="text-neutral-500 py-8 text-center">

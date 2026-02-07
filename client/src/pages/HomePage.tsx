@@ -13,6 +13,7 @@ import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/
 import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { SEO, CommonOgTags } from '../lib/seo'
+import { buildWebSiteSchema, buildOrganizationSchema } from '../lib/structured-data'
 import SupportBanner from '../components/SupportBanner'
 import { usePositivity } from '../contexts/PositivityContext'
 import { mixHomepageStories, pickHero } from '../lib/mix-stories'
@@ -257,6 +258,12 @@ export default function HomePage() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/`} />
         {CommonOgTags({})}
+        <script type="application/ld+json">
+          {JSON.stringify(buildWebSiteSchema())}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(buildOrganizationSchema())}
+        </script>
       </Helmet>
 
       {/* Hero — show skeleton while loading */}

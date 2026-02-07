@@ -10,17 +10,33 @@ const log = createLogger('public:stories')
 router.get('/', validateQuery(publicStoryQuerySchema), async (req, res) => {
   try {
     const query = req.parsedQuery!
+    const emotionTags = query.emotionTags
+      ? query.emotionTags.split(',').map((t: string) => t.trim()).filter(Boolean)
+      : undefined
     const result = await storyService.getPublishedStories({
       page: query.page,
       pageSize: query.pageSize,
       issueSlug: query.issueSlug,
       search: query.search,
+      emotionTags,
     })
     res.set('Cache-Control', 'public, max-age=60')
     res.json(result)
   } catch (err) {
     log.error({ err }, 'failed to fetch stories')
     res.status(500).json({ error: 'Failed to fetch stories' })
+  }
+})
+
+router.get('/:slug/related', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 4, 10)
+    const stories = await storyService.getRelatedStories(req.params.slug, limit)
+    res.set('Cache-Control', 'public, max-age=300')
+    res.json(stories)
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to fetch related stories')
+    res.status(500).json({ error: 'Failed to fetch related stories' })
   }
 })
 

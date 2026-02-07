@@ -1,0 +1,108 @@
+import { useEffect, useRef } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { publicApi } from '../lib/api'
+
+function timeAgo(dateStr: string) {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+  return new Date(dateStr).toLocaleDateString()
+}
+
+export default function EmbedPage() {
+  const [params] = useSearchParams()
+  const count = Math.min(5, Math.max(1, parseInt(params.get('count') || '3', 10) || 3))
+  const issue = params.get('issue') || undefined
+  const theme = params.get('theme') === 'dark' ? 'dark' : 'light'
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['embed-stories', issue, count],
+    queryFn: () => publicApi.stories.list({ page: 1, pageSize: count, issueSlug: issue }),
+  })
+
+  // Post height to parent for auto-resize
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      if (containerRef.current) {
+        window.parent.postMessage(
+          { type: 'ar-embed-resize', height: containerRef.current.scrollHeight },
+          '*',
+        )
+      }
+    })
+    if (containerRef.current) observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  const isDark = theme === 'dark'
+
+  return (
+    <div
+      ref={containerRef}
+      className={`font-sans text-sm leading-relaxed ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-white text-neutral-700'}`}
+    >
+      <div className={`px-4 py-2.5 border-b font-semibold text-[13px] tracking-wide flex items-center gap-2 ${isDark ? 'border-neutral-700' : 'border-neutral-200'}`}>
+        <span className="text-blue-500" aria-hidden="true">&#9670;</span>
+        Actually Relevant
+      </div>
+
+      {isLoading && (
+        <div className={`px-4 py-8 text-center text-[13px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+          Loading...
+        </div>
+      )}
+
+      {isError && (
+        <div className="px-4 py-8 text-center text-[13px] text-red-500">
+          Could not load stories
+        </div>
+      )}
+
+      {data && data.data.length === 0 && (
+        <div className={`px-4 py-8 text-center text-[13px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+          No stories available
+        </div>
+      )}
+
+      {data && data.data.length > 0 && (
+        <ul className="divide-y divide-neutral-200">
+          {data.data.map((story) => (
+            <li key={story.id}>
+              <Link
+                to={`/stories/${story.slug || story.id}`}
+                target="_blank"
+                className={`block px-4 py-2.5 transition-colors ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-neutral-50'}`}
+              >
+                <p className="font-medium text-[14px] mb-0.5">
+                  {story.title || story.sourceTitle}
+                </p>
+                <span className={`text-[12px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  {story.feed?.displayTitle || story.feed?.title}
+                  {story.datePublished && ` \u00b7 ${timeAgo(story.datePublished)}`}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className={`px-4 py-2 border-t text-center ${isDark ? 'border-neutral-700' : 'border-neutral-200'}`}>
+        <a
+          href="https://actuallyrelevant.news"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`text-[11px] ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600'}`}
+        >
+          Powered by Actually Relevant
+        </a>
+      </div>
+    </div>
+  )
+}

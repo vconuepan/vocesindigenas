@@ -1,21 +1,20 @@
 import crypto from 'node:crypto'
 import OpenAI from 'openai'
-import prisma from '../lib/prisma.js'
 import { withRetry } from '../lib/retry.js'
 import { createLogger } from '../lib/logger.js'
 import { config } from '../config.js'
+import {
+  fetchStoryForEmbedding,
+  fetchStoriesForEmbedding,
+  saveEmbedding,
+  type StoryEmbeddingRow,
+} from '../lib/vectors.js'
 
 const log = createLogger('embedding')
 
 const openai = new OpenAI()
 
-export interface StoryForEmbedding {
-  id: string
-  title: string | null
-  titleLabel: string | null
-  summary: string | null
-  embeddingContentHash: string | null
-}
+export type StoryForEmbedding = StoryEmbeddingRow
 
 export function buildEmbeddingContent(story: StoryForEmbedding): string {
   const parts: string[] = []
@@ -77,46 +76,6 @@ export async function generateEmbeddingsBatch(
   return response.data.sort((a, b) => a.index - b.index).map((d) => d.embedding)
 }
 
-interface StoryRow {
-  id: string
-  status: string
-  title: string | null
-  title_label: string | null
-  summary: string | null
-  embedding_content_hash: string | null
-}
-
-function rowToStory(row: StoryRow): StoryForEmbedding {
-  return {
-    id: row.id,
-    title: row.title,
-    titleLabel: row.title_label,
-    summary: row.summary,
-    embeddingContentHash: row.embedding_content_hash,
-  }
-}
-
-async function fetchStoryForEmbedding(storyId: string): Promise<(StoryForEmbedding & { status: string }) | null> {
-  const rows = await prisma.$queryRaw<StoryRow[]>`
-    SELECT s.id, s.status, s.title, s.title_label, s.summary,
-           s.embedding_content_hash
-    FROM stories s
-    WHERE s.id = ${storyId}
-  `
-  if (rows.length === 0) return null
-  return { ...rowToStory(rows[0]), status: rows[0].status }
-}
-
-async function fetchStoriesForEmbedding(storyIds: string[]): Promise<StoryForEmbedding[]> {
-  const rows = await prisma.$queryRaw<StoryRow[]>`
-    SELECT s.id, s.status, s.title, s.title_label, s.summary,
-           s.embedding_content_hash
-    FROM stories s
-    WHERE s.id = ANY(${storyIds}) AND s.status = 'published'
-  `
-  return rows.map(rowToStory)
-}
-
 export async function updateStoryEmbedding(storyId: string): Promise<boolean> {
   const story = await fetchStoryForEmbedding(storyId)
 
@@ -129,13 +88,7 @@ export async function updateStoryEmbedding(storyId: string): Promise<boolean> {
 
   const embedding = await generateEmbedding(content)
 
-  await prisma.$executeRaw`
-    UPDATE stories
-    SET embedding = ${JSON.stringify(embedding)}::vector,
-        embedding_content_hash = ${hash},
-        embedding_generated_at = NOW()
-    WHERE id = ${storyId}
-  `
+  await saveEmbedding(storyId, embedding, hash)
 
   log.info({ storyId, hash }, 'updated story embedding')
   return true
@@ -189,13 +142,7 @@ export async function batchUpdateEmbeddings(
         const { story, hash } = batch[j]
         const embedding = embeddings[j]
         try {
-          await prisma.$executeRaw`
-            UPDATE stories
-            SET embedding = ${JSON.stringify(embedding)}::vector,
-                embedding_content_hash = ${hash},
-                embedding_generated_at = NOW()
-            WHERE id = ${story.id}
-          `
+          await saveEmbedding(story.id, embedding, hash)
           result.processed++
         } catch (err) {
           log.error({ err, storyId: story.id }, 'failed to save embedding')

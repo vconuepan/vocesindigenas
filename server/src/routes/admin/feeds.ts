@@ -22,6 +22,19 @@ router.get('/', async (req, res) => {
   }
 })
 
+router.get('/quality', async (_req, res) => {
+  try {
+    const metrics = await feedService.getAllFeedQualityMetrics()
+    // Convert Map to plain object for JSON serialization
+    const obj: Record<string, feedService.FeedQualityMetrics> = {}
+    for (const [id, m] of metrics) obj[id] = m
+    res.json(obj)
+  } catch (err) {
+    log.error({ err }, 'failed to fetch feed quality metrics')
+    res.status(500).json({ error: 'Failed to fetch quality metrics' })
+  }
+})
+
 router.get('/:id', async (req, res) => {
   try {
     const feed = await feedService.getFeedById(req.params.id)

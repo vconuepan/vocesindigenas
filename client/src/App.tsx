@@ -17,6 +17,10 @@ const ImprintPage = lazy(() => import('./pages/ImprintPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
 const SubscribedPage = lazy(() => import('./pages/SubscribedPage'))
+const DevelopersPage = lazy(() => import('./pages/DevelopersPage'))
+const EmbedPage = lazy(() => import('./pages/EmbedPage'))
+const WidgetGeneratorPage = lazy(() => import('./pages/WidgetGeneratorPage'))
+const SavedPage = lazy(() => import('./pages/SavedPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -72,7 +76,16 @@ export default function App() {
         <Route path="/privacy" element={<LazyPage><PrivacyPage /></LazyPage>} />
         <Route path="/search" element={<LazyPage><SearchPage /></LazyPage>} />
         <Route path="/subscribed" element={<LazyPage><SubscribedPage /></LazyPage>} />
+        <Route path="/developers" element={<LazyPage><DevelopersPage /></LazyPage>} />
+        <Route path="/embed-widget" element={<LazyPage><WidgetGeneratorPage /></LazyPage>} />
+        <Route path="/saved" element={<LazyPage><SavedPage /></LazyPage>} />
       </Route>
+
+      {/* Embed page — no layout wrapper */}
+      <Route
+        path="/embed"
+        element={<LazyPage><EmbedPage /></LazyPage>}
+      />
 
       {/* Admin routes — lazy-loaded with error boundary for chunk failures */}
       <Route

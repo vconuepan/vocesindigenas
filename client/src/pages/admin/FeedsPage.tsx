@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useQueryClient } from '@tanstack/react-query'
-import { useFeeds, useDeleteFeed } from '../../hooks/useFeeds'
+import { useFeeds, useDeleteFeed, useFeedQuality } from '../../hooks/useFeeds'
 import { useIssues } from '../../hooks/useIssues'
 import { useBackgroundTasks } from '../../hooks/useBackgroundTasks'
 import { adminApi } from '../../lib/admin-api'
@@ -48,6 +48,7 @@ export default function FeedsPage() {
     ...(issueFilter ? { issueId: issueFilter } : {}),
   })
   const issuesQuery = useIssues()
+  const qualityQuery = useFeedQuality()
   const deleteFeed = useDeleteFeed()
   const { toast } = useToast()
   const { launchTask } = useBackgroundTasks()
@@ -177,6 +178,7 @@ export default function FeedsPage() {
         <FeedTable
           feeds={feedsQuery.data}
           issues={issuesQuery.data || []}
+          qualityMetrics={qualityQuery.data}
           onEdit={setEditingFeedId}
           onCrawl={handleCrawl}
           onDelete={setDeleteId}

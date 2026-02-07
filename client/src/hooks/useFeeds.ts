@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../lib/admin-api'
+import type { FeedQualityMetrics } from '../lib/admin-api'
 import type { Feed } from '@shared/types'
 
 export function useFeeds(params?: { issueId?: string; active?: boolean }) {
@@ -46,6 +47,14 @@ export function useDeleteFeed() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feeds'] })
     },
+  })
+}
+
+export function useFeedQuality() {
+  return useQuery<Record<string, FeedQualityMetrics>>({
+    queryKey: ['feed-quality'],
+    queryFn: () => adminApi.feeds.quality(),
+    staleTime: 5 * 60 * 1000,
   })
 }
 

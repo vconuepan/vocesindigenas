@@ -78,11 +78,12 @@ describe('App error handling', () => {
   })
 
   describe('500 error handler', () => {
-    it('returns 500 JSON when CORS rejects an origin', async () => {
-      // The CORS middleware throws "Not allowed by CORS" for disallowed origins,
-      // which is caught by the global error handler since it is not inside a try/catch.
+    it('returns 500 JSON when CORS rejects an origin on restricted endpoint', async () => {
+      // The CORS middleware throws "Not allowed by CORS" for disallowed origins
+      // on non-public endpoints (subscribe, auth, admin).
+      // Public read endpoints (stories, issues, homepage, feed, docs) allow all origins.
       const res = await request(app)
-        .get('/api/stories')
+        .post('/api/subscribe')
         .set('Origin', 'https://evil-site.com')
 
       expect(res.status).toBe(500)

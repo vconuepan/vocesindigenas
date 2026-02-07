@@ -29,6 +29,8 @@ export const routes: RouteConfig[] = [
   { path: '/imprint', priority: 0.5, changefreq: 'yearly' },
   { path: '/privacy', priority: 0.5, changefreq: 'yearly' },
   { path: '/search', priority: 0.3, changefreq: 'daily' },
+  { path: '/developers', priority: 0.5, changefreq: 'monthly' },
+  { path: '/saved', priority: 0.2, changefreq: 'yearly' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
   // Dynamic story routes are added at build time by generate-sitemap.ts
   // which fetches published story slugs from the API
