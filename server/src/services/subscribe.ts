@@ -7,7 +7,7 @@ import { createLogger } from '../lib/logger.js'
 const log = createLogger('subscribe')
 
 const CLIENT_URL = process.env.CLIENT_URL || 'https://actuallyrelevant.news'
-const API_URL = process.env.API_URL || 'https://api.actuallyrelevant.news'
+const API_URL = process.env.API_URL || 'https://actually-relevant-api.onrender.com'
 
 export class EmailValidationError extends Error {
   constructor(message: string) {
