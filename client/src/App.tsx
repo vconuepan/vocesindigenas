@@ -53,6 +53,15 @@ function PageFallback() {
   )
 }
 
+function StandalonePageFallback() {
+  return (
+    <main className="flex min-h-screen items-center justify-center">
+      <h1 className="sr-only">Loading</h1>
+      <LoadingSpinner size="lg" />
+    </main>
+  )
+}
+
 /** Wrap lazy-loaded page in Suspense with error boundary */
 function LazyPage({ children }: { children: React.ReactNode }) {
   return (
@@ -100,7 +109,7 @@ export default function App() {
         path="/admin/login"
         element={
           <ChunkErrorBoundary>
-            <Suspense fallback={<PageFallback />}><LoginPage /></Suspense>
+            <Suspense fallback={<StandalonePageFallback />}><LoginPage /></Suspense>
           </ChunkErrorBoundary>
         }
       />
@@ -108,7 +117,7 @@ export default function App() {
         path="/admin"
         element={
           <ChunkErrorBoundary>
-            <Suspense fallback={<PageFallback />}><AdminLayout /></Suspense>
+            <Suspense fallback={<StandalonePageFallback />}><AdminLayout /></Suspense>
           </ChunkErrorBoundary>
         }
       >

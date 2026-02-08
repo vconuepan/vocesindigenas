@@ -6,6 +6,7 @@ export default function HeroSkeleton() {
   return (
     <section className="hero-section">
       <div className="hero-section-inner animate-pulse">
+        <h1 className="sr-only">Loading stories</h1>
         {/* Title label */}
         <div className="h-3 bg-neutral-300 rounded w-24 mb-3" />
 

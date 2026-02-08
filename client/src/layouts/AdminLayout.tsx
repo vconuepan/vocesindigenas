@@ -110,9 +110,10 @@ export default function AdminLayout() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <main className="flex items-center justify-center min-h-screen">
+        <h1 className="sr-only">Loading</h1>
         <LoadingSpinner size="lg" />
-      </div>
+      </main>
     )
   }
 

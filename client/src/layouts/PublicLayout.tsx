@@ -564,9 +564,9 @@ function PublicLayoutInner() {
 
             {/* Navigation column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">
                 Navigate
-              </h3>
+              </p>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 {FOOTER_NAV.map((link) => (
                   <li key={link.label} className="flex items-center">
@@ -583,9 +583,9 @@ function PublicLayoutInner() {
 
             {/* Connect column */}
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">
                 Connect
-              </h3>
+              </p>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 <li className="flex items-center">
                   <button
@@ -672,9 +672,9 @@ function PublicLayoutInner() {
 
             {/* Issues column */}
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">
                 Issues
-              </h3>
+              </p>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1 auto-rows-[1.25rem]">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug);

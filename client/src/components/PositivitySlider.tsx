@@ -17,7 +17,7 @@ export function MoodDialPanel({ className }: { className?: string }) {
 
   return (
     <div className={`flex flex-col items-center gap-1 ${className ?? ''}`}>
-      <span className="text-[10px] text-neutral-400 leading-none select-none">
+      <span className="text-[10px] text-neutral-500 leading-none select-none">
         Emotional weight
       </span>
 
