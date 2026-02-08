@@ -1,17 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(wc *)",
-      "Bash(tree *)",
-      "Bash(find *)",
-      "Bash(git add *)",
-      "Bash(git status*)",
-      "Bash(git diff:*)",
-      "Bash(npm list*)",
-      "Bash(npm view *)",
-      "Bash(npm audit*)",
-      "Bash(npx vitest*)",
-      "Bash(npm ls*)"
-    ]
+    "allow": []
   }
 }
