@@ -76,7 +76,8 @@ export default function App() {
         <Route path="/privacy" element={<LazyPage><PrivacyPage /></LazyPage>} />
         <Route path="/search" element={<LazyPage><SearchPage /></LazyPage>} />
         <Route path="/subscribed" element={<LazyPage><SubscribedPage /></LazyPage>} />
-        <Route path="/developers" element={<LazyPage><DevelopersPage /></LazyPage>} />
+        {/* DevelopersPage moved outside PublicLayout — Scalar styles clash with site theme */}
+        <Route path="/widgets" element={<LazyPage><WidgetGeneratorPage /></LazyPage>} />
         <Route path="/embed-widget" element={<LazyPage><WidgetGeneratorPage /></LazyPage>} />
         <Route path="/saved" element={<LazyPage><SavedPage /></LazyPage>} />
       </Route>
@@ -85,6 +86,12 @@ export default function App() {
       <Route
         path="/embed"
         element={<LazyPage><EmbedPage /></LazyPage>}
+      />
+
+      {/* Developers page — standalone to avoid site theme clashing with Scalar styles */}
+      <Route
+        path="/developers"
+        element={<LazyPage><DevelopersPage /></LazyPage>}
       />
 
       {/* Admin routes — lazy-loaded with error boundary for chunk failures */}

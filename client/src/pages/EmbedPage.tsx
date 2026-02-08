@@ -20,11 +20,15 @@ export default function EmbedPage() {
   const count = Math.min(5, Math.max(1, parseInt(params.get('count') || '3', 10) || 3))
   const issue = params.get('issue') || undefined
   const theme = params.get('theme') === 'dark' ? 'dark' : 'light'
+  const showSummary = params.get('summary') === 'true'
+  const mood = params.get('mood') || ''
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const emotionTags = mood === 'uplifting' ? 'uplifting' : undefined
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['embed-stories', issue, count],
-    queryFn: () => publicApi.stories.list({ page: 1, pageSize: count, issueSlug: issue }),
+    queryKey: ['embed-stories', issue, count, mood],
+    queryFn: () => publicApi.stories.list({ page: 1, pageSize: count, issueSlug: issue, emotionTags }),
   })
 
   // Post height to parent for auto-resize
@@ -43,16 +47,22 @@ export default function EmbedPage() {
 
   const isDark = theme === 'dark'
 
+  // Set html/body background to match theme so iframe has no white gap
+  useEffect(() => {
+    const bg = isDark ? '#171717' : '#ffffff' // neutral-900 / white
+    document.documentElement.style.background = bg
+    document.body.style.background = bg
+    return () => {
+      document.documentElement.style.background = ''
+      document.body.style.background = ''
+    }
+  }, [isDark])
+
   return (
     <div
       ref={containerRef}
       className={`font-sans text-sm leading-relaxed ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-white text-neutral-700'}`}
     >
-      <div className={`px-4 py-2.5 border-b font-semibold text-[13px] tracking-wide flex items-center gap-2 ${isDark ? 'border-neutral-700' : 'border-neutral-200'}`}>
-        <span className="text-blue-500" aria-hidden="true">&#9670;</span>
-        Actually Relevant
-      </div>
-
       {isLoading && (
         <div className={`px-4 py-8 text-center text-[13px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
           Loading...
@@ -72,7 +82,7 @@ export default function EmbedPage() {
       )}
 
       {data && data.data.length > 0 && (
-        <ul className="divide-y divide-neutral-200">
+        <ul className={`divide-y ${isDark ? 'divide-neutral-700' : 'divide-neutral-200'}`}>
           {data.data.map((story) => (
             <li key={story.id}>
               <Link
@@ -81,8 +91,13 @@ export default function EmbedPage() {
                 className={`block px-4 py-2.5 transition-colors ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-neutral-50'}`}
               >
                 <p className="font-medium text-[14px] mb-0.5">
-                  {story.title || story.sourceTitle}
+                  {story.titleLabel ? `${story.titleLabel}: ` : ''}{story.title || story.sourceTitle}
                 </p>
+                {showSummary && story.relevanceSummary && (
+                  <p className={`text-[12px] leading-relaxed mb-1 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                    {story.relevanceSummary}
+                  </p>
+                )}
                 <span className={`text-[12px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                   {story.feed?.displayTitle || story.feed?.title}
                   {story.datePublished && ` \u00b7 ${timeAgo(story.datePublished)}`}
@@ -93,13 +108,19 @@ export default function EmbedPage() {
         </ul>
       )}
 
-      <div className={`px-4 py-2 border-t text-center ${isDark ? 'border-neutral-700' : 'border-neutral-200'}`}>
+      <div className={`px-4 py-2 border-t flex items-center justify-center ${isDark ? 'border-neutral-700' : 'border-neutral-200'}`}>
         <a
           href="https://actuallyrelevant.news"
           target="_blank"
           rel="noopener noreferrer"
-          className={`text-[11px] ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600'}`}
+          className={`inline-flex items-center gap-1.5 text-[11px] ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600'}`}
         >
+          <img
+            src="https://actuallyrelevant.news/images/logo-no-text-square.png"
+            alt=""
+            className="w-5 h-5 rounded-sm"
+            aria-hidden="true"
+          />
           Powered by Actually Relevant
         </a>
       </div>
