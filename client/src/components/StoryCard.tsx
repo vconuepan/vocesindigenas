@@ -56,7 +56,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         className={`group story-card-hover relative overflow-hidden ${colors.borderThick} rounded-r-lg bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200`}
         style={hoverStyle}
       >
-        <Pattern opacity={0.15} />
+        {Pattern && <Pattern opacity={0.15} />}
         <div className="relative z-10 flex flex-col md:flex-row md:items-stretch">
           {/* Left: title + meta */}
           <div className="p-6 md:p-8 md:flex-1">
@@ -96,7 +96,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         style={hoverStyle}
       >
         <div className={`rounded-t-lg ${colors.dotBg}`} style={{ height: '4px' }} aria-hidden="true" />
-        <Pattern opacity={0.12} />
+        {Pattern && <Pattern opacity={0.12} />}
         <div className="relative z-10 p-6 md:p-8">
           <div className="flex items-start justify-between gap-2">
             <Link

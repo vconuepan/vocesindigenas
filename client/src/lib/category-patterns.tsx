@@ -20,6 +20,7 @@ const base = 'absolute inset-0 w-full h-full pointer-events-none select-none'
 // ---------------------------------------------------------------------------
 
 export function HumanDevelopmentPattern({ className = '', opacity = 0.18 }: PatternProps) {
+
   return (
     <svg
       aria-hidden="true"
@@ -43,10 +44,11 @@ export function HumanDevelopmentPattern({ className = '', opacity = 0.18 }: Patt
 }
 
 // ---------------------------------------------------------------------------
-// Planet & Climate — layered wave forms
+// Planet & Climate — concentric atmospheric rings
 // ---------------------------------------------------------------------------
 
 export function PlanetClimatePattern({ className = '', opacity = 0.18 }: PatternProps) {
+
   return (
     <svg
       aria-hidden="true"
@@ -55,18 +57,17 @@ export function PlanetClimatePattern({ className = '', opacity = 0.18 }: Pattern
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg"
     >
+      {/* Concentric rings — atmospheric layers around a planet core */}
       <g fill="none" stroke="#2dd4bf" strokeWidth="2.5" opacity={opacity}>
-        <path d="M0,320 C100,280 200,350 300,310 C400,270 500,340 600,300 C700,260 800,330 800,300" />
-        <path d="M0,280 C100,240 200,310 300,270 C400,230 500,300 600,260 C700,220 800,290 800,260" />
-        <path d="M0,240 C100,200 200,270 300,230 C400,190 500,260 600,220 C700,180 800,250 800,220" />
-        <path d="M0,200 C100,160 200,230 300,190 C400,150 500,220 600,180 C700,140 800,210 800,180" />
-        <path d="M0,160 C100,120 200,190 300,150 C400,110 500,180 600,140 C700,100 800,170 800,140" />
-        <path d="M0,120 C100,80 200,150 300,110 C400,70 500,140 600,100 C700,60 800,130 800,100" />
+        {[60, 100, 140, 180, 220, 260].map((r) => (
+          <circle key={r} cx="500" cy="300" r={r} />
+        ))}
       </g>
+      {/* Accent dots — scattered like stars */}
       <g fill="#2dd4bf" opacity={opacity * 0.6}>
-        <circle cx="150" cy="70" r="22" />
-        <circle cx="650" cy="50" r="14" />
-        <circle cx="400" cy="40" r="8" />
+        <circle cx="140" cy="70" r="18" />
+        <circle cx="80" cy="180" r="10" />
+        <circle cx="240" cy="40" r="8" />
       </g>
     </svg>
   )
@@ -77,6 +78,7 @@ export function PlanetClimatePattern({ className = '', opacity = 0.18 }: Pattern
 // ---------------------------------------------------------------------------
 
 export function ExistentialThreatsPattern({ className = '', opacity = 0.18 }: PatternProps) {
+
   return (
     <svg
       aria-hidden="true"
@@ -107,12 +109,6 @@ export function ExistentialThreatsPattern({ className = '', opacity = 0.18 }: Pa
 // ---------------------------------------------------------------------------
 
 export function ScienceTechnologyPattern({ className = '', opacity = 0.18 }: PatternProps) {
-  const dots: [number, number][] = []
-  for (let x = 40; x < 800; x += 60) {
-    for (let y = 40; y < 400; y += 60) {
-      dots.push([x, y])
-    }
-  }
 
   return (
     <svg
@@ -122,55 +118,34 @@ export function ScienceTechnologyPattern({ className = '', opacity = 0.18 }: Pat
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g fill="#818cf8" opacity={opacity}>
-        {dots.map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r="3" />
-        ))}
+      {/* Incomplete circuit grid — broken line segments with squares at active intersections */}
+      <g stroke="#818cf8" strokeWidth="1.5" fill="none" opacity={opacity}>
+        {/* Horizontal segments (not full lines) */}
+        <line x1="120" y1="80" x2="320" y2="80" />
+        <line x1="440" y1="80" x2="560" y2="80" />
+        <line x1="200" y1="160" x2="560" y2="160" />
+        <line x1="120" y1="240" x2="320" y2="240" />
+        <line x1="440" y1="240" x2="680" y2="240" />
+        <line x1="320" y1="320" x2="560" y2="320" />
+        {/* Vertical segments (not full lines) */}
+        <line x1="200" y1="40" x2="200" y2="160" />
+        <line x1="320" y1="80" x2="320" y2="320" />
+        <line x1="440" y1="80" x2="440" y2="240" />
+        <line x1="560" y1="160" x2="560" y2="360" />
       </g>
-      <g fill="none" stroke="#818cf8" strokeWidth="1.5" opacity={opacity * 0.8}>
-        <path d="M100,40 L100,160 L220,160" />
-        <path d="M400,100 L400,220 L520,220 L520,340" />
-        <path d="M640,40 L640,100 L760,100" />
-        <path d="M160,280 L280,280 L280,340" />
-        <path d="M340,40 L340,100 L460,100 L460,160" />
-        <path d="M700,220 L700,340" />
-        <rect x="94" y="154" width="12" height="12" rx="2" />
-        <rect x="394" y="214" width="12" height="12" rx="2" />
-        <rect x="514" y="334" width="12" height="12" rx="2" />
-        <rect x="334" y="94" width="12" height="12" rx="2" />
-      </g>
-    </svg>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// General News — halftone / scattered dots
-// ---------------------------------------------------------------------------
-
-export function GeneralNewsPattern({ className = '', opacity = 0.18 }: PatternProps) {
-  // Deterministic pseudo-random scatter using simple hash
-  const dots: { cx: number; cy: number; r: number }[] = []
-  for (let i = 0; i < 80; i++) {
-    const seed = (i * 7919 + 104729) % 100000
-    dots.push({
-      cx: (seed % 800),
-      cy: Math.floor(seed / 800) % 400,
-      r: 3 + (i % 4) * 2,
-    })
-  }
-
-  return (
-    <svg
-      aria-hidden="true"
-      className={`${base} ${className}`}
-      viewBox="0 0 800 400"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g fill="#f472b6" opacity={opacity}>
-        {dots.map((d, i) => (
-          <circle key={i} cx={d.cx} cy={d.cy} r={d.r} />
-        ))}
+      {/* Squares only at actual intersections */}
+      <g fill="#818cf8" opacity={opacity * 0.7}>
+        <rect x="196" y="76" width="8" height="8" />
+        <rect x="316" y="76" width="8" height="8" />
+        <rect x="436" y="76" width="8" height="8" />
+        <rect x="196" y="156" width="8" height="8" />
+        <rect x="316" y="156" width="8" height="8" />
+        <rect x="436" y="156" width="8" height="8" />
+        <rect x="556" y="156" width="8" height="8" />
+        <rect x="316" y="236" width="8" height="8" />
+        <rect x="436" y="236" width="8" height="8" />
+        <rect x="556" y="316" width="8" height="8" />
+        <rect x="316" y="316" width="8" height="8" />
       </g>
     </svg>
   )
@@ -185,13 +160,12 @@ const PATTERN_MAP: Record<string, React.ComponentType<PatternProps>> = {
   'planet-climate': PlanetClimatePattern,
   'existential-threats': ExistentialThreatsPattern,
   'science-technology': ScienceTechnologyPattern,
-  'general-news': GeneralNewsPattern,
 }
 
 /**
  * Returns the SVG pattern component for a given issue slug.
- * Falls back to GeneralNewsPattern for unknown slugs.
+ * Returns undefined for unknown slugs (callers should handle missing patterns).
  */
-export function getCategoryPattern(issueSlug: string): React.ComponentType<PatternProps> {
-  return PATTERN_MAP[issueSlug] ?? GeneralNewsPattern
+export function getCategoryPattern(issueSlug: string): React.ComponentType<PatternProps> | undefined {
+  return PATTERN_MAP[issueSlug]
 }

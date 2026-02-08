@@ -8,7 +8,6 @@ import type { PublicIssue } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
-import { getCategoryIllustration } from '../lib/category-illustrations'
 import { parsePoints, stripMarkdown, stripPrefix, limitSentences } from '../lib/parse-points'
 import { formatDate } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
@@ -29,7 +28,7 @@ function HeroSection({ story }: { story: PublicStory }) {
 
   return (
     <section className="hero-section">
-      <Pattern opacity={0.2} />
+      {Pattern && <Pattern opacity={0.2} />}
       <div className="hero-section-inner">
         {getTitleLabel(story) && (
           <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(story)}</span>
@@ -125,9 +124,6 @@ function IssueSection({
   divider?: 'quote' | 'diamond' | 'none'
   quoteVariantIndex?: number
 }) {
-  const colors = getCategoryColor(issue.slug)
-  const Illustration = getCategoryIllustration(issue.slug)
-
   // Exclude the hero story from this section
   const stories = heroStoryId
     ? allStories.filter((s) => s.id !== heroStoryId)
@@ -140,9 +136,9 @@ function IssueSection({
   return (
     <>
       <section className="relative mb-6 mt-14 md:mt-28">
-        {/* Large decorative illustration — extends left, overlaps content */}
+        {/* Pre-rendered PNG to avoid Chromium inline-SVG compositing bug */}
         <div className="absolute -left-12 top-0 -translate-y-[40%] z-10 pointer-events-none select-none hidden md:block w-[200px] h-[200px]">
-          <Illustration color={colors.hex} className="opacity-[0.18] w-full h-full" />
+          <img src={`/illustrations/${issue.slug}.png`} alt="" className="opacity-[0.18] w-full h-full" />
         </div>
 
         <RuledHeading issue={issue} />

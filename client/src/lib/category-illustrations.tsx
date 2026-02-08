@@ -163,42 +163,6 @@ export function ScienceTechnologyIllustration({ color, className = '', size = 20
 }
 
 // ---------------------------------------------------------------------------
-// General News — signal waves (concentric arcs)
-// ---------------------------------------------------------------------------
-
-export function GeneralNewsIllustration({ color, className = '', size = 200 }: IllustrationProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Wave 1 — smallest */}
-      <path
-        d="M 18 52 C 24 46 24 36 18 30"
-        stroke={color}
-        {...strokeProps}
-      />
-      {/* Wave 2 — medium */}
-      <path
-        d="M 26 58 C 36 48 36 30 26 20"
-        stroke={color}
-        {...strokeProps}
-      />
-      {/* Wave 3 — largest, trails off */}
-      <path
-        d="M 34 64 C 48 52 50 24 34 10"
-        stroke={color}
-        {...strokeProps}
-      />
-    </svg>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Lookup helper
 // ---------------------------------------------------------------------------
 
@@ -207,13 +171,12 @@ const ILLUSTRATION_MAP: Record<string, ComponentType<IllustrationProps>> = {
   'planet-climate': PlanetClimateIllustration,
   'existential-threats': ExistentialThreatsIllustration,
   'science-technology': ScienceTechnologyIllustration,
-  'general-news': GeneralNewsIllustration,
 }
 
 /**
  * Returns the SVG illustration component for a given issue slug.
- * Falls back to GeneralNewsIllustration for unknown slugs.
+ * Returns undefined for unknown slugs.
  */
-export function getCategoryIllustration(issueSlug: string): ComponentType<IllustrationProps> {
-  return ILLUSTRATION_MAP[issueSlug] ?? GeneralNewsIllustration
+export function getCategoryIllustration(issueSlug: string): ComponentType<IllustrationProps> | undefined {
+  return ILLUSTRATION_MAP[issueSlug]
 }
