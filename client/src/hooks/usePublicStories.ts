@@ -30,3 +30,13 @@ export function useRelatedStories(slug: string | undefined) {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export function useClusterMembers(slug: string | undefined) {
+  return useQuery({
+    queryKey: ['cluster-members', slug],
+    queryFn: () => publicApi.stories.cluster(slug!),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+}

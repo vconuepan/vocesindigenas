@@ -72,6 +72,9 @@ model Story {
   embedding              Unsupported("vector(1536)")?
   embeddingContentHash   String?      @db.VarChar(64) @map("embedding_content_hash")
   embeddingGeneratedAt   DateTime?    @map("embedding_generated_at")
+  clusterId              String?      @map("cluster_id")
+  cluster                StoryCluster? @relation("ClusterMember", fields: [clusterId], references: [id])
+  primaryOfCluster       StoryCluster? @relation("ClusterPrimary")
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -81,7 +84,19 @@ model Story {
   @@index([status, relevance])
   @@index([datePublished])
   @@index([issueId])
+  @@index([clusterId])
   @@map("stories")
+}
+
+model StoryCluster {
+  id             String   @id @default(uuid())
+  primaryStoryId String?  @unique @map("primary_story_id")
+  primaryStory   Story?   @relation("ClusterPrimary", fields: [primaryStoryId], references: [id])
+  stories        Story[]  @relation("ClusterMember")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("story_clusters")
 }
 
 model Feed {
@@ -127,6 +142,7 @@ model Issue {
   evaluationIntro    String   @default("") @map("evaluation_intro")
   evaluationCriteria String   @default("") @map("evaluation_criteria")
   makeADifference    String   @default("") @map("make_a_difference")
+  minPreRating       Int?     @map("min_pre_rating")
   feeds              Feed[]
   stories            Story[]
   createdAt          DateTime @default(now()) @map("created_at")

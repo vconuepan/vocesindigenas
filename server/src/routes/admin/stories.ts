@@ -325,6 +325,25 @@ router.post('/:id/reject', async (req, res) => {
   }
 })
 
+router.post('/:id/dissolve-cluster', async (req, res) => {
+  try {
+    await storyService.dissolveCluster(req.params.id)
+    const story = await storyService.getStoryById(req.params.id)
+    res.json(story)
+  } catch (err: any) {
+    if (err.message === 'Story is not in a cluster') {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: 'Story not found' })
+      return
+    }
+    log.error({ err }, 'failed to dissolve cluster')
+    res.status(500).json({ error: 'Failed to dissolve cluster' })
+  }
+})
+
 router.post('/crawl-url', validateBody(crawlUrlSchema), async (req, res) => {
   try {
     const result = await crawlUrl(req.body.url, req.body.feedId)

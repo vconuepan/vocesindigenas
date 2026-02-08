@@ -111,4 +111,63 @@ describe('StoryTable', () => {
       expect(onToggleSelect).toHaveBeenCalledWith('abc')
     })
   })
+
+  describe('cluster badge', () => {
+    it('does not render a cluster badge when clusterId is null', () => {
+      render(
+        <StoryTable
+          {...defaultProps}
+          stories={[makeStory({ id: 'story-1', title: 'No Cluster Story' })]}
+        />,
+      )
+      expect(screen.queryByText('Cluster')).not.toBeInTheDocument()
+      expect(screen.queryByText('Primary')).not.toBeInTheDocument()
+    })
+
+    it('renders "Cluster" badge when story has clusterId but is not primary', () => {
+      render(
+        <StoryTable
+          {...defaultProps}
+          stories={[
+            makeStory({
+              id: 'story-1',
+              title: 'Secondary Story',
+              clusterId: 'cluster-1',
+              cluster: {
+                id: 'cluster-1',
+                primaryStoryId: 'story-other',
+                _count: { stories: 3 },
+                stories: [],
+              },
+            }),
+          ]}
+        />,
+      )
+      expect(screen.getByText('Cluster')).toBeInTheDocument()
+      expect(screen.queryByText('Primary')).not.toBeInTheDocument()
+    })
+
+    it('renders "Primary" badge when story is the primary of its cluster', () => {
+      render(
+        <StoryTable
+          {...defaultProps}
+          stories={[
+            makeStory({
+              id: 'story-1',
+              title: 'Primary Story',
+              clusterId: 'cluster-1',
+              cluster: {
+                id: 'cluster-1',
+                primaryStoryId: 'story-1',
+                _count: { stories: 3 },
+                stories: [],
+              },
+            }),
+          ]}
+        />,
+      )
+      expect(screen.getByText('Primary')).toBeInTheDocument()
+      expect(screen.queryByText('Cluster')).not.toBeInTheDocument()
+    })
+  })
 })

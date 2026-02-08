@@ -11,6 +11,7 @@ import FeedFavicon from '../components/FeedFavicon'
 import BookmarkButton from '../components/BookmarkButton'
 import ShareButtons from '../components/ShareButtons'
 import RelatedStories from '../components/RelatedStories'
+import AlsoCoveredBy from '../components/AlsoCoveredBy'
 import { StoryPageSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildArticleSchema, buildBreadcrumbSchema } from '../lib/structured-data'
@@ -223,6 +224,9 @@ export default function StoryPage() {
                 </>
               )}
             </div>
+
+            {/* Also covered by — cluster sources */}
+            {story.slug && <AlsoCoveredBy slug={story.slug} />}
           </div>
         </header>
 

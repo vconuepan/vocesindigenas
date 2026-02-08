@@ -112,22 +112,48 @@ export async function generateEmbeddingsBatch(
   return response.data.sort((a, b) => a.index - b.index).map((d) => d.embedding)
 }
 
-export async function updateStoryEmbedding(storyId: string): Promise<boolean> {
+async function ensureStoryEmbedding(
+  storyId: string,
+  statusFilter?: string,
+): Promise<boolean> {
   const story = await fetchStoryForEmbedding(storyId)
 
-  if (!story || story.status !== 'published') return false
+  if (!story) {
+    log.debug({ storyId }, 'story not found for embedding')
+    return false
+  }
+  if (statusFilter && story.status !== statusFilter) return false
 
   const content = buildEmbeddingContent(story)
-  const hash = computeContentHash(content)
+  if (!content) {
+    log.debug({ storyId }, 'no embeddable content (missing title/summary)')
+    return false
+  }
 
-  if (!needsEmbeddingUpdate(story, hash)) return false
+  const hash = computeContentHash(content)
+  if (!needsEmbeddingUpdate(story, hash)) {
+    log.debug({ storyId }, 'embedding already up to date')
+    return false
+  }
 
   const embedding = await generateEmbedding(content)
-
   await saveEmbedding(storyId, embedding, hash)
 
-  log.info({ storyId, hash }, 'updated story embedding')
+  log.info({ storyId, hash, status: story.status }, 'generated story embedding')
   return true
+}
+
+/** Generate/update embedding for a published story. */
+export async function updateStoryEmbedding(storyId: string): Promise<boolean> {
+  return ensureStoryEmbedding(storyId, 'published')
+}
+
+/**
+ * Generate embedding for a story regardless of status.
+ * Used after assessment for dedup detection (story is in 'analyzed' state).
+ */
+export async function generateStoryEmbedding(storyId: string): Promise<boolean> {
+  return ensureStoryEmbedding(storyId)
 }
 
 export async function updateStoryEmbeddingIfNeeded(

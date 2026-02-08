@@ -112,6 +112,17 @@ export function useRejectStory() {
   })
 }
 
+export function useDissolveCluster() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => adminApi.stories.dissolveCluster(id),
+    onSuccess: (story) => {
+      queryClient.setQueryData(['story', story.id], story)
+      queryClient.invalidateQueries({ queryKey: ['stories'] })
+    },
+  })
+}
+
 export function useDeleteStory() {
   const queryClient = useQueryClient()
   return useMutation({

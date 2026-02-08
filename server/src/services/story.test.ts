@@ -23,13 +23,16 @@ const mockPrisma = vi.hoisted(() => ({
   feed: {
     findUnique: vi.fn(),
   },
+  storyCluster: {
+    delete: vi.fn(),
+  },
   $disconnect: vi.fn(),
   $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
 }))
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 
-const { getStoryIdsByStatus, generateUniqueSlugs, getStories, deleteStory } = await import('./story.js')
+const { getStoryIdsByStatus, generateUniqueSlugs, getStories, deleteStory, dissolveCluster } = await import('./story.js')
 
 describe('getStories', () => {
   beforeEach(() => {
@@ -406,5 +409,59 @@ describe('deleteStory', () => {
 
     expect(mockPrisma.newsletter.update).not.toHaveBeenCalled()
     expect(mockPrisma.podcast.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('dissolveCluster', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('throws error when story is not in a cluster', async () => {
+    mockPrisma.story.findUnique.mockResolvedValue({ clusterId: null })
+
+    await expect(dissolveCluster('s1')).rejects.toThrow('Story is not in a cluster')
+  })
+
+  it('throws error when story is not found', async () => {
+    mockPrisma.story.findUnique.mockResolvedValue(null)
+
+    await expect(dissolveCluster('s-missing')).rejects.toThrow('Story is not in a cluster')
+  })
+
+  it('restores rejected members to analyzed, removes all from cluster, deletes cluster record', async () => {
+    mockPrisma.story.findUnique.mockResolvedValue({ clusterId: 'cluster-1' })
+    mockPrisma.story.updateMany.mockResolvedValue({ count: 2 })
+    mockPrisma.storyCluster.delete.mockResolvedValue({})
+
+    await dissolveCluster('s1')
+
+    // First updateMany: restore rejected members to analyzed
+    expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
+      where: { clusterId: 'cluster-1', status: 'rejected' },
+      data: { status: 'analyzed' },
+    })
+
+    // Second updateMany: remove all members from cluster
+    expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
+      where: { clusterId: 'cluster-1' },
+      data: { clusterId: null },
+    })
+
+    // Delete the cluster record
+    expect(mockPrisma.storyCluster.delete).toHaveBeenCalledWith({
+      where: { id: 'cluster-1' },
+    })
+  })
+
+  it('calls updateMany twice and storyCluster.delete once', async () => {
+    mockPrisma.story.findUnique.mockResolvedValue({ clusterId: 'cluster-2' })
+    mockPrisma.story.updateMany.mockResolvedValue({ count: 1 })
+    mockPrisma.storyCluster.delete.mockResolvedValue({})
+
+    await dissolveCluster('s2')
+
+    expect(mockPrisma.story.updateMany).toHaveBeenCalledTimes(2)
+    expect(mockPrisma.storyCluster.delete).toHaveBeenCalledTimes(1)
   })
 })

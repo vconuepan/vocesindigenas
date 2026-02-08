@@ -15,6 +15,16 @@ import { Badge } from '../ui/Badge'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import { STATUS_VARIANTS, EMOTION_VARIANTS, formatStatus, formatShortDate } from '../../lib/constants'
 
+function ClusterBadge({ story }: { story: Story }) {
+  if (!story.clusterId) return null
+  const isPrimary = story.cluster?.primaryStoryId === story.id
+  return (
+    <Badge variant={isPrimary ? 'green' : 'purple'} className="shrink-0">
+      {isPrimary ? 'Primary' : 'Cluster'}
+    </Badge>
+  )
+}
+
 interface StoryTableProps {
   stories: Story[]
   selectedIds: Set<string>
@@ -147,6 +157,7 @@ export function StoryTable({
                     >
                       {story.title || story.sourceTitle}
                     </button>
+                    <ClusterBadge story={story} />
                   </div>
                   {/* Mobile metadata */}
                   <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">

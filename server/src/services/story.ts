@@ -153,6 +153,8 @@ const ADMIN_LIST_SELECT = {
   issueId: true,
   issue: { select: { id: true, name: true, slug: true } },
   crawlMethod: true,
+  clusterId: true,
+  cluster: { select: { primaryStoryId: true } },
   createdAt: true,
   updatedAt: true,
   feed: { select: { id: true, title: true, issue: { select: { id: true, name: true, slug: true } } } },
@@ -216,7 +218,19 @@ export async function getStoriesByIds(ids: string[]) {
 export async function getStoryById(id: string) {
   return prisma.story.findUnique({
     where: { id },
-    include: { issue: true, feed: { include: { issue: true } } },
+    include: {
+      issue: true,
+      feed: { include: { issue: true } },
+      cluster: {
+        include: {
+          _count: { select: { stories: true } },
+          stories: {
+            select: { id: true, title: true, sourceTitle: true, status: true },
+            orderBy: { dateCrawled: 'asc' },
+          },
+        },
+      },
+    },
   })
 }
 
@@ -383,7 +397,42 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
 }
 
 export async function deleteStory(id: string): Promise<void> {
+  // Check cluster membership before deletion
+  const storyCluster = await prisma.story.findUnique({
+    where: { id },
+    select: { clusterId: true },
+  })
+
   await prisma.story.delete({ where: { id } })
+
+  // Clean up cluster after deletion
+  if (storyCluster?.clusterId) {
+    const remaining = await prisma.story.count({
+      where: { clusterId: storyCluster.clusterId },
+    })
+    if (remaining <= 1) {
+      // Dissolve cluster: remove remaining member, delete cluster
+      await prisma.story.updateMany({
+        where: { clusterId: storyCluster.clusterId },
+        data: { clusterId: null },
+      })
+      await prisma.storyCluster.delete({
+        where: { id: storyCluster.clusterId },
+      })
+      log.info({ clusterId: storyCluster.clusterId }, 'dissolved cluster after story deletion')
+    } else {
+      // Re-elect primary (import-safe: inline logic to avoid circular dependency)
+      const cluster = await prisma.storyCluster.findUnique({
+        where: { id: storyCluster.clusterId },
+        select: { primaryStoryId: true },
+      })
+      if (!cluster?.primaryStoryId) {
+        // Primary was the deleted story, need re-election
+        const { updatePrimary } = await import('./dedup.js')
+        await updatePrimary(storyCluster.clusterId)
+      }
+    }
+  }
 
   // Clean up dangling storyId references in newsletters and podcasts
   const [newsletters, podcasts] = await Promise.all([
@@ -405,6 +454,39 @@ export async function deleteStory(id: string): Promise<void> {
     }))
   }
   if (updates.length > 0) await Promise.all(updates)
+}
+
+export async function dissolveCluster(storyId: string): Promise<void> {
+  const story = await prisma.story.findUnique({
+    where: { id: storyId },
+    select: { clusterId: true },
+  })
+
+  if (!story?.clusterId) {
+    throw new Error('Story is not in a cluster')
+  }
+
+  const clusterId = story.clusterId
+
+  // Restore auto-rejected members to analyzed
+  await prisma.story.updateMany({
+    where: {
+      clusterId,
+      status: 'rejected',
+    },
+    data: { status: 'analyzed' },
+  })
+
+  // Remove all members from cluster
+  await prisma.story.updateMany({
+    where: { clusterId },
+    data: { clusterId: null },
+  })
+
+  // Delete the cluster record
+  await prisma.storyCluster.delete({ where: { id: clusterId } })
+
+  log.info({ clusterId, triggeredBy: storyId }, 'dissolved cluster via admin action')
 }
 
 export async function getStoryStats() {
@@ -744,6 +826,7 @@ interface StatusFilterOptions {
   ratingMin?: number
   relevanceMin?: number
   hoursAgo?: number
+  issueId?: string | null
   limit?: number
 }
 
@@ -760,6 +843,9 @@ function buildStatusWhereClause(
   }
   if (options.hoursAgo !== undefined) {
     where.dateCrawled = { gte: new Date(Date.now() - options.hoursAgo * 60 * 60 * 1000) }
+  }
+  if (options.issueId !== undefined) {
+    where.issueId = options.issueId
   }
   return where
 }
@@ -817,6 +903,41 @@ export async function getPublishedStoryBySlug(slug: string) {
     where: { slug, status: 'published' },
     select: PUBLIC_STORY_SELECT,
   })
+}
+
+export async function getClusterMembers(slug: string): Promise<{
+  sources: { feedTitle: string; sourceUrl: string }[]
+} | null> {
+  const story = await prisma.story.findFirst({
+    where: { slug, status: 'published' },
+    select: { id: true, clusterId: true },
+  })
+
+  if (!story?.clusterId) return null
+
+  const clusterStories = await prisma.story.findMany({
+    where: {
+      clusterId: story.clusterId,
+      id: { not: story.id },
+      title: { not: null },
+      summary: { not: null },
+      status: { in: ['analyzed', 'selected', 'published'] },
+    },
+    select: {
+      sourceUrl: true,
+      feed: { select: { displayTitle: true, title: true } },
+    },
+    orderBy: { dateCrawled: 'asc' },
+  })
+
+  if (clusterStories.length === 0) return null
+
+  return {
+    sources: clusterStories.map(s => ({
+      feedTitle: s.feed.displayTitle || s.feed.title,
+      sourceUrl: s.sourceUrl,
+    })),
+  }
 }
 
 /**

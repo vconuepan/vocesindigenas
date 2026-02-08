@@ -1,5 +1,6 @@
 import type {
   Story,
+  StoryCluster,
   Feed,
   Issue,
   Newsletter,
@@ -219,6 +220,7 @@ export const adminApi = {
       request<{ selected: number }>('/stories/select', { method: 'POST', body: JSON.stringify({ storyIds }) }),
     publish: (id: string) => request<Story>(`/stories/${id}/publish`, { method: 'POST' }),
     reject: (id: string) => request<Story>(`/stories/${id}/reject`, { method: 'POST' }),
+    dissolveCluster: (id: string) => request<Story>(`/stories/${id}/dissolve-cluster`, { method: 'POST' }),
     delete: (id: string) => request<void>(`/stories/${id}`, { method: 'DELETE' }),
     crawlUrl: (url: string, feedId: string) =>
       request<Story>('/stories/crawl-url', { method: 'POST', body: JSON.stringify({ url, feedId }) }),
@@ -308,6 +310,19 @@ export const adminApi = {
       request<JobRun>(`/jobs/${jobName}`, { method: 'PUT', body: JSON.stringify(data) }),
     run: (jobName: string) =>
       request<{ message: string }>(`/jobs/${jobName}/run`, { method: 'POST' }),
+  },
+
+  // Clusters
+  clusters: {
+    list: () => request<StoryCluster[]>('/clusters'),
+    get: (id: string) => request<StoryCluster>(`/clusters/${id}`),
+    setPrimary: (id: string, storyId: string) =>
+      request<StoryCluster>(`/clusters/${id}/primary`, { method: 'PUT', body: JSON.stringify({ storyId }) }),
+    removeMember: (id: string, storyId: string) =>
+      request<StoryCluster | { dissolved: true }>(`/clusters/${id}/remove-member`, { method: 'POST', body: JSON.stringify({ storyId }) }),
+    merge: (targetId: string, sourceId: string) =>
+      request<StoryCluster>(`/clusters/${targetId}/merge`, { method: 'POST', body: JSON.stringify({ sourceId }) }),
+    dissolve: (id: string) => request<void>(`/clusters/${id}`, { method: 'DELETE' }),
   },
 
   // Users

@@ -13,6 +13,7 @@ import { buildPreassessPrompt, buildReclassifyPrompt, buildEmotionTagPrompt, bui
 import type { StoryForPreassess, IssueForPreassess } from '../prompts/index.js'
 import { preAssessResultSchema, reclassifyResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
 import type { Guidelines } from '../prompts/shared.js'
+import { embedAndDedup } from './dedup.js'
 
 const log = createLogger('analysis')
 
@@ -280,6 +281,17 @@ export async function assessStory(storyId: string): Promise<void> {
       status: 'analyzed',
     },
   })
+
+  // Post-assessment: generate embedding and run dedup (fire-and-forget)
+  embedAndDedup(storyId)
+    .then(result => {
+      if (result.clusterId) {
+        log.info({ storyId, ...result }, 'post-assessment dedup result')
+      }
+    })
+    .catch(err => {
+      log.error({ err, storyId }, 'post-assessment embedding/dedup failed')
+    })
 }
 
 /** Orchestrate concurrent assessment of multiple stories. */
@@ -316,15 +328,36 @@ export async function assessStories(
 export async function selectStories(storyIds: string[]): Promise<{ selected: string[]; rejected: string[] }> {
   const stories = await prisma.story.findMany({
     where: { id: { in: storyIds } },
+    include: { cluster: { select: { primaryStoryId: true } } },
   })
 
   if (stories.length === 0) return { selected: [], rejected: [] }
 
-  log.info({ storyCount: stories.length }, 'selecting from stories')
+  // Dedup safety net: keep only primary (or unclustered) stories for LLM selection
+  const dedupFiltered = stories.filter(s => {
+    if (!s.cluster) return true // no cluster — keep
+    return s.cluster.primaryStoryId === s.id // only primary
+  })
+  const dedupRejectedIds = stories
+    .filter(s => s.cluster && s.cluster.primaryStoryId !== s.id)
+    .map(s => s.id)
 
-  const toSelect = Math.ceil(stories.length * config.selection.ratio)
+  if (dedupRejectedIds.length > 0) {
+    // Safety net: re-reject non-primary stories that may have been manually un-rejected
+    log.info({ filtered: dedupRejectedIds.length }, 'filtered non-primary cluster members from selection')
+    await prisma.story.updateMany({
+      where: { id: { in: dedupRejectedIds } },
+      data: { status: 'rejected' },
+    })
+  }
+
+  if (dedupFiltered.length === 0) return { selected: [], rejected: dedupRejectedIds }
+
+  log.info({ storyCount: dedupFiltered.length }, 'selecting from stories')
+
+  const toSelect = Math.ceil(dedupFiltered.length * config.selection.ratio)
   const prompt = buildSelectPrompt(
-    stories.map(s => ({
+    dedupFiltered.map(s => ({
       id: s.id,
       title: s.title,
       summary: s.summary,
@@ -345,9 +378,9 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
 
   const selectedSet = new Set(response.selectedIds)
   const selected: string[] = []
-  const rejected: string[] = []
+  const rejected: string[] = [...dedupRejectedIds]
 
-  for (const story of stories) {
+  for (const story of dedupFiltered) {
     if (selectedSet.has(story.id)) {
       selected.push(story.id)
     } else {
@@ -361,9 +394,10 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
       data: { status: 'selected' },
     })
   }
-  if (rejected.length > 0) {
+  const llmRejected = rejected.filter(id => !dedupRejectedIds.includes(id))
+  if (llmRejected.length > 0) {
     await prisma.story.updateMany({
-      where: { id: { in: rejected } },
+      where: { id: { in: llmRejected } },
       data: { status: 'rejected' },
     })
   }

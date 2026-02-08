@@ -135,4 +135,10 @@ export const config = {
   feedQuality: {
     cacheMinutes: 10,
   },
+  dedup: {
+    maxCandidates: parseInt(process.env.DEDUP_MAX_CANDIDATES || '6', 10),
+    timeWindowDays: parseInt(process.env.DEDUP_TIME_WINDOW_DAYS || '14', 10),
+    enabled: process.env.DEDUP_ENABLED !== 'false',
+    modelTier: 'small' as const,
+  },
 } as const;

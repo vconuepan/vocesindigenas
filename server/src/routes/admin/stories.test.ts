@@ -32,6 +32,10 @@ const mockPrisma = vi.hoisted(() => ({
     findMany: vi.fn(),
     update: vi.fn(),
   },
+  storyCluster: {
+    findUnique: vi.fn(),
+    delete: vi.fn(),
+  },
   $disconnect: vi.fn(),
   $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
 }))
@@ -677,6 +681,39 @@ describe('Admin Stories API', () => {
         .set(authHeader())
       expect(res.status).toBe(200)
       expect(res.body.storyIds).toContain('00000000-0000-0000-0000-000000000001')
+    })
+  })
+
+  describe('POST /api/admin/stories/:id/dissolve-cluster', () => {
+    it('returns 401 without auth', async () => {
+      const res = await request(app)
+        .post('/api/admin/stories/story-1/dissolve-cluster')
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 400 when story is not in a cluster', async () => {
+      mockPrisma.story.findUnique.mockResolvedValue({ clusterId: null })
+
+      const res = await request(app)
+        .post('/api/admin/stories/story-1/dissolve-cluster')
+        .set(authHeader())
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Story is not in a cluster')
+    })
+
+    it('returns 200 and the updated story after dissolution', async () => {
+      // dissolveCluster calls: findUnique (for clusterId), updateMany x2, storyCluster.delete
+      mockPrisma.story.findUnique
+        .mockResolvedValueOnce({ clusterId: 'cluster-1' }) // dissolveCluster lookup
+        .mockResolvedValueOnce(storyWithRelations) // getStoryById after dissolution
+      mockPrisma.story.updateMany.mockResolvedValue({ count: 2 })
+      mockPrisma.storyCluster.delete.mockResolvedValue({})
+
+      const res = await request(app)
+        .post('/api/admin/stories/story-1/dissolve-cluster')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(res.body.sourceTitle).toBe('Test Article')
     })
   })
 })

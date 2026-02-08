@@ -62,6 +62,7 @@ export interface Story {
   antifactors: string | null
   relevanceCalculation: string | null
   crawlMethod: string | null
+  clusterId: string | null
   createdAt: string
   updatedAt: string
   issue?: { id: string; name: string; slug: string; parentId?: string | null; parent?: { id: string; name: string; slug: string } | null } | null
@@ -76,6 +77,12 @@ export interface Story {
       parent?: { id: string; name: string; slug: string } | null
     }
   }
+  cluster?: {
+    id: string
+    primaryStoryId: string | null
+    _count: { stories: number }
+    stories: { id: string; title: string | null; sourceTitle: string; status: StoryStatus }[]
+  } | null
 }
 
 export interface PublicStory extends Story {
@@ -139,6 +146,7 @@ export interface Issue {
   evaluationCriteria: string[]
   sourceNames: string[]
   makeADifference: { label: string; url: string }[]
+  minPreRating: number | null
   publishedStoryCount?: number
   createdAt: string
   updatedAt: string
@@ -189,6 +197,16 @@ export interface Podcast {
   script: string
   storyIds: string[]
   status: 'draft' | 'published'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface StoryCluster {
+  id: string
+  primaryStoryId: string | null
+  primaryStory?: { id: string; title: string | null; sourceTitle: string } | null
+  stories: { id: string; title: string | null; sourceTitle: string; status: StoryStatus; relevance: number | null }[]
+  _count: { stories: number }
   createdAt: string
   updatedAt: string
 }

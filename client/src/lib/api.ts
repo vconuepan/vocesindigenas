@@ -64,6 +64,8 @@ export const publicApi = {
     get: (slug: string) => request<PublicStory>(`/stories/${slug}`),
     related: (slug: string, limit = 4) =>
       request<PublicStory[]>(`/stories/${slug}/related?limit=${limit}`),
+    cluster: (slug: string) =>
+      request<{ sources: { feedTitle: string; sourceUrl: string }[] }>(`/stories/${slug}/cluster`),
   },
 
   issues: {

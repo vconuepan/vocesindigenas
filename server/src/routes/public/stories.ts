@@ -34,6 +34,21 @@ router.get('/', (req, res, next) => {
   }
 })
 
+router.get('/:slug/cluster', async (req, res) => {
+  try {
+    const result = await storyService.getClusterMembers(req.params.slug)
+    if (!result) {
+      res.status(404).json({ error: 'No cluster found' })
+      return
+    }
+    res.set('Cache-Control', 'public, max-age=300')
+    res.json(result)
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to fetch cluster members')
+    res.status(500).json({ error: 'Failed to fetch cluster members' })
+  }
+})
+
 router.get('/:slug/related', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit as string) || 4, 10)

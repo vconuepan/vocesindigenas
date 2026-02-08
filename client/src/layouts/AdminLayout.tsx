@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { NavLink, Outlet, Navigate } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import {
@@ -13,6 +13,7 @@ import {
   ClockIcon,
   UsersIcon,
   ArrowRightStartOnRectangleIcon,
+  Square3Stack3DIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
@@ -23,6 +24,7 @@ import { BackgroundTaskProvider } from '../hooks/useBackgroundTasks'
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: HomeIcon, end: true },
   { name: 'Stories', href: '/admin/stories', icon: DocumentTextIcon },
+  { name: 'Clusters', href: '/admin/clusters', icon: Square3Stack3DIcon },
   { name: 'Feeds', href: '/admin/feeds', icon: RssIcon },
   { name: 'Issues', href: '/admin/issues', icon: TagIcon },
   { name: 'Newsletters', href: '/admin/newsletters', icon: EnvelopeIcon },
@@ -159,7 +161,14 @@ export default function AdminLayout() {
           </div>
 
           <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-            <Outlet />
+            <Suspense fallback={
+              <div className="flex justify-center py-12">
+                <h1 className="sr-only">Loading</h1>
+                <LoadingSpinner />
+              </div>
+            }>
+              <Outlet />
+            </Suspense>
           </main>
         </div>
       </div>

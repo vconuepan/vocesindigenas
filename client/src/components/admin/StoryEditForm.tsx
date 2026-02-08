@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import type { Story, StoryStatus, EmotionTag, Issue } from '@shared/types'
 import { STORY_STATUSES, EMOTION_TAGS } from '@shared/constants'
 import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
-import { useUpdateStory } from '../../hooks/useStories'
+import { useUpdateStory, useDissolveCluster } from '../../hooks/useStories'
 import { useEditForm } from '../../hooks/useEditForm'
 import { formatStatus, formatDate } from '../../lib/constants'
 import { PANEL_BODY } from './EditPanel'
@@ -42,7 +43,9 @@ function buildFormState(story: Story) {
 
 export function StoryEditForm({ story, issues, onDone, variant = 'page' }: StoryEditFormProps) {
   const [contentExpanded, setContentExpanded] = useState(false)
+  const [confirmDissolve, setConfirmDissolve] = useState(false)
   const updateStory = useUpdateStory()
+  const dissolveCluster = useDissolveCluster()
 
   const initialState = useMemo(() => buildFormState(story), [story])
 
@@ -154,6 +157,79 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
           </div>
         )}
       </div>
+
+      {/* Cluster info (read-only) */}
+      {story.clusterId && story.cluster && (
+        <div className="border-t border-neutral-200 pt-4 space-y-2">
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Cluster</h3>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+            <dt className="text-neutral-500">Role</dt>
+            <dd className="text-neutral-900">
+              {story.cluster.primaryStoryId === story.id ? (
+                <span className="inline-flex items-center gap-1 text-green-700 font-medium">Primary</span>
+              ) : (
+                <span className="text-purple-700">Member</span>
+              )}
+            </dd>
+            <dt className="text-neutral-500">Members</dt>
+            <dd className="text-neutral-900">{story.cluster._count.stories} stories</dd>
+          </dl>
+          <div className="pt-1">
+            <p className="text-xs font-medium text-neutral-500 mb-1">Other stories in cluster:</p>
+            <ul className="space-y-0.5">
+              {story.cluster.stories
+                .filter(s => s.id !== story.id)
+                .map(s => (
+                  <li key={s.id} className="text-sm text-neutral-700 flex items-center gap-1.5">
+                    <span className="truncate">{s.title || s.sourceTitle}</span>
+                    {s.id === story.cluster!.primaryStoryId && (
+                      <span className="text-xs text-green-600 font-medium shrink-0">(Primary)</span>
+                    )}
+                    <span className="text-xs text-neutral-400 shrink-0">{formatStatus(s.status as StoryStatus)}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+          <div className="pt-2 flex items-center gap-3">
+            <Link
+              to={`/admin/clusters?open=${story.clusterId}`}
+              className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+            >
+              Manage cluster
+            </Link>
+            {confirmDissolve ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-red-600">Dissolve cluster and restore members to analyzed?</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    dissolveCluster.mutate(story.id, { onSuccess: () => setConfirmDissolve(false) })
+                  }}
+                  disabled={dissolveCluster.isPending}
+                  className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+                >
+                  {dissolveCluster.isPending ? 'Dissolving...' : 'Confirm'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDissolve(false)}
+                  className="text-sm text-neutral-500 hover:text-neutral-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmDissolve(true)}
+                className="text-sm text-red-600 hover:text-red-700 font-medium"
+              >
+                Dissolve cluster
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 
