@@ -32,8 +32,9 @@ export function useUpdateIssue() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Issue> }) =>
       adminApi.issues.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['issues'] })
+      queryClient.invalidateQueries({ queryKey: ['issue', id] })
     },
   })
 }

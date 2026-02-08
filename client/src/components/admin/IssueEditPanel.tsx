@@ -30,6 +30,7 @@ function buildFormState(issue: Issue) {
     promptAntifactors: issue.promptAntifactors,
     promptRatings: issue.promptRatings,
     parentId: issue.parentId as string | null,
+    minPreRating: issue.minPreRating as number | null,
     intro: issue.intro || '',
     evaluationIntro: issue.evaluationIntro || '',
     evaluationCriteria: issue.evaluationCriteria || [] as string[],
@@ -100,6 +101,16 @@ function IssueEditForm({ issue, onClose }: { issue: Issue; onClose: () => void }
       {/* LLM Prompt Configuration */}
       <div className="border-t border-neutral-200 pt-4 space-y-4">
         <h3 className="text-sm font-semibold text-neutral-900">LLM Prompt Configuration</h3>
+        <Input
+          id="issue-min-pre-rating"
+          label="Min Pre-Rating"
+          type="number"
+          min={1}
+          max={10}
+          placeholder="Global default (5)"
+          value={form.minPreRating ?? ''}
+          onChange={e => set('minPreRating', e.target.value === '' ? null : parseInt(e.target.value, 10))}
+        />
         <Textarea id="issue-factors" label="Relevance Factors" rows={6} value={form.promptFactors} onChange={e => set('promptFactors', e.target.value)} placeholder="What makes a story relevant for this issue?" />
         <Textarea id="issue-antifactors" label="Antifactors" rows={6} value={form.promptAntifactors} onChange={e => set('promptAntifactors', e.target.value)} placeholder="What makes a story less relevant?" />
         <Textarea id="issue-ratings" label="Rating Guidelines" rows={6} value={form.promptRatings} onChange={e => set('promptRatings', e.target.value)} placeholder="How should ratings be assigned?" />
