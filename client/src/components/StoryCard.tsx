@@ -60,17 +60,20 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         <div className="relative z-10 flex flex-col md:flex-row md:items-stretch">
           {/* Left: title + meta */}
           <div className="p-6 md:p-8 md:flex-1">
-            <Link
-              to={`/stories/${story.slug}`}
-              className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-            >
-              {getTitleLabel(story) && (
-                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
-              )}
-              <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors">
-                {getHeadline(story)}
-              </h3>
-            </Link>
+            <div className="flex items-start justify-between gap-2">
+              <Link
+                to={`/stories/${story.slug}`}
+                className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              >
+                {getTitleLabel(story) && (
+                  <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+                )}
+                <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors">
+                  {getHeadline(story)}
+                </h3>
+              </Link>
+              {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
+            </div>
             <StoryMeta story={story} />
           </div>
 
@@ -95,22 +98,22 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         <div className={`rounded-t-lg ${colors.dotBg}`} style={{ height: '4px' }} aria-hidden="true" />
         <Pattern opacity={0.12} />
         <div className="relative z-10 p-6 md:p-8">
-          <Link
-            to={`/stories/${story.slug}`}
-            className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-          >
-            {getTitleLabel(story) && (
-              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
-            )}
-            <h3 className={`text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight ${readClass}`}>
-              {getHeadline(story)}
-            </h3>
-          </Link>
-
-          <div className="flex items-center justify-between gap-2">
-            <StoryMeta story={story} />
-            {story.slug && <BookmarkButton slug={story.slug} size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />}
+          <div className="flex items-start justify-between gap-2">
+            <Link
+              to={`/stories/${story.slug}`}
+              className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+            >
+              {getTitleLabel(story) && (
+                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+              )}
+              <h3 className={`text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight ${readClass}`}>
+                {getHeadline(story)}
+              </h3>
+            </Link>
+            {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
           </div>
+
+          <StoryMeta story={story} />
 
           {(story.relevanceSummary || story.summary) && (
             <p className="text-neutral-600 leading-relaxed mt-3">{story.relevanceSummary || story.summary}</p>
@@ -128,17 +131,20 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
         style={hoverStyle}
       >
         <div className="relative z-10 p-5">
-          <Link
-            to={`/stories/${story.slug}`}
-            className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-          >
-            {getTitleLabel(story) && (
-              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
-            )}
-            <h3 className="text-lg font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-snug">
-              {getHeadline(story)}
-            </h3>
-          </Link>
+          <div className="flex items-start justify-between gap-1">
+            <Link
+              to={`/stories/${story.slug}`}
+              className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+            >
+              {getTitleLabel(story) && (
+                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+              )}
+              <h3 className="text-lg font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-snug">
+                {getHeadline(story)}
+              </h3>
+            </Link>
+            {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
+          </div>
 
           <StoryMeta story={story} size="xs" />
 
@@ -172,7 +178,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
           <StoryMeta story={story} size="xs" />
         </div>
         {story.slug && (
-          <BookmarkButton slug={story.slug} size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
+          <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />
         )}
       </div>
     </article>

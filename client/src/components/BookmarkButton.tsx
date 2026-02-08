@@ -4,10 +4,12 @@ import { isSaved, toggleSaved } from '../lib/preferences'
 interface BookmarkButtonProps {
   slug: string
   size?: 'sm' | 'md'
+  /** On desktop (lg+): show only on hover unless bookmarked. On mobile/tablet: always visible. */
+  hoverReveal?: boolean
   className?: string
 }
 
-export default function BookmarkButton({ slug, size = 'sm', className = '' }: BookmarkButtonProps) {
+export default function BookmarkButton({ slug, size = 'sm', hoverReveal = false, className = '' }: BookmarkButtonProps) {
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -24,7 +26,13 @@ export default function BookmarkButton({ slug, size = 'sm', className = '' }: Bo
   }
 
   const iconSize = size === 'md' ? 'w-5 h-5' : 'w-4 h-4'
-  const padding = size === 'md' ? 'p-1.5' : 'p-1'
+  // Asymmetric vertical padding: less on top so icon aligns with title label text
+  const padding = size === 'md' ? 'pt-0.5 pb-2.5 px-1.5' : 'pt-0 pb-2 px-1'
+
+  // When hoverReveal: desktop-only hover reveal unless bookmarked (saved items always visible)
+  const visibilityClass = hoverReveal && !saved
+    ? 'lg:opacity-0 lg:group-hover:opacity-100 transition-opacity'
+    : 'transition-opacity'
 
   return (
     <button
@@ -33,11 +41,11 @@ export default function BookmarkButton({ slug, size = 'sm', className = '' }: Bo
         saved
           ? 'text-brand-600 hover:text-brand-700'
           : 'text-neutral-300 hover:text-neutral-500'
-      } ${className}`}
+      } ${visibilityClass} ${className}`}
       aria-label={saved ? 'Remove bookmark' : 'Bookmark story'}
       title={saved ? 'Remove bookmark' : 'Bookmark'}
     >
-      <svg className={iconSize} viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} aria-hidden="true">
+      <svg className={iconSize} viewBox="0 2 24 22" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
       </svg>
     </button>

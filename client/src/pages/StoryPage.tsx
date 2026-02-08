@@ -172,12 +172,11 @@ export default function StoryPage() {
               {headline}
             </h1>
 
-            {/* Metadata */}
+            {/* Metadata + share */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
               <time dateTime={displayDate}>{dateStr}</time>
               <span className="text-neutral-300">|</span>
               <span className="inline-flex items-center gap-1.5">
-                Based on{' '}
                 <FeedFavicon feedId={story.feed.id} />
                 <a
                   href={story.sourceUrl}
@@ -197,7 +196,7 @@ export default function StoryPage() {
                 rel="noopener noreferrer"
                 className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
-                Read original article
+                Original article
                 <span className="sr-only"> (opens in new tab)</span>
               </a>
               <span className="text-neutral-300">|</span>
@@ -210,16 +209,20 @@ export default function StoryPage() {
               {story.slug && (
                 <>
                   <span className="text-neutral-300">|</span>
-                  <BookmarkButton slug={story.slug} size="md" />
+                  <span className="inline-flex items-center flex-nowrap">
+                    <BookmarkButton slug={story.slug} size="sm" />
+                    <span className="text-neutral-200 mx-0.5 select-none" aria-hidden="true">|</span>
+                    <span className="inline-flex items-center gap-0.5">
+                      <ShareButtons
+                        url={`${SEO.siteUrl}/stories/${story.slug}`}
+                        title={displayTitle}
+                        description={story.marketingBlurb || story.summary || displayTitle}
+                      />
+                    </span>
+                  </span>
                 </>
               )}
             </div>
-
-            <ShareButtons
-              url={`${SEO.siteUrl}/stories/${story.slug}`}
-              title={displayTitle}
-              description={story.marketingBlurb || story.summary || displayTitle}
-            />
           </div>
         </header>
 
@@ -281,7 +284,17 @@ export default function StoryPage() {
           {/* Related stories */}
           {story.slug && <RelatedStories slug={story.slug} />}
 
-          {/* Navigation + actions */}
+          {/* Find similar — below related stories */}
+          <div className="text-center mt-6">
+            <Link
+              to={`/search?q=${encodeURIComponent(headline)}`}
+              className="text-sm text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+            >
+              Find similar stories &rarr;
+            </Link>
+          </div>
+
+          {/* Navigation */}
           <div className="border-t border-neutral-200 pt-6 mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Link
               to="/"
@@ -289,20 +302,12 @@ export default function StoryPage() {
             >
               &larr; Back to all stories
             </Link>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 self-end sm:self-auto">
-              <Link
-                to={`/search?q=${encodeURIComponent(headline)}`}
-                className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
-              >
-                Find similar stories
-              </Link>
-              <Link
-                to={`/issues/${issueSlug}`}
-                className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
-              >
-                More in {issueName} &rarr;
-              </Link>
-            </div>
+            <Link
+              to={`/issues/${issueSlug}`}
+              className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+            >
+              More in {issueName} &rarr;
+            </Link>
           </div>
 
         </div>
