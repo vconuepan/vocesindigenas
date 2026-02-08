@@ -233,6 +233,15 @@ export const extractRelevanceSummarySchema = z.object({
 export type ExtractRelevanceSummary = z.infer<
   typeof extractRelevanceSummarySchema
 >;
+export const relatedStoriesResultSchema = z.object({
+  selectedIds: z
+    .array(z.string())
+    .describe(
+      "IDs of the most related candidates, in order of relatedness. Must contain exactly the number of articles requested."
+    ),
+});
+
+export type RelatedStoriesResult = z.infer<typeof relatedStoriesResultSchema>;
 export type ExtractTitleLabel = z.infer<typeof extractTitleLabelSchema>;
 export type PreAssessResult = z.infer<typeof preAssessResultSchema>;
 export type AssessResult = z.infer<typeof assessResultSchema>;

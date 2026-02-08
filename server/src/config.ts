@@ -123,6 +123,13 @@ export const config = {
     ),
     rateLimitMax: parseInt(process.env.SUBSCRIBE_RATE_LIMIT_MAX || "3", 10),
   },
+  relatedStories: {
+    displayCount: 4,
+    candidateMultiplier: 3, // fetch 12 candidates for 4 results
+    cacheHours: 72, // 3 days in-memory
+    httpCacheSeconds: 259200, // 3 days
+    modelTier: 'small' as const,
+  },
   feedQuality: {
     cacheMinutes: 10,
   },

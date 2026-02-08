@@ -1,11 +1,16 @@
 import prisma from '../lib/prisma.js'
 import { type Story, Prisma, StoryStatus, EmotionTag } from '@prisma/client'
+import { HumanMessage } from '@langchain/core/messages'
 import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
 import { updateStoryEmbeddingIfNeeded, batchUpdateEmbeddings, generateEmbedding } from './embedding.js'
 import { searchByEmbedding } from '../lib/vectors.js'
 import { createLogger } from '../lib/logger.js'
+import { config } from '../config.js'
+import { getLLMByTier, rateLimitDelay } from './llm.js'
+import { buildRelatedStoriesPrompt } from '../prompts/related-stories.js'
+import { relatedStoriesResultSchema } from '../schemas/llm.js'
 
 const log = createLogger('story')
 
@@ -627,38 +632,112 @@ export async function getPublishedStories(options: {
   })
 }
 
-export async function getRelatedStories(slug: string, limit = 4) {
-  // 1. Find the source story and verify it has an embedding
-  const rows = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT id FROM stories
+// In-memory cache for LLM-ranked related story IDs
+const relatedCache = new Map<string, { ids: string[]; expiry: number }>()
+const EVICTION_INTERVAL = 60 * 60 * 1000 // 1 hour
+let lastEviction = Date.now()
+
+function evictExpiredCache() {
+  const now = Date.now()
+  if (now - lastEviction < EVICTION_INTERVAL) return
+  lastEviction = now
+  for (const [key, value] of relatedCache) {
+    if (value.expiry <= now) relatedCache.delete(key)
+  }
+}
+
+export async function getRelatedStories(slug: string, limit: number = config.relatedStories.displayCount) {
+  evictExpiredCache()
+
+  // Always work with displayCount for caching consistency, then slice to requested limit
+  const displayCount = config.relatedStories.displayCount
+
+  // 1. Check in-memory cache
+  const cached = relatedCache.get(slug)
+  if (cached && cached.expiry > Date.now()) {
+    const ids = cached.ids.slice(0, limit)
+    const stories = await prisma.story.findMany({
+      where: { id: { in: ids } },
+      select: PUBLIC_STORY_SELECT,
+    })
+    const storyMap = new Map(stories.map((s) => [s.id, s]))
+    return ids.map((id) => storyMap.get(id)).filter((s): s is NonNullable<typeof s> => s != null)
+  }
+
+  // 2. Find the source story and verify it has an embedding
+  const rows = await prisma.$queryRaw<{ id: string; title: string | null; title_label: string | null }[]>`
+    SELECT id, title, title_label FROM stories
     WHERE slug = ${slug} AND status = 'published' AND embedding IS NOT NULL
     LIMIT 1
   `
   if (rows.length === 0) return []
 
-  const sourceId = rows[0].id
+  const source = rows[0]
+  const candidateCount = displayCount * config.relatedStories.candidateMultiplier
 
-  // 2. Find similar stories by cosine distance
-  const related = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT s.id
+  // 3. Get a larger candidate pool via cosine distance
+  const candidates = await prisma.$queryRaw<{ id: string; title: string | null; title_label: string | null }[]>`
+    SELECT s.id, s.title, s.title_label
     FROM stories s
-    WHERE s.id != ${sourceId}
+    WHERE s.id != ${source.id}
       AND s.status = 'published'
       AND s.embedding IS NOT NULL
-    ORDER BY s.embedding <=> (SELECT embedding FROM stories WHERE id = ${sourceId})
-    LIMIT ${limit}
+    ORDER BY s.embedding <=> (SELECT embedding FROM stories WHERE id = ${source.id})
+    LIMIT ${candidateCount}
   `
-  if (related.length === 0) return []
+  if (candidates.length === 0) return []
 
-  // 3. Fetch full story data
-  const stories = await prisma.story.findMany({
-    where: { id: { in: related.map((r) => r.id) } },
-    select: PUBLIC_STORY_SELECT,
+  // 4. If we have fewer candidates than needed, skip LLM and return all
+  let selectedIds: string[]
+  if (candidates.length <= displayCount) {
+    selectedIds = candidates.map((c) => c.id)
+  } else {
+    // 5. LLM re-ranking
+    try {
+      const prompt = buildRelatedStoriesPrompt(
+        { titleLabel: source.title_label, title: source.title },
+        candidates.map((c) => ({ id: c.id, titleLabel: c.title_label, title: c.title })),
+        displayCount,
+      )
+
+      await rateLimitDelay()
+      const llm = getLLMByTier(config.relatedStories.modelTier)
+      const structuredLlm = llm.withStructuredOutput(relatedStoriesResultSchema)
+      const response = await structuredLlm.invoke([new HumanMessage(prompt)])
+
+      // Validate returned IDs against candidate pool
+      const candidateIdSet = new Set(candidates.map((c) => c.id))
+      const validIds = response.selectedIds.filter((id) => candidateIdSet.has(id))
+
+      if (validIds.length > 0) {
+        selectedIds = validIds.slice(0, displayCount)
+        log.info({ slug, candidateCount: candidates.length, selectedCount: selectedIds.length }, 'LLM re-ranked related stories')
+      } else {
+        // LLM returned no valid IDs — fall back to cosine order
+        log.warn({ slug }, 'LLM returned no valid IDs for related stories, falling back to cosine')
+        selectedIds = candidates.slice(0, displayCount).map((c) => c.id)
+      }
+    } catch (err) {
+      // LLM failed — fall back to cosine order
+      log.warn({ err, slug }, 'LLM re-ranking failed for related stories, falling back to cosine')
+      selectedIds = candidates.slice(0, displayCount).map((c) => c.id)
+    }
+  }
+
+  // 6. Cache the result
+  relatedCache.set(slug, {
+    ids: selectedIds,
+    expiry: Date.now() + config.relatedStories.cacheHours * 60 * 60 * 1000,
   })
 
-  // 4. Preserve similarity order
+  // 7. Fetch full story data in LLM-selected order, sliced to requested limit
+  const returnIds = selectedIds.slice(0, limit)
+  const stories = await prisma.story.findMany({
+    where: { id: { in: returnIds } },
+    select: PUBLIC_STORY_SELECT,
+  })
   const storyMap = new Map(stories.map((s) => [s.id, s]))
-  return related.map((r) => storyMap.get(r.id)).filter((s): s is NonNullable<typeof s> => s != null)
+  return returnIds.map((id) => storyMap.get(id)).filter((s): s is NonNullable<typeof s> => s != null)
 }
 
 interface StatusFilterOptions {
