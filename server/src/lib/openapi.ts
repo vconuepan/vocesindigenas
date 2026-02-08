@@ -104,7 +104,7 @@ export function getOpenAPIDocument(): any {
     openapi: '3.1.0',
     info: {
       title: 'Actually Relevant API',
-      version: '1.0.0',
+      version: '0.1.0',
       description:
         'Public API for Actually Relevant — an AI-curated news platform that evaluates article relevance to humanity. ' +
         'Access published stories, issues, homepage data, and RSS feeds. No authentication required.',
@@ -166,6 +166,12 @@ export function getOpenAPIDocument(): any {
               in: 'query',
               schema: { type: 'string', maxLength: 200 },
               description: 'Semantic search query — searches by meaning, not just keywords',
+            },
+            {
+              name: 'emotionTags',
+              in: 'query',
+              schema: { type: 'string' },
+              description: 'Comma-separated emotion tags to filter by (e.g., "uplifting" or "uplifting,calm")',
             },
           ],
           responses: {

@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { getCategoryColor } from "../lib/category-colors";
 import { API_BASE } from "../lib/api";
 import { BRAND } from "../config";
+import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
   useSubscribe,
 } from "../components/SubscribeProvider";
@@ -92,12 +93,28 @@ function PublicLayoutInner() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [savedCount, setSavedCount] = useState(0);
   const { openSubscribe } = useSubscribe();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
 
   const location = useLocation();
+
+  // Track saved stories count reactively
+  const refreshSavedCount = useCallback(() => {
+    setSavedCount(getSavedSlugs().length);
+  }, []);
+
+  useEffect(() => {
+    refreshSavedCount();
+    window.addEventListener("storage", refreshSavedCount);
+    window.addEventListener("ar-saved-changed", refreshSavedCount);
+    return () => {
+      window.removeEventListener("storage", refreshSavedCount);
+      window.removeEventListener("ar-saved-changed", refreshSavedCount);
+    };
+  }, [refreshSavedCount]);
 
   const isActiveIssue = (href: string) =>
     location.pathname === href || location.pathname.startsWith(href + "/");
@@ -205,8 +222,17 @@ function PublicLayoutInner() {
               <MoodDialPanel />
             </div>
 
-            {/* Desktop: subscribe button — vertically centered on logo */}
-            <div className="hidden lg:flex items-center absolute right-12 top-4 h-16">
+            {/* Desktop: saved + subscribe — vertically centered on logo */}
+            <div className="hidden lg:flex items-center gap-1 absolute right-12 top-4 h-16">
+              <Link
+                to="/saved"
+                className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+                Saved{savedCount > 0 && ` (${savedCount})`}
+              </Link>
               <button
                 onClick={() => openSubscribe()}
                 className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
@@ -364,8 +390,18 @@ function PublicLayoutInner() {
                 })}
               </ul>
 
-              {/* Subscribe & Support — each on its own line */}
+              {/* Saved, Subscribe & Support — each on its own line */}
               <div className="border-t border-neutral-100 pt-3 px-2 flex flex-col">
+                <Link
+                  to="/saved"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                >
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                  Saved Stories{savedCount > 0 && ` (${savedCount})`}
+                </Link>
                 <button
                   onClick={() => {
                     setMenuOpen(false);
@@ -545,10 +581,10 @@ function PublicLayoutInner() {
               </ul>
             </div>
 
-            {/* Subscribe column */}
+            {/* Connect column */}
             <div>
               <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none">
-                Subscribe
+                Connect
               </h3>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 <li className="flex items-center">
@@ -575,6 +611,42 @@ function PublicLayoutInner() {
                     </svg>
                     RSS Feed
                   </a>
+                </li>
+                <li className="flex items-center">
+                  <Link
+                    to="/widgets"
+                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    For Your Website
+                  </Link>
+                </li>
+                <li className="flex items-center">
+                  <Link
+                    to="/developers"
+                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M7 16l-4-4 4-4" />
+                    </svg>
+                    API
+                  </Link>
                 </li>
                 <li className="flex items-center">
                   <a

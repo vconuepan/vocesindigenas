@@ -1,16 +1,36 @@
-import { Helmet } from 'react-helmet-async'
-import { ApiReferenceReact } from '@scalar/api-reference-react'
-import type { AnyApiReferenceConfiguration } from '@scalar/api-reference-react'
-import { API_BASE } from '../lib/api'
+import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+import { ApiReferenceReact } from "@scalar/api-reference-react";
+import type { AnyApiReferenceConfiguration } from "@scalar/api-reference-react";
+import scalarCss from "@scalar/api-reference-react/style.css?inline";
+import { API_BASE } from "../lib/api";
 
 const scalarConfig: AnyApiReferenceConfiguration = {
   url: `${API_BASE}/docs/openapi.json`,
+  theme: "laserwave",
+  layout: "modern",
+  defaultOpenAllTags: true,
+  hideSearch: true,
+  showSidebar: true,
+  hideDarkModeToggle: false,
   hideDownloadButton: false,
   hideModels: false,
-  defaultHttpClient: { targetKey: 'js', clientKey: 'fetch' },
-}
+  withDefaultFonts: true,
+  defaultHttpClient: { targetKey: "js", clientKey: "fetch" },
+};
 
 export default function DevelopersPage() {
+  // Inject Scalar CSS only while this page is mounted, then remove it
+  // to prevent style leaks (diagonal dashes, layout issues) on other pages
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.id = "scalar-styles";
+    style.textContent = scalarCss;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -20,9 +40,25 @@ export default function DevelopersPage() {
           content="Public API documentation for Actually Relevant. Access published stories, issues, and RSS feeds programmatically."
         />
       </Helmet>
-      <div className="min-h-[80vh]">
+      <div className="border-b border-neutral-200 bg-white px-4 py-3 flex items-center gap-3">
+        <Link
+          to="/"
+          className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+        >
+          &larr; Actually Relevant
+        </Link>
+        <span className="text-neutral-300">|</span>
+        <span className="text-sm font-medium text-neutral-700">
+          API Documentation
+        </span>
+        <span className="text-neutral-300">|</span>
+        <span className="text-xs text-amber-600 font-medium">
+          Not a stable API &mdash; use at your own risk
+        </span>
+      </div>
+      <div className="min-h-[calc(100vh-3rem)]">
         <ApiReferenceReact configuration={scalarConfig} />
       </div>
     </>
-  )
+  );
 }
