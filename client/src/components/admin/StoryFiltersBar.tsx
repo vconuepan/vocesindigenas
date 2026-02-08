@@ -126,6 +126,8 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
             { value: 'lte3', label: '≤ 3' },
             { value: 'lte4', label: '≤ 4' },
             { value: 'lte5', label: '≤ 5' },
+            { value: 'lte6', label: '≤ 6' },
+            { value: 'lte7', label: '≤ 7' },
           ]}
         />
         <Select

@@ -43,7 +43,7 @@ export async function withRetry<T>(
         throw err
       }
       const delay = baseDelayMs * Math.pow(2, attempt)
-      log.warn({ attempt: attempt + 1, retries, delayMs: delay, err }, 'retrying after error')
+      log.debug({ attempt: attempt + 1, retries, delayMs: delay, err }, 'retrying after error')
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }

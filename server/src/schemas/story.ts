@@ -13,7 +13,7 @@ const storySortEnum = z.enum([
 ])
 
 const ratingFilterEnum = z.enum([
-  'gte4', 'gte5', 'gte6', 'gte7', 'lte3', 'lte4', 'lte5',
+  'gte4', 'gte5', 'gte6', 'gte7', 'lte3', 'lte4', 'lte5', 'lte6', 'lte7',
 ])
 
 export const createStorySchema = z.object({

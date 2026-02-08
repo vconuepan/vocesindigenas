@@ -83,10 +83,11 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
   let totalFailCount = 0
   let skipLocal = false
   let skipAll = false
+  let skippedDueToFailures = 0
   await Promise.allSettled(
     newItems.map(item => articleSemaphore.run(async () => {
       if (skipAll) {
-        log.info({ url: item.url }, 'skipping article, too many consecutive total failures')
+        skippedDueToFailures++
         result.errors++
         return
       }
@@ -104,7 +105,7 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
           if (localFailCount >= config.crawl.localFailThreshold) skipLocal = true
           if (totalFailCount >= config.crawl.totalFailThreshold) {
             skipAll = true
-            log.warn({ feed: feed.title, totalFailCount }, 'all extraction methods failing, skipping remaining articles')
+            log.warn({ feed: feed.title, totalFailCount, totalArticles }, 'all extraction methods failing, skipping remaining articles')
           }
           log.warn({ url: item.url }, 'no content extracted')
           result.errors++
