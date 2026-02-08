@@ -94,6 +94,8 @@ export const config = {
       10
     ),
     expensiveMax: parseInt(process.env.RATE_LIMIT_EXPENSIVE_MAX || "1000", 10),
+    searchWindowMs: parseInt(process.env.RATE_LIMIT_SEARCH_WINDOW_MS || String(15 * 60 * 1000), 10),
+    searchMax: parseInt(process.env.RATE_LIMIT_SEARCH_MAX || "20", 10),
   },
   concurrency: {
     preassess: parseInt(process.env.CONCURRENCY_PREASSESS || "10", 10),

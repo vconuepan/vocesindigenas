@@ -103,7 +103,7 @@ export const bulkSelectIdsSchema = z.object({
 
 export const publicStoryQuerySchema = z.object({
   issueSlug: z.string().optional(),
-  search: z.string().max(200).optional(),
+  search: z.string().min(2).max(200).optional(),
   emotionTags: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   pageSize: z.coerce.number().int().positive().max(100).optional().default(25),

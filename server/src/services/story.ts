@@ -4,7 +4,7 @@ import { HumanMessage } from '@langchain/core/messages'
 import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
-import { updateStoryEmbeddingIfNeeded, batchUpdateEmbeddings, generateEmbedding } from './embedding.js'
+import { updateStoryEmbeddingIfNeeded, batchUpdateEmbeddings, generateSearchEmbedding } from './embedding.js'
 import { searchByEmbedding } from '../lib/vectors.js'
 import { createLogger } from '../lib/logger.js'
 import { config } from '../config.js'
@@ -508,7 +508,7 @@ async function hybridSearch(options: {
     // Semantic search leg
     (async () => {
       try {
-        const queryEmbedding = await generateEmbedding(query)
+        const queryEmbedding = await generateSearchEmbedding(query)
         const rows = await searchByEmbedding(queryEmbedding, {
           limit: RRF_FETCH_LIMIT,
           issueFilter,

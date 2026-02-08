@@ -33,6 +33,20 @@ export const expensiveOpLimiter = rateLimit({
 })
 
 /**
+ * Stricter rate limiter for search queries that trigger OpenAI embedding calls.
+ * 20 searches per 15 minutes per IP (vs 100 for general API).
+ */
+export const searchLimiter = rateLimit({
+  windowMs: config.rateLimit.searchWindowMs,
+  max: config.rateLimit.searchMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many search requests. Please try again later.'
+  }
+})
+
+/**
  * Strict rate limiter for login endpoint.
  * 5 attempts per 15 minutes per IP to prevent brute-force attacks.
  */

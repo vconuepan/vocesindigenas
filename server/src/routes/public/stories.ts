@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as storyService from '../../services/story.js'
 import { validateQuery } from '../../middleware/validate.js'
+import { searchLimiter } from '../../middleware/rateLimit.js'
 import { publicStoryQuerySchema } from '../../schemas/story.js'
 import { createLogger } from '../../lib/logger.js'
 import { config } from '../../config.js'
@@ -8,7 +9,11 @@ import { config } from '../../config.js'
 const router = Router()
 const log = createLogger('public:stories')
 
-router.get('/', validateQuery(publicStoryQuerySchema), async (req, res) => {
+// Apply stricter rate limit when search triggers OpenAI embedding calls
+router.get('/', (req, res, next) => {
+  if (req.query.search) return searchLimiter(req, res, next)
+  next()
+}, validateQuery(publicStoryQuerySchema), async (req, res) => {
   try {
     const query = req.parsedQuery!
     const emotionTags = query.emotionTags

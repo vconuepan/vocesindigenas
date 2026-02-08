@@ -46,6 +46,19 @@ export function needsEmbeddingUpdate(
 // ~8k token limit for text-embedding-3-small; truncate at char level with safety margin
 const MAX_EMBEDDING_CHARS = 30_000
 
+// Small LRU cache for search query embeddings to avoid redundant OpenAI calls.
+// 50 entries * ~6KB each = ~300KB max memory.
+const SEARCH_CACHE_MAX = 50
+const SEARCH_CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
+const searchEmbeddingCache = new Map<string, { embedding: number[]; expiry: number }>()
+
+function evictExpiredSearchCache() {
+  const now = Date.now()
+  for (const [key, entry] of searchEmbeddingCache) {
+    if (entry.expiry <= now) searchEmbeddingCache.delete(key)
+  }
+}
+
 export async function generateEmbedding(text: string): Promise<number[]> {
   const input = text.length > MAX_EMBEDDING_CHARS ? text.slice(0, MAX_EMBEDDING_CHARS) : text
   const response = await withRetry(
@@ -58,6 +71,29 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     { retries: 3, baseDelayMs: 1000 },
   )
   return response.data[0].embedding
+}
+
+/**
+ * Generate embedding for a search query with caching.
+ * Identical queries within the TTL reuse the cached embedding.
+ */
+export async function generateSearchEmbedding(query: string): Promise<number[]> {
+  const key = query.trim().toLowerCase()
+
+  const cached = searchEmbeddingCache.get(key)
+  if (cached && cached.expiry > Date.now()) return cached.embedding
+
+  const embedding = await generateEmbedding(query)
+
+  // Evict expired entries and enforce max size
+  evictExpiredSearchCache()
+  if (searchEmbeddingCache.size >= SEARCH_CACHE_MAX) {
+    const oldest = searchEmbeddingCache.keys().next().value!
+    searchEmbeddingCache.delete(oldest)
+  }
+
+  searchEmbeddingCache.set(key, { embedding, expiry: Date.now() + SEARCH_CACHE_TTL_MS })
+  return embedding
 }
 
 export async function generateEmbeddingsBatch(

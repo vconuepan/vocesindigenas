@@ -164,8 +164,8 @@ export function getOpenAPIDocument(): any {
             {
               name: 'search',
               in: 'query',
-              schema: { type: 'string', maxLength: 200 },
-              description: 'Semantic search query — searches by meaning, not just keywords',
+              schema: { type: 'string', minLength: 2, maxLength: 200 },
+              description: 'Semantic search query — searches by meaning, not just keywords. Subject to a stricter rate limit (20 requests per 15 minutes).',
             },
             {
               name: 'emotionTags',
