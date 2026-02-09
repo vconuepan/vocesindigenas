@@ -61,6 +61,13 @@ router.get('/:slug', async (req, res) => {
   try {
     const story = await storyService.getPublishedStoryBySlug(req.params.slug)
     if (!story) {
+      // Check if this slug belongs to a non-primary cluster member and redirect to primary
+      const redirectSlug = await storyService.getClusterRedirectSlug(req.params.slug)
+      if (redirectSlug) {
+        res.set('Cache-Control', 'public, max-age=300')
+        res.redirect(302, `/api/stories/${redirectSlug}`)
+        return
+      }
       res.status(404).json({ error: 'Story not found' })
       return
     }

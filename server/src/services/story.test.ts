@@ -32,7 +32,7 @@ const mockPrisma = vi.hoisted(() => ({
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 
-const { getStoryIdsByStatus, generateUniqueSlugs, getStories, deleteStory, dissolveCluster } = await import('./story.js')
+const { getStoryIdsByStatus, generateUniqueSlugs, getStories, deleteStory, dissolveCluster, getClusterRedirectSlug } = await import('./story.js')
 
 describe('getStories', () => {
   beforeEach(() => {
@@ -463,5 +463,82 @@ describe('dissolveCluster', () => {
 
     expect(mockPrisma.story.updateMany).toHaveBeenCalledTimes(2)
     expect(mockPrisma.storyCluster.delete).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('getClusterRedirectSlug', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns primary slug for non-primary cluster member', async () => {
+    mockPrisma.story.findFirst.mockResolvedValue({
+      id: 'story-member',
+      cluster: {
+        primaryStoryId: 'story-primary',
+        primaryStory: { slug: 'primary-story-slug', status: 'published' },
+      },
+    })
+
+    const result = await getClusterRedirectSlug('old-member-slug')
+
+    expect(result).toBe('primary-story-slug')
+    expect(mockPrisma.story.findFirst).toHaveBeenCalledWith({
+      where: { slug: 'old-member-slug', clusterId: { not: null } },
+      select: expect.objectContaining({
+        id: true,
+        cluster: expect.any(Object),
+      }),
+    })
+  })
+
+  it('returns null when story is not in a cluster', async () => {
+    mockPrisma.story.findFirst.mockResolvedValue(null)
+
+    const result = await getClusterRedirectSlug('non-clustered-slug')
+
+    expect(result).toBeNull()
+  })
+
+  it('returns null when story is the primary', async () => {
+    mockPrisma.story.findFirst.mockResolvedValue({
+      id: 'story-primary',
+      cluster: {
+        primaryStoryId: 'story-primary',
+        primaryStory: { slug: 'primary-slug', status: 'published' },
+      },
+    })
+
+    const result = await getClusterRedirectSlug('primary-slug')
+
+    expect(result).toBeNull()
+  })
+
+  it('returns null when primary story is not published', async () => {
+    mockPrisma.story.findFirst.mockResolvedValue({
+      id: 'story-member',
+      cluster: {
+        primaryStoryId: 'story-primary',
+        primaryStory: { slug: 'primary-slug', status: 'analyzed' },
+      },
+    })
+
+    const result = await getClusterRedirectSlug('member-slug')
+
+    expect(result).toBeNull()
+  })
+
+  it('returns null when primary story has no slug', async () => {
+    mockPrisma.story.findFirst.mockResolvedValue({
+      id: 'story-member',
+      cluster: {
+        primaryStoryId: 'story-primary',
+        primaryStory: { slug: null, status: 'published' },
+      },
+    })
+
+    const result = await getClusterRedirectSlug('member-slug')
+
+    expect(result).toBeNull()
   })
 })

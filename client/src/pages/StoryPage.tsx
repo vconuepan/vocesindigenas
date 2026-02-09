@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Markdown from 'react-markdown'
 import { usePublicStory } from '../hooks/usePublicStories'
@@ -72,7 +72,15 @@ function AnalysisSection({
 
 export default function StoryPage() {
   const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
   const { data: story, isLoading, error } = usePublicStory(slug || '')
+
+  // Redirect to primary story's URL if this slug was a non-primary cluster member
+  useEffect(() => {
+    if (story?.slug && slug && story.slug !== slug) {
+      navigate(`/stories/${story.slug}`, { replace: true })
+    }
+  }, [story, slug, navigate])
 
   // Track reading history
   useEffect(() => {

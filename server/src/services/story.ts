@@ -905,6 +905,33 @@ export async function getPublishedStoryBySlug(slug: string) {
   })
 }
 
+/**
+ * If a story with this slug is a non-primary cluster member (e.g. rejected after clustering),
+ * return the primary story's slug for redirect purposes.
+ */
+export async function getClusterRedirectSlug(slug: string): Promise<string | null> {
+  const story = await prisma.story.findFirst({
+    where: { slug, clusterId: { not: null } },
+    select: {
+      id: true,
+      cluster: {
+        select: {
+          primaryStoryId: true,
+          primaryStory: { select: { slug: true, status: true } },
+        },
+      },
+    },
+  })
+
+  if (!story?.cluster?.primaryStory) return null
+  // Only redirect if this story is NOT the primary and the primary is published
+  if (story.id === story.cluster.primaryStoryId) return null
+  if (story.cluster.primaryStory.status !== 'published') return null
+  if (!story.cluster.primaryStory.slug) return null
+
+  return story.cluster.primaryStory.slug
+}
+
 export async function getClusterMembers(slug: string): Promise<{
   sources: { feedTitle: string; sourceUrl: string }[]
 } | null> {
@@ -921,7 +948,7 @@ export async function getClusterMembers(slug: string): Promise<{
       id: { not: story.id },
       title: { not: null },
       summary: { not: null },
-      status: { in: ['analyzed', 'selected', 'published'] },
+      status: { in: ['analyzed', 'selected', 'published', 'rejected'] },
     },
     select: {
       sourceUrl: true,
