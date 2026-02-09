@@ -21,6 +21,11 @@ const DevelopersPage = lazy(() => import('./pages/DevelopersPage'))
 const EmbedPage = lazy(() => import('./pages/EmbedPage'))
 const WidgetGeneratorPage = lazy(() => import('./pages/WidgetGeneratorPage'))
 const SavedPage = lazy(() => import('./pages/SavedPage'))
+const ComparePage = lazy(() => import('./pages/ComparePage'))
+const NoAdsNoTrackingPage = lazy(() => import('./pages/NoAdsNoTrackingPage'))
+const NewsFatiguePage = lazy(() => import('./pages/NewsFatiguePage'))
+const FreeApiPage = lazy(() => import('./pages/FreeApiPage'))
+const StewardshipPage = lazy(() => import('./pages/StewardshipPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -90,6 +95,11 @@ export default function App() {
         <Route path="/widgets" element={<LazyPage><WidgetGeneratorPage /></LazyPage>} />
         <Route path="/embed-widget" element={<LazyPage><WidgetGeneratorPage /></LazyPage>} />
         <Route path="/saved" element={<LazyPage><SavedPage /></LazyPage>} />
+        <Route path="/compare" element={<LazyPage><ComparePage /></LazyPage>} />
+        <Route path="/no-ads-no-tracking" element={<LazyPage><NoAdsNoTrackingPage /></LazyPage>} />
+        <Route path="/news-fatigue" element={<LazyPage><NewsFatiguePage /></LazyPage>} />
+        <Route path="/free-api" element={<LazyPage><FreeApiPage /></LazyPage>} />
+        <Route path="/stewardship" element={<LazyPage><StewardshipPage /></LazyPage>} />
       </Route>
 
       {/* Embed page — no layout wrapper */}

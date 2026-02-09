@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+import { SEO, CommonOgTags } from "../lib/seo";
 
 const ISSUES = [
   { label: "All issues", value: "" },
@@ -57,6 +59,11 @@ export default function WidgetGeneratorPage() {
           name="description"
           content="Add AI-curated relevant news to your website with embeddable widgets. Easy to set up, customizable, and always up to date."
         />
+        <meta property="og:title" content="For Your Website - Actually Relevant" />
+        <meta property="og:description" content="Add AI-curated relevant news to your website with embeddable widgets. Easy to set up, customizable, and always up to date." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SEO.siteUrl}/widgets`} />
+        {CommonOgTags({})}
       </Helmet>
 
       <div className="page-section py-12">
@@ -199,7 +206,7 @@ export default function WidgetGeneratorPage() {
               isolation.
             </p>
             <div className="relative">
-              <pre className="bg-neutral-900 text-green-400 text-sm p-4 rounded-lg overflow-x-auto">
+              <pre className="bg-neutral-900 text-green-400 text-sm p-4 rounded-lg overflow-x-auto" tabIndex={0}>
                 <code>{scriptCode}</code>
               </pre>
               <button
@@ -219,7 +226,7 @@ export default function WidgetGeneratorPage() {
               Complete style isolation via iframe. Works on any platform.
             </p>
             <div className="relative">
-              <pre className="bg-neutral-900 text-green-400 text-sm p-4 rounded-lg overflow-x-auto">
+              <pre className="bg-neutral-900 text-green-400 text-sm p-4 rounded-lg overflow-x-auto" tabIndex={0}>
                 <code>{iframeCode}</code>
               </pre>
               <button
@@ -231,6 +238,14 @@ export default function WidgetGeneratorPage() {
             </div>
           </div>
         </div>
+
+        <p className="text-sm text-neutral-500 mt-8">
+          Need more control? Use the{' '}
+          <Link to="/free-api" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            free API
+          </Link>
+          {' '}to build custom integrations.
+        </p>
       </div>
     </>
   );

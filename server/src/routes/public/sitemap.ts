@@ -30,6 +30,12 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/privacy', priority: 0.5, changefreq: 'yearly' },
   { path: '/search', priority: 0.3, changefreq: 'daily' },
   { path: '/developers', priority: 0.5, changefreq: 'monthly' },
+  { path: '/compare', priority: 0.7, changefreq: 'monthly' },
+  { path: '/no-ads-no-tracking', priority: 0.7, changefreq: 'monthly' },
+  { path: '/news-fatigue', priority: 0.7, changefreq: 'monthly' },
+  { path: '/free-api', priority: 0.7, changefreq: 'monthly' },
+  { path: '/stewardship', priority: 0.6, changefreq: 'monthly' },
+  { path: '/widgets', priority: 0.4, changefreq: 'monthly' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
 ]
 

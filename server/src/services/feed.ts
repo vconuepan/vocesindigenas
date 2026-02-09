@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js'
-import type { Feed, Prisma } from '@prisma/client'
+import type { Feed, FeedRegion, Prisma } from '@prisma/client'
 import { config } from '../config.js'
 
 interface FeedFilters {
@@ -31,6 +31,7 @@ export async function createFeed(data: {
   url?: string
   displayTitle?: string
   language?: string
+  region?: FeedRegion | null
   issueId: string
   crawlIntervalHours?: number
   htmlSelector?: string
@@ -49,6 +50,7 @@ export async function updateFeed(id: string, data: Partial<{
   url: string | null
   displayTitle: string | null
   language: string
+  region: FeedRegion | null
   issueId: string
   crawlIntervalHours: number
   htmlSelector: string | null

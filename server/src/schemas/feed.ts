@@ -1,11 +1,26 @@
 import { z } from 'zod'
 
+const feedRegionValues = [
+  'north_america',
+  'western_europe',
+  'eastern_europe',
+  'middle_east_north_africa',
+  'sub_saharan_africa',
+  'south_southeast_asia',
+  'pacific',
+  'latin_america',
+  'global',
+] as const
+
+const feedRegionSchema = z.enum(feedRegionValues)
+
 export const createFeedSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   rssUrl: z.string().url('Must be a valid URL'),
   url: z.string().url('Must be a valid URL').nullable().optional(),
   displayTitle: z.string().optional(),
   language: z.string().optional().default('en'),
+  region: feedRegionSchema.nullable().optional(),
   issueId: z.string().uuid('Must be a valid issue ID'),
   crawlIntervalHours: z.number().int().positive().optional().default(24),
   htmlSelector: z.string().optional(),
@@ -17,6 +32,7 @@ export const updateFeedSchema = z.object({
   url: z.string().url('Must be a valid URL').nullable().optional(),
   displayTitle: z.string().nullable().optional(),
   language: z.string().optional(),
+  region: feedRegionSchema.nullable().optional(),
   issueId: z.string().uuid('Must be a valid issue ID').optional(),
   crawlIntervalHours: z.number().int().positive().optional(),
   htmlSelector: z.string().nullable().optional(),

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import type { Issue } from '@shared/types'
+import type { Issue, FeedRegion } from '@shared/types'
+import { FEED_REGIONS } from '@shared/constants'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { Button } from '../ui/Button'
@@ -45,6 +46,7 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
     displayTitle: '',
     issueId: '',
     language: 'en',
+    region: '',
     crawlIntervalHours: '6',
     htmlSelector: '',
     active: true,
@@ -55,7 +57,7 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
 
   useEffect(() => {
     if (open) {
-      setForm({ title: '', rssUrl: '', url: '', displayTitle: '', issueId: '', language: 'en', crawlIntervalHours: '6', htmlSelector: '', active: true })
+      setForm({ title: '', rssUrl: '', url: '', displayTitle: '', issueId: '', language: 'en', region: '', crawlIntervalHours: '6', htmlSelector: '', active: true })
     }
   }, [open])
 
@@ -71,6 +73,7 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
         displayTitle: form.displayTitle || null,
         issueId: form.issueId,
         language: form.language,
+        region: (form.region || null) as FeedRegion | null,
         crawlIntervalHours: Number(form.crawlIntervalHours),
         htmlSelector: form.htmlSelector || null,
         active: form.active,
@@ -102,6 +105,14 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
               value={form.issueId}
               onChange={e => set('issueId', e.target.value)}
               options={buildIssueOptions(issues)}
+            />
+            <Select
+              id="feed-region"
+              label="Region"
+              placeholder="Select region (optional)"
+              value={form.region}
+              onChange={e => set('region', e.target.value)}
+              options={FEED_REGIONS.map(r => ({ value: r.value, label: r.label }))}
             />
             <div className="grid grid-cols-2 gap-3">
               <Input id="feed-lang" label="Language" value={form.language} onChange={e => set('language', e.target.value)} />

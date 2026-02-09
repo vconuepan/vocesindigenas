@@ -75,8 +75,6 @@ npm run db:seed      # Seed database with sample data
 
 **Tips for Claude:**
 
-- **`.env` files are not accessible** — Claude cannot read `.env` files (they are in `.gitignore`). Do not attempt to read or access them. Database commands that need env vars must be run via npm scripts defined in `package.json`, which load `.env` automatically.
-
 - **Database migrations — MUST follow `.context/database-migrations.md`** — Never run `prisma migrate dev` or `npm run db:migrate` directly. Instead, generate the SQL file, ask the user to execute it in pgAdmin, then mark it as applied with `db:migrate:resolve`. See the context file for the full step-by-step workflow and troubleshooting.
 
 - **Never use `npx prisma` directly** — Always use the `npm run db:*` scripts with `--prefix server`. Direct `npx prisma` commands skip `.env` and fail. Never pass `--no-engine` to `prisma generate` — it produces a client that only works with Prisma Accelerate and breaks all direct PostgreSQL queries.
@@ -95,18 +93,6 @@ npm run db:seed      # Seed database with sample data
   npm run dev --prefix server
   npm run build --prefix server
   npm run test --prefix server
-  ```
-
-- **Never use `cd`** — run all commands from the project root. Use `--prefix` for npm or full relative paths for other tools:
-
-  ```bash
-  npm run test --prefix server        # Good
-  npm run db:generate --prefix server # Good
-  git status                          # Good
-
-  cd server && npx vitest run         # Bad — triggers confirmation prompts
-  npx prisma generate --schema ...    # Bad — skips .env, may get wrong flags
-  cd D:/projects/... && npm run test  # Bad
   ```
 
 ## Story Pipeline
@@ -147,6 +133,7 @@ Each page should:
 - [ ] Have unique, descriptive title
 - [ ] Have unique meta description (150-160 chars)
 - [ ] Be listed in routes.ts for prerendering
+- [ ] No hardcoded counts (source count, story count, language count) — use `useSources()` hook or omit. These values change as feeds are added/removed.
 
 ## CSS Utility Classes
 
@@ -194,6 +181,8 @@ See `.context/accessibility.md` for full details.
 
 All hardcoded static text (UI labels, headings, descriptions, error messages, tooltips, meta tags) must use **American English** spelling. Examples: "analyzed" (not "analysed"), "color" (not "colour"), "organize" (not "organise"). Proper nouns that use British spelling (e.g. organization names like "Centre for...") are exempt.
 
+Use em dashes sparingly in user-facing copy. One per paragraph at most. Overuse is a tell for AI-generated text. Prefer commas, periods, or rewriting the sentence instead.
+
 ## API Documentation
 
 - **OpenAPI spec** is generated from Zod schemas in `server/src/lib/openapi.ts`
@@ -203,6 +192,41 @@ All hardcoded static text (UI labels, headings, descriptions, error messages, to
   3. Add `.openapi()` metadata to new Zod fields (description, example)
 - The spec is served at `GET /api/docs/openapi.json` and rendered at `/developers`
 - Run `npm run build --prefix server` to verify the spec compiles without errors
+
+## Memory
+All project memory lives in this `CLAUDE.md` file. Do not use or update the auto-memory file under `~/.claude/projects/`.
+
+## Known Issues & Patterns
+
+**Build & test issues:**
+- **Prisma client out of sync**: Server build shows TS errors for `clusterId`, `storyCluster`, etc. because the Prisma client needs regeneration (`npm run db:generate --prefix server`). This is a pre-existing issue — the code works at runtime.
+- **clusters.test.ts route test**: Pre-existing failure due to `html-encoding-sniffer` ESM compat issue with `@exodus/bytes/encoding-lite.js`. Not related to any code changes.
+- **Windows vitest teardown**: `kill EPERM` errors and timeout warnings during test termination are normal on Windows. Not test failures.
+
+**UI patterns:**
+- **Admin side panels**: Use `EditPanel` component with `PANEL_BODY` and `PANEL_FOOTER` CSS classes. See `ClusterDetail.tsx` for pattern.
+- **Toast provider**: Components using `useToast()` need `<ToastProvider>` wrapper in tests.
+- **Headless UI dialogs**: `DialogTitle` text appears as heading; buttons with same text will cause "multiple elements found" in tests. Use `getByRole('heading', { name: ... })` to disambiguate.
+- **Bulk actions**: `BulkActionsBar` receives an `onAction` callback with string union type. `StoriesPage` handles each action in a large if/else chain.
+- **URL-persisted state**: Admin pages use `useSearchParams()` for persisting UI state (e.g., `?open=id`, `?create=id`).
+
+**Testing patterns:**
+- Server service tests use `vi.hoisted()` for mocks, then `vi.mock()` with factory
+- Server route tests use `supertest` with `authHeader()` from test helpers
+- Client component tests: simple render + RTL assertions, no router needed for most components
+
+## Project Management (`pm/`)
+
+The `pm/` directory contains a separate git repo for project management — marketing, research, strategy, and operational planning. It has its own `.git` and CLAUDE.md. It is NOT gitignored — this is intentional so Claude Code's search tools can find PM files. The parent repo sees it as a single untracked entry (`?? pm`); never `git add` it.
+
+**Key directories for context:**
+- `pm/state/` — Living docs on audience, platform state, and source portfolio. Check here when you need business context for a feature.
+- `pm/backlog/` — Prioritized tasks and draft plans (growth, grants, handover). Check here for upcoming priorities.
+- `pm/plans/` — Active plans being executed; `pm/plans/completed/` for past plans.
+- `pm/references/` — Research by topic (marketing, legal, grants, technical).
+- `pm/artifacts/` — Work products like landing page specs and pitch drafts. Only read when explicitly referenced.
+
+**Rules:** You MUST NEVER write, edit, or create files in `pm/`. It has its own git history. Read only.
 
 ## Context Files
 

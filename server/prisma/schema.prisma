@@ -28,6 +28,18 @@ enum EmotionTag {
   calm
 }
 
+enum FeedRegion {
+  north_america
+  western_europe
+  eastern_europe
+  middle_east_north_africa
+  sub_saharan_africa
+  south_southeast_asia
+  pacific
+  latin_america
+  global
+}
+
 enum ContentStatus {
   draft
   published
@@ -106,6 +118,7 @@ model Feed {
   url                String?
   displayTitle       String?   @map("display_title")
   language           String    @default("en")
+  region             FeedRegion?
   issueId            String    @map("issue_id")
   issue              Issue     @relation(fields: [issueId], references: [id])
   active             Boolean   @default(true)

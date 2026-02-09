@@ -82,21 +82,13 @@ const homepageResponseSchema = z.object({
   storiesByIssue: z.record(z.string(), emotionBucketSchema),
 }).openapi({ ref: 'HomepageResponse' })
 
-const subscribeRequestSchema = z.object({
-  email: z.string().email().max(255).openapi({ example: 'reader@example.com' }),
-  firstName: z.string().max(100).optional().openapi({ example: 'Alex' }),
-}).openapi({ ref: 'SubscribeRequest' })
-
-const subscribeResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string().openapi({ example: 'Check your email to confirm your subscription.' }),
-}).openapi({ ref: 'SubscribeResponse' })
-
 const errorResponseSchema = z.object({
   error: z.string().openapi({ example: 'Not found' }),
 }).openapi({ ref: 'ErrorResponse' })
 
 // --- Document ---
+// Only include public endpoints advertised on the /free-api landing page.
+// Internal endpoints (subscribe, sitemap, etc.) should not appear here.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getOpenAPIDocument(): any {
@@ -114,7 +106,7 @@ export function getOpenAPIDocument(): any {
       },
     },
     servers: [
-      { url: 'https://api.actuallyrelevant.news', description: 'Production' },
+      { url: process.env.API_URL || 'https://actually-relevant-api.onrender.com', description: 'Production' },
     ],
     paths: {
       '/api/homepage': {
@@ -317,85 +309,6 @@ export function getOpenAPIDocument(): any {
           },
         },
       },
-      '/api/subscribe': {
-        post: {
-          operationId: 'subscribe',
-          summary: 'Subscribe to newsletter',
-          description:
-            'Subscribe an email address to the weekly newsletter. ' +
-            'A confirmation email will be sent. Rate limited to prevent abuse.',
-          tags: ['Subscribe'],
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: subscribeRequestSchema },
-            },
-          },
-          responses: {
-            '200': {
-              description: 'Subscription initiated (check email for confirmation)',
-              content: {
-                'application/json': { schema: subscribeResponseSchema },
-              },
-            },
-            '429': {
-              description: 'Too many subscription attempts',
-              content: {
-                'application/json': { schema: errorResponseSchema },
-              },
-            },
-          },
-        },
-      },
-      '/api/subscribe/confirm': {
-        get: {
-          operationId: 'confirmSubscription',
-          summary: 'Confirm newsletter subscription',
-          description:
-            'Confirms a newsletter subscription via the link sent by email. ' +
-            'Redirects to the frontend with success or error status.',
-          tags: ['Subscribe'],
-          parameters: [
-            {
-              name: 'token',
-              in: 'query',
-              required: true,
-              schema: { type: 'string' },
-              description: 'Confirmation token from email',
-            },
-            {
-              name: 'email',
-              in: 'query',
-              required: true,
-              schema: { type: 'string' },
-              description: 'Email address being confirmed',
-            },
-          ],
-          responses: {
-            '302': {
-              description: 'Redirects to frontend (/subscribed or /subscribed?error=...)',
-            },
-          },
-        },
-      },
-      '/api/sitemap.xml': {
-        get: {
-          operationId: 'getSitemap',
-          summary: 'XML Sitemap',
-          description: 'Returns a dynamic XML sitemap including all static pages and published stories. Cached for 1 hour.',
-          tags: ['Sitemap'],
-          responses: {
-            '200': {
-              description: 'XML Sitemap',
-              content: {
-                'application/xml': {
-                  schema: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-      },
     },
     components: {
       schemas: {},
@@ -405,8 +318,6 @@ export function getOpenAPIDocument(): any {
       { name: 'Stories', description: 'Published story listing and detail' },
       { name: 'Issues', description: 'Issue categories and hierarchy' },
       { name: 'Feed', description: 'RSS 2.0 feeds' },
-      { name: 'Subscribe', description: 'Newsletter subscription' },
-      { name: 'Sitemap', description: 'XML Sitemap for search engines' },
     ],
   })
 }

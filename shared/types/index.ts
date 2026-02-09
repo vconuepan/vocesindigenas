@@ -14,6 +14,17 @@ export type EmotionTag =
   | 'scary'
   | 'calm'
 
+export type FeedRegion =
+  | 'north_america'
+  | 'western_europe'
+  | 'eastern_europe'
+  | 'middle_east_north_africa'
+  | 'sub_saharan_africa'
+  | 'south_southeast_asia'
+  | 'pacific'
+  | 'latin_america'
+  | 'global'
+
 export type UserRole = 'admin' | 'editor' | 'viewer'
 
 export interface User {
@@ -104,6 +115,7 @@ export interface Feed {
   url: string | null
   displayTitle: string | null
   language: string
+  region: FeedRegion | null
   issueId: string
   active: boolean
   crawlIntervalHours: number

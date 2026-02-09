@@ -92,12 +92,12 @@ export default function PrivacyPage() {
               Your <strong>IP address</strong> (recorded by our newsletter
               provider,{" "}
               <a
-                href="https://emailoctopus.com/"
+                href="https://www.useplunk.com/"
                 className="text-brand-700 hover:text-brand-800"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                EmailOctopus
+                Plunk
               </a>
               , to prevent spam and abuse)
             </li>
@@ -106,6 +106,13 @@ export default function PrivacyPage() {
             This data is used solely to send you updates about Actually Relevant
             and to prevent abuse of the newsletter service. We will never share,
             sell, or distribute your email address to any third party.
+          </p>
+          <p className="mt-3">
+            Our newsletter provider, Plunk, automatically tracks email
+            opens and link clicks as part of their delivery infrastructure. We
+            cannot disable this functionality. We do not use this data for
+            profiling, advertising, or any purpose beyond basic delivery
+            monitoring.
           </p>
           <p>
             You can unsubscribe at any time using the unsubscribe link included
@@ -176,19 +183,19 @@ export default function PrivacyPage() {
                 <tr className="border-b border-neutral-100">
                   <td className="align-top py-2 pr-4">
                     <a
-                      href="https://emailoctopus.com/"
+                      href="https://www.useplunk.com/"
                       className="text-brand-700 hover:text-brand-800"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      EmailOctopus
+                      Plunk
                     </a>
                   </td>
                   <td className="align-top py-2 pr-4">Newsletter delivery</td>
                   <td className="align-top py-2">
                     Email address and IP address (if you subscribe). See their{" "}
                     <a
-                      href="https://emailoctopus.com/legal/privacy"
+                      href="https://www.useplunk.com/privacy"
                       className="text-brand-700 hover:text-brand-800"
                       target="_blank"
                       rel="noopener noreferrer"

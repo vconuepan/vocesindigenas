@@ -73,6 +73,9 @@ export const publicApi = {
     get: (slug: string) => request<PublicIssue>(`/issues/${slug}`),
   },
 
+  sources: () =>
+    request<{ byRegion: Record<string, string[]>; byIssue: Record<string, string[]>; totalCount: number }>('/sources'),
+
   subscribe: (data: { email: string; firstName?: string }) =>
     request<{ success: boolean; message: string }>('/subscribe', {
       method: 'POST',

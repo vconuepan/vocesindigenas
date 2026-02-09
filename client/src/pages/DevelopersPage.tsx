@@ -6,6 +6,10 @@ import type { AnyApiReferenceConfiguration } from "@scalar/api-reference-react";
 import scalarCss from "@scalar/api-reference-react/style.css?inline";
 import { API_BASE } from "../lib/api";
 
+// Scalar fetches the OpenAPI spec from API_BASE, which resolves to VITE_API_URL.
+// In local dev this points to the remote server, so spec changes require deployment
+// to be visible here. To test locally: temporarily clear VITE_API_URL in client/.env
+// and restart the Vite dev server (the Vite proxy will forward /api to localhost:3001).
 const scalarConfig: AnyApiReferenceConfiguration = {
   url: `${API_BASE}/docs/openapi.json`,
   theme: "laserwave",
