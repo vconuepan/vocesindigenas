@@ -403,6 +403,29 @@ describe('autoRejectNonPrimary', () => {
     expect(mockPrisma.story.updateMany).not.toHaveBeenCalled()
   })
 
+  it('rejects published stories when includePublished is true', async () => {
+    mockPrisma.storyCluster.findUnique.mockResolvedValue({
+      id: 'cluster-1',
+      primaryStoryId: 'story-primary',
+      primaryStory: { id: 'story-primary', title: 'Primary Story' },
+      stories: [
+        { id: 'story-primary', status: 'published' },
+        { id: 'story-also-published', status: 'published' },
+        { id: 'story-analyzed', status: 'analyzed' },
+      ],
+    })
+    mockPrisma.story.updateMany.mockResolvedValue({ count: 2 })
+
+    const result = await autoRejectNonPrimary('cluster-1', { includePublished: true })
+
+    // Both non-primary stories should be rejected, including the published one
+    expect(result).toEqual(['story-also-published', 'story-analyzed'])
+    expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['story-also-published', 'story-analyzed'] } },
+      data: { status: 'rejected' },
+    })
+  })
+
   it('returns empty when all non-primary members are already rejected or trashed', async () => {
     mockPrisma.storyCluster.findUnique.mockResolvedValue({
       id: 'cluster-1',

@@ -190,7 +190,10 @@ export async function updatePrimary(clusterId: string): Promise<void> {
 
 // ──── Auto-reject non-primary members ────────────────────────────────────────
 
-export async function autoRejectNonPrimary(clusterId: string): Promise<string[]> {
+export async function autoRejectNonPrimary(
+  clusterId: string,
+  options?: { includePublished?: boolean },
+): Promise<string[]> {
   const cluster = await prisma.storyCluster.findUnique({
     where: { id: clusterId },
     include: {
@@ -203,10 +206,13 @@ export async function autoRejectNonPrimary(clusterId: string): Promise<string[]>
 
   const primaryTitle = cluster.primaryStory?.title ?? 'another story'
 
-  // Non-primary, non-published members that should be rejected
+  // Non-primary members that should be rejected.
+  // In the automatic pipeline, published stories are preserved (admin explicitly published them).
+  // For manual admin actions (includePublished=true), published stories are also rejected
+  // since the admin is explicitly choosing the primary.
   const toReject = cluster.stories.filter(
     s => s.id !== cluster.primaryStoryId
-      && s.status !== 'published'
+      && (options?.includePublished || s.status !== 'published')
       && s.status !== 'rejected'
       && s.status !== 'trashed',
   )
