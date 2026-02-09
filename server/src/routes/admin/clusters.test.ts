@@ -8,6 +8,8 @@ vi.mock('express-rate-limit', () => ({
 
 const mockGetAllClusters = vi.hoisted(() => vi.fn())
 const mockGetClusterById = vi.hoisted(() => vi.fn())
+const mockCreateManualCluster = vi.hoisted(() => vi.fn())
+const mockSearchStoriesForCluster = vi.hoisted(() => vi.fn())
 const mockSetClusterPrimary = vi.hoisted(() => vi.fn())
 const mockRemoveFromCluster = vi.hoisted(() => vi.fn())
 const mockMergeClusters = vi.hoisted(() => vi.fn())
@@ -16,6 +18,8 @@ const mockDissolveCluster = vi.hoisted(() => vi.fn())
 vi.mock('../../services/cluster.js', () => ({
   getAllClusters: mockGetAllClusters,
   getClusterById: mockGetClusterById,
+  createManualCluster: mockCreateManualCluster,
+  searchStoriesForCluster: mockSearchStoriesForCluster,
   setClusterPrimary: mockSetClusterPrimary,
   removeFromCluster: mockRemoveFromCluster,
   mergeClusters: mockMergeClusters,
@@ -188,6 +192,100 @@ describe('Admin Clusters API', () => {
         .delete('/api/admin/clusters/nonexistent')
         .set(authHeader())
       expect(res.status).toBe(404)
+    })
+  })
+
+  describe('POST /api/admin/clusters', () => {
+    it('returns 400 for invalid body', async () => {
+      const res = await request(app)
+        .post('/api/admin/clusters')
+        .set(authHeader())
+        .send({ storyIds: ['not-a-uuid'] })
+      expect(res.status).toBe(400)
+    })
+
+    it('returns 400 when fewer than 2 stories', async () => {
+      const res = await request(app)
+        .post('/api/admin/clusters')
+        .set(authHeader())
+        .send({ storyIds: [STORY_ID_1], primaryStoryId: STORY_ID_1 })
+      expect(res.status).toBe(400)
+    })
+
+    it('creates cluster and returns 201', async () => {
+      mockCreateManualCluster.mockResolvedValue(sampleCluster)
+
+      const res = await request(app)
+        .post('/api/admin/clusters')
+        .set(authHeader())
+        .send({ storyIds: [STORY_ID_1, STORY_ID_2], primaryStoryId: STORY_ID_1 })
+      expect(res.status).toBe(201)
+      expect(mockCreateManualCluster).toHaveBeenCalledWith(
+        [STORY_ID_1, STORY_ID_2],
+        STORY_ID_1,
+      )
+    })
+
+    it('returns 409 when stories already clustered', async () => {
+      const error = new Error('Stories already in a cluster: Test Article')
+      ;(error as any).code = 'ALREADY_CLUSTERED'
+      ;(error as any).storyIds = [STORY_ID_1]
+      mockCreateManualCluster.mockRejectedValue(error)
+
+      const res = await request(app)
+        .post('/api/admin/clusters')
+        .set(authHeader())
+        .send({ storyIds: [STORY_ID_1, STORY_ID_2], primaryStoryId: STORY_ID_1 })
+      expect(res.status).toBe(409)
+      expect(res.body.storyIds).toEqual([STORY_ID_1])
+    })
+
+    it('returns 404 when stories not found', async () => {
+      mockCreateManualCluster.mockRejectedValue(new Error('Stories not found: missing-id'))
+
+      const res = await request(app)
+        .post('/api/admin/clusters')
+        .set(authHeader())
+        .send({ storyIds: [STORY_ID_1, STORY_ID_2], primaryStoryId: STORY_ID_1 })
+      expect(res.status).toBe(404)
+    })
+  })
+
+  describe('GET /api/admin/clusters/search-stories', () => {
+    it('returns 401 without auth', async () => {
+      const res = await request(app).get('/api/admin/clusters/search-stories?q=test')
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 400 without query parameter', async () => {
+      const res = await request(app)
+        .get('/api/admin/clusters/search-stories')
+        .set(authHeader())
+      expect(res.status).toBe(400)
+    })
+
+    it('searches stories', async () => {
+      const stories = [
+        { id: STORY_ID_1, title: 'Test Article', sourceTitle: 'Source', status: 'analyzed', relevance: 7, clusterId: null },
+      ]
+      mockSearchStoriesForCluster.mockResolvedValue(stories)
+
+      const res = await request(app)
+        .get('/api/admin/clusters/search-stories?q=test')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveLength(1)
+      expect(mockSearchStoriesForCluster).toHaveBeenCalledWith('test', 20)
+    })
+
+    it('passes custom limit', async () => {
+      mockSearchStoriesForCluster.mockResolvedValue([])
+
+      const res = await request(app)
+        .get('/api/admin/clusters/search-stories?q=test&limit=5')
+        .set(authHeader())
+      expect(res.status).toBe(200)
+      expect(mockSearchStoriesForCluster).toHaveBeenCalledWith('test', 5)
     })
   })
 })

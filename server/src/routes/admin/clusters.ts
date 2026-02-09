@@ -1,8 +1,9 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { createLogger } from '../../lib/logger.js'
-import { validateBody } from '../../middleware/validate.js'
+import { validateBody, validateQuery } from '../../middleware/validate.js'
 import * as clusterService from '../../services/cluster.js'
+import { createClusterSchema, searchStoriesQuerySchema } from '../../schemas/cluster.js'
 
 const router = Router()
 const log = createLogger('clusters')
@@ -17,6 +18,17 @@ const removeMemberSchema = z.object({
 
 const mergeSchema = z.object({
   sourceId: z.string().uuid(),
+})
+
+router.get('/search-stories', validateQuery(searchStoriesQuerySchema), async (req, res) => {
+  try {
+    const { q, limit } = req.parsedQuery!
+    const stories = await clusterService.searchStoriesForCluster(q, limit)
+    res.json(stories)
+  } catch (err) {
+    log.error({ err }, 'failed to search stories for cluster')
+    res.status(500).json({ error: 'Failed to search stories' })
+  }
 })
 
 router.get('/', async (_req, res) => {
@@ -40,6 +52,29 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     log.error({ err }, 'failed to get cluster')
     res.status(500).json({ error: 'Failed to get cluster' })
+  }
+})
+
+router.post('/', validateBody(createClusterSchema), async (req, res) => {
+  try {
+    const { storyIds, primaryStoryId } = req.body
+    const cluster = await clusterService.createManualCluster(storyIds, primaryStoryId)
+    res.status(201).json(cluster)
+  } catch (err: any) {
+    if (err.message?.startsWith('At least 2') || err.message?.startsWith('Primary story')) {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    if (err.message?.startsWith('Stories not found')) {
+      res.status(404).json({ error: err.message })
+      return
+    }
+    if (err.code === 'ALREADY_CLUSTERED') {
+      res.status(409).json({ error: err.message, storyIds: err.storyIds })
+      return
+    }
+    log.error({ err }, 'failed to create cluster')
+    res.status(500).json({ error: 'Failed to create cluster' })
   }
 })
 

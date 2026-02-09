@@ -3,7 +3,7 @@ import { Button } from '../ui/Button'
 
 interface BulkActionsBarProps {
   count: number
-  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | StoryStatus) => void
+  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | 'create-cluster' | StoryStatus) => void
   loading?: boolean
   allHaveRelevance?: boolean
 }
@@ -54,6 +54,10 @@ export function BulkActionsBar({ count, onAction, loading, allHaveRelevance }: B
         </Button>
         <Button variant="ghost" size="sm" onClick={() => onAction('trashed')} disabled={loading}>
           Trash
+        </Button>
+        <div className="w-px h-6 bg-neutral-300 mx-1" />
+        <Button variant="secondary" size="sm" onClick={() => onAction('create-cluster')} disabled={loading || count < 2}>
+          Create Cluster
         </Button>
       </div>
     </div>

@@ -2,12 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockPrisma = vi.hoisted(() => ({
   story: {
+    findMany: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
     updateMany: vi.fn(),
     count: vi.fn(),
   },
   storyCluster: {
+    create: vi.fn(),
     findMany: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
@@ -27,6 +29,8 @@ vi.mock('./dedup.js', () => ({
 const {
   getAllClusters,
   getClusterById,
+  createManualCluster,
+  searchStoriesForCluster,
   setClusterPrimary,
   removeFromCluster,
   mergeClusters,
@@ -109,7 +113,7 @@ describe('setClusterPrimary', () => {
       where: { id: 'c1' },
       data: { primaryStoryId: 's1' },
     })
-    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('c1')
+    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('c1', { includePublished: true })
   })
 })
 
@@ -165,7 +169,7 @@ describe('removeFromCluster', () => {
     await removeFromCluster('c1', 's1')
 
     expect(mockUpdatePrimary).toHaveBeenCalledWith('c1')
-    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('c1')
+    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('c1', { includePublished: true })
   })
 })
 
@@ -217,7 +221,7 @@ describe('mergeClusters', () => {
     })
     expect(mockPrisma.storyCluster.delete).toHaveBeenCalledWith({ where: { id: 'c2' } })
     expect(mockUpdatePrimary).toHaveBeenCalledWith('c1')
-    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('c1')
+    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('c1', { includePublished: true })
   })
 })
 
@@ -246,5 +250,110 @@ describe('dissolveCluster', () => {
       data: { clusterId: null },
     })
     expect(mockPrisma.storyCluster.delete).toHaveBeenCalledWith({ where: { id: 'c1' } })
+  })
+})
+
+describe('createManualCluster', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('throws if fewer than 2 stories', async () => {
+    await expect(createManualCluster(['s1'], 's1')).rejects.toThrow(
+      'At least 2 stories are required',
+    )
+  })
+
+  it('throws if primaryStoryId not in storyIds', async () => {
+    await expect(createManualCluster(['s1', 's2'], 's3')).rejects.toThrow(
+      'Primary story must be one of the selected stories',
+    )
+  })
+
+  it('throws if some stories not found', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { id: 's1', clusterId: null, title: 'Story 1' },
+    ])
+
+    await expect(createManualCluster(['s1', 's2'], 's1')).rejects.toThrow(
+      'Stories not found: s2',
+    )
+  })
+
+  it('throws with ALREADY_CLUSTERED code if stories are in clusters', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { id: 's1', clusterId: null, title: 'Story 1' },
+      { id: 's2', clusterId: 'existing-cluster', title: 'Story 2' },
+    ])
+
+    try {
+      await createManualCluster(['s1', 's2'], 's1')
+      expect.fail('Should have thrown')
+    } catch (err: any) {
+      expect(err.code).toBe('ALREADY_CLUSTERED')
+      expect(err.storyIds).toEqual(['s2'])
+      expect(err.message).toContain('Story 2')
+    }
+  })
+
+  it('creates cluster with specified primary and auto-rejects', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { id: 's1', clusterId: null, title: 'Story 1' },
+      { id: 's2', clusterId: null, title: 'Story 2' },
+    ])
+    mockPrisma.storyCluster.create.mockResolvedValue({ id: 'new-cluster' })
+    mockAutoRejectNonPrimary.mockResolvedValue(['s2'])
+    // getClusterById re-fetch
+    mockPrisma.storyCluster.findUnique.mockResolvedValue({
+      id: 'new-cluster',
+      primaryStoryId: 's1',
+      stories: [
+        { id: 's1', title: 'Story 1', status: 'analyzed' },
+        { id: 's2', title: 'Story 2', status: 'rejected' },
+      ],
+    })
+
+    const result = await createManualCluster(['s1', 's2'], 's1')
+
+    expect(mockPrisma.storyCluster.create).toHaveBeenCalledWith({
+      data: {
+        primaryStoryId: 's1',
+        stories: { connect: [{ id: 's1' }, { id: 's2' }] },
+      },
+    })
+    expect(mockAutoRejectNonPrimary).toHaveBeenCalledWith('new-cluster', { includePublished: true })
+    expect(result).toEqual(expect.objectContaining({ id: 'new-cluster' }))
+  })
+})
+
+describe('searchStoriesForCluster', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('searches stories by title excluding trashed', async () => {
+    const stories = [
+      { id: 's1', title: 'Climate Change', sourceTitle: 'Source', status: 'analyzed', relevance: 7, clusterId: null },
+    ]
+    mockPrisma.story.findMany.mockResolvedValue(stories)
+
+    const result = await searchStoriesForCluster('climate')
+
+    expect(result).toEqual(stories)
+    expect(mockPrisma.story.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: { not: 'trashed' },
+          title: { contains: 'climate', mode: 'insensitive' },
+        },
+        take: 20,
+      }),
+    )
+  })
+
+  it('respects custom limit', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+
+    await searchStoriesForCluster('test', 5)
+
+    expect(mockPrisma.story.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 5 }),
+    )
   })
 })

@@ -65,3 +65,24 @@ export function useDissolveClusterById() {
     },
   })
 }
+
+export function useCreateCluster() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ storyIds, primaryStoryId }: { storyIds: string[]; primaryStoryId: string }) =>
+      adminApi.clusters.create(storyIds, primaryStoryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clusters'] })
+      queryClient.invalidateQueries({ queryKey: ['stories'] })
+    },
+  })
+}
+
+export function useClusterStorySearch(query: string) {
+  return useQuery({
+    queryKey: ['cluster-story-search', query],
+    queryFn: () => adminApi.clusters.searchStories(query),
+    enabled: query.length >= 2,
+    staleTime: 30_000,
+  })
+}

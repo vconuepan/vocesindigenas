@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { useClusters, useDissolveClusterById } from '../../hooks/useClusters'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
@@ -9,6 +10,8 @@ import { EmptyState } from '../../components/ui/EmptyState'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { ClusterTable } from '../../components/admin/ClusterTable'
 import { ClusterDetailPanel } from '../../components/admin/ClusterDetail'
+import { CreateClusterPanel } from '../../components/admin/CreateClusterPanel'
+import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/Toast'
 
 export default function ClustersPage() {
@@ -18,8 +21,13 @@ export default function ClustersPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const openId = searchParams.get('open')
+  const createParam = searchParams.get('create')
 
+  const [showCreate, setShowCreate] = useState(false)
   const [dissolveId, setDissolveId] = useState<string | null>(null)
+
+  // Open create panel if ?create param is present
+  const isCreateOpen = showCreate || !!createParam
 
   const setEditingId = (id: string | null) => {
     if (id) {
@@ -27,6 +35,22 @@ export default function ClustersPage() {
     } else {
       setSearchParams({})
     }
+  }
+
+  const handleOpenCreate = () => {
+    setShowCreate(true)
+  }
+
+  const handleCloseCreate = () => {
+    setShowCreate(false)
+    if (createParam) {
+      setSearchParams({})
+    }
+  }
+
+  const handleCreateSuccess = (clusterId: string) => {
+    setShowCreate(false)
+    setSearchParams({ open: clusterId })
   }
 
   const handleDissolve = async () => {
@@ -50,6 +74,12 @@ export default function ClustersPage() {
       <PageHeader
         title="Clusters"
         description={clustersQuery.data ? `${clustersQuery.data.length} clusters` : undefined}
+        actions={
+          <Button size="sm" onClick={handleOpenCreate}>
+            <PlusIcon className="h-4 w-4 mr-1" />
+            New Cluster
+          </Button>
+        }
       />
 
       {clustersQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
@@ -68,6 +98,13 @@ export default function ClustersPage() {
       <ClusterDetailPanel
         clusterId={openId}
         onClose={() => setEditingId(null)}
+      />
+
+      <CreateClusterPanel
+        open={isCreateOpen}
+        onClose={handleCloseCreate}
+        preSelectedStoryIds={createParam ? [createParam] : []}
+        onSuccess={handleCreateSuccess}
       />
 
       <ConfirmDialog

@@ -1,6 +1,7 @@
 import type {
   Story,
   StoryCluster,
+  ClusterStorySearchResult,
   Feed,
   Issue,
   Newsletter,
@@ -316,6 +317,10 @@ export const adminApi = {
   clusters: {
     list: () => request<StoryCluster[]>('/clusters'),
     get: (id: string) => request<StoryCluster>(`/clusters/${id}`),
+    create: (storyIds: string[], primaryStoryId: string) =>
+      request<StoryCluster>('/clusters', { method: 'POST', body: JSON.stringify({ storyIds, primaryStoryId }) }),
+    searchStories: (q: string, limit?: number) =>
+      request<ClusterStorySearchResult[]>(`/clusters/search-stories?q=${encodeURIComponent(q)}${limit ? `&limit=${limit}` : ''}`),
     setPrimary: (id: string, storyId: string) =>
       request<StoryCluster>(`/clusters/${id}/primary`, { method: 'PUT', body: JSON.stringify({ storyId }) }),
     removeMember: (id: string, storyId: string) =>

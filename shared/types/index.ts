@@ -211,6 +211,15 @@ export interface StoryCluster {
   updatedAt: string
 }
 
+export interface ClusterStorySearchResult {
+  id: string
+  title: string | null
+  sourceTitle: string
+  status: StoryStatus
+  relevance: number | null
+  clusterId: string | null
+}
+
 export interface JobRun {
   id: string
   jobName: JobName

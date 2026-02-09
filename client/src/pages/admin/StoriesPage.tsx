@@ -20,6 +20,7 @@ import { StoryTable } from '../../components/admin/StoryTable'
 import { BulkActionsBar } from '../../components/admin/BulkActionsBar'
 import { StoryDetail } from '../../components/admin/StoryDetail'
 import { CrawlUrlForm } from '../../components/admin/CrawlUrlForm'
+import { CreateClusterDialog } from '../../components/admin/CreateClusterDialog'
 import { useToast } from '../../components/ui/Toast'
 
 const DEFAULT_PAGE_SIZE = 25
@@ -51,6 +52,7 @@ export default function StoriesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [detailId, setDetailId] = useState<string | null>(null)
   const [crawlOpen, setCrawlOpen] = useState(false)
+  const [clusterDialogOpen, setClusterDialogOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => Promise<void> } | null>(null)
 
   const bulkUpdate = useBulkUpdateStatus()
@@ -159,6 +161,9 @@ export default function StoriesPage() {
           })
         },
       })
+    } else if (action === 'create-cluster') {
+      setClusterDialogOpen(true)
+      return
     } else {
       // Status change — keep blocking (instant operation)
       const status = action as StoryStatus
@@ -304,6 +309,13 @@ export default function StoriesPage() {
       <StoryDetail storyId={detailId} issues={issuesQuery.data || []} onClose={() => setDetailId(null)} />
 
       <CrawlUrlForm open={crawlOpen} onClose={() => setCrawlOpen(false)} />
+
+      <CreateClusterDialog
+        open={clusterDialogOpen}
+        onClose={() => setClusterDialogOpen(false)}
+        stories={stories.filter(s => selectedIds.has(s.id))}
+        onSuccess={() => setSelectedIds(new Set())}
+      />
 
       <ConfirmDialog
         open={!!confirmAction}

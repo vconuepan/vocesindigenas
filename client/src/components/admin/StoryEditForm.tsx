@@ -159,7 +159,7 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
       </div>
 
       {/* Cluster info (read-only) */}
-      {story.clusterId && story.cluster && (
+      {story.clusterId && story.cluster ? (
         <div className="border-t border-neutral-200 pt-4 space-y-2">
           <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Cluster</h3>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
@@ -228,6 +228,16 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
               </button>
             )}
           </div>
+        </div>
+      ) : (
+        <div className="border-t border-neutral-200 pt-4">
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Cluster</h3>
+          <Link
+            to={`/admin/clusters?create=${story.id}`}
+            className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+          >
+            Create cluster with this story
+          </Link>
         </div>
       )}
     </>
