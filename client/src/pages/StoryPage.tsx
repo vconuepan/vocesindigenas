@@ -218,16 +218,14 @@ export default function StoryPage() {
               {story.slug && (
                 <>
                   <span className="text-neutral-300">|</span>
-                  <span className="inline-flex items-center flex-nowrap">
-                    <BookmarkButton slug={story.slug} size="sm" />
-                    <span className="text-neutral-200 mx-0.5 select-none" aria-hidden="true">|</span>
-                    <span className="inline-flex items-center gap-0.5">
-                      <ShareButtons
-                        url={`${SEO.siteUrl}/stories/${story.slug}`}
-                        title={displayTitle}
-                        description={story.marketingBlurb || story.summary || displayTitle}
-                      />
-                    </span>
+                  <BookmarkButton slug={story.slug} size="sm" className="!pt-0.5 !pb-0.5" />
+                  <span className="text-neutral-300">|</span>
+                  <span className="inline-flex items-center gap-0.5">
+                    <ShareButtons
+                      url={`${SEO.siteUrl}/stories/${story.slug}`}
+                      title={displayTitle}
+                      description={story.marketingBlurb || story.summary || displayTitle}
+                    />
                   </span>
                 </>
               )}
