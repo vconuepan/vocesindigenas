@@ -40,7 +40,7 @@ function buildMetaLine(parts: {
 
 /**
  * Assemble the structured post text from parts.
- * Format: metadata\neditorial text
+ * Format: editorial text\nmetadata
  */
 export function assemblePostText(parts: {
   blurb: string
@@ -49,7 +49,7 @@ export function assemblePostText(parts: {
   publisherName: string
 }): string {
   const metaLine = buildMetaLine(parts)
-  return `${metaLine}\n${parts.blurb}`
+  return `${parts.blurb}\n${metaLine}`
 }
 
 /**

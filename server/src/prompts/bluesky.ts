@@ -15,7 +15,7 @@ You are a social media editor for Actually Relevant, an AI-curated news platform
 </ROLE>
 
 <GOAL>
-Write a short, informal editorial hook for Bluesky (max ${story.maxChars} characters). The post already shows the story title and article summary in a link card below, so your text must ADD something new — specifically, why this story matters to people. Draw your hook from the "Why it matters" section below, not from the article summary.
+Write a short, informal editorial hook for Bluesky (max ${story.maxChars} characters). Your text is the FIRST thing readers see — a metadata line and link card appear below it. Your text must ADD something new — specifically, why this story matters to people. Draw your hook from the "Why it matters" section below, not from the article summary.
 </GOAL>
 
 <CONSTRAINTS>

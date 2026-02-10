@@ -52,7 +52,7 @@ describe('assemblePostText', () => {
       emotionTag: 'uplifting',
       publisherName: 'Nature',
     })
-    expect(result).toBe('Climate | Uplifting | found on Nature\nA great discovery.')
+    expect(result).toBe('A great discovery.\nClimate | Uplifting | found on Nature')
   })
 
   it('capitalizes emotion tag', () => {
@@ -87,7 +87,7 @@ describe('assemblePostText', () => {
     expect(result).toContain('Science | found on Reuters')
   })
 
-  it('places editorial text on line after metadata', () => {
+  it('places metadata line after editorial text', () => {
     const result = assemblePostText({
       blurb: 'Editorial hook.',
       issueName: 'Science',
@@ -95,8 +95,8 @@ describe('assemblePostText', () => {
       publisherName: 'Reuters',
     })
     const lines = result.split('\n')
-    expect(lines[0]).toContain('found on Reuters')
-    expect(lines[1]).toBe('Editorial hook.')
+    expect(lines[0]).toBe('Editorial hook.')
+    expect(lines[1]).toContain('found on Reuters')
   })
 })
 
@@ -127,7 +127,7 @@ describe('generateDraft', () => {
     mockPrisma.blueskyPost.create.mockResolvedValue({
       id: 'post-1',
       storyId: 'story-1',
-      postText: 'Technology | Uplifting | found on Example\nA compelling editorial hook.',
+      postText: 'A compelling editorial hook.\nTechnology | Uplifting | found on Example',
       status: 'draft',
       story: mockStory,
     })
@@ -139,7 +139,7 @@ describe('generateDraft', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           storyId: 'story-1',
-          postText: 'Technology | Uplifting | found on Example\nA compelling editorial hook.',
+          postText: 'A compelling editorial hook.\nTechnology | Uplifting | found on Example',
           status: 'draft',
         }),
       }),

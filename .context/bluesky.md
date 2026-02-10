@@ -17,8 +17,8 @@ The client (`server/src/lib/bluesky.ts`) creates a session on first use, caches 
 
 Each Bluesky post consists of:
 
-1. **Metadata line** — `Issue | Emotion | found on Publisher` where Publisher links to the source article; emotion is capitalized
-2. **Editorial text** — LLM-generated hook drawing from the relevanceSummary (not a summary of the article)
+1. **Editorial text** — LLM-generated hook drawing from the relevanceSummary (not a summary of the article); this is the first thing readers see
+2. **Metadata line** — `Issue | Emotion | found on Publisher` where Publisher links to the source article; emotion is capitalized
 3. **Link card embed** — rich preview of the Actually Relevant story page (`titleLabel: title`, summary)
 
 Bluesky posts are limited to 300 graphemes. The LLM text max chars are calculated dynamically as `300 - metaLine - 1` (newline). If the LLM overshoots, the text is trimmed with an ellipsis. A grapheme count safety check logs a warning if the assembled post exceeds 300. The text is assembled by `assemblePostText()` in the service layer and stored as the full draft text (editable by admin).
