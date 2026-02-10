@@ -3,15 +3,18 @@ import { Button } from '../ui/Button'
 
 interface BulkActionsBarProps {
   count: number
-  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | 'create-cluster' | StoryStatus) => void
+  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | 'create-cluster' | 'bluesky-post' | 'bluesky-pick' | StoryStatus) => void
   loading?: boolean
   allHaveRelevance?: boolean
+  allPublished?: boolean
+  /** When exactly one story is selected, whether it already has a Bluesky post */
+  singleHasBlueskyPost?: boolean
 }
 
 const RELEVANCE_TOOLTIP = 'All stories must have a relevance rating'
 const SELECT_MIN_TOOLTIP = 'Select at least 2 stories to compare'
 
-export function BulkActionsBar({ count, onAction, loading, allHaveRelevance }: BulkActionsBarProps) {
+export function BulkActionsBar({ count, onAction, loading, allHaveRelevance, allPublished, singleHasBlueskyPost }: BulkActionsBarProps) {
   if (count === 0) return null
 
   const needsRelevance = !allHaveRelevance
@@ -59,6 +62,17 @@ export function BulkActionsBar({ count, onAction, loading, allHaveRelevance }: B
         <Button variant="secondary" size="sm" onClick={() => onAction('create-cluster')} disabled={loading || count < 2}>
           Create Cluster
         </Button>
+        <div className="w-px h-6 bg-neutral-300 mx-1" />
+        <span title={!allPublished ? 'All stories must be published' : (count === 1 && singleHasBlueskyPost) ? 'Story already has a Bluesky post' : undefined}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onAction(count === 1 ? 'bluesky-post' : 'bluesky-pick')}
+            disabled={loading || !allPublished || (count === 1 && singleHasBlueskyPost)}
+          >
+            {count === 1 ? 'Post to Bluesky' : 'Pick Best for Bluesky'}
+          </Button>
+        </span>
       </div>
     </div>
   )

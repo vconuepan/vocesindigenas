@@ -15,6 +15,7 @@ import {
   ArrowRightStartOnRectangleIcon,
   Square3Stack3DIcon,
   ArrowTopRightOnSquareIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
@@ -29,6 +30,7 @@ const navigation = [
   { name: 'Issues', href: '/admin/issues', icon: TagIcon },
   { name: 'Newsletters', href: '/admin/newsletters', icon: EnvelopeIcon },
   { name: 'Podcasts', href: '/admin/podcasts', icon: MicrophoneIcon },
+  { name: 'Bluesky', href: '/admin/bluesky', icon: ChatBubbleLeftRightIcon },
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
 ]

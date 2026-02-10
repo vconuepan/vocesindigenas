@@ -81,3 +81,7 @@ When adding a page, add sitemap metadata in **two places**:
 - `weekly` — Issue/category pages
 - `monthly` — Static pages (methodology, about), individual stories
 - `yearly` — Pages that rarely change (imprint, privacy, subscribed)
+
+## og:image and Bluesky
+
+Bluesky does **not** auto-fetch og: metadata. Link card thumbnails are manually fetched and uploaded at post time. The current Bluesky integration (`server/src/services/bluesky.ts` `publishPost()`) hardcodes the global `/og-image.png` as the thumbnail for all posts. **If per-story og:images are added, update `publishPost()` to use the story-specific URL.** See `.context/bluesky.md` for details.

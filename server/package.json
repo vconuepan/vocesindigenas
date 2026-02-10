@@ -31,6 +31,7 @@
     "migration:backfill-embeddings:test": "tsx src/scripts/migrations/backfill-embeddings.ts --test"
   },
   "dependencies": {
+    "@atproto/api": "^0.18.20",
     "@langchain/core": "^1.1.17",
     "@langchain/openai": "^1.2.3",
     "@mozilla/readability": "^0.6.0",

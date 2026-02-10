@@ -14,6 +14,7 @@ import type {
   StoryStatus,
   CrawlResult,
   TaskState,
+  BlueskyPost,
 } from '@shared/types'
 
 export interface FeedQualityMetrics {
@@ -329,6 +330,25 @@ export const adminApi = {
     merge: (targetId: string, sourceId: string) =>
       request<StoryCluster>(`/clusters/${targetId}/merge`, { method: 'POST', body: JSON.stringify({ sourceId }) }),
     dissolve: (id: string) => request<void>(`/clusters/${id}`, { method: 'DELETE' }),
+  },
+
+  // Bluesky
+  bluesky: {
+    listPosts: (params?: { status?: string; page?: number; limit?: number }) =>
+      request<{ posts: BlueskyPost[]; total: number; page: number; limit: number }>(`/bluesky/posts${toQueryString((params || {}) as Record<string, unknown>)}`),
+    getPost: (id: string) => request<BlueskyPost>(`/bluesky/posts/${id}`),
+    generateDraft: (storyId: string) =>
+      request<BlueskyPost>('/bluesky/posts/generate', { method: 'POST', body: JSON.stringify({ storyId }) }),
+    pickAndDraft: (storyIds: string[]) =>
+      request<BlueskyPost>('/bluesky/posts/pick-and-draft', { method: 'POST', body: JSON.stringify({ storyIds }) }),
+    updateDraft: (id: string, postText: string) =>
+      request<BlueskyPost>(`/bluesky/posts/${id}`, { method: 'PUT', body: JSON.stringify({ postText }) }),
+    publishPost: (id: string) =>
+      request<BlueskyPost>(`/bluesky/posts/${id}/publish`, { method: 'POST' }),
+    deletePost: (id: string) =>
+      request<void>(`/bluesky/posts/${id}`, { method: 'DELETE' }),
+    refreshMetrics: () =>
+      request<{ success: boolean }>('/bluesky/metrics/refresh', { method: 'POST' }),
   },
 
   // Users

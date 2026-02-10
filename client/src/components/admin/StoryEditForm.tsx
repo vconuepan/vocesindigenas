@@ -17,6 +17,7 @@ interface StoryEditFormProps {
   story: Story
   issues: Issue[]
   onDone: () => void
+  onBlueskyGenerate?: (storyId: string) => void
   variant?: 'page' | 'panel'
 }
 
@@ -41,7 +42,7 @@ function buildFormState(story: Story) {
   }
 }
 
-export function StoryEditForm({ story, issues, onDone, variant = 'page' }: StoryEditFormProps) {
+export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, variant = 'page' }: StoryEditFormProps) {
   const [contentExpanded, setContentExpanded] = useState(false)
   const [confirmDissolve, setConfirmDissolve] = useState(false)
   const updateStory = useUpdateStory()
@@ -238,6 +239,24 @@ export function StoryEditForm({ story, issues, onDone, variant = 'page' }: Story
           >
             Create cluster with this story
           </Link>
+        </div>
+      )}
+
+      {/* Bluesky */}
+      {onBlueskyGenerate && story.status === 'published' && (
+        <div className="border-t border-neutral-200 pt-4">
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Bluesky</h3>
+          {(story._count?.blueskyPosts ?? 0) > 0 ? (
+            <p className="text-sm text-neutral-500">This story has been posted to Bluesky.</p>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onBlueskyGenerate(story.id)}
+            >
+              Generate Bluesky Post
+            </Button>
+          )}
         </div>
       )}
     </>

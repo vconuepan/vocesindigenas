@@ -9,6 +9,7 @@ import {
   XCircleIcon,
   ArchiveBoxXMarkIcon,
   ArrowPathIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline'
 import type { Story, StoryStatus } from '@shared/types'
 import { Badge } from '../ui/Badge'
@@ -158,6 +159,9 @@ export function StoryTable({
                       {story.title || story.sourceTitle}
                     </button>
                     <ClusterBadge story={story} />
+                    {(story._count?.blueskyPosts ?? 0) > 0 && (
+                      <ChatBubbleLeftRightIcon className="h-4 w-4 shrink-0 text-blue-500" aria-label="Posted to Bluesky" title="Posted to Bluesky" />
+                    )}
                   </div>
                   {/* Mobile metadata */}
                   <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">

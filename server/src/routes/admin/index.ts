@@ -8,6 +8,7 @@ import newsletterRouter from './newsletters.js'
 import podcastRouter from './podcasts.js'
 import userRouter from './users.js'
 import clusterRouter from './clusters.js'
+import blueskyRouter from './bluesky.js'
 
 const router = Router()
 
@@ -22,5 +23,6 @@ router.use('/newsletters', newsletterRouter)
 router.use('/podcasts', podcastRouter)
 router.use('/users', userRouter)
 router.use('/clusters', clusterRouter)
+router.use('/bluesky', blueskyRouter)
 
 export default router

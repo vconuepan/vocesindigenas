@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
@@ -21,6 +21,8 @@ import { BulkActionsBar } from '../../components/admin/BulkActionsBar'
 import { StoryDetail } from '../../components/admin/StoryDetail'
 import { CrawlUrlForm } from '../../components/admin/CrawlUrlForm'
 import { CreateClusterDialog } from '../../components/admin/CreateClusterDialog'
+import { BlueskyDraftPanel } from '../../components/admin/BlueskyDraftPanel'
+import type { BlueskyDraft } from '../../components/admin/BlueskyDraftPanel'
 import { useToast } from '../../components/ui/Toast'
 
 const DEFAULT_PAGE_SIZE = 25
@@ -41,6 +43,18 @@ function useFiltersFromParams(): StoryFilters {
 
 export default function StoriesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Default to "published" filter on first visit (no status param in URL)
+  const didDefaultRef = useRef(false)
+  useEffect(() => {
+    if (!didDefaultRef.current && !searchParams.has('status')) {
+      didDefaultRef.current = true
+      const next = new URLSearchParams(searchParams)
+      next.set('status', 'published')
+      setSearchParams(next, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
   const filters = useFiltersFromParams()
   const queryClient = useQueryClient()
   const storiesQuery = useStories(filters)
@@ -54,6 +68,9 @@ export default function StoriesPage() {
   const [crawlOpen, setCrawlOpen] = useState(false)
   const [clusterDialogOpen, setClusterDialogOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => Promise<void> } | null>(null)
+  const [blueskyDraft, setBlueskyDraft] = useState<BlueskyDraft | null>(null)
+  const [blueskyPanelOpen, setBlueskyPanelOpen] = useState(false)
+  const [blueskyPublishing, setBlueskyPublishing] = useState(false)
 
   const bulkUpdate = useBulkUpdateStatus()
   const deleteStory = useDeleteStory()
@@ -161,6 +178,32 @@ export default function StoriesPage() {
           })
         },
       })
+    } else if (action === 'bluesky-post') {
+      // Single story: generate draft and open panel
+      setBlueskyPanelOpen(true)
+      setBlueskyDraft(null)
+      adminApi.bluesky.generateDraft(ids[0])
+        .then((draft) => {
+          setBlueskyDraft(draft as BlueskyDraft)
+        })
+        .catch((err) => {
+          toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+          setBlueskyPanelOpen(false)
+        })
+      return
+    } else if (action === 'bluesky-pick') {
+      // Multiple stories: pick best and generate draft
+      setBlueskyPanelOpen(true)
+      setBlueskyDraft(null)
+      adminApi.bluesky.pickAndDraft(ids)
+        .then((result) => {
+          setBlueskyDraft(result as BlueskyDraft)
+        })
+        .catch((err) => {
+          toast('error', err instanceof Error ? err.message : 'Failed to pick and draft')
+          setBlueskyPanelOpen(false)
+        })
+      return
     } else if (action === 'create-cluster') {
       setClusterDialogOpen(true)
       return
@@ -237,6 +280,41 @@ export default function StoriesPage() {
     })
   }
 
+  const handleBlueskyPublish = async (postId: string) => {
+    setBlueskyPublishing(true)
+    try {
+      await adminApi.bluesky.publishPost(postId)
+      toast('success', 'Posted to Bluesky')
+      setBlueskyPanelOpen(false)
+      setBlueskyDraft(null)
+      setSelectedIds(new Set())
+      queryClient.invalidateQueries({ queryKey: ['stories'] })
+      queryClient.invalidateQueries({ queryKey: ['story'] })
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to publish')
+    } finally {
+      setBlueskyPublishing(false)
+    }
+  }
+
+  const handleBlueskyUpdate = async (postId: string, text: string) => {
+    try {
+      await adminApi.bluesky.updateDraft(postId, text)
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to save draft')
+      throw err
+    }
+  }
+
+  const handleBlueskyDelete = async (postId: string) => {
+    try {
+      await adminApi.bluesky.deletePost(postId)
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to delete draft')
+      throw err
+    }
+  }
+
   const confirmLoading = bulkUpdate.isPending || deleteStory.isPending
 
   return (
@@ -304,9 +382,25 @@ export default function StoriesPage() {
         onAction={handleBulkAction}
         loading={confirmLoading}
         allHaveRelevance={selectedIds.size > 0 && stories.filter(s => selectedIds.has(s.id)).every(s => s.relevance != null)}
+        allPublished={selectedIds.size > 0 && stories.filter(s => selectedIds.has(s.id)).every(s => s.status === 'published')}
+        singleHasBlueskyPost={selectedIds.size === 1 && stories.some(s => selectedIds.has(s.id) && (s._count?.blueskyPosts ?? 0) > 0)}
       />
 
-      <StoryDetail storyId={detailId} issues={issuesQuery.data || []} onClose={() => setDetailId(null)} />
+      <StoryDetail
+        storyId={detailId}
+        issues={issuesQuery.data || []}
+        onClose={() => setDetailId(null)}
+        onBlueskyGenerate={(storyId) => {
+          setBlueskyPanelOpen(true)
+          setBlueskyDraft(null)
+          adminApi.bluesky.generateDraft(storyId)
+            .then((draft) => setBlueskyDraft(draft as BlueskyDraft))
+            .catch((err) => {
+              toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+              setBlueskyPanelOpen(false)
+            })
+        }}
+      />
 
       <CrawlUrlForm open={crawlOpen} onClose={() => setCrawlOpen(false)} />
 
@@ -315,6 +409,19 @@ export default function StoriesPage() {
         onClose={() => setClusterDialogOpen(false)}
         stories={stories.filter(s => selectedIds.has(s.id))}
         onSuccess={() => setSelectedIds(new Set())}
+      />
+
+      <BlueskyDraftPanel
+        open={blueskyPanelOpen}
+        onClose={() => {
+          setBlueskyPanelOpen(false)
+          setBlueskyDraft(null)
+        }}
+        draft={blueskyDraft}
+        onPublish={handleBlueskyPublish}
+        onUpdate={handleBlueskyUpdate}
+        onDelete={handleBlueskyDelete}
+        publishing={blueskyPublishing}
       />
 
       <ConfirmDialog

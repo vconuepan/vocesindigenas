@@ -158,6 +158,7 @@ const ADMIN_LIST_SELECT = {
   createdAt: true,
   updatedAt: true,
   feed: { select: { id: true, title: true, issue: { select: { id: true, name: true, slug: true } } } },
+  _count: { select: { blueskyPosts: true } },
 } as const
 
 export async function getStories(filters: StoryFilters) {

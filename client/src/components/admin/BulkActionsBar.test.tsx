@@ -43,4 +43,45 @@ describe('BulkActionsBar', () => {
     render(<BulkActionsBar count={3} onAction={vi.fn()} loading />)
     expect(screen.getByRole('button', { name: 'Create Cluster' })).toBeDisabled()
   })
+
+  it('shows "Post to Bluesky" when 1 story selected and all published', () => {
+    render(<BulkActionsBar count={1} onAction={vi.fn()} allPublished />)
+    expect(screen.getByRole('button', { name: 'Post to Bluesky' })).toBeInTheDocument()
+  })
+
+  it('shows "Pick Best for Bluesky" when multiple stories selected and all published', () => {
+    render(<BulkActionsBar count={3} onAction={vi.fn()} allPublished />)
+    expect(screen.getByRole('button', { name: 'Pick Best for Bluesky' })).toBeInTheDocument()
+  })
+
+  it('disables Bluesky button when not all published', () => {
+    render(<BulkActionsBar count={1} onAction={vi.fn()} allPublished={false} />)
+    expect(screen.getByRole('button', { name: 'Post to Bluesky' })).toBeDisabled()
+  })
+
+  it('calls onAction with bluesky-post for single story', async () => {
+    const user = userEvent.setup()
+    const onAction = vi.fn()
+    render(<BulkActionsBar count={1} onAction={onAction} allPublished />)
+    await user.click(screen.getByRole('button', { name: 'Post to Bluesky' }))
+    expect(onAction).toHaveBeenCalledWith('bluesky-post')
+  })
+
+  it('calls onAction with bluesky-pick for multiple stories', async () => {
+    const user = userEvent.setup()
+    const onAction = vi.fn()
+    render(<BulkActionsBar count={3} onAction={onAction} allPublished />)
+    await user.click(screen.getByRole('button', { name: 'Pick Best for Bluesky' }))
+    expect(onAction).toHaveBeenCalledWith('bluesky-pick')
+  })
+
+  it('disables Bluesky button when single story already has a post', () => {
+    render(<BulkActionsBar count={1} onAction={vi.fn()} allPublished singleHasBlueskyPost />)
+    expect(screen.getByRole('button', { name: 'Post to Bluesky' })).toBeDisabled()
+  })
+
+  it('does not disable Bluesky pick button for multiple stories regardless of singleHasBlueskyPost', () => {
+    render(<BulkActionsBar count={3} onAction={vi.fn()} allPublished singleHasBlueskyPost />)
+    expect(screen.getByRole('button', { name: 'Pick Best for Bluesky' })).toBeEnabled()
+  })
 })

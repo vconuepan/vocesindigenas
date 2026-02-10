@@ -141,4 +141,19 @@ export const config = {
     enabled: process.env.DEDUP_ENABLED !== 'false',
     modelTier: 'small' as const,
   },
+  bluesky: {
+    handle: process.env.BLUESKY_HANDLE || '',
+    appPassword: process.env.BLUESKY_APP_PASSWORD || '',
+    serviceUrl: process.env.BLUESKY_SERVICE_URL || 'https://bsky.social',
+    autoPost: {
+      enabled: process.env.BLUESKY_AUTO_POST_ENABLED === 'true',
+      lookbackHours: parseInt(process.env.BLUESKY_LOOKBACK_HOURS || '12', 10),
+    },
+    metrics: {
+      maxAgeDays: parseInt(process.env.BLUESKY_METRICS_MAX_AGE_DAYS || '30', 10),
+    },
+    siteBaseUrl: process.env.SITE_BASE_URL || 'https://actuallyrelevant.com',
+    postDelayMs: parseInt(process.env.BLUESKY_POST_DELAY_MS || '2000', 10),
+    modelTier: 'small' as const,
+  },
 } as const;

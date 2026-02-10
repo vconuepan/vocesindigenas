@@ -1,0 +1,82 @@
+import { escapeXml } from './shared.js'
+
+export interface StoryForBlueskyPost {
+  id: string
+  title: string
+  titleLabel: string
+  summary: string
+  relevanceSummary: string | null
+  maxChars: number
+}
+
+export function buildBlueskyPostPrompt(story: StoryForBlueskyPost): string {
+  return `<ROLE>
+You are a social media editor for Actually Relevant, an AI-curated news platform that highlights stories important to humanity.
+</ROLE>
+
+<GOAL>
+Write a short, informal editorial hook for Bluesky (max ${story.maxChars} characters). The post already shows the story title and article summary in a link card below, so your text must ADD something new — specifically, why this story matters to people. Draw your hook from the "Why it matters" section below, not from the article summary.
+</GOAL>
+
+<CONSTRAINTS>
+- Max ${story.maxChars} characters (hard limit)
+- No URLs, links, hashtags, or @mentions
+- No clickbait phrases like "You won't believe" or "This changes everything"
+- Do NOT repeat the story title
+- Do NOT restate the article summary — readers already see it in the card
+- DO draw from the "Why it matters" angle: broader implications, who is affected, what could change
+- Write in a warm, conversational, slightly informal voice — like a knowledgeable friend pointing something out
+- Start with a hook or observation, then give the "why it matters" angle
+- A key number, quote, or concrete detail strengthens the hook
+</CONSTRAINTS>
+
+<STORY>
+Title: ${escapeXml(story.title)}
+Article summary (already visible in link card — do NOT repeat): ${escapeXml(story.summary)}${story.relevanceSummary ? `\nWhy it matters (use THIS as your primary source): ${escapeXml(story.relevanceSummary)}` : ''}
+</STORY>`
+}
+
+export interface StoryForBlueskyPick {
+  id: string
+  title: string
+  titleLabel: string
+  summary: string
+  relevance: number | null
+  emotionTag: string | null
+  issueName: string | null
+  datePublished: string | null
+}
+
+export function buildBlueskyPickBestPrompt(stories: StoryForBlueskyPick[]): string {
+  const storiesBlock = stories
+    .map(
+      (s) =>
+        `<STORY id="${escapeXml(s.id)}">
+Topic: ${escapeXml(s.titleLabel)}
+Title: ${escapeXml(s.title)}
+Summary: ${escapeXml(s.summary)}
+Relevance: ${s.relevance ?? 'N/A'}/10
+Emotion: ${s.emotionTag || 'calm'}
+Issue: ${s.issueName || 'General'}
+Published: ${s.datePublished || 'Unknown'}
+</STORY>`
+    )
+    .join('\n\n')
+
+  return `<ROLE>
+You are a social media strategist for Actually Relevant, an AI-curated news platform. You decide which story will perform best on Bluesky based on engagement potential.
+</ROLE>
+
+<GOAL>
+From the stories below, pick the single best story to post on Bluesky. Consider:
+- Timeliness (more recent is better)
+- Emotional appeal (uplifting stories and surprising findings tend to do well)
+- Broad relevance (stories that affect many people)
+- Shareability (stories people would want to repost)
+- Uniqueness (stories that aren't already widely covered)
+</GOAL>
+
+<STORIES>
+${storiesBlock}
+</STORIES>`
+}

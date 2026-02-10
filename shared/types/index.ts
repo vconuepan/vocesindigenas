@@ -94,6 +94,7 @@ export interface Story {
     _count: { stories: number }
     stories: { id: string; title: string | null; sourceTitle: string; status: StoryStatus }[]
   } | null
+  _count?: { blueskyPosts: number }
 }
 
 export interface PublicStory extends Story {
@@ -211,6 +212,28 @@ export interface Podcast {
   status: 'draft' | 'published'
   createdAt: string
   updatedAt: string
+}
+
+export type BlueskyPostStatus = 'draft' | 'published' | 'failed'
+
+export interface BlueskyPost {
+  id: string
+  storyId: string
+  postText: string
+  postUri: string | null
+  postCid: string | null
+  status: BlueskyPostStatus
+  error: string | null
+  publishedAt: string | null
+  likeCount: number
+  repostCount: number
+  replyCount: number
+  quoteCount: number
+  metricsUpdatedAt: string | null
+  createdAt: string
+  updatedAt: string
+  story?: Story
+  pickReasoning?: string
 }
 
 export interface StoryCluster {

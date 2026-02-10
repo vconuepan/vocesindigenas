@@ -87,6 +87,7 @@ model Story {
   clusterId              String?      @map("cluster_id")
   cluster                StoryCluster? @relation("ClusterMember", fields: [clusterId], references: [id])
   primaryOfCluster       StoryCluster? @relation("ClusterPrimary")
+  blueskyPosts           BlueskyPost[]
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -230,6 +231,32 @@ model JobRun {
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("job_runs")
+}
+
+// --- Bluesky Tables ---
+
+model BlueskyPost {
+  id               String    @id @default(uuid())
+  storyId          String    @map("story_id")
+  story            Story     @relation(fields: [storyId], references: [id])
+  postUri          String?   @unique @map("post_uri")
+  postCid          String?   @map("post_cid")
+  status           String    @default("draft") // draft | published | failed
+  postText         String    @map("post_text")
+  error            String?
+  publishedAt      DateTime? @map("published_at")
+  likeCount        Int       @default(0) @map("like_count")
+  repostCount      Int       @default(0) @map("repost_count")
+  replyCount       Int       @default(0) @map("reply_count")
+  quoteCount       Int       @default(0) @map("quote_count")
+  metricsUpdatedAt DateTime? @map("metrics_updated_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([storyId])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("bluesky_posts")
 }
 
 // --- Subscription Tables ---
