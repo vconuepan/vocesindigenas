@@ -30,15 +30,24 @@ const DAY_NAMES: Record<string, string> = {
   '4': 'Thu', '5': 'Fri', '6': 'Sat', '7': 'Sun',
 }
 
-function formatHour(hour: number): string {
-  if (hour === 0) return '12:00 AM'
-  if (hour === 12) return '12:00 PM'
-  if (hour < 12) return `${hour}:00 AM`
-  return `${hour - 12}:00 PM`
+function formatTime(hour: number, minute: number): string {
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const mm = pad(minute)
+  if (hour === 0) return `12:${mm} AM`
+  if (hour === 12) return `12:${mm} PM`
+  if (hour < 12) return `${hour}:${mm} AM`
+  return `${hour - 12}:${mm} PM`
 }
 
-function formatHours(hours: number[]): string {
-  return hours.map(formatHour).join(', ')
+function formatHourLabel(hour: number): string {
+  if (hour === 0) return '12 AM'
+  if (hour === 12) return '12 PM'
+  if (hour < 12) return `${hour} AM`
+  return `${hour - 12} PM`
+}
+
+function formatTimes(hours: number[], minute: number): string {
+  return hours.map(h => formatTime(h, minute)).join(', ')
 }
 
 function parseDays(dayField: string): string | null {
@@ -51,6 +60,15 @@ function parseDays(dayField: string): string | null {
     return days.map(d => DAY_NAMES[d]).join(', ')
   }
   return dayField
+}
+
+/**
+ * Format a hour range like "9-17" into "9 AM \u2013 5 PM".
+ */
+function formatHourRange(rangeStr: string): string | null {
+  const match = rangeStr.match(/^(\d+)-(\d+)$/)
+  if (!match) return null
+  return `${formatHourLabel(parseInt(match[1], 10))} \u2013 ${formatHourLabel(parseInt(match[2], 10))}`
 }
 
 /**
@@ -67,13 +85,46 @@ export function cronToHuman(expr: string): string {
   if (dayOfMonth !== '*' || month !== '*') return expr
 
   const dayStr = parseDays(dayOfWeek)
-
-  // Every N hours: "0 */N * * *"
+  const min = /^\d+$/.test(minute) ? parseInt(minute, 10) : NaN
+  const everyNMin = minute.match(/^\*\/(\d+)$/)
   const everyNHours = hour.match(/^\*\/(\d+)$/)
-  if (minute === '0' && everyNHours) {
+  const hourRange = hour.match(/^(\d+)-(\d+)$/)
+
+  // Every N minutes: "*/N * * * *" or "*/N 9-17 * * *"
+  if (everyNMin) {
+    const n = parseInt(everyNMin[1], 10)
+    const minLabel = `${n} minute${n > 1 ? 's' : ''}`
+
+    if (hourRange) {
+      const range = formatHourRange(hour)
+      return dayStr
+        ? `${dayStr}, every ${minLabel}, ${range}`
+        : `Every ${minLabel}, ${range}`
+    }
+
+    if (hour === '*') {
+      return dayStr ? `${dayStr}, every ${minLabel}` : `Every ${minLabel}`
+    }
+
+    return expr
+  }
+
+  // Every N hours with non-zero minutes: "MM */N * * *"
+  if (everyNHours && !isNaN(min)) {
     const n = parseInt(everyNHours[1], 10)
+    const hourLabel = `${n} hour${n > 1 ? 's' : ''}`
+    if (min === 0) {
+      const prefix = dayStr ? `${dayStr}, every` : 'Every'
+      return `${prefix} ${hourLabel}`
+    }
     const prefix = dayStr ? `${dayStr}, every` : 'Every'
-    return `${prefix} ${n} hour${n > 1 ? 's' : ''}`
+    return `${prefix} ${hourLabel} at :${min.toString().padStart(2, '0')}`
+  }
+
+  // Every hour with hour range: "0 9-17 * * *"
+  if (minute === '0' && hourRange) {
+    const range = formatHourRange(hour)
+    return dayStr ? `${dayStr}, every hour, ${range}` : `Every hour, ${range}`
   }
 
   // Every hour: "0 * * * *"
@@ -81,12 +132,11 @@ export function cronToHuman(expr: string): string {
     return dayStr ? `${dayStr}, every hour` : 'Every hour'
   }
 
-  // Specific hours: "0 9 * * *" or "0 9,21 * * *"
-  if (minute === '0' && /^[\d,]+$/.test(hour)) {
+  // Specific hours with any minute: "MM 9 * * *" or "MM 9,21 * * *"
+  if (!isNaN(min) && /^[\d,]+$/.test(hour)) {
     const hours = hour.split(',').map(Number)
-    const timeStr = formatHours(hours)
+    const timeStr = formatTimes(hours, min)
     if (dayStr) return `${dayStr} at ${timeStr}`
-    if (hours.length === 1) return `Daily at ${timeStr}`
     return `Daily at ${timeStr}`
   }
 

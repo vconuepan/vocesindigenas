@@ -47,7 +47,7 @@ function JobEditPanel({ job, onClose }: { job: JobRun; onClose: () => void }) {
         {/* Schedule — opens in edit mode directly */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">Schedule</label>
-          <CronEditor job={job} initialEditing onSave={onClose} onCancel={onClose} />
+          <CronEditor job={job} initialEditing />
         </div>
 
         {/* Last Started */}
@@ -240,7 +240,7 @@ function EnabledToggle({ job }: { job: JobRun }) {
       aria-checked={job.enabled}
       aria-label={`${job.enabled ? 'Disable' : 'Enable'} ${JOB_DISPLAY_NAMES[job.jobName]}`}
     >
-      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${job.enabled ? 'translate-x-4.5' : 'translate-x-1'}`} />
+      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${job.enabled ? 'translate-x-[18px]' : 'translate-x-1'}`} />
     </button>
   )
 }

@@ -1,10 +1,29 @@
 import { Helmet } from 'react-helmet-async'
-import { useJobs } from '../../hooks/useJobs'
+import { useJobs, useServerTime } from '../../hooks/useJobs'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { JobsTable } from '../../components/admin/JobsTable'
+
+function ServerClock() {
+  const serverTime = useServerTime()
+
+  if (!serverTime) {
+    return (
+      <div className="text-right text-xs text-neutral-400">
+        <span className="font-mono">--:--:--</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="text-right text-xs text-neutral-500">
+      <span className="font-mono tabular-nums">{serverTime.time}</span>
+      <span className="block text-[10px] text-neutral-400">{serverTime.timezone}</span>
+    </div>
+  )
+}
 
 export default function JobsPage() {
   const jobsQuery = useJobs({ refetchInterval: 10_000 })
@@ -18,6 +37,7 @@ export default function JobsPage() {
       <PageHeader
         title="Jobs"
         description="Scheduled background jobs. Auto-refreshes every 10 seconds."
+        actions={<ServerClock />}
       />
 
       {jobsQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}

@@ -20,6 +20,13 @@ router.get('/', async (_req, res) => {
   }
 })
 
+router.get('/server-time', (_req, res) => {
+  res.json({
+    time: new Date().toISOString(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  })
+})
+
 router.put('/:jobName', validateBody(updateJobSchema), async (req, res) => {
   try {
     if (req.body.cronExpression && !cron.validate(req.body.cronExpression)) {

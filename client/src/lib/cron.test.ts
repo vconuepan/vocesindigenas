@@ -37,8 +37,50 @@ describe('cronToHuman', () => {
     expect(cronToHuman('0 */4 * * 1,3,5')).toBe('Mon, Wed, Fri, every 4 hours')
   })
 
+  it('converts every N minutes patterns', () => {
+    expect(cronToHuman('*/5 * * * *')).toBe('Every 5 minutes')
+    expect(cronToHuman('*/15 * * * *')).toBe('Every 15 minutes')
+    expect(cronToHuman('*/30 * * * *')).toBe('Every 30 minutes')
+  })
+
+  it('converts non-zero minutes with specific hours', () => {
+    expect(cronToHuman('30 9 * * *')).toBe('Daily at 9:30 AM')
+    expect(cronToHuman('15 18 * * *')).toBe('Daily at 6:15 PM')
+    expect(cronToHuman('45 0 * * *')).toBe('Daily at 12:45 AM')
+    expect(cronToHuman('30 12 * * *')).toBe('Daily at 12:30 PM')
+  })
+
+  it('converts non-zero minutes with multiple hours', () => {
+    expect(cronToHuman('30 9,21 * * *')).toBe('Daily at 9:30 AM, 9:30 PM')
+    expect(cronToHuman('15 6,18 * * *')).toBe('Daily at 6:15 AM, 6:15 PM')
+  })
+
+  it('converts non-zero minutes with day patterns', () => {
+    expect(cronToHuman('30 9 * * 1-5')).toBe('weekdays at 9:30 AM')
+    expect(cronToHuman('15 9 * * 1,3,5')).toBe('Mon, Wed, Fri at 9:15 AM')
+  })
+
+  it('converts non-zero minutes with every N hours', () => {
+    expect(cronToHuman('15 */6 * * *')).toBe('Every 6 hours at :15')
+    expect(cronToHuman('30 */4 * * *')).toBe('Every 4 hours at :30')
+  })
+
+  it('converts hour range patterns', () => {
+    expect(cronToHuman('0 9-17 * * *')).toBe('Every hour, 9 AM \u2013 5 PM')
+    expect(cronToHuman('0 8-20 * * *')).toBe('Every hour, 8 AM \u2013 8 PM')
+    expect(cronToHuman('0 22-6 * * *')).toBe('Every hour, 10 PM \u2013 6 AM')
+  })
+
+  it('converts every N minutes with restricted hours', () => {
+    expect(cronToHuman('*/15 9-17 * * *')).toBe('Every 15 minutes, 9 AM \u2013 5 PM')
+    expect(cronToHuman('*/5 8-20 * * *')).toBe('Every 5 minutes, 8 AM \u2013 8 PM')
+  })
+
+  it('converts every N minutes with day patterns', () => {
+    expect(cronToHuman('*/10 * * * 1-5')).toBe('weekdays, every 10 minutes')
+  })
+
   it('returns raw expression for unrecognized patterns', () => {
-    expect(cronToHuman('*/5 * * * *')).toBe('*/5 * * * *')
     expect(cronToHuman('0 9 15 * *')).toBe('0 9 15 * *') // specific day of month
     expect(cronToHuman('0 9 * 3 *')).toBe('0 9 * 3 *')   // specific month
     expect(cronToHuman('invalid')).toBe('invalid')

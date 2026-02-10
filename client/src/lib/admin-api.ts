@@ -311,6 +311,7 @@ export const adminApi = {
       request<JobRun>(`/jobs/${jobName}`, { method: 'PUT', body: JSON.stringify(data) }),
     run: (jobName: string) =>
       request<{ message: string }>(`/jobs/${jobName}/run`, { method: 'POST' }),
+    serverTime: () => request<{ time: string; timezone: string }>('/jobs/server-time'),
   },
 
   // Clusters

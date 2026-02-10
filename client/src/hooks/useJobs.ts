@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { adminApi } from '../lib/admin-api'
 import type { JobRun } from '@shared/types'
@@ -35,6 +36,39 @@ export function useRunJob() {
       pollJobCompletion(queryClient, jobName)
     },
   })
+}
+
+/**
+ * Fetches the server timezone once, then maintains a ticking clock
+ * in that timezone using the client's local clock.
+ */
+export function useServerTime() {
+  const query = useQuery({
+    queryKey: ['serverTime'],
+    queryFn: () => adminApi.jobs.serverTime(),
+    staleTime: Infinity, // timezone doesn't change
+    refetchOnWindowFocus: false,
+  })
+
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    if (!query.data) return
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [query.data])
+
+  if (!query.data) return null
+
+  const formatted = now.toLocaleTimeString('en-US', {
+    timeZone: query.data.timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+
+  return { time: formatted, timezone: query.data.timezone }
 }
 
 function pollJobCompletion(queryClient: QueryClient, jobName: string) {

@@ -113,9 +113,15 @@ export function CronEditor({ job, initialEditing = false, onSave, onCancel }: Cr
             }}
             autoFocus
           />
-          <p className="mt-1 text-[10px] text-neutral-400">
-            min hour day month weekday
-          </p>
+          {(() => {
+            const human = cronToHuman(customValue.trim())
+            const isResolved = customValue.trim().split(/\s+/).length === 5 && human !== customValue.trim()
+            return isResolved ? (
+              <p className="mt-1 text-[10px] text-brand-600">{human}</p>
+            ) : (
+              <p className="mt-1 text-[10px] text-neutral-400">min hour day month weekday</p>
+            )
+          })()}
         </div>
       )}
 
