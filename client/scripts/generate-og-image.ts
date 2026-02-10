@@ -67,10 +67,15 @@ async function generateOgImage() {
     </svg>
   `;
 
-  // Color strip at top using brand pink
+  // Color strip at top using the 4 issue area colors
+  const STRIP_HEIGHT = 16;
+  const ISSUE_COLORS = ['#fbbf24', '#2dd4bf', '#f87171', '#818cf8'];
+  const segmentWidth = WIDTH / ISSUE_COLORS.length;
   const topStrip = Buffer.from(
-    `<svg width="${WIDTH}" height="8">
-      <rect width="${WIDTH}" height="8" fill="${BRAND_500}"/>
+    `<svg width="${WIDTH}" height="${STRIP_HEIGHT}">
+      ${ISSUE_COLORS.map((color, i) =>
+        `<rect x="${i * segmentWidth}" width="${segmentWidth}" height="${STRIP_HEIGHT}" fill="${color}"/>`
+      ).join('\n      ')}
     </svg>`
   );
 
