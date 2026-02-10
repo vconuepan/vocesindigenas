@@ -41,6 +41,7 @@ export interface StoryForBlueskyPick {
   title: string
   titleLabel: string
   summary: string
+  relevanceSummary: string | null
   relevance: number | null
   emotionTag: string | null
   issueName: string | null
@@ -54,7 +55,7 @@ export function buildBlueskyPickBestPrompt(stories: StoryForBlueskyPick[]): stri
         `<STORY id="${escapeXml(s.id)}">
 Topic: ${escapeXml(s.titleLabel)}
 Title: ${escapeXml(s.title)}
-Summary: ${escapeXml(s.summary)}
+Summary: ${escapeXml(s.summary)}${s.relevanceSummary ? `\nWhy it matters: ${escapeXml(s.relevanceSummary)}` : ''}
 Relevance: ${s.relevance ?? 'N/A'}/10
 Emotion: ${s.emotionTag || 'calm'}
 Issue: ${s.issueName || 'General'}

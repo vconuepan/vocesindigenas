@@ -120,7 +120,7 @@ export async function generateDraft(storyId: string) {
   }
 
   const prompt = buildBlueskyPostPrompt(storyForPrompt)
-  const llm = getLLMByTier(config.bluesky.modelTier)
+  const llm = getLLMByTier(config.bluesky.postModelTier)
   const structuredLlm = llm.withStructuredOutput(blueskyPostTextSchema)
 
   await rateLimitDelay()
@@ -197,6 +197,7 @@ export async function pickBestStory(storyIds: string[]): Promise<{ storyId: stri
     title: s.title || s.sourceTitle,
     titleLabel: s.titleLabel || '',
     summary: s.summary || '',
+    relevanceSummary: s.relevanceSummary,
     relevance: s.relevance,
     emotionTag: s.emotionTag,
     issueName: s.issue?.name ?? null,
@@ -204,7 +205,7 @@ export async function pickBestStory(storyIds: string[]): Promise<{ storyId: stri
   }))
 
   const prompt = buildBlueskyPickBestPrompt(storiesForPrompt)
-  const llm = getLLMByTier(config.bluesky.modelTier)
+  const llm = getLLMByTier(config.bluesky.pickModelTier)
   const structuredLlm = llm.withStructuredOutput(blueskyPickBestSchema)
 
   await rateLimitDelay()

@@ -49,6 +49,7 @@ describe('buildBlueskyPickBestPrompt', () => {
       title: 'Story one',
       titleLabel: 'Topic A',
       summary: 'Summary of story one.',
+      relevanceSummary: 'This matters because of X.',
       relevance: 8,
       emotionTag: 'uplifting',
       issueName: 'Climate',
@@ -59,6 +60,7 @@ describe('buildBlueskyPickBestPrompt', () => {
       title: 'Story two',
       titleLabel: 'Topic B',
       summary: 'Summary of story two.',
+      relevanceSummary: null,
       relevance: 6,
       emotionTag: 'calm',
       issueName: 'Technology',
@@ -99,9 +101,21 @@ describe('buildBlueskyPickBestPrompt', () => {
     expect(prompt).toContain('calm')
   })
 
+  it('includes relevanceSummary when present', () => {
+    const prompt = buildBlueskyPickBestPrompt(stories)
+    expect(prompt).toContain('This matters because of X.')
+  })
+
+  it('omits relevanceSummary when null', () => {
+    const prompt = buildBlueskyPickBestPrompt(stories)
+    // story-2 has null relevanceSummary — should not have "Why it matters" line for it
+    // but story-1 should
+    expect(prompt).toContain('Why it matters: This matters because of X.')
+  })
+
   it('handles null optional fields', () => {
     const prompt = buildBlueskyPickBestPrompt([
-      { ...stories[0], emotionTag: null, issueName: null, datePublished: null },
+      { ...stories[0], relevanceSummary: null, emotionTag: null, issueName: null, datePublished: null },
     ])
     expect(prompt).toContain('story-1')
     // Should not contain 'null' as literal text

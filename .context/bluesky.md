@@ -84,7 +84,8 @@ All settings in `server/src/config.ts` under `config.bluesky`:
 | `metrics.maxAgeDays` | `BLUESKY_METRICS_MAX_AGE_DAYS` | `30` | Only poll metrics for recent posts |
 | `siteBaseUrl` | `SITE_BASE_URL` | `https://actuallyrelevant.com` | Base URL for story link cards |
 | `postDelayMs` | `BLUESKY_POST_DELAY_MS` | `2000` | Delay between consecutive posts |
-| `modelTier` | — | `small` | LLM model tier for post generation |
+| `postModelTier` | — | `medium` | LLM model tier for post text generation |
+| `pickModelTier` | — | `medium` | LLM model tier for story picking |
 
 ## API Endpoints
 
@@ -122,9 +123,9 @@ Two prompts in `server/src/prompts/bluesky.ts`:
 
 1. **`buildBlueskyPostPrompt`** — Generates a short editorial hook (not a summary). The LLM receives the story title, summary, and relevanceSummary as context, with instructions to write a "why you should care" angle. Max chars are dynamically calculated based on remaining space after title and metadata lines. Output: `blueskyPostTextSchema` (editorial text).
 
-2. **`buildBlueskyPickBestPrompt`** — Picks the most engagement-worthy story from a set. Considers timeliness, emotional appeal, broad relevance, shareability, and uniqueness. Output: `blueskyPickBestSchema` (storyId + reasoning).
+2. **`buildBlueskyPickBestPrompt`** — Picks the most engagement-worthy story from a set. Receives each candidate's summary and relevanceSummary (as "Why it matters") alongside metadata. Considers timeliness, emotional appeal, broad relevance, shareability, and uniqueness. Output: `blueskyPickBestSchema` (storyId + reasoning).
 
-Both use the `small` model tier (fast, cheap — these are short creative/selection tasks).
+Both use the `medium` model tier (configured separately as `postModelTier` and `pickModelTier`).
 
 ## File Locations
 

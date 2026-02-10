@@ -154,6 +154,7 @@ export const config = {
     },
     siteBaseUrl: process.env.SITE_BASE_URL || 'https://actuallyrelevant.com',
     postDelayMs: parseInt(process.env.BLUESKY_POST_DELAY_MS || '2000', 10),
-    modelTier: 'small' as const,
+    postModelTier: 'medium' as const,
+    pickModelTier: 'medium' as const,
   },
 } as const;
