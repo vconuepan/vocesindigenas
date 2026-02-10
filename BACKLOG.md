@@ -11,8 +11,6 @@
 ## Orga
 
 - Announcements
-  - LinkedIn post
+  - LinkedIn post 2/2
   - Journalism ai post
-  - Joep mail
-  - newsletter@effektiveraltruismus.de
   - AR newsletter

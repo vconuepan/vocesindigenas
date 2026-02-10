@@ -59,10 +59,11 @@ export default function EmbedPage() {
   }, [isDark])
 
   return (
-    <div
+    <main
       ref={containerRef}
       className={`font-sans text-sm leading-relaxed ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-white text-neutral-700'}`}
     >
+      <h1 className="sr-only">Actually Relevant Stories</h1>
       {isLoading && (
         <div className={`px-4 py-8 text-center text-[13px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
           Loading...
@@ -113,7 +114,7 @@ export default function EmbedPage() {
           href="https://actuallyrelevant.news"
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex items-center gap-1.5 text-[11px] ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600'}`}
+          className={`inline-flex items-center gap-1.5 text-[11px] ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-neutral-700'}`}
         >
           <img
             src="https://actuallyrelevant.news/images/logo-no-text-square.png"
@@ -124,6 +125,6 @@ export default function EmbedPage() {
           Powered by Actually Relevant
         </a>
       </div>
-    </div>
+    </main>
   )
 }
