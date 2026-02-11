@@ -231,7 +231,7 @@ router.put('/:id/status', validateBody(updateStoryStatusSchema), async (req, res
     const story = await storyService.updateStoryStatus(req.params.id, req.body.status)
     res.json(story)
   } catch (err: any) {
-    if (err.code === 'P2025') {
+    if (err.code === 'P2025' || err.message === 'Story not found') {
       res.status(404).json({ error: 'Story not found' })
       return
     }
@@ -243,7 +243,10 @@ router.put('/:id/status', validateBody(updateStoryStatusSchema), async (req, res
 router.post('/bulk-status', validateBody(bulkUpdateStatusSchema), async (req, res) => {
   try {
     const result = await storyService.bulkUpdateStatus(req.body.ids, req.body.status)
-    res.json({ updated: result.count })
+    const response: Record<string, unknown> = { updated: result.count }
+    if ('embeddingWarning' in result) response.embeddingWarning = result.embeddingWarning
+    if ('failed' in result) response.failed = result.failed
+    res.json(response)
   } catch (err) {
     log.error({ err }, 'failed to bulk update story status')
     res.status(500).json({ error: 'Failed to bulk update story status' })
@@ -302,7 +305,7 @@ router.post('/:id/publish', async (req, res) => {
     const story = await storyService.publishStory(req.params.id)
     res.json(story)
   } catch (err: any) {
-    if (err.code === 'P2025') {
+    if (err.code === 'P2025' || err.message === 'Story not found') {
       res.status(404).json({ error: 'Story not found' })
       return
     }

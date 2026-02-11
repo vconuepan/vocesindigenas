@@ -4,7 +4,6 @@ import { withRetry } from '../lib/retry.js'
 import { createLogger } from '../lib/logger.js'
 import { config } from '../config.js'
 import {
-  fetchStoryForEmbedding,
   fetchStoriesForEmbedding,
   saveEmbedding,
   type StoryEmbeddingRow,
@@ -16,7 +15,7 @@ const openai = new OpenAI()
 
 export type StoryForEmbedding = StoryEmbeddingRow
 
-export function buildEmbeddingContent(story: StoryForEmbedding): string {
+export function buildEmbeddingContent(story: Pick<StoryForEmbedding, 'title' | 'titleLabel' | 'summary'>): string {
   const parts: string[] = []
 
   if (story.titleLabel && story.title) {
@@ -112,84 +111,68 @@ export async function generateEmbeddingsBatch(
   return response.data.sort((a, b) => a.index - b.index).map((d) => d.embedding)
 }
 
-async function ensureStoryEmbedding(
-  storyId: string,
-  statusFilter?: string,
-): Promise<boolean> {
-  const story = await fetchStoryForEmbedding(storyId)
-
-  if (!story) {
-    log.debug({ storyId }, 'story not found for embedding')
-    return false
-  }
-  if (statusFilter && story.status !== statusFilter) return false
-
+/**
+ * Generate an embedding vector for story content without touching the DB.
+ * Returns the vector + hash, or null if no update is needed.
+ * Throws on OpenAI failure (after 3 retries via withRetry).
+ */
+export async function generateEmbeddingForContent(
+  story: Pick<StoryForEmbedding, 'title' | 'titleLabel' | 'summary' | 'embeddingContentHash'>,
+): Promise<{ embedding: number[]; hash: string } | null> {
   const content = buildEmbeddingContent(story)
-  if (!content) {
-    log.debug({ storyId }, 'no embeddable content (missing title/summary)')
-    return false
-  }
+  if (!content) return null
 
   const hash = computeContentHash(content)
-  if (!needsEmbeddingUpdate(story, hash)) {
-    log.debug({ storyId }, 'embedding already up to date')
-    return false
-  }
+  if (!needsEmbeddingUpdate(story, hash)) return null
 
   const embedding = await generateEmbedding(content)
-  await saveEmbedding(storyId, embedding, hash)
-
-  log.info({ storyId, hash, status: story.status }, 'generated story embedding')
-  return true
+  return { embedding, hash }
 }
 
-/** Generate/update embedding for a published story. */
-export async function updateStoryEmbedding(storyId: string): Promise<boolean> {
-  return ensureStoryEmbedding(storyId, 'published')
+export interface EmbeddingResult {
+  id: string
+  success: boolean
+  embedding?: number[]
+  hash?: string
+  error?: string
 }
 
 /**
- * Generate embedding for a story regardless of status.
- * Used after assessment for dedup detection (story is in 'analyzed' state).
+ * Generate embeddings for multiple stories in batch.
+ * Returns per-story results (success/failure) so callers can decide
+ * which stories to proceed with.
  */
-export async function generateStoryEmbedding(storyId: string): Promise<boolean> {
-  return ensureStoryEmbedding(storyId)
-}
-
-export async function updateStoryEmbeddingIfNeeded(
-  storyId: string,
-): Promise<boolean> {
-  try {
-    return await updateStoryEmbedding(storyId)
-  } catch (err) {
-    log.error({ err, storyId }, 'failed to update story embedding')
-    return false
-  }
-}
-
-export interface BatchResult {
-  processed: number
-  skipped: number
-  failed: number
-}
-
-export async function batchUpdateEmbeddings(
+export async function batchGenerateEmbeddings(
   storyIds: string[],
-): Promise<BatchResult> {
-  const result: BatchResult = { processed: 0, skipped: 0, failed: 0 }
-  if (storyIds.length === 0) return result
+  statusFilter: 'published' | 'selected' | 'analyzed' = 'published',
+): Promise<EmbeddingResult[]> {
+  if (storyIds.length === 0) return []
 
-  const stories = await fetchStoriesForEmbedding(storyIds)
+  const stories = await fetchStoriesForEmbedding(storyIds, statusFilter)
 
-  // Build content and check hashes
+  // Identify which stories need embedding updates
+  const results: EmbeddingResult[] = []
   const toProcess: { story: StoryForEmbedding; content: string; hash: string }[] = []
+
   for (const story of stories) {
     const content = buildEmbeddingContent(story)
+    if (!content) {
+      results.push({ id: story.id, success: true }) // nothing to embed, skip
+      continue
+    }
     const hash = computeContentHash(content)
-    if (needsEmbeddingUpdate(story, hash)) {
-      toProcess.push({ story, content, hash })
-    } else {
-      result.skipped++
+    if (!needsEmbeddingUpdate(story, hash)) {
+      results.push({ id: story.id, success: true }) // already up to date
+      continue
+    }
+    toProcess.push({ story, content, hash })
+  }
+
+  // Stories in storyIds but not returned by fetchStoriesForEmbedding (wrong status, not found)
+  const foundIds = new Set(stories.map(s => s.id))
+  for (const id of storyIds) {
+    if (!foundIds.has(id)) {
+      results.push({ id, success: false, error: 'Story not found or wrong status' })
     }
   }
 
@@ -198,29 +181,28 @@ export async function batchUpdateEmbeddings(
   for (let i = 0; i < toProcess.length; i += batchSize) {
     const batch = toProcess.slice(i, i + batchSize)
     try {
-      const embeddings = await generateEmbeddingsBatch(batch.map((b) => b.content))
-
+      const embeddings = await generateEmbeddingsBatch(batch.map(b => b.content))
       for (let j = 0; j < batch.length; j++) {
-        const { story, hash } = batch[j]
-        const embedding = embeddings[j]
-        try {
-          await saveEmbedding(story.id, embedding, hash)
-          result.processed++
-        } catch (err) {
-          log.error({ err, storyId: story.id }, 'failed to save embedding')
-          result.failed++
-        }
+        results.push({
+          id: batch[j].story.id,
+          success: true,
+          embedding: embeddings[j],
+          hash: batch[j].hash,
+        })
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Embedding generation failed'
       log.error({ err, batchStart: i, batchSize: batch.length }, 'failed to generate embeddings batch')
-      result.failed += batch.length
+      for (const item of batch) {
+        results.push({ id: item.story.id, success: false, error: msg })
+      }
     }
 
     // Rate limit delay between batches
     if (i + batchSize < toProcess.length) {
-      await new Promise((resolve) => setTimeout(resolve, config.embedding.delayMs))
+      await new Promise(resolve => setTimeout(resolve, config.embedding.delayMs))
     }
   }
 
-  return result
+  return results
 }

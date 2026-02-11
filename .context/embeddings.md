@@ -17,11 +17,15 @@ Missing fields are omitted gracefully. If `titleLabel` is null, the title is use
 A SHA-256 hash of the embedding input string is stored as `embedding_content_hash`. This detects stale embeddings when content changes.
 
 ### Trigger Points
-1. **On publish** (`publishStory`, `bulkUpdateStatus`): Fire-and-forget embedding generation
-2. **On edit of published story** (`updateStory`): Regenerates if title/titleLabel/summary changed
-3. **Backfill script**: `npm run migration:backfill-embeddings --prefix server` for existing stories
 
-All embedding operations are non-blocking — failures are logged but don't affect the publish/edit operation.
+Embeddings are generated **before** the state change is committed, using Prisma interactive transactions for atomicity. If embedding generation fails (after 3 retries via `withRetry`), the entire operation rolls back. No story can reach `analyzed`, `selected`, or `published` status without a valid embedding.
+
+1. **On assessment** (`assessStory`): Embedding generated from LLM analysis results, saved atomically with the analysis data
+2. **On publish** (`publishStory`, `updateStoryStatus`, `bulkUpdateStatus`): Embedding generated before setting status to `published`
+3. **On edit of published story** (`updateStory`): Regenerates if title/titleLabel/summary changed, saved atomically with the edit
+4. **Backfill script**: `npm run migration:backfill-embeddings --prefix server` for existing stories
+
+For bulk publish operations, embeddings are generated for all stories first. Only stories with successful embeddings are published; failures are reported in the response (`failed` and `embeddingWarning` fields).
 
 ## Hybrid Search (RRF)
 
@@ -70,9 +74,11 @@ Uses raw SQL for fetching (bypasses Prisma type limitations), processes in batch
 
 | File | Purpose |
 |------|---------|
-| `server/src/services/embedding.ts` | Core embedding service (generate, hash, update) |
+| `server/src/services/embedding.ts` | Core embedding service (generate, hash, batch) |
 | `server/src/services/embedding.test.ts` | Unit tests |
+| `server/src/lib/vectors.ts` | Raw SQL embedding persistence (`saveEmbedding`, `saveEmbeddingTx`) |
 | `server/src/services/story.ts` | Lifecycle hooks + hybrid search |
+| `server/src/services/analysis.ts` | Assessment with atomic embedding save |
 | `server/src/scripts/migrations/backfill-embeddings.ts` | Backfill script |
 | `server/src/config.ts` | Embedding configuration |
 | `server/prisma/schema.prisma` | Schema with pgvector fields |

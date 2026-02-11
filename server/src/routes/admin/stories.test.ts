@@ -37,7 +37,7 @@ const mockPrisma = vi.hoisted(() => ({
     delete: vi.fn(),
   },
   $disconnect: vi.fn(),
-  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
+  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args(mockPrisma)),
 }))
 
 vi.mock('../../lib/prisma.js', () => ({ default: mockPrisma }))
@@ -45,6 +45,22 @@ vi.mock('../../services/crawler.js', () => ({
   crawlFeed: vi.fn(),
   crawlAllDueFeeds: vi.fn(),
   crawlUrl: vi.fn(),
+}))
+
+const mockGenerateEmbeddingForContent = vi.hoisted(() => vi.fn().mockResolvedValue(null))
+const mockBatchGenerateEmbeddings = vi.hoisted(() => vi.fn().mockResolvedValue([]))
+vi.mock('../../services/embedding.js', () => ({
+  generateEmbeddingForContent: mockGenerateEmbeddingForContent,
+  batchGenerateEmbeddings: mockBatchGenerateEmbeddings,
+  generateSearchEmbedding: vi.fn(),
+}))
+const mockFetchStoryForEmbedding = vi.hoisted(() => vi.fn().mockResolvedValue({
+  id: 'story-1', title: 'Test', titleLabel: null, summary: null, embeddingContentHash: null, status: 'selected',
+}))
+vi.mock('../../lib/vectors.js', () => ({
+  fetchStoryForEmbedding: mockFetchStoryForEmbedding,
+  saveEmbeddingTx: vi.fn(),
+  searchByEmbedding: vi.fn().mockResolvedValue([]),
 }))
 
 const mockPreAssessStories = vi.hoisted(() => vi.fn())
@@ -294,6 +310,8 @@ describe('Admin Stories API', () => {
 
   describe('PUT /api/admin/stories/:id/status', () => {
     it('updates story status', async () => {
+      // preparePublishData + updateStoryStatus call findUnique
+      mockPrisma.story.findUnique.mockResolvedValue(sampleStory({ slug: 'existing-slug', datePublished: new Date() }))
       mockPrisma.story.update.mockResolvedValue(sampleStory({ status: 'published' }))
 
       const res = await request(app)
@@ -314,6 +332,15 @@ describe('Admin Stories API', () => {
 
   describe('POST /api/admin/stories/bulk-status', () => {
     it('bulk updates story statuses', async () => {
+      const ids = [
+        '00000000-0000-0000-0000-000000000001',
+        '00000000-0000-0000-0000-000000000002',
+        '00000000-0000-0000-0000-000000000003',
+      ]
+      // Mock batch embedding generation to succeed for all IDs
+      mockBatchGenerateEmbeddings.mockResolvedValueOnce(
+        ids.map(id => ({ id, success: true })),
+      )
       // findMany for stories needing slugs
       mockPrisma.story.findMany.mockResolvedValueOnce([])
       // findMany for existing slugs check (empty = no conflicts)
@@ -441,6 +468,8 @@ describe('Admin Stories API', () => {
 
   describe('POST /api/admin/stories/:id/publish', () => {
     it('publishes a story', async () => {
+      // preparePublishData calls findUnique
+      mockPrisma.story.findUnique.mockResolvedValue(sampleStory({ slug: 'existing-slug', datePublished: new Date() }))
       mockPrisma.story.update.mockResolvedValue(sampleStory({ status: 'published' }))
 
       const res = await request(app)
@@ -450,7 +479,10 @@ describe('Admin Stories API', () => {
     })
 
     it('returns 404 for unknown story', async () => {
-      mockPrisma.story.update.mockRejectedValue({ code: 'P2025' })
+      // preparePublishData calls findUnique — returns null
+      mockPrisma.story.findUnique.mockResolvedValue(null)
+      // fetchStoryForEmbedding returns null → throws 'Story not found'
+      mockFetchStoryForEmbedding.mockResolvedValueOnce(null)
 
       const res = await request(app)
         .post('/api/admin/stories/unknown/publish')

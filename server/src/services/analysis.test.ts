@@ -11,13 +11,16 @@ const mockPrisma = vi.hoisted(() => ({
   issue: {
     findMany: vi.fn(),
   },
-  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args()),
+  $transaction: vi.fn((args: any) => Array.isArray(args) ? Promise.all(args) : args(mockPrisma)),
 }))
 
 const mockGetSmallLLM = vi.hoisted(() => vi.fn())
 const mockGetMediumLLM = vi.hoisted(() => vi.fn())
 const mockGetLargeLLM = vi.hoisted(() => vi.fn())
 const mockRateLimitDelay = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const mockGenerateEmbeddingForContent = vi.hoisted(() => vi.fn())
+const mockSaveEmbeddingTx = vi.hoisted(() => vi.fn())
+const mockDetectAndCluster = vi.hoisted(() => vi.fn())
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 vi.mock('./llm.js', () => ({
@@ -32,6 +35,15 @@ vi.mock('./llm.js', () => ({
     }
   }),
   rateLimitDelay: mockRateLimitDelay,
+}))
+vi.mock('./embedding.js', () => ({
+  generateEmbeddingForContent: mockGenerateEmbeddingForContent,
+}))
+vi.mock('../lib/vectors.js', () => ({
+  saveEmbeddingTx: mockSaveEmbeddingTx,
+}))
+vi.mock('./dedup.js', () => ({
+  detectAndCluster: mockDetectAndCluster,
 }))
 
 const { preAssessStories, reclassifyStories, assessStory, selectStories } = await import('./analysis.js')
@@ -189,12 +201,15 @@ describe('reclassifyStories', () => {
 describe('assessStory', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockDetectAndCluster.mockResolvedValue({ clusterId: null, newCluster: false, memberCount: 0, rejectedIds: [] })
   })
 
-  it('calls LLM with structured output and updates story fields', async () => {
+  it('generates embedding before saving analysis and embedding atomically', async () => {
     const story = storyWithRelations({ id: 'story-1' })
     mockPrisma.story.findUnique.mockResolvedValue(story)
     mockPrisma.story.update.mockResolvedValue({})
+    mockGenerateEmbeddingForContent.mockResolvedValue({ embedding: [0.1, 0.2], hash: 'abc123' })
+    mockSaveEmbeddingTx.mockResolvedValue(undefined)
 
     const structuredResponse = {
       publicationDate: '2024-01-15 00:00:00',
@@ -220,25 +235,100 @@ describe('assessStory', () => {
 
     await assessStory('story-1')
 
+    // Embedding generated from analysis results
+    expect(mockGenerateEmbeddingForContent).toHaveBeenCalledWith({
+      title: 'Test title: subtitle here',
+      titleLabel: 'Test topic',
+      summary: 'Test summary with key information.',
+      embeddingContentHash: null,
+    })
+
+    // Transaction saves analysis + embedding atomically
+    expect(mockPrisma.$transaction).toHaveBeenCalled()
     expect(mockPrisma.story.update).toHaveBeenCalledWith({
       where: { id: 'story-1' },
       data: expect.objectContaining({
         titleLabel: 'Test topic',
         summary: 'Test summary with key information.',
-        quote: '"Test quote" said Expert',
-        quoteAttribution: 'Dr. Smith, University of Oxford',
-        relevanceReasons: 'Factor one: Detailed explanation.\nFactor two: Detailed explanation.',
-        antifactors: 'Limiting factor: Explanation of limitation.',
-        relevanceCalculation: 'Key factor: 5\nLimitation: -2',
-        relevance: 3,
         status: 'analyzed',
       }),
     })
+    expect(mockSaveEmbeddingTx).toHaveBeenCalledWith(
+      mockPrisma, 'story-1', [0.1, 0.2], 'abc123',
+    )
   })
 
   it('throws when story not found', async () => {
     mockPrisma.story.findUnique.mockResolvedValue(null)
     await expect(assessStory('nonexistent')).rejects.toThrow('Story not found')
+  })
+
+  it('throws and does not save when embedding generation fails', async () => {
+    const story = storyWithRelations({ id: 'story-1' })
+    mockPrisma.story.findUnique.mockResolvedValue(story)
+    mockGenerateEmbeddingForContent.mockRejectedValue(new Error('OpenAI API error'))
+
+    const mockStructuredLlm = {
+      invoke: vi.fn().mockResolvedValue({
+        publicationDate: '',
+        quote: '',
+        quoteAttribution: '',
+        summary: 'Summary',
+        factors: ['Factor'],
+        limitingFactors: [],
+        relevanceCalculation: ['calc'],
+        conservativeRating: 5,
+        relevanceSummary: 'Relevance summary',
+        titleLabel: 'Topic',
+        relevanceTitle: 'Title',
+        marketingBlurb: 'Blurb',
+      }),
+    }
+    mockGetMediumLLM.mockReturnValue({
+      withStructuredOutput: () => mockStructuredLlm,
+    })
+
+    await expect(assessStory('story-1')).rejects.toThrow('OpenAI API error')
+
+    // Transaction should not have been called
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled()
+    expect(mockPrisma.story.update).not.toHaveBeenCalled()
+  })
+
+  it('runs dedup after successful assessment', async () => {
+    const story = storyWithRelations({ id: 'story-1' })
+    mockPrisma.story.findUnique.mockResolvedValue(story)
+    mockPrisma.story.update.mockResolvedValue({})
+    mockGenerateEmbeddingForContent.mockResolvedValue({ embedding: [0.1], hash: 'h1' })
+    mockSaveEmbeddingTx.mockResolvedValue(undefined)
+    mockDetectAndCluster.mockResolvedValue({ clusterId: 'c1', newCluster: true, memberCount: 2, rejectedIds: [] })
+
+    const mockStructuredLlm = {
+      invoke: vi.fn().mockResolvedValue({
+        publicationDate: '',
+        quote: '',
+        quoteAttribution: '',
+        summary: 'Summary',
+        factors: ['Factor'],
+        limitingFactors: [],
+        relevanceCalculation: ['calc'],
+        conservativeRating: 5,
+        relevanceSummary: 'Rel',
+        titleLabel: 'Topic',
+        relevanceTitle: 'Title',
+        marketingBlurb: 'Blurb',
+      }),
+    }
+    mockGetMediumLLM.mockReturnValue({
+      withStructuredOutput: () => mockStructuredLlm,
+    })
+
+    await assessStory('story-1')
+
+    // Wait for fire-and-forget dedup to settle
+    await new Promise(resolve => setTimeout(resolve, 10))
+
+    expect(mockDetectAndCluster).toHaveBeenCalledWith('story-1')
   })
 })
 

@@ -36,6 +36,7 @@ const {
   needsEmbeddingUpdate,
   generateEmbedding,
   generateEmbeddingsBatch,
+  generateEmbeddingForContent,
 } = await import('./embedding.js')
 
 // Access the mock through the module
@@ -177,5 +178,70 @@ describe('generateEmbeddingsBatch', () => {
 
     const result = await generateEmbeddingsBatch(['a', 'b', 'c'])
     expect(result).toEqual([[0.1], [0.2], [0.3]])
+  })
+})
+
+describe('generateEmbeddingForContent', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns embedding and hash when content has changed', async () => {
+    mockCreate.mockResolvedValue({
+      data: [{ embedding: [0.1, 0.2], index: 0 }],
+    })
+
+    const result = await generateEmbeddingForContent({
+      title: 'Test Title',
+      titleLabel: 'Topic',
+      summary: 'A summary',
+      embeddingContentHash: null, // no existing hash = force generation
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.embedding).toEqual([0.1, 0.2])
+    expect(result!.hash).toHaveLength(64) // SHA-256
+    expect(mockCreate).toHaveBeenCalled()
+  })
+
+  it('returns null when content has not changed (hash matches)', async () => {
+    // Pre-compute the hash for "Topic: Test Title\nA summary"
+    const content = 'Topic: Test Title\nA summary'
+    const hash = computeContentHash(content)
+
+    const result = await generateEmbeddingForContent({
+      title: 'Test Title',
+      titleLabel: 'Topic',
+      summary: 'A summary',
+      embeddingContentHash: hash,
+    })
+
+    expect(result).toBeNull()
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
+
+  it('returns null when all content fields are empty', async () => {
+    const result = await generateEmbeddingForContent({
+      title: null,
+      titleLabel: null,
+      summary: null,
+      embeddingContentHash: null,
+    })
+
+    expect(result).toBeNull()
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
+
+  it('throws when OpenAI call fails', async () => {
+    mockCreate.mockRejectedValue(new Error('OpenAI API error'))
+
+    await expect(
+      generateEmbeddingForContent({
+        title: 'Test',
+        titleLabel: null,
+        summary: 'Summary',
+        embeddingContentHash: null,
+      }),
+    ).rejects.toThrow('OpenAI API error')
   })
 })

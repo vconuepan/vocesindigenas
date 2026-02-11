@@ -13,7 +13,9 @@ import { buildPreassessPrompt, buildReclassifyPrompt, buildEmotionTagPrompt, bui
 import type { StoryForPreassess, IssueForPreassess } from '../prompts/index.js'
 import { preAssessResultSchema, reclassifyResultSchema, assessResultSchema, selectResultSchema } from '../schemas/llm.js'
 import type { Guidelines } from '../prompts/shared.js'
-import { embedAndDedup } from './dedup.js'
+import { detectAndCluster } from './dedup.js'
+import { generateEmbeddingForContent } from './embedding.js'
+import { saveEmbeddingTx } from '../lib/vectors.js'
 
 const log = createLogger('analysis')
 
@@ -264,34 +266,49 @@ export async function assessStory(storyId: string): Promise<void> {
 
   log.info({ storyId, rating: parsed.conservativeRating, title: parsed.relevanceTitle?.slice(0, 60) }, 'assessment complete')
 
-  await prisma.story.update({
-    where: { id: storyId },
-    data: {
-      titleLabel: parsed.titleLabel || null,
-      title: parsed.relevanceTitle || null,
-      summary: parsed.summary || null,
-      quote: parsed.quote || null,
-      quoteAttribution: parsed.quoteAttribution || null,
-      marketingBlurb: parsed.marketingBlurb || null,
-      relevanceSummary: parsed.relevanceSummary || null,
-      relevanceReasons: parsed.factors.join('\n'),
-      antifactors: parsed.limitingFactors.join('\n'),
-      relevanceCalculation: parsed.relevanceCalculation.join('\n'),
-      relevance: parsed.conservativeRating,
-      status: 'analyzed',
-    },
+  const analysisData = {
+    titleLabel: parsed.titleLabel || null,
+    title: parsed.relevanceTitle || null,
+    summary: parsed.summary || null,
+    quote: parsed.quote || null,
+    quoteAttribution: parsed.quoteAttribution || null,
+    marketingBlurb: parsed.marketingBlurb || null,
+    relevanceSummary: parsed.relevanceSummary || null,
+    relevanceReasons: parsed.factors.join('\n'),
+    antifactors: parsed.limitingFactors.join('\n'),
+    relevanceCalculation: parsed.relevanceCalculation.join('\n'),
+    relevance: parsed.conservativeRating,
+    status: 'analyzed' as const,
+  }
+
+  // Generate embedding from analysis results BEFORE saving — throws on failure
+  const embeddingData = await generateEmbeddingForContent({
+    title: analysisData.title,
+    titleLabel: analysisData.titleLabel,
+    summary: analysisData.summary,
+    embeddingContentHash: null, // force generation
   })
 
-  // Post-assessment: generate embedding and run dedup (fire-and-forget)
-  embedAndDedup(storyId)
-    .then(result => {
-      if (result.clusterId) {
-        log.info({ storyId, ...result }, 'post-assessment dedup result')
-      }
-    })
-    .catch(err => {
-      log.error({ err, storyId }, 'post-assessment embedding/dedup failed')
-    })
+  // Save analysis + embedding atomically
+  await prisma.$transaction(async (tx) => {
+    await tx.story.update({ where: { id: storyId }, data: analysisData })
+    if (embeddingData) {
+      await saveEmbeddingTx(tx, storyId, embeddingData.embedding, embeddingData.hash)
+    }
+  })
+
+  // Dedup runs after the transaction — embedding is guaranteed to exist
+  if (config.dedup.enabled) {
+    detectAndCluster(storyId)
+      .then(result => {
+        if (result.clusterId) {
+          log.info({ storyId, ...result }, 'post-assessment dedup result')
+        }
+      })
+      .catch(err => {
+        log.error({ err, storyId }, 'post-assessment dedup failed')
+      })
+  }
 }
 
 /** Orchestrate concurrent assessment of multiple stories. */

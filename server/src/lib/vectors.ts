@@ -60,15 +60,16 @@ export async function fetchStoryForEmbedding(
   return { ...mapRow(rows[0]), status: rows[0].status }
 }
 
-/** Fetch multiple published stories' embedding-relevant fields. */
+/** Fetch multiple stories' embedding-relevant fields. Defaults to published only. */
 export async function fetchStoriesForEmbedding(
   storyIds: string[],
+  statusFilter: 'published' | 'selected' | 'analyzed' = 'published',
 ): Promise<StoryEmbeddingRow[]> {
   if (storyIds.length === 0) return []
   const rows = await prisma.$queryRaw<RawStoryRow[]>`
     SELECT id, title, title_label, summary, embedding_content_hash
     FROM stories
-    WHERE id = ANY(${storyIds}) AND status = 'published'
+    WHERE id = ANY(${storyIds}) AND status = ${statusFilter}
   `
   return rows.map(mapRow)
 }
@@ -80,6 +81,22 @@ export async function saveEmbedding(
   contentHash: string,
 ): Promise<void> {
   await prisma.$executeRaw`
+    UPDATE stories
+    SET embedding = ${JSON.stringify(embedding)}::vector,
+        embedding_content_hash = ${contentHash},
+        embedding_generated_at = NOW()
+    WHERE id = ${storyId}
+  `
+}
+
+/** Save an embedding vector + content hash inside an interactive transaction. */
+export async function saveEmbeddingTx(
+  tx: { $executeRaw: typeof prisma.$executeRaw },
+  storyId: string,
+  embedding: number[],
+  contentHash: string,
+): Promise<void> {
+  await tx.$executeRaw`
     UPDATE stories
     SET embedding = ${JSON.stringify(embedding)}::vector,
         embedding_content_hash = ${contentHash},

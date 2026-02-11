@@ -6,7 +6,6 @@ import { config } from '../config.js'
 import { getLLMByTier, rateLimitDelay } from './llm.js'
 import { buildDedupPrompt } from '../prompts/dedup.js'
 import { dedupConfirmationSchema } from '../schemas/llm.js'
-import { generateStoryEmbedding } from './embedding.js'
 
 const log = createLogger('dedup')
 
@@ -302,17 +301,3 @@ export async function detectAndCluster(storyId: string): Promise<DetectResult> {
   return { clusterId: cluster.id, newCluster: true, memberCount: duplicateIds.length + 1, rejectedIds }
 }
 
-// ──── Combined entry point ───────────────────────────────────────────────────
-
-/**
- * Generate embedding for a story, then run dedup detection.
- * Can be awaited for synchronous control, or fire-and-forget with .catch(() => {}).
- */
-export async function embedAndDedup(storyId: string): Promise<DetectResult> {
-  if (!config.dedup.enabled) {
-    return { clusterId: null, newCluster: false, memberCount: 0, rejectedIds: [] }
-  }
-
-  await generateStoryEmbedding(storyId)
-  return detectAndCluster(storyId)
-}
