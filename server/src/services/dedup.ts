@@ -49,10 +49,12 @@ export async function findNearestCandidates(
     SELECT s.id, s.title, s.summary,
            s.embedding <=> (SELECT embedding FROM stories WHERE id = ${storyId}) AS distance
     FROM stories s
+    LEFT JOIN story_clusters sc ON sc.id = s.cluster_id
     WHERE s.id != ${storyId}
       AND s.status IN ('analyzed', 'selected', 'published')
       AND s.embedding IS NOT NULL
       AND s.date_crawled > NOW() - ${timeWindowDays} * INTERVAL '1 day'
+      AND (s.cluster_id IS NULL OR sc.primary_story_id = s.id)
     ORDER BY distance ASC
     LIMIT ${limit}
   `
