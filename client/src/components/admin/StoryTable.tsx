@@ -11,6 +11,7 @@ import {
   ArrowPathIcon,
   ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline'
+import { Link } from 'react-router-dom'
 import type { Story, StoryStatus } from '@shared/types'
 import { Badge } from '../ui/Badge'
 import { ActionIconButton } from '../ui/ActionIconButton'
@@ -20,9 +21,11 @@ function ClusterBadge({ story }: { story: Story }) {
   if (!story.clusterId) return null
   const isPrimary = story.cluster?.primaryStoryId === story.id
   return (
-    <Badge variant={isPrimary ? 'green' : 'purple'} className="shrink-0">
-      {isPrimary ? 'Primary' : 'Cluster'}
-    </Badge>
+    <Link to={`/admin/clusters?open=${story.clusterId}`}>
+      <Badge variant={isPrimary ? 'green' : 'purple'} className="shrink-0 hover:opacity-80">
+        {isPrimary ? 'Primary' : 'Cluster'}
+      </Badge>
+    </Link>
   )
 }
 
