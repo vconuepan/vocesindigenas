@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/24/outline'
 import type { StoryCluster } from '@shared/types'
 import { ActionIconButton } from '../ui/ActionIconButton'
-import { formatDateWithTime } from '../../lib/constants'
+import { TimeWithRelative } from './TimeWithRelative'
 
 interface ClusterTableProps {
   clusters: StoryCluster[]
@@ -43,7 +43,7 @@ export function ClusterTable({ clusters, onEdit, onDissolve }: ClusterTableProps
                     <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                       {cluster._count.stories} stories
                     </span>
-                    <span className="text-neutral-400 text-xs">{formatDateWithTime(cluster.createdAt)}</span>
+                    <span className="text-neutral-500 text-xs"><TimeWithRelative dateStr={cluster.createdAt} /></span>
                   </div>
                 </td>
                 <td className="hidden md:table-cell px-3 py-2 text-center">
@@ -52,7 +52,7 @@ export function ClusterTable({ clusters, onEdit, onDissolve }: ClusterTableProps
                   </span>
                 </td>
                 <td className="hidden md:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap">
-                  {formatDateWithTime(cluster.createdAt)}
+                  <TimeWithRelative dateStr={cluster.createdAt} />
                 </td>
                 <td className="px-3 py-2">
                   {/* Desktop actions */}

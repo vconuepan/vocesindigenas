@@ -38,6 +38,17 @@ export function useRunJob() {
   })
 }
 
+/** Returns the server's IANA timezone string (e.g. "UTC", "America/New_York"). */
+export function useServerTimezone(): string {
+  const query = useQuery({
+    queryKey: ['serverTime'],
+    queryFn: () => adminApi.jobs.serverTime(),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  })
+  return query.data?.timezone ?? 'UTC'
+}
+
 /**
  * Fetches the server timezone once, then maintains a ticking clock
  * in that timezone using the client's local clock.

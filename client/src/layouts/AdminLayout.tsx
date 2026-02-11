@@ -18,6 +18,7 @@ import {
   ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
+import { useServerTime } from '../hooks/useJobs'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ToastProvider } from '../components/ui/Toast'
 import { BackgroundTaskProvider } from '../hooks/useBackgroundTasks'
@@ -61,6 +62,18 @@ function NavItems({ onClick }: { onClick?: () => void }) {
   )
 }
 
+function ServerClock() {
+  const serverTime = useServerTime()
+  if (!serverTime) return null
+
+  return (
+    <div className="border-t border-neutral-200 px-6 py-2 text-center">
+      <span className="font-mono tabular-nums text-xs text-neutral-500">{serverTime.time}</span>
+      <span className="ml-1 text-[10px] text-neutral-400">{serverTime.timezone}</span>
+    </div>
+  )
+}
+
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
 
@@ -72,6 +85,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Admin navigation">
         <NavItems onClick={onNavigate} />
       </nav>
+      <ServerClock />
       <div className="border-t border-neutral-200 px-3 py-3">
         <a
           href="/"

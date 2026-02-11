@@ -12,6 +12,7 @@ import type { FeedQualityMetrics } from '../../lib/admin-api'
 import { FeedFaviconPreview } from '../FeedFavicon'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import { formatDateWithTime } from '../../lib/constants'
+import { TimeWithRelative } from './TimeWithRelative'
 
 interface FeedTableProps {
   feeds: Feed[]
@@ -84,7 +85,7 @@ export function FeedTable({ feeds, issues, qualityMetrics, onEdit, onCrawl, onDe
                 {/* Mobile metadata */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">
                   <span className="text-neutral-500 text-xs">{issueMap.get(feed.issueId) || '—'}</span>
-                  <span className="text-neutral-400 text-xs">{formatDateWithTime(feed.lastCrawledAt)}</span>
+                  <span className="text-neutral-500 text-xs"><TimeWithRelative dateStr={feed.lastCrawledAt} /></span>
                 </div>
               </td>
               <td className="hidden md:table-cell px-3 py-2 text-neutral-600">{issueMap.get(feed.issueId) || '—'}</td>
@@ -103,7 +104,7 @@ export function FeedTable({ feeds, issues, qualityMetrics, onEdit, onCrawl, onDe
                   </>
                 )
               })()}
-              <td className="hidden md:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDateWithTime(feed.lastCrawledAt)}</td>
+              <td className="hidden md:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap"><TimeWithRelative dateStr={feed.lastCrawledAt} /></td>
               <td className="px-3 py-2">
                 {/* Desktop actions */}
                 <div className="hidden md:flex items-center justify-end gap-0.5">

@@ -12,6 +12,7 @@ import { EmptyState } from '../../components/ui/EmptyState'
 import { Pagination } from '../../components/ui/Pagination'
 import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { useToast } from '../../components/ui/Toast'
+import { formatRelativeTime } from '../../lib/constants'
 
 const STATUS_COLORS: Record<BlueskyPostStatus, string> = {
   draft: 'bg-amber-100 text-amber-800',
@@ -24,21 +25,6 @@ function atUriToWebUrl(atUri: string): string | null {
   const match = atUri.match(/^at:\/\/(did:[^/]+)\/app\.bsky\.feed\.post\/(.+)$/)
   if (!match) return null
   return `https://bsky.app/profile/${match[1]}/post/${match[2]}`
-}
-
-function formatRelativeTime(dateStr: string | null): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMin = Math.floor(diffMs / 60000)
-  if (diffMin < 1) return 'just now'
-  if (diffMin < 60) return `${diffMin}m ago`
-  const diffHours = Math.floor(diffMin / 60)
-  if (diffHours < 24) return `${diffHours}h ago`
-  const diffDays = Math.floor(diffHours / 24)
-  if (diffDays < 30) return `${diffDays}d ago`
-  return date.toLocaleDateString()
 }
 
 export default function BlueskyPage() {

@@ -8,7 +8,8 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import type { JobRun } from '@shared/types'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import { Button } from '../ui/Button'
-import { JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER, formatDateWithTime } from '../../lib/constants'
+import { JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER } from '../../lib/constants'
+import { TimeWithRelative } from './TimeWithRelative'
 import { useUpdateJob, useRunJob } from '../../hooks/useJobs'
 import { useToast } from '../ui/Toast'
 import { CronEditor } from './CronEditor'
@@ -53,13 +54,13 @@ function JobEditPanel({ job, onClose }: { job: JobRun; onClose: () => void }) {
         {/* Last Started */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">Last Started</label>
-          <p className="text-sm text-neutral-600">{formatDateWithTime(job.lastStartedAt) || '—'}</p>
+          <p className="text-sm text-neutral-600"><TimeWithRelative dateStr={job.lastStartedAt} /></p>
         </div>
 
         {/* Last Completed */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">Last Completed</label>
-          <p className="text-sm text-neutral-600">{formatDateWithTime(job.lastCompletedAt) || '—'}</p>
+          <p className="text-sm text-neutral-600"><TimeWithRelative dateStr={job.lastCompletedAt} /></p>
         </div>
 
         {/* Error */}
@@ -137,8 +138,8 @@ export function JobsTable({ jobs }: JobsTableProps) {
                   <EnabledToggle job={job} />
                 </td>
                 <td className="px-3 py-2"><JobStatusBadge job={job} /></td>
-                <td className="px-3 py-2 text-neutral-500 whitespace-nowrap hidden lg:table-cell">{formatDateWithTime(job.lastStartedAt)}</td>
-                <td className="px-3 py-2 text-neutral-500 whitespace-nowrap hidden lg:table-cell">{formatDateWithTime(job.lastCompletedAt)}</td>
+                <td className="px-3 py-2 text-neutral-500 whitespace-nowrap hidden lg:table-cell"><TimeWithRelative dateStr={job.lastStartedAt} /></td>
+                <td className="px-3 py-2 text-neutral-500 whitespace-nowrap hidden lg:table-cell"><TimeWithRelative dateStr={job.lastCompletedAt} /></td>
                 <td className="px-3 py-2 max-w-[200px] hidden lg:table-cell">
                   {job.lastError ? (
                     <span className="text-red-600 text-xs">{job.lastError.slice(0, 60)}...</span>

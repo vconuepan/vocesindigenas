@@ -2,18 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { publicApi } from '../lib/api'
-
-function timeAgo(dateStr: string) {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  return new Date(dateStr).toLocaleDateString()
-}
+import { formatRelativeTime } from '../lib/constants'
 
 export default function EmbedPage() {
   const [params] = useSearchParams()
@@ -101,7 +90,7 @@ export default function EmbedPage() {
                 )}
                 <span className={`text-[12px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                   {story.feed?.displayTitle || story.feed?.title}
-                  {story.datePublished && ` \u00b7 ${timeAgo(story.datePublished)}`}
+                  {story.datePublished && ` \u00b7 ${formatRelativeTime(story.datePublished)}`}
                 </span>
               </Link>
             </li>

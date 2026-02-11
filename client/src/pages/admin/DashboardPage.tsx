@@ -10,7 +10,8 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { JobStatusBadge } from '../../components/admin/JobStatusBadge'
 import { ActionIconButton } from '../../components/ui/ActionIconButton'
-import { formatStatus, formatDateWithTime, formatShortDate, STATUS_VARIANTS, JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER } from '../../lib/constants'
+import { formatStatus, STATUS_VARIANTS, JOB_DISPLAY_NAMES, JOB_PIPELINE_ORDER } from '../../lib/constants'
+import { TimeWithRelative } from '../../components/admin/TimeWithRelative'
 
 function StatsGrid({ stats }: { stats: Record<string, number> }) {
   return (
@@ -93,8 +94,7 @@ export default function DashboardPage() {
                         <JobStatusBadge job={job} variant="dot" />
                       </td>
                       <td className="py-2 px-4 text-neutral-500 whitespace-nowrap">
-                        <span className="hidden sm:inline">{formatDateWithTime(job.lastCompletedAt)}</span>
-                        <span className="sm:hidden">{formatShortDate(job.lastCompletedAt)}</span>
+                        <TimeWithRelative dateStr={job.lastCompletedAt} />
                       </td>
                       <td className="py-2 px-4 text-neutral-500 max-w-xs truncate hidden sm:table-cell">
                         {job.lastError ? (

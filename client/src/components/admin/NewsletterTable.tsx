@@ -1,7 +1,7 @@
 import type { Newsletter } from '@shared/types'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
-import { formatDate } from '../../lib/constants'
+import { TimeWithRelative } from './TimeWithRelative'
 
 interface NewsletterTableProps {
   newsletters: Newsletter[]
@@ -36,7 +36,7 @@ export function NewsletterTable({ newsletters, onView, onDelete }: NewsletterTab
                 </Badge>
               </td>
               <td className="px-3 py-2 text-neutral-600">{nl.storyIds.length}</td>
-              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap">{formatDate(nl.createdAt)}</td>
+              <td className="px-3 py-2 text-neutral-500 whitespace-nowrap"><TimeWithRelative dateStr={nl.createdAt} /></td>
               <td className="px-3 py-2 text-right">
                 <div className="flex justify-end gap-1">
                   <Button variant="ghost" size="sm" onClick={() => onView(nl.id)}>View</Button>
