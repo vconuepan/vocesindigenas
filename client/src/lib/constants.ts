@@ -25,6 +25,8 @@ export const JOB_DISPLAY_NAMES: Record<JobName, string> = {
   assess_stories: 'Assess Stories',
   select_stories: 'Select Stories',
   publish_stories: 'Publish Stories',
+  bluesky_auto_post: 'Bluesky Auto-Post',
+  bluesky_update_metrics: 'Bluesky Update Metrics',
 }
 
 /** Pipeline execution order for sorting jobs in the UI. */
@@ -34,6 +36,8 @@ export const JOB_PIPELINE_ORDER: JobName[] = [
   'assess_stories',
   'select_stories',
   'publish_stories',
+  'bluesky_auto_post',
+  'bluesky_update_metrics',
 ]
 
 const STATUS_LABELS: Partial<Record<string, string>> = {
