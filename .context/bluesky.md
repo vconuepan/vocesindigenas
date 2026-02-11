@@ -66,6 +66,16 @@ The `bluesky_update_metrics` job runs daily (default `0 3 * * *`, disabled by de
 
 Manual refresh is also available via the admin Bluesky page.
 
+### Admin Feed View
+
+The admin Bluesky page (`/admin/bluesky`) shows a merged view of the account's live Bluesky feed plus DB-tracked posts:
+
+1. Fetches the account's author feed from the Bluesky API (cursor-based pagination)
+2. Cross-references each post URI against `bluesky_posts` to identify tracked posts
+3. Shows drafts/failed posts from DB at the top (first page only)
+4. Filters: All, Tracked, Untracked, Draft, Failed (client-side filtering)
+5. Tracked posts show a green "Tracked" badge and story title; untracked posts show "Untracked"
+
 ## Rate Limits
 
 Bluesky uses a points-based system: 5,000 points/hour, 35,000 points/day. Posts cost 3 points each. At twice-daily auto-posting plus occasional manual posts, usage is negligible.
@@ -93,6 +103,7 @@ All under `/api/admin/bluesky/` (require auth):
 
 | Method | Path | Description |
 |--------|------|-------------|
+| `GET` | `/feed` | Merged API + DB feed (cursor-based, cross-referenced with DB) |
 | `GET` | `/posts` | List posts (paginated, filterable by status) |
 | `GET` | `/posts/:id` | Get single post with story details |
 | `POST` | `/posts/generate` | Generate draft from a story |

@@ -3,13 +3,24 @@ import prisma from '../lib/prisma.js'
 import { config } from '../config.js'
 import { createLogger } from '../lib/logger.js'
 import { getLLMByTier, rateLimitDelay } from './llm.js'
-import { createPost, getPostMetrics, deletePost as deleteBlueskyPost, isBlueskyConfigured } from '../lib/bluesky.js'
+import { createPost, getPostMetrics, deletePost as deleteBlueskyPost, isBlueskyConfigured, getAuthorFeed } from '../lib/bluesky.js'
 import type { LinkCardMeta } from '../lib/bluesky.js'
 import { buildBlueskyPostPrompt, buildBlueskyPickBestPrompt } from '../prompts/index.js'
 import type { StoryForBlueskyPost, StoryForBlueskyPick } from '../prompts/index.js'
 import { blueskyPostTextSchema, blueskyPickBestSchema } from '../schemas/bluesky.js'
+import type { AuthorFeedResult } from '../lib/bluesky.js'
+import { TTLCache, cached } from '../lib/cache.js'
 
 const log = createLogger('bluesky-service')
+
+// Cache Bluesky API feed responses for 2 minutes.
+// DB cross-referencing is NOT cached — it's fast and should stay real-time.
+const feedCache = new TTLCache<AuthorFeedResult>(2 * 60 * 1000)
+
+/** Clear the feed cache (call after any mutation that changes the Bluesky feed). */
+export function invalidateFeedCache(): void {
+  feedCache.clear()
+}
 
 // ---------------------------------------------------------------------------
 // Draft generation
@@ -266,6 +277,7 @@ export async function deletePostRecord(postId: string) {
   }
 
   await prisma.blueskyPost.delete({ where: { id: postId } })
+  invalidateFeedCache()
   log.info({ postId, status: post.status }, 'deleted Bluesky post record')
 }
 
@@ -320,6 +332,7 @@ export async function publishPost(postId: string) {
       include: { story: { include: { feed: true, issue: true } } },
     })
 
+    invalidateFeedCache()
     log.info({ postId, uri: result.uri }, 'post published to Bluesky')
     return updated
   } catch (err) {
@@ -387,6 +400,7 @@ export async function updateMetrics() {
     }
   }
 
+  invalidateFeedCache()
   log.info({ updated, failed }, 'metrics update complete')
 }
 
@@ -419,4 +433,71 @@ export async function getPostById(postId: string) {
     where: { id: postId },
     include: { story: { include: { issue: true, feed: true } } },
   })
+}
+
+// ---------------------------------------------------------------------------
+// Feed (merged API + DB view)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch the Bluesky author feed and cross-reference with DB records.
+ * Returns feed items enriched with tracking info, plus any draft/failed DB posts
+ * on the first page (no cursor).
+ */
+export async function getFeed(options: { cursor?: string; limit?: number }) {
+  const { cursor, limit = 25 } = options
+
+  if (!isBlueskyConfigured()) {
+    return { feed: [], cursor: undefined, dbOnlyPosts: [] }
+  }
+
+  const cacheKey = `${cursor ?? ''}:${limit}`
+  const apiResult = await cached(feedCache, cacheKey, () => getAuthorFeed(cursor, limit))
+
+  // Cross-reference API post URIs with DB + fetch draft/failed in parallel
+  const apiUris = apiResult.items.map((item) => item.uri)
+
+  const [trackedPosts, pendingPosts] = await Promise.all([
+    apiUris.length > 0
+      ? prisma.blueskyPost.findMany({
+          where: { postUri: { in: apiUris } },
+          include: { story: { include: { issue: true, feed: true } } },
+        })
+      : Promise.resolve([]),
+    !cursor
+      ? prisma.blueskyPost.findMany({
+          where: { status: { in: ['draft', 'failed'] } },
+          include: { story: { include: { issue: true } } },
+          orderBy: { createdAt: 'desc' },
+        })
+      : Promise.resolve([]),
+  ])
+
+  const trackedByUri = new Map(trackedPosts.map((p) => [p.postUri, p]))
+
+  // Enrich API items with DB data
+  const feed = apiResult.items.map((item) => {
+    const tracked = trackedByUri.get(item.uri)
+    return {
+      ...item,
+      trackedPostId: tracked?.id ?? null,
+      storyTitle: tracked?.story?.title ?? null,
+      storySlug: tracked?.story?.slug ?? null,
+      issueName: tracked?.story?.issue?.name ?? null,
+      dbStatus: tracked?.status ?? null,
+    }
+  })
+
+  const dbOnlyPosts = pendingPosts.map((p) => ({
+    id: p.id,
+    postText: p.postText,
+    status: p.status,
+    error: p.error,
+    createdAt: p.createdAt.toISOString(),
+    storyTitle: p.story?.title ?? null,
+    storySlug: p.story?.slug ?? null,
+    issueName: p.story?.issue?.name ?? null,
+  }))
+
+  return { feed, cursor: apiResult.cursor, dbOnlyPosts }
 }

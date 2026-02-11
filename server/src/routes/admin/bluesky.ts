@@ -8,10 +8,22 @@ import {
   pickAndDraftBodySchema,
   updateDraftBodySchema,
   listPostsQuerySchema,
+  feedQuerySchema,
 } from '../../schemas/bluesky.js'
 
 const router = Router()
 const log = createLogger('bluesky-routes')
+
+// Fetch merged API + DB feed
+router.get('/feed', validateQuery(feedQuerySchema), async (req, res) => {
+  try {
+    const result = await blueskyService.getFeed(req.parsedQuery || {})
+    res.json(result)
+  } catch (err) {
+    log.error({ err }, 'failed to fetch Bluesky feed')
+    res.status(500).json({ error: 'Failed to fetch feed' })
+  }
+})
 
 // List posts (paginated, filterable by status)
 router.get('/posts', validateQuery(listPostsQuerySchema), async (req, res) => {

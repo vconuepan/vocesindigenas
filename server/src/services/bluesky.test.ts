@@ -22,6 +22,7 @@ const mockBlueskyClient = vi.hoisted(() => ({
   getPostMetrics: vi.fn(),
   deletePost: vi.fn(),
   isBlueskyConfigured: vi.fn().mockReturnValue(true),
+  getAuthorFeed: vi.fn(),
 }))
 
 const mockLlm = vi.hoisted(() => ({
@@ -41,7 +42,7 @@ vi.mock('../prompts/index.js', () => ({
   buildBlueskyPickBestPrompt: vi.fn(() => 'pick prompt'),
 }))
 
-const { assemblePostText, generateDraft, pickBestStory, updateDraft, deletePostRecord, publishPost, updateMetrics, listPosts } =
+const { assemblePostText, generateDraft, pickBestStory, updateDraft, deletePostRecord, publishPost, updateMetrics, listPosts, getFeed, invalidateFeedCache } =
   await import('./bluesky.js')
 
 describe('assemblePostText', () => {
@@ -390,5 +391,77 @@ describe('listPosts', () => {
         where: { status: 'published' },
       }),
     )
+  })
+})
+
+describe('getFeed', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    invalidateFeedCache()
+  })
+
+  it('returns empty when not configured', async () => {
+    mockBlueskyClient.isBlueskyConfigured.mockReturnValue(false)
+
+    const result = await getFeed({})
+    expect(result.feed).toHaveLength(0)
+    expect(result.dbOnlyPosts).toHaveLength(0)
+  })
+
+  it('merges API feed with DB tracked posts', async () => {
+    mockBlueskyClient.isBlueskyConfigured.mockReturnValue(true)
+    mockBlueskyClient.getAuthorFeed.mockResolvedValue({
+      items: [
+        { uri: 'at://did/post/1', cid: 'cid1', text: 'Tracked post', createdAt: '2025-01-01T00:00:00Z', indexedAt: '2025-01-01T00:00:00Z', likeCount: 5, repostCount: 1, replyCount: 0, quoteCount: 0, isRepost: false },
+        { uri: 'at://did/post/2', cid: 'cid2', text: 'Untracked post', createdAt: '2025-01-02T00:00:00Z', indexedAt: '2025-01-02T00:00:00Z', likeCount: 3, repostCount: 0, replyCount: 1, quoteCount: 0, isRepost: false },
+      ],
+      cursor: 'next-cursor',
+    })
+
+    // One post is tracked in DB
+    mockPrisma.blueskyPost.findMany
+      .mockResolvedValueOnce([
+        { id: 'db-1', postUri: 'at://did/post/1', status: 'published', story: { title: 'My Story', slug: 'my-story', issue: { name: 'Climate' } } },
+      ])
+      // Draft/failed query
+      .mockResolvedValueOnce([])
+
+    const result = await getFeed({})
+
+    expect(result.feed).toHaveLength(2)
+    expect(result.feed[0].trackedPostId).toBe('db-1')
+    expect(result.feed[0].storyTitle).toBe('My Story')
+    expect(result.feed[1].trackedPostId).toBeNull()
+    expect(result.cursor).toBe('next-cursor')
+  })
+
+  it('includes draft/failed posts on first page', async () => {
+    mockBlueskyClient.isBlueskyConfigured.mockReturnValue(true)
+    mockBlueskyClient.getAuthorFeed.mockResolvedValue({ items: [], cursor: undefined })
+
+    // Cross-reference query (empty)
+    mockPrisma.blueskyPost.findMany
+      // Draft/failed query
+      .mockResolvedValueOnce([
+        { id: 'draft-1', postText: 'Draft post', status: 'draft', error: null, createdAt: new Date(), story: { title: 'Draft Story', slug: 'draft-story', issue: { name: 'Tech' } } },
+      ])
+
+    const result = await getFeed({})
+
+    expect(result.dbOnlyPosts).toHaveLength(1)
+    expect(result.dbOnlyPosts[0].status).toBe('draft')
+    expect(result.dbOnlyPosts[0].storyTitle).toBe('Draft Story')
+  })
+
+  it('skips draft/failed when cursor is provided', async () => {
+    mockBlueskyClient.isBlueskyConfigured.mockReturnValue(true)
+    mockBlueskyClient.getAuthorFeed.mockResolvedValue({ items: [], cursor: undefined })
+
+    // No cross-reference needed (empty items)
+
+    const result = await getFeed({ cursor: 'some-cursor' })
+
+    expect(result.dbOnlyPosts).toHaveLength(0)
+    // Only one findMany call (for cross-reference, not draft/failed)
   })
 })

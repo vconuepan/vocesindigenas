@@ -15,6 +15,7 @@ import type {
   CrawlResult,
   TaskState,
   BlueskyPost,
+  BlueskyFeedResponse,
 } from '@shared/types'
 
 export interface FeedQualityMetrics {
@@ -349,6 +350,8 @@ export const adminApi = {
       request<void>(`/bluesky/posts/${id}`, { method: 'DELETE' }),
     refreshMetrics: () =>
       request<{ success: boolean }>('/bluesky/metrics/refresh', { method: 'POST' }),
+    getFeed: (params?: { cursor?: string; limit?: number }) =>
+      request<BlueskyFeedResponse>(`/bluesky/feed${toQueryString((params || {}) as Record<string, unknown>)}`),
   },
 
   // Users

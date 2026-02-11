@@ -238,6 +238,49 @@ export interface BlueskyPost {
   pickReasoning?: string
 }
 
+/** A single item in the merged Bluesky feed (API + DB cross-reference). */
+export interface BlueskyFeedItem {
+  uri: string
+  cid: string
+  text: string
+  createdAt: string
+  indexedAt: string
+  likeCount: number
+  repostCount: number
+  replyCount: number
+  quoteCount: number
+  isRepost: boolean
+  embed?: {
+    uri?: string
+    title?: string
+    description?: string
+    thumbUrl?: string
+  }
+  trackedPostId: string | null
+  storyTitle: string | null
+  storySlug: string | null
+  issueName: string | null
+  dbStatus: BlueskyPostStatus | null
+}
+
+/** A draft/failed DB-only post not yet on Bluesky. */
+export interface BlueskyDbOnlyPost {
+  id: string
+  postText: string
+  status: string
+  error: string | null
+  createdAt: string
+  storyTitle: string | null
+  storySlug: string | null
+  issueName: string | null
+}
+
+export interface BlueskyFeedResponse {
+  feed: BlueskyFeedItem[]
+  cursor?: string
+  dbOnlyPosts: BlueskyDbOnlyPost[]
+}
+
 export interface StoryCluster {
   id: string
   primaryStoryId: string | null

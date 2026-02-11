@@ -210,6 +210,90 @@ export async function deletePost(postUri: string): Promise<void> {
   })
 }
 
+// ---------------------------------------------------------------------------
+// Author feed
+// ---------------------------------------------------------------------------
+
+export interface AuthorFeedItem {
+  uri: string
+  cid: string
+  text: string
+  createdAt: string
+  indexedAt: string
+  likeCount: number
+  repostCount: number
+  replyCount: number
+  quoteCount: number
+  isRepost: boolean
+  embed?: {
+    uri?: string
+    title?: string
+    description?: string
+    thumbUrl?: string
+  }
+}
+
+export interface AuthorFeedResult {
+  items: AuthorFeedItem[]
+  cursor?: string
+}
+
+/**
+ * Fetch the authenticated user's feed from Bluesky.
+ */
+export async function getAuthorFeed(
+  cursor?: string,
+  limit = 25,
+): Promise<AuthorFeedResult> {
+  return withSessionRetry(async (a) => {
+    const params: Record<string, unknown> = {
+      actor: config.bluesky.handle,
+      limit,
+      filter: 'posts_no_replies',
+    }
+    if (cursor) params.cursor = cursor
+
+    log.info({ limit, cursor: cursor ?? null }, 'fetching Bluesky author feed')
+    const response = await a.getAuthorFeed(params as any)
+
+    const items: AuthorFeedItem[] = response.data.feed.map((entry) => {
+      const post = entry.post as any
+      const record = post.record as any
+      const isRepost = entry.reason?.$type === 'app.bsky.feed.defs#reasonRepost'
+
+      // Extract external embed if present
+      let embed: AuthorFeedItem['embed']
+      const embedData = post.embed
+      if (embedData?.$type === 'app.bsky.embed.external#view') {
+        const ext = embedData.external
+        embed = {
+          uri: ext?.uri,
+          title: ext?.title,
+          description: ext?.description,
+          thumbUrl: ext?.thumb,
+        }
+      }
+
+      return {
+        uri: post.uri,
+        cid: post.cid,
+        text: record?.text ?? '',
+        createdAt: record?.createdAt ?? post.indexedAt,
+        indexedAt: post.indexedAt,
+        likeCount: post.likeCount ?? 0,
+        repostCount: post.repostCount ?? 0,
+        replyCount: post.replyCount ?? 0,
+        quoteCount: post.quoteCount ?? 0,
+        isRepost,
+        embed,
+      }
+    })
+
+    log.info({ itemCount: items.length, cursor: response.data.cursor ?? null }, 'fetched Bluesky author feed')
+    return { items, cursor: response.data.cursor }
+  })
+}
+
 /**
  * Check if Bluesky is configured (credentials present).
  */
