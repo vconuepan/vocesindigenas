@@ -69,7 +69,7 @@ export async function fetchStoriesForEmbedding(
   const rows = await prisma.$queryRaw<RawStoryRow[]>`
     SELECT id, title, title_label, summary, embedding_content_hash
     FROM stories
-    WHERE id IN (${Prisma.join(storyIds)}) AND status = ${statusFilter}
+    WHERE id IN (${Prisma.join(storyIds)}) AND status = ${statusFilter}::"StoryStatus"
   `
   return rows.map(mapRow)
 }
