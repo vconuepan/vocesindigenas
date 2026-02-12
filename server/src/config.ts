@@ -147,7 +147,7 @@ export const config = {
     serviceUrl: process.env.BLUESKY_SERVICE_URL || 'https://bsky.social',
     autoPost: {
       enabled: process.env.BLUESKY_AUTO_POST_ENABLED === 'true',
-      lookbackHours: parseInt(process.env.BLUESKY_LOOKBACK_HOURS || '12', 10),
+      lookbackHours: parseInt(process.env.BLUESKY_LOOKBACK_HOURS || '25', 10),
     },
     metrics: {
       maxAgeDays: parseInt(process.env.BLUESKY_METRICS_MAX_AGE_DAYS || '30', 10),
