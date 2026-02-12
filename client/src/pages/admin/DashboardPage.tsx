@@ -98,9 +98,13 @@ export default function DashboardPage() {
                       </td>
                       <td className="py-2 px-4 text-neutral-500 max-w-xs truncate hidden sm:table-cell">
                         {job.lastError ? (
-                          <span className="text-red-600" title={job.lastError}>
-                            {job.lastError.slice(0, 80)}
-                          </span>
+                          <a
+                            href="/admin/jobs"
+                            className="text-red-600 hover:text-red-800"
+                            title={job.lastError}
+                          >
+                            {job.lastError.slice(0, 80)}{job.lastError.length > 80 ? '...' : ''}
+                          </a>
                         ) : '—'}
                       </td>
                       <td className="py-2 px-4 text-right">

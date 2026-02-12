@@ -67,7 +67,7 @@ function JobEditPanel({ job, onClose }: { job: JobRun; onClose: () => void }) {
         {job.lastError && (
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">Last Error</label>
-            <p className="text-sm text-red-600 whitespace-pre-wrap break-words">{job.lastError}</p>
+            <pre className="text-xs text-red-600 whitespace-pre-wrap break-words bg-red-50 rounded p-3 border border-red-200 max-h-64 overflow-y-auto font-mono">{job.lastError}</pre>
           </div>
         )}
       </div>
@@ -142,7 +142,13 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 <td className="px-3 py-2 text-neutral-500 whitespace-nowrap hidden lg:table-cell"><TimeWithRelative dateStr={job.lastCompletedAt} /></td>
                 <td className="px-3 py-2 max-w-[200px] hidden lg:table-cell">
                   {job.lastError ? (
-                    <span className="text-red-600 text-xs">{job.lastError.slice(0, 60)}...</span>
+                    <button
+                      onClick={() => setSelectedJob(job.jobName)}
+                      className="text-left text-red-600 text-xs hover:text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                      title="Click to view full error"
+                    >
+                      {job.lastError.slice(0, 60)}{job.lastError.length > 60 ? '...' : ''}
+                    </button>
                   ) : (
                     <span className="text-neutral-400">—</span>
                   )}

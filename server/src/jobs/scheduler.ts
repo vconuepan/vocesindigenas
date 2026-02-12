@@ -106,7 +106,12 @@ async function runJob(jobName: string, handler: () => Promise<void>): Promise<vo
     })
     log.info({ jobName }, 'completed')
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
+    let errorMsg = err instanceof Error ? err.message : String(err)
+    // Prisma errors include additional details in meta (e.g. raw query DB error code/message)
+    if (err && typeof err === 'object' && 'code' in err && 'meta' in err) {
+      const pe = err as { code: string; meta?: Record<string, unknown> }
+      if (pe.meta) errorMsg += ` | Prisma ${pe.code}: ${JSON.stringify(pe.meta)}`
+    }
     log.error({ jobName, err }, 'job failed')
     await prisma.jobRun.update({
       where: { jobName },
