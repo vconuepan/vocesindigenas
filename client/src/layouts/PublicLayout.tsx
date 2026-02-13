@@ -49,6 +49,38 @@ const FOOTER_LEGAL = [
   { label: "No tracking", href: "/no-ads-no-tracking" },
 ];
 
+function BrandLogo({ onClick }: { onClick?: () => void }) {
+  return (
+    <Link to="/" onClick={onClick} className="flex flex-col items-center shrink-0">
+      <picture>
+        <source
+          srcSet="/images/optimized/logo-text-horizontal-small-h.webp"
+          type="image/webp"
+        />
+        <img
+          src="/images/logo-text-horizontal.png"
+          alt="Actually Relevant"
+          className="h-14 md:h-16 aspect-[5/2]"
+        />
+      </picture>
+      <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
+        {BRAND.claim.replace(/\.$/, "")}
+      </span>
+    </Link>
+  );
+}
+
+function CategoryColorStrip({ className }: { className?: string }) {
+  return (
+    <div className={`flex h-1 ${className ?? ""}`} aria-hidden="true">
+      <div className="flex-1 bg-amber-400" />
+      <div className="flex-1 bg-teal-400" />
+      <div className="flex-1 bg-red-400" />
+      <div className="flex-1 bg-indigo-400" />
+    </div>
+  );
+}
+
 function NewsletterIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -202,22 +234,7 @@ function PublicLayoutInner() {
         <div className="bg-white border-b border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-start justify-center relative">
             {/* Logo */}
-            <Link to="/" className="flex flex-col items-center shrink-0">
-              <picture>
-                <source
-                  srcSet="/images/optimized/logo-text-horizontal-small-h.webp"
-                  type="image/webp"
-                />
-                <img
-                  src="/images/logo-text-horizontal.png"
-                  alt="Actually Relevant"
-                  className="h-14 md:h-16 aspect-[5/2]"
-                />
-              </picture>
-              <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
-                {BRAND.claim.replace(/\.$/, "")}
-              </span>
-            </Link>
+            <BrandLogo />
 
             {/* Desktop: Mood Dial — vertically centered on logo (top matches py-4, h matches logo h-16) */}
             <div className="hidden lg:flex items-center absolute left-12 top-4 h-16">
@@ -350,15 +367,27 @@ function PublicLayoutInner() {
         <dialog
           ref={menuDialogRef}
           id="mobile-nav-menu"
-          className="lg:hidden fixed top-0 left-0 w-full m-0 p-0 bg-transparent backdrop:bg-black/30 open:flex flex-col"
+          className="lg:hidden fixed top-0 left-0 w-full h-[100dvh] max-w-none max-h-none m-0 p-0 bg-transparent backdrop:bg-transparent overflow-hidden open:flex open:flex-col"
           aria-label="Mobile navigation"
-          onClick={(e) => {
-            // Close on backdrop click (click on dialog element itself)
-            if (e.target === e.currentTarget) setMenuOpen(false);
-          }}
         >
-          {/* Spacer to push menu below the header */}
-          <div className="h-[calc(3.5rem+1px+0.25rem)] md:h-[calc(4rem+1px+0.25rem)] shrink-0 pointer-events-none" aria-hidden="true" />
+          {/* Dialog header: logo + close + color strip */}
+          <div className="bg-white">
+            <div className="border-b border-neutral-100 px-4 py-3 md:py-4 flex items-start justify-center relative">
+              <BrandLogo onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-4 top-3 md:top-4 h-14 md:h-16 flex items-center">
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
+                  aria-label="Close menu"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <CategoryColorStrip />
+          </div>
           <div className="bg-white border-b border-neutral-200 shadow-lg">
             <nav className="px-4 py-3">
               {/* Mood Dial — centered */}
@@ -434,6 +463,12 @@ function PublicLayoutInner() {
               </div>
             </nav>
           </div>
+          {/* Tap-to-close area below menu */}
+          <div
+            className="flex-1 bg-black/40"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
         </dialog>
 
         {/* Search bar */}
@@ -495,12 +530,7 @@ function PublicLayoutInner() {
       </header>
 
       {/* Category color strip — mobile only */}
-      <div className="flex h-1 lg:hidden" aria-hidden="true">
-        <div className="flex-1 bg-amber-400" />
-        <div className="flex-1 bg-teal-400" />
-        <div className="flex-1 bg-red-400" />
-        <div className="flex-1 bg-indigo-400" />
-      </div>
+      <CategoryColorStrip className="lg:hidden" />
 
       <main id="main-content" className="flex-1">
         <Outlet />
@@ -526,12 +556,7 @@ function PublicLayoutInner() {
       {/* Footer */}
       <footer className="bg-neutral-900 text-neutral-300">
         {/* Category color strip */}
-        <div className="flex h-1" aria-hidden="true">
-          <div className="flex-1 bg-amber-400" />
-          <div className="flex-1 bg-teal-400" />
-          <div className="flex-1 bg-red-400" />
-          <div className="flex-1 bg-indigo-400" />
-        </div>
+        <CategoryColorStrip />
 
         <div className="max-w-5xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 md:gap-10">
