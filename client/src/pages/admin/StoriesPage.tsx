@@ -23,6 +23,8 @@ import { CrawlUrlForm } from '../../components/admin/CrawlUrlForm'
 import { CreateClusterDialog } from '../../components/admin/CreateClusterDialog'
 import { BlueskyDraftPanel } from '../../components/admin/BlueskyDraftPanel'
 import type { BlueskyDraft } from '../../components/admin/BlueskyDraftPanel'
+import { MastodonDraftPanel } from '../../components/admin/MastodonDraftPanel'
+import type { MastodonDraft } from '../../components/admin/MastodonDraftPanel'
 import { useToast } from '../../components/ui/Toast'
 
 const DEFAULT_PAGE_SIZE = 25
@@ -71,6 +73,9 @@ export default function StoriesPage() {
   const [blueskyDraft, setBlueskyDraft] = useState<BlueskyDraft | null>(null)
   const [blueskyPanelOpen, setBlueskyPanelOpen] = useState(false)
   const [blueskyPublishing, setBlueskyPublishing] = useState(false)
+  const [mastodonDraft, setMastodonDraft] = useState<MastodonDraft | null>(null)
+  const [mastodonPanelOpen, setMastodonPanelOpen] = useState(false)
+  const [mastodonPublishing, setMastodonPublishing] = useState(false)
 
   const bulkUpdate = useBulkUpdateStatus()
   const deleteStory = useDeleteStory()
@@ -204,6 +209,32 @@ export default function StoriesPage() {
           setBlueskyPanelOpen(false)
         })
       return
+    } else if (action === 'mastodon-post') {
+      // Single story: generate draft and open panel
+      setMastodonPanelOpen(true)
+      setMastodonDraft(null)
+      adminApi.mastodon.generateDraft(ids[0])
+        .then((draft) => {
+          setMastodonDraft(draft as MastodonDraft)
+        })
+        .catch((err) => {
+          toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+          setMastodonPanelOpen(false)
+        })
+      return
+    } else if (action === 'mastodon-pick') {
+      // Multiple stories: pick best and generate draft
+      setMastodonPanelOpen(true)
+      setMastodonDraft(null)
+      adminApi.mastodon.pickAndDraft(ids)
+        .then((result) => {
+          setMastodonDraft(result as MastodonDraft)
+        })
+        .catch((err) => {
+          toast('error', err instanceof Error ? err.message : 'Failed to pick and draft')
+          setMastodonPanelOpen(false)
+        })
+      return
     } else if (action === 'create-cluster') {
       setClusterDialogOpen(true)
       return
@@ -315,6 +346,41 @@ export default function StoriesPage() {
     }
   }
 
+  const handleMastodonPublish = async (postId: string) => {
+    setMastodonPublishing(true)
+    try {
+      await adminApi.mastodon.publishPost(postId)
+      toast('success', 'Posted to Mastodon')
+      setMastodonPanelOpen(false)
+      setMastodonDraft(null)
+      setSelectedIds(new Set())
+      queryClient.invalidateQueries({ queryKey: ['stories'] })
+      queryClient.invalidateQueries({ queryKey: ['story'] })
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to publish')
+    } finally {
+      setMastodonPublishing(false)
+    }
+  }
+
+  const handleMastodonUpdate = async (postId: string, text: string) => {
+    try {
+      await adminApi.mastodon.updateDraft(postId, text)
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to save draft')
+      throw err
+    }
+  }
+
+  const handleMastodonDelete = async (postId: string) => {
+    try {
+      await adminApi.mastodon.deletePost(postId)
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to delete draft')
+      throw err
+    }
+  }
+
   const confirmLoading = bulkUpdate.isPending || deleteStory.isPending
 
   return (
@@ -384,6 +450,7 @@ export default function StoriesPage() {
         allHaveRelevance={selectedIds.size > 0 && stories.filter(s => selectedIds.has(s.id)).every(s => s.relevance != null)}
         allPublished={selectedIds.size > 0 && stories.filter(s => selectedIds.has(s.id)).every(s => s.status === 'published')}
         singleHasBlueskyPost={selectedIds.size === 1 && stories.some(s => selectedIds.has(s.id) && (s._count?.blueskyPosts ?? 0) > 0)}
+        singleHasMastodonPost={selectedIds.size === 1 && stories.some(s => selectedIds.has(s.id) && (s._count?.mastodonPosts ?? 0) > 0)}
       />
 
       <StoryDetail
@@ -398,6 +465,16 @@ export default function StoriesPage() {
             .catch((err) => {
               toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
               setBlueskyPanelOpen(false)
+            })
+        }}
+        onMastodonGenerate={(storyId) => {
+          setMastodonPanelOpen(true)
+          setMastodonDraft(null)
+          adminApi.mastodon.generateDraft(storyId)
+            .then((draft) => setMastodonDraft(draft as MastodonDraft))
+            .catch((err) => {
+              toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+              setMastodonPanelOpen(false)
             })
         }}
       />
@@ -422,6 +499,19 @@ export default function StoriesPage() {
         onUpdate={handleBlueskyUpdate}
         onDelete={handleBlueskyDelete}
         publishing={blueskyPublishing}
+      />
+
+      <MastodonDraftPanel
+        open={mastodonPanelOpen}
+        onClose={() => {
+          setMastodonPanelOpen(false)
+          setMastodonDraft(null)
+        }}
+        draft={mastodonDraft}
+        onPublish={handleMastodonPublish}
+        onUpdate={handleMastodonUpdate}
+        onDelete={handleMastodonDelete}
+        publishing={mastodonPublishing}
       />
 
       <ConfirmDialog

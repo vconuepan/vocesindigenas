@@ -165,6 +165,9 @@ export function StoryTable({
                     {(story._count?.blueskyPosts ?? 0) > 0 && (
                       <ChatBubbleLeftRightIcon className="h-4 w-4 shrink-0 text-blue-500" aria-label="Posted to Bluesky" title="Posted to Bluesky" />
                     )}
+                    {(story._count?.mastodonPosts ?? 0) > 0 && (
+                      <GlobeAltIcon className="h-4 w-4 shrink-0 text-purple-500" aria-label="Posted to Mastodon" title="Posted to Mastodon" />
+                    )}
                   </div>
                   {/* Mobile metadata */}
                   <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">

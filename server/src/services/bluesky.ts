@@ -302,7 +302,7 @@ export async function publishPost(postId: string) {
   if (post.status !== 'draft') throw new Error('Can only publish draft posts')
 
   const story = post.story
-  const storyUrl = `${config.bluesky.siteBaseUrl}/stories/${story.slug}`
+  const storyUrl = `${config.siteUrl}/stories/${story.slug}`
   const publisherName = story.feed.displayTitle || story.feed.title
   const publisherUrl = story.sourceUrl
 
@@ -315,7 +315,7 @@ export async function publishPost(postId: string) {
   }
 
   // Use og:image from our site if available
-  const ogImageUrl = `${config.bluesky.siteBaseUrl}/og-image.png`
+  const ogImageUrl = `${config.siteUrl}/og-image.png`
   linkCard.thumbUrl = ogImageUrl
 
   try {

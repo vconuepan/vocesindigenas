@@ -23,8 +23,9 @@ export const JOB_NAMES: JobName[] = [
   'assess_stories',
   'select_stories',
   'publish_stories',
-  'bluesky_auto_post',
+  'social_auto_post',
   'bluesky_update_metrics',
+  'mastodon_update_metrics',
   'generate_newsletter',
 ]
 

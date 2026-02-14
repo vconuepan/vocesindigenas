@@ -3,18 +3,20 @@ import { Button } from '../ui/Button'
 
 interface BulkActionsBarProps {
   count: number
-  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | 'create-cluster' | 'bluesky-post' | 'bluesky-pick' | StoryStatus) => void
+  onAction: (action: 'preassess' | 'reclassify' | 'assess' | 'select' | 'create-cluster' | 'bluesky-post' | 'bluesky-pick' | 'mastodon-post' | 'mastodon-pick' | StoryStatus) => void
   loading?: boolean
   allHaveRelevance?: boolean
   allPublished?: boolean
   /** When exactly one story is selected, whether it already has a Bluesky post */
   singleHasBlueskyPost?: boolean
+  /** When exactly one story is selected, whether it already has a Mastodon post */
+  singleHasMastodonPost?: boolean
 }
 
 const RELEVANCE_TOOLTIP = 'All stories must have a relevance rating'
 const SELECT_MIN_TOOLTIP = 'Select at least 2 stories to compare'
 
-export function BulkActionsBar({ count, onAction, loading, allHaveRelevance, allPublished, singleHasBlueskyPost }: BulkActionsBarProps) {
+export function BulkActionsBar({ count, onAction, loading, allHaveRelevance, allPublished, singleHasBlueskyPost, singleHasMastodonPost }: BulkActionsBarProps) {
   if (count === 0) return null
 
   const needsRelevance = !allHaveRelevance
@@ -71,6 +73,16 @@ export function BulkActionsBar({ count, onAction, loading, allHaveRelevance, all
             disabled={loading || !allPublished || (count === 1 && singleHasBlueskyPost)}
           >
             {count === 1 ? 'Post to Bluesky' : 'Pick Best for Bluesky'}
+          </Button>
+        </span>
+        <span title={!allPublished ? 'All stories must be published' : (count === 1 && singleHasMastodonPost) ? 'Story already has a Mastodon post' : undefined}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onAction(count === 1 ? 'mastodon-post' : 'mastodon-pick')}
+            disabled={loading || !allPublished || (count === 1 && singleHasMastodonPost)}
+          >
+            {count === 1 ? 'Post to Mastodon' : 'Pick Best for Mastodon'}
           </Button>
         </span>
       </div>

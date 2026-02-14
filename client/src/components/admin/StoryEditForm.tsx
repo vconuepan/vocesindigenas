@@ -18,6 +18,7 @@ interface StoryEditFormProps {
   issues: Issue[]
   onDone: () => void
   onBlueskyGenerate?: (storyId: string) => void
+  onMastodonGenerate?: (storyId: string) => void
   variant?: 'page' | 'panel'
 }
 
@@ -42,7 +43,7 @@ function buildFormState(story: Story) {
   }
 }
 
-export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, variant = 'page' }: StoryEditFormProps) {
+export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMastodonGenerate, variant = 'page' }: StoryEditFormProps) {
   const [contentExpanded, setContentExpanded] = useState(false)
   const [confirmDissolve, setConfirmDissolve] = useState(false)
   const updateStory = useUpdateStory()
@@ -247,7 +248,22 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, varian
         <div className="border-t border-neutral-200 pt-4">
           <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Bluesky</h3>
           {(story._count?.blueskyPosts ?? 0) > 0 ? (
-            <p className="text-sm text-neutral-500">This story has been posted to Bluesky.</p>
+            <p className="text-sm text-neutral-500">
+              This story has been posted to Bluesky.
+              {story.blueskyPosts?.[0]?.postUri && (() => {
+                const match = story.blueskyPosts![0].postUri!.match(/^at:\/\/(did:[^/]+)\/app\.bsky\.feed\.post\/(.+)$/)
+                if (!match) return null
+                const url = `https://bsky.app/profile/${match[1]}/post/${match[2]}`
+                return (
+                  <>
+                    {' '}
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                      View post
+                    </a>
+                  </>
+                )
+              })()}
+            </p>
           ) : (
             <Button
               type="button"
@@ -255,6 +271,34 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, varian
               onClick={() => onBlueskyGenerate(story.id)}
             >
               Generate Bluesky Post
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Mastodon */}
+      {onMastodonGenerate && story.status === 'published' && (
+        <div className="border-t border-neutral-200 pt-4">
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Mastodon</h3>
+          {(story._count?.mastodonPosts ?? 0) > 0 ? (
+            <p className="text-sm text-neutral-500">
+              This story has been posted to Mastodon.
+              {story.mastodonPosts?.[0]?.statusUrl && (
+                <>
+                  {' '}
+                  <a href={story.mastodonPosts[0].statusUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                    View post
+                  </a>
+                </>
+              )}
+            </p>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onMastodonGenerate(story.id)}
+            >
+              Generate Mastodon Post
             </Button>
           )}
         </div>

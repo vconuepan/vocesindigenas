@@ -12,7 +12,7 @@ const log = createLogger('feed')
 const feedCache = new TTLCache<string>(config.feed.cacheMaxAge * 1000)
 
 function getSiteUrl(): string {
-  return process.env.FRONTEND_URL || 'https://actuallyrelevant.com'
+  return config.siteUrl
 }
 
 function buildFeed(options: { title: string; description: string; feedPath: string }) {

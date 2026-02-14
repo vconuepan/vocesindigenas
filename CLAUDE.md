@@ -2,6 +2,8 @@
 
 AI-curated news platform that evaluates article relevance to humanity using LLM analysis. Crawls news sources, assesses relevance, and publishes curated content.
 
+**Live site:** https://actuallyrelevant.news
+
 ## Implementation Workflow
 
 **IMPORTANT**: Unless specified otherwise, follow the process outlined in the `/workflow` skill.
@@ -249,3 +251,4 @@ The `pm/` directory contains a separate git repo for project management — mark
 - **`.context/database-migrations.md`** — **MANDATORY:** Never use `npx prisma` directly (skips `.env`), never use `--no-engine` on generate (breaks all queries), never run `prisma migrate dev` (DLL locks), and never run `db:generate` without asking the user to stop their dev server first (DLL lock); always use `npm run db:*` scripts with `--prefix server`. Covers the full SQL-first migration workflow, allowed/banned command tables, and troubleshooting for advisory locks, failed migrations, and schema drift.
 - **`client/.context/skeletons.md`** — All components loading data dynamically must show skeletons while loading to prevent CLS; use `isLoading` from TanStack Query hooks. Covers available skeleton components, creation guidelines, usage patterns, and design principles.
 - **`.context/bluesky.md`** — Bluesky integration uses app password auth (`BLUESKY_HANDLE` + `BLUESKY_APP_PASSWORD`) with `@atproto/api`; posts include LLM-generated text, an Actually Relevant link card, and an inline source link. Covers authentication, post format, manual/automatic flows, rate limits, LLM prompts, API endpoints, database schema, configuration, and all file locations.
+- **`.context/mastodon.md`** — Mastodon integration uses static access token auth (`MASTODON_URL` + `MASTODON_TOKEN`) with the `masto` package; shares story-picking logic with Bluesky via `socialMedia.ts` but has separate text generation (500-char limit, hashtags allowed, URL in text). Covers authentication setup, post format, shared social media patterns, manual/automatic flows, the unified `social_auto_post` job, configuration, API endpoints, and all file locations.

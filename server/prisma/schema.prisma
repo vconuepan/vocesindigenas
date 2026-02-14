@@ -88,6 +88,7 @@ model Story {
   cluster                StoryCluster? @relation("ClusterMember", fields: [clusterId], references: [id])
   primaryOfCluster       StoryCluster? @relation("ClusterPrimary")
   blueskyPosts           BlueskyPost[]
+  mastodonPosts          MastodonPost[]
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -257,6 +258,31 @@ model BlueskyPost {
   @@index([status])
   @@index([publishedAt])
   @@map("bluesky_posts")
+}
+
+// --- Mastodon Tables ---
+
+model MastodonPost {
+  id               String    @id @default(uuid())
+  storyId          String    @map("story_id")
+  story            Story     @relation(fields: [storyId], references: [id])
+  statusId         String?   @unique @map("status_id")
+  statusUrl        String?   @map("status_url")
+  status           String    @default("draft") // draft | published | failed
+  postText         String    @map("post_text")
+  error            String?
+  publishedAt      DateTime? @map("published_at")
+  favouriteCount   Int       @default(0) @map("favourite_count")
+  boostCount       Int       @default(0) @map("boost_count")
+  replyCount       Int       @default(0) @map("reply_count")
+  metricsUpdatedAt DateTime? @map("metrics_updated_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([storyId])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("mastodon_posts")
 }
 
 // --- Subscription Tables ---

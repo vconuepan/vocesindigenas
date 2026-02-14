@@ -42,8 +42,9 @@ export type JobName =
   | 'assess_stories'
   | 'select_stories'
   | 'publish_stories'
-  | 'bluesky_auto_post'
+  | 'social_auto_post'
   | 'bluesky_update_metrics'
+  | 'mastodon_update_metrics'
   | 'generate_newsletter'
 
 export type JobStatus = 'idle' | 'running' | 'failed'
@@ -97,7 +98,9 @@ export interface Story {
     _count: { stories: number }
     stories: { id: string; title: string | null; sourceTitle: string; status: StoryStatus }[]
   } | null
-  _count?: { blueskyPosts: number }
+  _count?: { blueskyPosts: number; mastodonPosts: number }
+  blueskyPosts?: { postUri: string | null }[]
+  mastodonPosts?: { statusUrl: string | null }[]
 }
 
 export interface PublicStory extends Story {
@@ -280,6 +283,64 @@ export interface BlueskyFeedResponse {
   feed: BlueskyFeedItem[]
   cursor?: string
   dbOnlyPosts: BlueskyDbOnlyPost[]
+}
+
+// --- Mastodon Types ---
+
+export type MastodonPostStatus = 'draft' | 'published' | 'failed'
+
+export interface MastodonPost {
+  id: string
+  storyId: string
+  postText: string
+  statusId: string | null
+  statusUrl: string | null
+  status: MastodonPostStatus
+  error: string | null
+  publishedAt: string | null
+  favouriteCount: number
+  boostCount: number
+  replyCount: number
+  metricsUpdatedAt: string | null
+  createdAt: string
+  updatedAt: string
+  story?: Story
+  pickReasoning?: string
+}
+
+/** A single item in the merged Mastodon feed (API + DB cross-reference). */
+export interface MastodonFeedItem {
+  id: string
+  url: string
+  text: string
+  createdAt: string
+  favouriteCount: number
+  boostCount: number
+  replyCount: number
+  isReblog: boolean
+  trackedPostId: string | null
+  storyTitle: string | null
+  storySlug: string | null
+  issueName: string | null
+  dbStatus: MastodonPostStatus | null
+}
+
+/** A draft/failed DB-only post not yet on Mastodon. */
+export interface MastodonDbOnlyPost {
+  id: string
+  postText: string
+  status: string
+  error: string | null
+  createdAt: string
+  storyTitle: string | null
+  storySlug: string | null
+  issueName: string | null
+}
+
+export interface MastodonFeedResponse {
+  feed: MastodonFeedItem[]
+  nextMaxId?: string
+  dbOnlyPosts: MastodonDbOnlyPost[]
 }
 
 export interface StoryCluster {

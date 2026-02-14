@@ -16,6 +16,8 @@ import type {
   TaskState,
   BlueskyPost,
   BlueskyFeedResponse,
+  MastodonPost,
+  MastodonFeedResponse,
 } from '@shared/types'
 
 export interface FeedQualityMetrics {
@@ -352,6 +354,27 @@ export const adminApi = {
       request<{ success: boolean }>('/bluesky/metrics/refresh', { method: 'POST' }),
     getFeed: (params?: { cursor?: string; limit?: number }) =>
       request<BlueskyFeedResponse>(`/bluesky/feed${toQueryString((params || {}) as Record<string, unknown>)}`),
+  },
+
+  // Mastodon
+  mastodon: {
+    listPosts: (params?: { status?: string; page?: number; limit?: number }) =>
+      request<{ posts: MastodonPost[]; total: number; page: number; limit: number }>(`/mastodon/posts${toQueryString((params || {}) as Record<string, unknown>)}`),
+    getPost: (id: string) => request<MastodonPost>(`/mastodon/posts/${id}`),
+    generateDraft: (storyId: string) =>
+      request<MastodonPost>('/mastodon/posts/generate', { method: 'POST', body: JSON.stringify({ storyId }) }),
+    pickAndDraft: (storyIds: string[]) =>
+      request<MastodonPost>('/mastodon/posts/pick-and-draft', { method: 'POST', body: JSON.stringify({ storyIds }) }),
+    updateDraft: (id: string, postText: string) =>
+      request<MastodonPost>(`/mastodon/posts/${id}`, { method: 'PUT', body: JSON.stringify({ postText }) }),
+    publishPost: (id: string) =>
+      request<MastodonPost>(`/mastodon/posts/${id}/publish`, { method: 'POST' }),
+    deletePost: (id: string) =>
+      request<void>(`/mastodon/posts/${id}`, { method: 'DELETE' }),
+    refreshMetrics: () =>
+      request<{ success: boolean }>('/mastodon/metrics/refresh', { method: 'POST' }),
+    getFeed: (params?: { maxId?: string; limit?: number }) =>
+      request<MastodonFeedResponse>(`/mastodon/feed${toQueryString((params || {}) as Record<string, unknown>)}`),
   },
 
   // Users

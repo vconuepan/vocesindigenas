@@ -1,4 +1,6 @@
 export const config = {
+  /** Canonical public URL for the site — used in social media posts, RSS feeds, sitemaps, etc. */
+  siteUrl: process.env.SITE_URL || 'https://actuallyrelevant.news',
   llm: {
     models: {
       small: {
@@ -152,9 +154,26 @@ export const config = {
     metrics: {
       maxAgeDays: parseInt(process.env.BLUESKY_METRICS_MAX_AGE_DAYS || '30', 10),
     },
-    siteBaseUrl: process.env.SITE_BASE_URL || 'https://actuallyrelevant.com',
     postDelayMs: parseInt(process.env.BLUESKY_POST_DELAY_MS || '2000', 10),
     postModelTier: 'medium' as const,
+    pickModelTier: 'medium' as const,
+  },
+  mastodon: {
+    instanceUrl: process.env.MASTODON_URL || '',
+    accessToken: process.env.MASTODON_TOKEN || '',
+    autoPost: {
+      enabled: process.env.MASTODON_AUTO_POST_ENABLED === 'true',
+    },
+    metrics: {
+      maxAgeDays: parseInt(process.env.MASTODON_METRICS_MAX_AGE_DAYS || '30', 10),
+    },
+    postDelayMs: parseInt(process.env.MASTODON_POST_DELAY_MS || '2000', 10),
+    postModelTier: 'medium' as const,
+    visibility: (process.env.MASTODON_VISIBILITY || 'unlisted') as 'public' | 'unlisted' | 'private',
+    charLimit: parseInt(process.env.MASTODON_CHAR_LIMIT || '500', 10),
+  },
+  socialAutoPost: {
+    lookbackHours: parseInt(process.env.SOCIAL_LOOKBACK_HOURS || process.env.BLUESKY_LOOKBACK_HOURS || '25', 10),
     pickModelTier: 'medium' as const,
   },
 } as const;

@@ -6,6 +6,11 @@ import { pickBestStory, generateDraft, publishPost } from '../services/bluesky.j
 
 const log = createLogger('bluesky_auto_post')
 
+/**
+ * Legacy Bluesky-only auto-post job.
+ * NOTE: If social_auto_post is enabled, disable this job to avoid double-posting.
+ * The unified social_auto_post job handles both Bluesky and Mastodon.
+ */
 export async function runBlueskyAutoPost(): Promise<void> {
   log.info('starting Bluesky auto-post job')
 

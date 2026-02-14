@@ -44,6 +44,7 @@ const JobsPage = lazy(() => import('./pages/admin/JobsPage'))
 const UsersPage = lazy(() => import('./pages/admin/UsersPage'))
 const ClustersPage = lazy(() => import('./pages/admin/ClustersPage'))
 const BlueskyPage = lazy(() => import('./pages/admin/BlueskyPage'))
+const MastodonPage = lazy(() => import('./pages/admin/MastodonPage'))
 
 /** Preload the admin layout and dashboard chunks (call from LoginPage). */
 export function preloadAdminChunks() {
@@ -146,6 +147,7 @@ export default function App() {
         <Route path="jobs" element={<JobsPage />} />
         <Route path="clusters" element={<ClustersPage />} />
         <Route path="bluesky" element={<BlueskyPage />} />
+        <Route path="mastodon" element={<MastodonPage />} />
         <Route path="users" element={<UsersPage />} />
       </Route>
 

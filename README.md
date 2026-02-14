@@ -90,7 +90,7 @@ The build generates the Prisma client, applies any pending database migrations, 
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | Internal PostgreSQL connection string from step 1 |
 | `OPENAI_API_KEY` | Yes | OpenAI API key for LLM analysis |
-| `FRONTEND_URL` | Yes | Frontend URL for CORS (e.g. `https://actuallyrelevant.com`) |
+| `FRONTEND_URL` | Yes | Frontend URL for CORS (e.g. `https://actuallyrelevant.news`) |
 | `JWT_SECRET` | Yes | Random string (32+ chars) for signing auth tokens |
 | `NODE_ENV` | Yes | Set to `production` (enables secure cross-origin cookies) |
 | `PORT` | No | Render sets this automatically (defaults to 10000) |
@@ -129,7 +129,7 @@ The sitemap rewrite proxies requests to the backend, which generates the sitemap
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | Yes | Backend URL (e.g. `https://api.actuallyrelevant.com`) |
+| `VITE_API_URL` | Yes | Backend URL (e.g. `https://api.actuallyrelevant.news`) |
 
 ### Post-deploy Steps
 

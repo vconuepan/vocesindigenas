@@ -49,12 +49,11 @@ Bluesky does **not** auto-fetch og: metadata from URLs. The link card (title, de
 
 ### Automated: Cron Job
 
-The `bluesky_auto_post` job runs twice daily (default `0 9,18 * * *`, disabled by default):
+The unified `social_auto_post` job handles auto-posting for all channels (see `.context/mastodon.md` for the shared flow). For Bluesky specifically:
 
-1. Finds stories published in the last N hours (`BLUESKY_LOOKBACK_HOURS`, default 12)
-2. Excludes stories that already have a published BlueskyPost
-3. Uses LLM to pick the best candidate
-4. Generates post text and publishes automatically (no human review)
+1. Checks `BLUESKY_AUTO_POST_ENABLED` — skips if disabled
+2. Generates Bluesky-specific post text for the picked story
+3. Publishes with link card embed
 
 ### Metrics Polling
 
@@ -82,7 +81,9 @@ Bluesky uses a points-based system: 5,000 points/hour, 35,000 points/day. Posts 
 
 ## Configuration
 
-All settings in `server/src/config.ts` under `config.bluesky`:
+Story URLs in posts use the top-level `config.siteUrl` (`SITE_URL` env var, defaults to `https://actuallyrelevant.news`).
+
+Channel-specific settings in `server/src/config.ts` under `config.bluesky`:
 
 | Setting | Env Var | Default | Description |
 |---------|---------|---------|-------------|
@@ -92,7 +93,6 @@ All settings in `server/src/config.ts` under `config.bluesky`:
 | `autoPost.enabled` | `BLUESKY_AUTO_POST_ENABLED` | `false` | Enable auto-post job |
 | `autoPost.lookbackHours` | `BLUESKY_LOOKBACK_HOURS` | `12` | Hours to look back for candidates |
 | `metrics.maxAgeDays` | `BLUESKY_METRICS_MAX_AGE_DAYS` | `30` | Only poll metrics for recent posts |
-| `siteBaseUrl` | `SITE_BASE_URL` | `https://actuallyrelevant.com` | Base URL for story link cards |
 | `postDelayMs` | `BLUESKY_POST_DELAY_MS` | `2000` | Delay between consecutive posts |
 | `postModelTier` | — | `medium` | LLM model tier for post text generation |
 | `pickModelTier` | — | `medium` | LLM model tier for story picking |
@@ -147,7 +147,8 @@ Both use the `medium` model tier (configured separately as `postModelTier` and `
 | `server/src/schemas/bluesky.ts` | Zod schemas for LLM output and API validation |
 | `server/src/prompts/bluesky.ts` | LLM prompt builders |
 | `server/src/routes/admin/bluesky.ts` | Admin API routes |
-| `server/src/jobs/blueskyAutoPost.ts` | Auto-post cron job handler |
+| `server/src/jobs/blueskyAutoPost.ts` | Legacy Bluesky-only auto-post (unused; replaced by `socialAutoPost.ts`) |
+| `server/src/jobs/socialAutoPost.ts` | Unified auto-post cron job for all channels |
 | `server/src/jobs/blueskyUpdateMetrics.ts` | Metrics polling cron job handler |
 | `server/src/config.ts` | Configuration (bluesky section) |
 | `server/prisma/schema.prisma` | BlueskyPost model |

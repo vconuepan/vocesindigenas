@@ -25,8 +25,9 @@ export const JOB_DISPLAY_NAMES: Record<JobName, string> = {
   assess_stories: 'Assess Stories',
   select_stories: 'Select Stories',
   publish_stories: 'Publish Stories',
-  bluesky_auto_post: 'Bluesky Auto-Post',
+  social_auto_post: 'Social Auto-Post',
   bluesky_update_metrics: 'Bluesky Update Metrics',
+  mastodon_update_metrics: 'Mastodon Update Metrics',
   generate_newsletter: 'Generate Newsletter',
 }
 
@@ -37,8 +38,9 @@ export const JOB_PIPELINE_ORDER: JobName[] = [
   'assess_stories',
   'select_stories',
   'publish_stories',
-  'bluesky_auto_post',
+  'social_auto_post',
   'bluesky_update_metrics',
+  'mastodon_update_metrics',
   'generate_newsletter',
 ]
 

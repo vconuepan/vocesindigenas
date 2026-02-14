@@ -31,14 +31,19 @@ async function main() {
       create: { jobName: 'publish_stories', cronExpression: '0 11 * * *', enabled: false },
     }),
     prisma.jobRun.upsert({
-      where: { jobName: 'bluesky_auto_post' },
+      where: { jobName: 'social_auto_post' },
       update: {},
-      create: { jobName: 'bluesky_auto_post', cronExpression: '30 11 * * *', enabled: false },
+      create: { jobName: 'social_auto_post', cronExpression: '30 11 * * *', enabled: false },
     }),
     prisma.jobRun.upsert({
       where: { jobName: 'bluesky_update_metrics' },
       update: {},
       create: { jobName: 'bluesky_update_metrics', cronExpression: '0 */6 * * *', enabled: false },
+    }),
+    prisma.jobRun.upsert({
+      where: { jobName: 'mastodon_update_metrics' },
+      update: {},
+      create: { jobName: 'mastodon_update_metrics', cronExpression: '0 4 * * *', enabled: false },
     }),
     prisma.jobRun.upsert({
       where: { jobName: 'generate_newsletter' },

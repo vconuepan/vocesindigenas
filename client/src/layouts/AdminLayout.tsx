@@ -16,6 +16,7 @@ import {
   Square3Stack3DIcon,
   ArrowTopRightOnSquareIcon,
   ChatBubbleLeftRightIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
 import { useServerTime } from '../hooks/useJobs'
@@ -32,6 +33,7 @@ const navigation = [
   { name: 'Newsletters', href: '/admin/newsletters', icon: EnvelopeIcon },
   { name: 'Podcasts', href: '/admin/podcasts', icon: MicrophoneIcon },
   { name: 'Bluesky', href: '/admin/bluesky', icon: ChatBubbleLeftRightIcon },
+  { name: 'Mastodon', href: '/admin/mastodon', icon: GlobeAltIcon },
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
 ]

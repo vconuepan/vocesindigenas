@@ -8,9 +8,10 @@ interface StoryDetailProps {
   issues: Issue[]
   onClose: () => void
   onBlueskyGenerate?: (storyId: string) => void
+  onMastodonGenerate?: (storyId: string) => void
 }
 
-export function StoryDetail({ storyId, issues, onClose, onBlueskyGenerate }: StoryDetailProps) {
+export function StoryDetail({ storyId, issues, onClose, onBlueskyGenerate, onMastodonGenerate }: StoryDetailProps) {
   const { data: story, isLoading, error } = useStory(storyId || '')
 
   return (
@@ -21,7 +22,7 @@ export function StoryDetail({ storyId, issues, onClose, onBlueskyGenerate }: Sto
       loading={isLoading}
       error={!!error}
     >
-      {story && <StoryEditForm story={story} issues={issues} onDone={onClose} onBlueskyGenerate={onBlueskyGenerate} variant="panel" />}
+      {story && <StoryEditForm story={story} issues={issues} onDone={onClose} onBlueskyGenerate={onBlueskyGenerate} onMastodonGenerate={onMastodonGenerate} variant="panel" />}
     </EditPanel>
   )
 }

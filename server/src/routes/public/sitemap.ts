@@ -10,7 +10,7 @@ const log = createLogger('sitemap')
 export const sitemapCache = new TTLCache<string>(config.sitemap.cacheMaxAge * 1000)
 
 function getSiteUrl(): string {
-  return process.env.FRONTEND_URL || 'https://actuallyrelevant.news'
+  return config.siteUrl
 }
 
 type ChangeFreq = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
