@@ -4,6 +4,7 @@ import { config } from '../config.js'
 import { createLogger } from '../lib/logger.js'
 import { withRetry } from '../lib/retry.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
+import { summarizeError } from '../utils/errors.js'
 import { crawlLimiter } from '../lib/crawlLimiter.js'
 
 const log = createLogger('rssParser')
@@ -43,6 +44,8 @@ export async function parseFeed(feedUrl: string, cacheHeaders?: FeedCacheHeaders
         timeout: config.crawl.httpTimeoutMs,
         maxRedirects: 3,
         headers,
+        responseType: 'text',
+        maxContentLength: 5 * 1024 * 1024, // 5 MB cap to prevent OOM on huge responses
         validateStatus: (status) => status === 200 || status === 304,
       }))
     )
@@ -83,7 +86,7 @@ export async function parseFeed(feedUrl: string, cacheHeaders?: FeedCacheHeaders
       },
     }
   } catch (err) {
-    log.error({ feedUrl, err }, 'failed to parse feed')
+    log.error({ feedUrl, reason: summarizeError(err) }, 'failed to parse feed')
     return { items: [], notModified: false, cacheHeaders: {} }
   }
 }

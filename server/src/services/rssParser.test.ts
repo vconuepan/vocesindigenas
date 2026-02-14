@@ -170,4 +170,19 @@ describe('parseFeed', () => {
     expect(callHeaders['If-None-Match']).toBeUndefined()
     expect(callHeaders['If-Modified-Since']).toBeUndefined()
   })
+
+  it('passes maxContentLength and responseType to axios', async () => {
+    mockAxiosGet.mockResolvedValue(axiosResponse('<rss></rss>'))
+    mockParseString.mockResolvedValue({ items: [] })
+
+    await parseFeed('https://example.com/rss')
+
+    expect(mockAxiosGet).toHaveBeenCalledWith(
+      'https://example.com/rss',
+      expect.objectContaining({
+        maxContentLength: 5 * 1024 * 1024,
+        responseType: 'text',
+      })
+    )
+  })
 })

@@ -37,6 +37,25 @@ const transports = pino.transport({
   ],
 })
 
+/**
+ * Custom error serializer that strips bulky axios internals (request, response,
+ * config) to prevent OOM from serializing full HTML responses and socket objects.
+ */
+export function serializeError(err: any) {
+  const serialized = pino.stdSerializers.err(err)
+  if (serialized && err?.isAxiosError) {
+    return {
+      type: serialized.type,
+      message: serialized.message,
+      stack: serialized.stack,
+      code: err.code,
+      status: err.response?.status,
+      url: err.config?.url,
+    }
+  }
+  return serialized
+}
+
 export const logger = pino(
   {
     level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
@@ -44,6 +63,9 @@ export const logger = pino(
     redact: {
       paths: ['req.headers.authorization', 'req.headers.cookie'],
       censor: '[REDACTED]',
+    },
+    serializers: {
+      err: serializeError,
     },
   },
   transports,

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockAxiosGet = vi.hoisted(() => vi.fn())
 const mockAxiosPost = vi.hoisted(() => vi.fn())
 const mockReadabilityParse = vi.hoisted(() => vi.fn())
+const mockWindowClose = vi.hoisted(() => vi.fn())
 
 vi.mock('axios', () => ({
   default: {
@@ -13,7 +14,7 @@ vi.mock('axios', () => ({
 
 vi.mock('jsdom', () => ({
   JSDOM: class MockJSDOM {
-    window = { document: {} }
+    window = { document: {}, close: mockWindowClose }
   },
 }))
 
@@ -302,6 +303,68 @@ describe('Diffbot extraction', () => {
 
     const result = await extractContent('https://example.com/article')
     expect(result).toBeNull()
+  })
+})
+
+describe('JSDOM cleanup', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    delete process.env.PIPFEED_API_KEY
+    delete process.env.DIFFBOT_TOKEN
+    _resetApiState()
+  })
+
+  it('calls window.close() after successful readability extraction', async () => {
+    const html = `<html><body><p>Content</p></body></html>`
+    mockAxiosGet.mockResolvedValue({ data: html })
+    mockReadabilityParse.mockReturnValue({
+      title: 'Title',
+      textContent: LONG_TEXT,
+    })
+
+    await extractContent('https://example.com/article')
+    expect(mockWindowClose).toHaveBeenCalled()
+  })
+
+  it('calls window.close() when readability returns null', async () => {
+    const html = `<html><body><p>Short</p></body></html>`
+    mockAxiosGet.mockResolvedValue({ data: html })
+    mockReadabilityParse.mockReturnValue(null)
+
+    await extractContent('https://example.com/article')
+    expect(mockWindowClose).toHaveBeenCalled()
+  })
+
+  it('calls window.close() when readability throws', async () => {
+    const html = `<html><body><p>Content</p></body></html>`
+    mockAxiosGet.mockResolvedValue({ data: html })
+    mockReadabilityParse.mockImplementation(() => { throw new Error('parse error') })
+
+    await extractContent('https://example.com/article')
+    expect(mockWindowClose).toHaveBeenCalled()
+  })
+})
+
+describe('fetchPage limits', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    delete process.env.PIPFEED_API_KEY
+    delete process.env.DIFFBOT_TOKEN
+    _resetApiState()
+  })
+
+  it('passes maxContentLength to axios', async () => {
+    mockAxiosGet.mockResolvedValue({ data: '<html></html>' })
+    mockReadabilityParse.mockReturnValue(null)
+
+    await extractContent('https://example.com/article')
+
+    expect(mockAxiosGet).toHaveBeenCalledWith(
+      'https://example.com/article',
+      expect.objectContaining({
+        maxContentLength: 5 * 1024 * 1024,
+      })
+    )
   })
 })
 

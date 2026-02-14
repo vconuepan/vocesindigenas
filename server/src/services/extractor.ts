@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio'
 import { Readability } from '@mozilla/readability'
 import { JSDOM } from 'jsdom'
 import { isAllowedUrl } from '../utils/urlValidation.js'
+import { summarizeError } from '../utils/errors.js'
 import { config } from '../config.js'
 import { createLogger } from '../lib/logger.js'
 import { withRetry, isRetryableError } from '../lib/retry.js'
@@ -10,16 +11,6 @@ import { crawlLimiter } from '../lib/crawlLimiter.js'
 
 const log = createLogger('extractor')
 const USER_AGENT = 'ActuallyRelevant/1.0 (news curation bot; +https://actuallyrelevant.news)'
-
-function summarizeError(err: unknown): string {
-  if (err instanceof Error && 'isAxiosError' in err) {
-    const axiosErr = err as { response?: { status?: number }; code?: string; message: string }
-    if (axiosErr.response?.status) return `HTTP ${axiosErr.response.status}`
-    if (axiosErr.code) return axiosErr.code
-    return axiosErr.message
-  }
-  return err instanceof Error ? err.message : String(err)
-}
 
 function isQuotaError(err: unknown): boolean {
   if (err instanceof Error && 'isAxiosError' in err) {
@@ -131,6 +122,7 @@ async function fetchPage(url: string): Promise<string | null> {
         headers: { 'User-Agent': USER_AGENT },
         maxRedirects: 5,
         responseType: 'text',
+        maxContentLength: 5 * 1024 * 1024, // 5 MB cap to prevent OOM on huge pages
         beforeRedirect: (options: Record<string, any>) => {
           const redirectUrl = typeof options.href === 'string' ? options.href
             : `${options.protocol}//${options.hostname}${options.path}`
@@ -169,8 +161,9 @@ function extractBySelector(html: string, selector: string): ExtractionResult | n
 }
 
 function extractByReadability(html: string, url: string): ExtractionResult | null {
+  let dom: InstanceType<typeof JSDOM> | null = null
   try {
-    const dom = new JSDOM(html, { url })
+    dom = new JSDOM(html, { url })
     const article = new Readability(dom.window.document).parse()
     if (!article || !article.textContent || article.textContent.trim().length < config.crawl.minContentLength) return null
 
@@ -183,6 +176,8 @@ function extractByReadability(html: string, url: string): ExtractionResult | nul
   } catch (err) {
     log.warn({ reason: summarizeError(err) }, 'readability extraction failed')
     return null
+  } finally {
+    dom?.window.close()
   }
 }
 

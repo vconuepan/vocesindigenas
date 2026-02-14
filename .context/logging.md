@@ -29,6 +29,7 @@ log.debug({ storyId, rating }, 'pre-assessment result')
 3. **Errors** go in `{ err }` — Pino serializes stack traces automatically, no need for `err.message`
 4. **Module prefix** is set once via `createLogger('name')` — don't repeat it in messages
 5. **Numeric/ID values** go in the data object, not interpolated into the message
+6. **Axios errors**: For error sites in HTTP-heavy code (crawl, RSS), prefer `{ reason: summarizeError(err) }` over `{ err }` to avoid serializing bulky response bodies. Import `summarizeError` from `server/src/utils/errors.ts`
 
 ## Configuration
 
@@ -72,9 +73,16 @@ Two transports run in parallel via Pino's worker threads:
 | `debug` | Detailed diagnostic info (per-story results, batch details) |
 | `trace` | Extremely verbose (rarely used) |
 
+## Error Serialization
+
+A custom `serializeError` function in `logger.ts` strips bulky axios internals from all logged errors. Without this, logging an axios error via `{ err }` serializes the full HTTP response body (potentially megabytes of HTML), socket objects, TLS session cache, and circular config references, which can cause OOM during the crawl job.
+
+For axios errors, the serializer keeps only: `type`, `message`, `stack`, `code`, `status`, and `url`. Everything else (response body, request object, config) is dropped. Non-axios errors pass through the standard Pino serializer unchanged.
+
 ## File Locations
 
 - **Logger module**: `server/src/lib/logger.ts`
+- **Error summarizer**: `server/src/utils/errors.ts`
 - **HTTP middleware**: `server/src/app.ts` (pino-http)
 - **Log output**: `logs/` directory (gitignored)
 

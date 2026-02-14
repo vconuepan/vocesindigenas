@@ -42,6 +42,10 @@ When consecutive articles all fail extraction entirely (local + API both return 
 
 The crawler passes a `shouldAbort` callback (tied to the `skipAll` flag) through `extractContent()` → `extractByApi()` → `ApiThrottle.run()`. This allows in-flight extractions to bail out before making expensive API calls — even if they started before `skipAll` was set. The abort is checked at three points: before the API tier in `extractContent()`, before entering the throttle in `extractByApi()`, and after dequeuing/backoff-waiting inside `ApiThrottle.run()`. This prevents wasting 30+ seconds on API backoff waits for articles in a feed that has already been identified as failing.
 
+## Resource Limits
+
+HTTP responses from page fetches and RSS feeds are capped at 5 MB (`maxContentLength`) to prevent OOM on pathological pages. JSDOM DOM objects are explicitly released via `dom.window.close()` in a `finally` block after Readability extraction, as JSDOM windows hold timers, event listeners, and expanded DOM trees that are not reliably garbage collected without explicit cleanup.
+
 ## Crawl Flow
 
 ```
