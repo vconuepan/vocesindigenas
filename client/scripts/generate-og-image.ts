@@ -18,21 +18,22 @@ async function generateOgImage() {
   const outputPath = path.join(publicDir, 'images', 'og-image.png');
   const logoPath = path.join(publicDir, 'images', 'logo-text-horizontal.png');
 
-  // Resize logo to fit nicely (roughly 400px wide)
+  // Resize logo large — OG images are displayed small, so fill the space
+  const LOGO_WIDTH = 650;
   const logo = await sharp(logoPath)
-    .resize({ width: 400 })
+    .resize({ width: LOGO_WIDTH })
     .toBuffer();
 
   const logoMeta = await sharp(logo).metadata();
-  const logoHeight = logoMeta.height || 160;
+  const logoHeight = logoMeta.height || 260;
 
-  // Center the logo horizontally, position in upper portion
-  const logoLeft = Math.round((WIDTH - 400) / 2);
-  const logoTop = 140;
+  // Center the logo horizontally, position near top
+  const logoLeft = Math.round((WIDTH - LOGO_WIDTH) / 2);
+  const logoTop = 55;
 
-  // Taglines positioned below logo
+  // Taglines positioned below logo with tighter spacing
   const taglineY = logoTop + logoHeight + 60;
-  const subtitleY = taglineY + 50;
+  const subtitleY = taglineY + 60;
   const urlY = subtitleY + 70;
 
   // Strip trailing period for display
@@ -44,19 +45,19 @@ async function generateOgImage() {
       <style>
         .tagline {
           font-family: system-ui, -apple-system, sans-serif;
-          font-size: 42px;
+          font-size: 56px;
           font-weight: 500;
           fill: ${NEUTRAL_600};
         }
         .subtitle {
           font-family: system-ui, -apple-system, sans-serif;
-          font-size: 28px;
+          font-size: 38px;
           font-weight: 400;
           fill: #737373;
         }
         .url {
           font-family: system-ui, -apple-system, sans-serif;
-          font-size: 24px;
+          font-size: 32px;
           font-weight: 500;
           fill: ${BRAND_500};
         }
@@ -68,7 +69,7 @@ async function generateOgImage() {
   `;
 
   // Color strip at top using the 4 issue area colors
-  const STRIP_HEIGHT = 16;
+  const STRIP_HEIGHT = 20;
   const ISSUE_COLORS = ['#fbbf24', '#2dd4bf', '#f87171', '#818cf8'];
   const segmentWidth = WIDTH / ISSUE_COLORS.length;
   const topStrip = Buffer.from(
