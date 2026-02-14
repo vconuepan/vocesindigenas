@@ -5,6 +5,7 @@ import { runSelectStories } from './selectStories.js'
 import { runPublishStories } from './publishStories.js'
 import { runBlueskyAutoPost } from './blueskyAutoPost.js'
 import { runBlueskyUpdateMetrics } from './blueskyUpdateMetrics.js'
+import { runGenerateNewsletter } from './generateNewsletter.js'
 
 export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   crawl_feeds: runCrawlFeeds,
@@ -14,4 +15,5 @@ export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   publish_stories: runPublishStories,
   bluesky_auto_post: runBlueskyAutoPost,
   bluesky_update_metrics: runBlueskyUpdateMetrics,
+  generate_newsletter: runGenerateNewsletter,
 }

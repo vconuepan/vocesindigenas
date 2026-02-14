@@ -260,7 +260,8 @@ export async function generateContent(newsletterId: string) {
     }
 
     content += `## ${story.title || story.sourceTitle}\n`
-    const linkParts = [publisher]
+    const feedId = story.feed?.id || ''
+    const linkParts = [feedId ? `{feed:${feedId}} ${publisher}` : publisher]
     linkParts.push(`[original article](${story.sourceUrl})`)
     if (relevanceUrl) linkParts.push(`[relevance analysis](${relevanceUrl})`)
     content += `${linkParts.join(' · ')}\n\n`
@@ -394,14 +395,12 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
       const dotColor = getIssueDotColor(issueSlug)
       htmlBlocks.push(`
     <tr>
-      <td style="padding: 32px 0 12px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="width: 40%; vertical-align: middle;"><div style="border-top: 1px solid #e5e5e5;"></div></td>
-          <td style="white-space: nowrap; padding: 0 12px; text-align: center; vertical-align: middle;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${dotColor}; vertical-align: middle; margin-right: 8px;"></span>
-            <span style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #404040; vertical-align: middle;">${escapeHtml(issueHeader)}</span>
-          </td>
-          <td style="width: 40%; vertical-align: middle;"><div style="border-top: 1px solid #e5e5e5;"></div></td>
+      <td style="padding: 32px 0 12px; text-align: center;">
+        <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto;"><tr>
+          <td style="vertical-align: middle; padding-right: 12px;"><div style="width: 40px; border-top: 1px solid #e5e5e5;"></div></td>
+          <td style="vertical-align: middle; padding-right: 8px; line-height: 0;"><div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${dotColor};"></div></td>
+          <td style="vertical-align: middle; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #404040; white-space: nowrap;">${escapeHtml(issueHeader)}</td>
+          <td style="vertical-align: middle; padding-left: 12px;"><div style="width: 40px; border-top: 1px solid #e5e5e5;"></div></td>
         </tr></table>
       </td>
     </tr>`)
@@ -436,16 +435,20 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
         let originalUrl = ''
         let relevanceUrl = ''
         let publisherName = ''
+        let feedId = ''
         if (metaLine) {
           const links = [...metaLine.matchAll(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g)]
           for (const link of links) {
             if (link[1] === 'original article') originalUrl = link[2]
             else if (link[1] === 'relevance analysis') relevanceUrl = link[2]
           }
-          // Publisher is plain text before the first link
+          // Extract feed ID if present: {feed:uuid}
+          const feedMatch = metaLine.match(/\{feed:([^}]+)\}/)
+          if (feedMatch) feedId = feedMatch[1]
+          // Publisher is plain text before the first link (after optional {feed:...} tag)
           const firstBracket = metaLine.indexOf('[')
           if (firstBracket > 0) {
-            publisherName = metaLine.slice(0, firstBracket).replace(/·\s*$/, '').trim()
+            publisherName = metaLine.slice(0, firstBracket).replace(/\{feed:[^}]+\}\s*/, '').replace(/·\s*$/, '').trim()
           }
         }
 
@@ -456,10 +459,13 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
         let metaHtml = ''
         if (publisherName || originalUrl) {
           const parts: string[] = []
-          if (publisherName) parts.push(escapeHtml(publisherName))
-          if (originalUrl) parts.push(`<a href="${escapeHtml(originalUrl)}" style="color: #2563eb; text-decoration: none;">original article</a>`)
-          if (relevanceUrl) parts.push(`<a href="${escapeHtml(relevanceUrl)}" style="color: #2563eb; text-decoration: none;">relevance analysis</a>`)
-          metaHtml = `<p style="margin: 0 0 12px; font-size: 13px; color: #737373;">${parts.join(' &middot; ')}</p>`
+          const faviconHtml = feedId
+            ? `<img src="https://actuallyrelevant.news/images/feeds/${feedId}.png" alt="" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; border-radius: 2px; margin-right: 4px;">`
+            : ''
+          if (publisherName) parts.push(`${faviconHtml}<span style="vertical-align: middle;">${escapeHtml(publisherName)}</span>`)
+          if (originalUrl) parts.push(`<a href="${escapeHtml(originalUrl)}" style="color: #2563eb; text-decoration: none; vertical-align: middle;">original article</a>`)
+          if (relevanceUrl) parts.push(`<a href="${escapeHtml(relevanceUrl)}" style="color: #2563eb; text-decoration: none; vertical-align: middle;">relevance analysis</a>`)
+          metaHtml = `<p style="margin: 0 0 12px; font-size: 13px; color: #737373; line-height: 20px;">${parts.join(' <span style="vertical-align: middle;">&middot;</span> ')}</p>`
         }
 
         htmlBlocks.push(`
@@ -498,12 +504,27 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
           <!-- Header -->
           <tr>
-            <td style="padding: 32px 32px 12px; text-align: center;">
+            <td style="padding: 20px 32px 12px; text-align: center;">
               <a href="https://actuallyrelevant.news" style="text-decoration: none;">
                 <img src="https://actuallyrelevant.news/images/logo-text-horizontal.png" alt="Actually Relevant" width="200" style="display: inline-block; max-width: 200px; height: auto;" />
               </a>
-              <p style="margin: 0; font-size: 15px; font-style: italic; color: #a3a3a3;">News that matter to humanity</p>
-              <p style="margin: 16px 0 0; font-size: 14px; color: #737373;">${escapeHtml(newsletter.title)}</p>
+              <p style="margin: -2px 0 0; font-size: 15px; font-style: italic; color: #a3a3a3;">News that matter to humanity</p>
+            </td>
+          </tr>
+          <!-- Color strip -->
+          <tr>
+            <td style="padding: 16px 0 0; font-size: 0; line-height: 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="width: 25%; height: 4px; background-color: #fbbf24;"></td>
+                <td style="width: 25%; height: 4px; background-color: #2dd4bf;"></td>
+                <td style="width: 25%; height: 4px; background-color: #f87171;"></td>
+                <td style="width: 25%; height: 4px; background-color: #818cf8;"></td>
+              </tr></table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 32px 12px; text-align: center;">
+              <p style="margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #404040;">${escapeHtml(newsletter.title)}</p>
             </td>
           </tr>
 ${introSection}
@@ -526,8 +547,9 @@ ${introSection}
 
           <!-- AI disclosure -->
           <tr>
-            <td style="padding: 28px 32px 32px; text-align: center; border-top: 1px solid #e5e5e5;">
+            <td style="padding: 28px 32px 16px; text-align: center; border-top: 1px solid #e5e5e5;">
               <p style="margin: 0; font-size: 16px; font-style: italic; color: #737373;">Curated and written with care by AI</p>
+              <p style="margin: 12px 0 0; font-size: 13px; color: #a3a3a3; line-height: 1.5;">Our app might have bugs. AI can make mistakes.<br>If something seems off, please reply to this email and let us know.</p>
             </td>
           </tr>
 
@@ -548,6 +570,11 @@ ${introSection}
   </table>
 </body>
 </html>`
+
+  await prisma.newsletter.update({
+    where: { id: newsletterId },
+    data: { html },
+  })
 
   return html
 }

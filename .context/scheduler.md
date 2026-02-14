@@ -32,6 +32,10 @@ On server startup, `initScheduler()`:
 | `preassess_stories` | `runPreassessStories` | Configurable |
 | `assess_stories` | `runAssessStories` | Configurable |
 | `select_stories` | `runSelectStories` | Configurable |
+| `publish_stories` | `runPublishStories` | Configurable |
+| `bluesky_auto_post` | `runBlueskyAutoPost` | Configurable |
+| `bluesky_update_metrics` | `runBlueskyUpdateMetrics` | Configurable |
+| `generate_newsletter` | `runGenerateNewsletter` | `0 4 * * 6` (Saturday 4am) |
 
 ## Adding a New Job
 
@@ -74,4 +78,8 @@ The Semaphore utility is at `server/src/lib/semaphore.ts`.
 | `server/src/jobs/preassessStories.ts` | Pre-assessment job handler |
 | `server/src/jobs/assessStories.ts` | Full assessment job handler |
 | `server/src/jobs/selectStories.ts` | Selection job handler |
+| `server/src/jobs/publishStories.ts` | Publish job handler |
+| `server/src/jobs/blueskyAutoPost.ts` | Bluesky auto-post job handler |
+| `server/src/jobs/blueskyUpdateMetrics.ts` | Bluesky metrics update job handler |
+| `server/src/jobs/generateNewsletter.ts` | Automated weekly newsletter generation job handler |
 | `server/src/routes/admin/jobs.ts` | Admin API for job management |

@@ -40,6 +40,11 @@ async function main() {
       update: {},
       create: { jobName: 'bluesky_update_metrics', cronExpression: '0 */6 * * *', enabled: false },
     }),
+    prisma.jobRun.upsert({
+      where: { jobName: 'generate_newsletter' },
+      update: {},
+      create: { jobName: 'generate_newsletter', cronExpression: '0 4 * * 6', enabled: false },
+    }),
   ])
 
   console.log(`Seeded ${jobs.length} job runs (all disabled)`)

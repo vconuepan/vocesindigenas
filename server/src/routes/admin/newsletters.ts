@@ -157,9 +157,7 @@ router.post('/:id/carousel', async (req, res) => {
 router.post('/:id/html', async (req, res) => {
   try {
     const html = await newsletterService.generateHtmlContent(req.params.id)
-    // Save generated HTML to the newsletter
-    const newsletter = await newsletterService.updateNewsletter(req.params.id, { html })
-    res.json({ html: newsletter.html })
+    res.json({ html })
   } catch (err: any) {
     if (err.message === 'Newsletter not found') {
       res.status(404).json({ error: err.message })

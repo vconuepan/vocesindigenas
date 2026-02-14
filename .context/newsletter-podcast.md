@@ -22,18 +22,21 @@ Generates markdown content in two phases:
 2. **Template-based story blocks** — For each selected story, grouped by issue with section headers:
    - `# IssueName` section header (when the issue group changes)
    - Title as `##` heading
-   - Publisher (linked to source) + "Read original article" link on the same line
+   - Metadata line with `{feed:id}` tag, publisher name, and links (feed ID is used for favicon in HTML)
    - Body text: alternates between `relevanceSummary` (2/3 of stories) and `quote` + `quoteAttribution` blockquote (1/3)
 
 ### HTML email template (`POST /api/admin/newsletters/:id/html`)
 
-Converts the markdown content into a responsive HTML email with:
-- **Header** — Brand name + newsletter title, blue border
+Converts the markdown content into a responsive HTML email and saves it to the newsletter record. The function both generates and persists the HTML (callers do not need to save separately).
+
+Template structure:
+- **Header** — Logo, tagline, four-color category strip (amber/teal/red/indigo), newsletter title (uppercase, bold)
 - **Intro** — Editorial intro paragraph(s) if present
-- **Issue sections** — Uppercase category headers between story groups
-- **Story blocks** — Title (linked), publisher (linked) + "Read original article", body text or blockquote
+- **Issue sections** — Centered category headers with colored dot and decorative lines
+- **Story blocks** — Title (linked), publisher favicon + name + "original article" / "relevance analysis" links, body text or blockquote
 - **Support Us** — Ko-fi link with "Free. Independent. Without ads." tagline
-- **Footer** — "Curated and written with care by AI." disclosure, website link, Plunk `{{plunk_id}}` unsubscribe link
+- **AI disclaimer** — "Curated and written with care by AI" + bug/mistake notice
+- **Footer** — Website link, Plunk `{{plunk_id}}` unsubscribe link
 
 ### Carousel images (`POST /api/admin/newsletters/:id/carousel`)
 
@@ -50,6 +53,17 @@ Category-specific header colors/images are mapped by keyword matching on the cat
 Located in `server/assets/`:
 - `images/` — Header images (1200x80) and logo (112x80). Placeholders used until branded versions are provided.
 - `fonts/` — Inter Bold and Inter Regular TTF files for image text rendering.
+
+### Automated generation (`generate_newsletter` cron job)
+
+The `generate_newsletter` job (default: Saturday 4am, `0 4 * * 6`) chains the full pipeline automatically:
+
+1. Pre-checks for recent published stories (last 7 days); skips silently if none
+2. Guards against duplicate titles (skips if "Week N, YYYY" already exists)
+3. Creates newsletter, assigns stories, runs LLM selection, generates content + HTML, sends test email
+4. On mid-pipeline failure: deletes the partially-built newsletter and re-throws to the scheduler
+
+Handler: `server/src/jobs/generateNewsletter.ts`. Registered in `server/src/jobs/handlers.ts`.
 
 ## Podcast
 
@@ -108,6 +122,7 @@ After the LLM script, a story list with links is appended.
 | `server/src/prompts/newsletter-intro.ts` | `buildNewsletterIntroPrompt` for editorial intro generation |
 | `server/src/prompts/newsletter-select.ts` | `buildNewsletterSelectPrompt` for story selection |
 | `server/src/services/prompts.ts` | `buildPodcastPrompt` for podcast script generation |
+| `server/src/jobs/generateNewsletter.ts` | Automated weekly newsletter generation cron job |
 
 ## Modifying
 

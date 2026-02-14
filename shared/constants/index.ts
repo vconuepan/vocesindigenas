@@ -25,6 +25,7 @@ export const JOB_NAMES: JobName[] = [
   'publish_stories',
   'bluesky_auto_post',
   'bluesky_update_metrics',
+  'generate_newsletter',
 ]
 
 export const FEED_REGIONS: { value: FeedRegion; label: string }[] = [

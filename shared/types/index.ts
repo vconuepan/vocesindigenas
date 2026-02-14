@@ -44,6 +44,7 @@ export type JobName =
   | 'publish_stories'
   | 'bluesky_auto_post'
   | 'bluesky_update_metrics'
+  | 'generate_newsletter'
 
 export type JobStatus = 'idle' | 'running' | 'failed'
 
