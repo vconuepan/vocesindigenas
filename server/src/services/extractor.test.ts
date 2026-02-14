@@ -368,6 +368,35 @@ describe('fetchPage limits', () => {
   })
 })
 
+describe('API extraction limits', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    delete process.env.PIPFEED_API_KEY
+    delete process.env.DIFFBOT_TOKEN
+    _resetApiState()
+  })
+
+  it('passes maxContentLength to Diffbot API call', async () => {
+    process.env.DIFFBOT_TOKEN = 'test-token'
+    const html = `<html><body><p>Short</p></body></html>`
+    mockAxiosGet
+      .mockResolvedValueOnce({ data: html })
+      .mockResolvedValueOnce({
+        data: { objects: [{ title: 'Title', text: LONG_TEXT }] },
+      })
+    mockReadabilityParse.mockReturnValue(null)
+
+    await extractContent('https://example.com/article')
+
+    // Second GET call is the Diffbot API call
+    const diffbotCall = mockAxiosGet.mock.calls[1]
+    expect(diffbotCall[1]).toEqual(expect.objectContaining({
+      maxContentLength: 5 * 1024 * 1024,
+    }))
+  })
+
+})
+
 describe('ApiThrottle', () => {
   it('doubles delay on 429 and reduces on success', async () => {
     const throttle = new ApiThrottle(0, 0, 1000) // no base delay, no backoff wait, 1s max

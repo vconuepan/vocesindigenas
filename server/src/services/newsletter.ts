@@ -179,9 +179,22 @@ export async function generateContent(newsletterId: string) {
 
   const stories = await prisma.story.findMany({
     where: { id: { in: newsletter.selectedStoryIds } },
-    include: {
-      feed: { include: { issue: { include: { parent: true } } } },
-      issue: { include: { parent: true } },
+    select: {
+      id: true,
+      title: true,
+      sourceTitle: true,
+      sourceUrl: true,
+      slug: true,
+      summary: true,
+      relevanceSummary: true,
+      marketingBlurb: true,
+      quote: true,
+      quoteAttribution: true,
+      emotionTag: true,
+      sourceDatePublished: true,
+      dateCrawled: true,
+      feed: { select: { id: true, title: true, displayTitle: true, issue: { select: { name: true, slug: true, parentId: true, parent: { select: { name: true, slug: true } } } } } },
+      issue: { select: { name: true, slug: true, parentId: true, parent: { select: { name: true, slug: true } } } },
     },
     orderBy: { dateCrawled: 'desc' },
   })

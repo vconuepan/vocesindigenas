@@ -120,16 +120,34 @@ export async function createPost(
     let thumb: any
     if (linkCard.thumbUrl) {
       try {
-        const imgResponse = await fetch(linkCard.thumbUrl)
+        const MAX_OG_IMAGE_BYTES = 1_000_000 // Bluesky max blob size
+        const imgResponse = await fetch(linkCard.thumbUrl, { signal: AbortSignal.timeout(10_000) })
         if (imgResponse.ok) {
-          const buffer = Buffer.from(await imgResponse.arrayBuffer())
-          // Bluesky max blob size is 1MB
-          if (buffer.length <= 1_000_000) {
-            const contentType = imgResponse.headers.get('content-type') || 'image/jpeg'
-            const uploadResult = await a.uploadBlob(buffer, { encoding: contentType })
-            thumb = uploadResult.data.blob
-          } else {
-            log.warn({ size: buffer.length, url: linkCard.thumbUrl }, 'og:image too large, skipping thumbnail')
+          // Read body in chunks to avoid buffering huge responses
+          const reader = imgResponse.body?.getReader()
+          if (reader) {
+            const chunks: Uint8Array[] = []
+            let totalBytes = 0
+            let oversized = false
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
+              totalBytes += value.byteLength
+              if (totalBytes > MAX_OG_IMAGE_BYTES) {
+                await reader.cancel()
+                oversized = true
+                break
+              }
+              chunks.push(value)
+            }
+            if (oversized) {
+              log.warn({ url: linkCard.thumbUrl }, 'og:image too large, skipping thumbnail')
+            } else if (totalBytes > 0) {
+              const buffer = Buffer.concat(chunks)
+              const contentType = imgResponse.headers.get('content-type') || 'image/jpeg'
+              const uploadResult = await a.uploadBlob(buffer, { encoding: contentType })
+              thumb = uploadResult.data.blob
+            }
           }
         }
       } catch (err) {

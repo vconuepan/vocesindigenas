@@ -14,7 +14,7 @@ export async function notifyJobFailure(jobName: string, error: string): Promise<
       jobName,
       error,
       timestamp: new Date().toISOString(),
-    }, { timeout: 5000 })
+    }, { timeout: 5000, maxContentLength: 1 * 1024 * 1024 })
   } catch (err) {
     log.warn({ err, jobName }, 'failed to send webhook notification')
   }

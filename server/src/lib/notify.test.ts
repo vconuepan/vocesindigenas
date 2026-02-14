@@ -43,7 +43,7 @@ describe('notifyJobFailure', () => {
         error: 'connection timeout',
         timestamp: expect.any(String),
       }),
-      { timeout: 5000 },
+      { timeout: 5000, maxContentLength: 1 * 1024 * 1024 },
     )
   })
 

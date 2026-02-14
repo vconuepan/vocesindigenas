@@ -8,6 +8,7 @@ const log = createLogger('plunk')
 const client = axios.create({
   baseURL: config.plunk.baseUrl,
   timeout: 15000,
+  maxContentLength: 1 * 1024 * 1024,
   headers: { 'Content-Type': 'application/json' },
 })
 

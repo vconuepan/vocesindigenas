@@ -158,7 +158,7 @@ const ADMIN_LIST_SELECT = {
   createdAt: true,
   updatedAt: true,
   feed: { select: { id: true, title: true, issue: { select: { id: true, name: true, slug: true } } } },
-  _count: { select: { blueskyPosts: true } },
+  _count: { select: { blueskyPosts: true, mastodonPosts: true } },
 } as const
 
 export async function getStories(filters: StoryFilters) {
@@ -230,6 +230,19 @@ export async function getStoryById(id: string) {
             orderBy: { dateCrawled: 'asc' },
           },
         },
+      },
+      _count: { select: { blueskyPosts: true, mastodonPosts: true } },
+      blueskyPosts: {
+        where: { status: 'published' },
+        select: { postUri: true },
+        take: 1,
+        orderBy: { publishedAt: 'desc' },
+      },
+      mastodonPosts: {
+        where: { status: 'published' },
+        select: { statusUrl: true },
+        take: 1,
+        orderBy: { publishedAt: 'desc' },
       },
     },
   })
@@ -775,6 +788,7 @@ export async function getPublishedStories(options: {
 
 // In-memory cache for LLM-ranked related story IDs
 const relatedCache = new Map<string, { ids: string[]; expiry: number }>()
+const MAX_RELATED_CACHE_SIZE = 500
 const EVICTION_INTERVAL = 60 * 60 * 1000 // 1 hour
 let lastEviction = Date.now()
 
@@ -785,6 +799,19 @@ function evictExpiredCache() {
   for (const [key, value] of relatedCache) {
     if (value.expiry <= now) relatedCache.delete(key)
   }
+}
+
+/** Evict the entry with the earliest expiry to make room for a new one. */
+function evictOldestEntry() {
+  let oldestKey: string | null = null
+  let oldestExpiry = Infinity
+  for (const [key, value] of relatedCache) {
+    if (value.expiry < oldestExpiry) {
+      oldestExpiry = value.expiry
+      oldestKey = key
+    }
+  }
+  if (oldestKey) relatedCache.delete(oldestKey)
 }
 
 export async function getRelatedStories(slug: string, limit: number = config.relatedStories.displayCount) {
@@ -865,7 +892,10 @@ export async function getRelatedStories(slug: string, limit: number = config.rel
     }
   }
 
-  // 6. Cache the result
+  // 6. Cache the result (evict oldest if at capacity)
+  if (!relatedCache.has(slug) && relatedCache.size >= MAX_RELATED_CACHE_SIZE) {
+    evictOldestEntry()
+  }
   relatedCache.set(slug, {
     ids: selectedIds,
     expiry: Date.now() + config.relatedStories.cacheHours * 60 * 60 * 1000,
@@ -932,7 +962,7 @@ export async function getStoriesByStatus(
     where,
     include: { feed: { include: { issue: true } } },
     orderBy: { dateCrawled: 'desc' },
-    take: options.limit ?? 1000,
+    take: options.limit ?? 200,
   })
 }
 

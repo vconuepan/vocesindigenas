@@ -192,6 +192,7 @@ async function extractByDiffbot(url: string): Promise<ExtractionResult | null> {
       'https://api.diffbot.com/v3/article',
       {
         timeout: config.crawl.diffbotTimeoutMs,
+        maxContentLength: 5 * 1024 * 1024,
         params: {
           token,
           url,
@@ -233,6 +234,7 @@ async function extractByPipfeed(url: string): Promise<ExtractionResult | null> {
     { url },
     {
       timeout: config.crawl.pipfeedTimeoutMs,
+      maxContentLength: 5 * 1024 * 1024,
       headers: {
         'Content-Type': 'application/json',
         'X-RapidAPI-Key': apiKey,

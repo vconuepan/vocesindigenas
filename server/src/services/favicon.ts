@@ -13,6 +13,7 @@ const FETCH_TIMEOUT_MS = 10_000
 const CONCURRENCY = 5
 // Google's generic globe icon for unknown domains is very small (~300 bytes at 32px).
 // Real favicons are almost always larger.
+const MAX_HTML_BYTES = 2 * 1024 * 1024 // 2 MB cap for HTML pages when looking for favicon links
 const GOOGLE_GLOBE_MAX_BYTES = 400
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -42,10 +43,24 @@ async function fetchImage(url: string): Promise<Buffer | null> {
     const contentType = res.headers.get('content-type') || ''
     if (!contentType.startsWith('image/')) return null
 
-    const buffer = Buffer.from(await res.arrayBuffer())
-    if (buffer.length === 0 || buffer.length > MAX_FAVICON_BYTES) return null
+    // Read body in chunks to avoid allocating huge buffers for unexpected responses
+    const reader = res.body?.getReader()
+    if (!reader) return null
+    const chunks: Uint8Array[] = []
+    let totalBytes = 0
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      totalBytes += value.byteLength
+      if (totalBytes > MAX_FAVICON_BYTES) {
+        await reader.cancel()
+        return null
+      }
+      chunks.push(value)
+    }
+    if (totalBytes === 0) return null
 
-    return buffer
+    return Buffer.concat(chunks)
   } catch {
     return null
   }
@@ -69,7 +84,21 @@ async function tryHtmlParsing(origin: string): Promise<Buffer | null> {
     })
     if (!res.ok) return null
 
-    const html = await res.text()
+    // Read body in chunks to cap memory usage — we only need the <head> for favicon links
+    const reader = res.body?.getReader()
+    if (!reader) return null
+    const decoder = new TextDecoder()
+    let html = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      html += decoder.decode(value, { stream: true })
+      if (html.length > MAX_HTML_BYTES) {
+        await reader.cancel()
+        break
+      }
+    }
+    html += decoder.decode() // flush remaining bytes
     const $ = cheerio.load(html)
 
     // Collect all icon link tags, prefer larger sizes

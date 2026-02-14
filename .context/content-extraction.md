@@ -44,7 +44,7 @@ The crawler passes a `shouldAbort` callback (tied to the `skipAll` flag) through
 
 ## Resource Limits
 
-HTTP responses from page fetches and RSS feeds are capped at 5 MB (`maxContentLength`) to prevent OOM on pathological pages. JSDOM DOM objects are explicitly released via `dom.window.close()` in a `finally` block after Readability extraction, as JSDOM windows hold timers, event listeners, and expanded DOM trees that are not reliably garbage collected without explicit cleanup.
+HTTP responses from page fetches, RSS feeds, and external API calls (Diffbot, PipFeed) are capped at 5 MB (`maxContentLength`) to prevent OOM on pathological responses. JSDOM DOM objects are explicitly released via `dom.window.close()` in a `finally` block after Readability extraction, as JSDOM windows hold timers, event listeners, and expanded DOM trees that are not reliably garbage collected without explicit cleanup. Outbound webhook and email service (Plunk) responses are capped at 1 MB. The Bluesky og:image fetch uses `AbortSignal.timeout(10_000)` to prevent hanging. Favicon fetches use streaming reads with per-chunk size checks to avoid allocating large buffers for unexpected responses.
 
 ## Crawl Flow
 

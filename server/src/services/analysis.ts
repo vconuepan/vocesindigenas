@@ -52,33 +52,41 @@ async function runBatchClassification<T extends { articleId: string; issueSlug: 
 ): Promise<{ storyId: string; item: T }[]> {
   const { storyIds, llm, schema, buildPrompt, buildUpdate, fallbackToFeedIssue = true, onProgress, batchSize, concurrency, label } = options
 
-  const stories = await prisma.story.findMany({
-    where: { id: { in: storyIds } },
-    include: { feed: { include: { issue: true } } },
-  })
-
   const issues = await prisma.issue.findMany({
     select: { id: true, slug: true, name: true, description: true },
   })
 
   const slugToId = new Map(issues.map(i => [i.slug, i.id]))
 
-  const batches: (typeof stories)[] = []
-  for (let i = 0; i < stories.length; i += batchSize) {
-    batches.push(stories.slice(i, i + batchSize))
+  // Split IDs into batches — stories are loaded per-batch to avoid holding all sourceContent in memory
+  const idBatches: string[][] = []
+  for (let i = 0; i < storyIds.length; i += batchSize) {
+    idBatches.push(storyIds.slice(i, i + batchSize))
   }
 
-  log.info({ batchCount: batches.length, storyCount: stories.length }, `${label} batches prepared`)
+  log.info({ batchCount: idBatches.length, storyCount: storyIds.length }, `${label} batches prepared`)
 
   const structuredLlm = llm.withStructuredOutput(schema)
   const semaphore = new Semaphore(concurrency)
-  const totalBatches = batches.length
+  const totalBatches = idBatches.length
   let batchesDone = 0
 
   const settled = await Promise.allSettled(
-    batches.map((batch, batchIdx) =>
+    idBatches.map((batchIds, batchIdx) =>
       semaphore.run(async () => {
         const batchLabel = `batch ${batchIdx + 1}/${totalBatches}`
+
+        // Load stories for this batch only — avoids holding all sourceContent in memory
+        const batch = await prisma.story.findMany({
+          where: { id: { in: batchIds } },
+          select: {
+            id: true,
+            sourceTitle: true,
+            sourceContent: true,
+            feed: { select: { issueId: true } },
+          },
+        })
+
         log.info({ batch: batchLabel, storyCount: batch.length }, 'processing batch')
 
         const prompt = buildPrompt(
