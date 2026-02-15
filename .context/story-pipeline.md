@@ -22,6 +22,8 @@ fetched → pre_analyzed → analyzed → selected → published
 | `rejected` | Select job or admin | Not relevant enough, or manually excluded. |
 | `trashed` | Admin action | Soft-deleted. |
 
+**Archive behavior:** Rejected and trashed stories are retained indefinitely as a historical archive. There is no automated cleanup or purging. Admins can review rejected stories via the admin panel and manually re-assess or republish them if needed.
+
 ### Transition Rules
 
 - **fetched → pre_analyzed**: Pre-assess job first assigns each story to an issue via LLM (nano model), then groups stories by assigned issue and batch pre-screens them (~10 per batch) using the medium model.

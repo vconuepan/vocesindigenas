@@ -39,6 +39,10 @@ entity Story {
           | published
           | rejected
           | trashed
+    -- Terminal statuses: published, rejected, trashed.
+    -- Rejected and trashed stories accumulate as a permanent archive.
+    -- This is intentional — they serve as a historical record and
+    -- may be revisited by admins. No automated cleanup.
 
     -- Pre-assessment fields
     issue: Issue?
