@@ -104,7 +104,7 @@ export const config = {
     assess: parseInt(process.env.CONCURRENCY_ASSESS || "10", 10),
     select: parseInt(process.env.CONCURRENCY_SELECT || "10", 10),
     reclassify: parseInt(process.env.CONCURRENCY_RECLASSIFY || "10", 10),
-    crawlFeeds: parseInt(process.env.CONCURRENCY_CRAWL_FEEDS || "5", 10),
+    crawlFeeds: parseInt(process.env.CONCURRENCY_CRAWL_FEEDS || "3", 10),
     crawlArticles: parseInt(process.env.CONCURRENCY_CRAWL_ARTICLES || "3", 10),
   },
   plunk: {

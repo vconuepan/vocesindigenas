@@ -3,10 +3,18 @@ interface CacheEntry<T> {
   expiresAt: number
 }
 
+const SWEEP_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
+
 export class TTLCache<T> {
   private store = new Map<string, CacheEntry<T>>()
+  private sweepTimer: ReturnType<typeof setInterval> | null = null
 
-  constructor(private readonly ttlMs: number) {}
+  constructor(private readonly ttlMs: number) {
+    this.sweepTimer = setInterval(() => this.sweep(), SWEEP_INTERVAL_MS)
+    if (this.sweepTimer && typeof this.sweepTimer === 'object' && 'unref' in this.sweepTimer) {
+      this.sweepTimer.unref()
+    }
+  }
 
   get(key: string): T | undefined {
     const entry = this.store.get(key)
@@ -27,6 +35,27 @@ export class TTLCache<T> {
   }
 
   clear(): void {
+    this.store.clear()
+  }
+
+  /** Remove all expired entries. Called automatically every 10 minutes. */
+  sweep(): number {
+    const now = Date.now()
+    let removed = 0
+    for (const [key, entry] of this.store) {
+      if (entry.expiresAt <= now) {
+        this.store.delete(key)
+        removed++
+      }
+    }
+    return removed
+  }
+
+  destroy(): void {
+    if (this.sweepTimer) {
+      clearInterval(this.sweepTimer)
+      this.sweepTimer = null
+    }
     this.store.clear()
   }
 }
