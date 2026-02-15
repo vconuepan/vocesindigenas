@@ -8,6 +8,8 @@ AI-curated news platform that evaluates article relevance to humanity using LLM 
 
 **IMPORTANT**: Unless specified otherwise, follow the process outlined in the `/workflow` skill.
 
+**Allium specs in the workflow:** During the **Planning** step, read the relevant `.specs/*.allium` file(s) for any subsystem the task touches. The spec defines what the system guarantees; plans should respect those contracts or explicitly propose changes. During **Documentation**, if the implementation changed domain behavior (new rules, modified transitions, new entities), update the affected spec using the `/allium` skill. Context files only need updating when implementation details change.
+
 ## Project Structure
 
 ```
