@@ -126,7 +126,25 @@ rule Assess {
     ensures: DetectDuplicates(story)
 }
 
+-- Stories that don't meet the assessment threshold are rejected
+-- by the assess job rather than left in limbo.
+rule RejectBelowAssessThreshold {
+    when: AssessJobRuns(story)
+    requires: story.status = pre_analyzed
+    requires: story.relevance_pre < story.assessment_threshold
+    ensures: story.status = rejected
+}
+
 -- ─── Stage 3: Selection ────────────────────────────────────────────
+
+-- Stories that don't meet the selection floor are rejected
+-- by the select job rather than left in limbo.
+rule RejectBelowSelectionFloor {
+    when: SelectJobRuns(story)
+    requires: story.status = analyzed
+    requires: story.relevance < config.selection_relevance_min
+    ensures: story.status = rejected
+}
 
 rule Select {
     when: SelectJobRuns(story)

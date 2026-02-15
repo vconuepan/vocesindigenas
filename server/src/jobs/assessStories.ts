@@ -16,6 +16,11 @@ export async function runAssessStories(): Promise<void> {
     select: { id: true, name: true, minPreRating: true },
   })
 
+  // Snapshot all pre_analyzed stories before building qualified set,
+  // so stories arriving after this point are processed in the next run
+  // rather than rejected prematurely.
+  const allPreAnalyzed = await getStoryIdsByStatus('pre_analyzed')
+
   const allIds: string[] = []
 
   for (const issue of issues) {
@@ -32,6 +37,18 @@ export async function runAssessStories(): Promise<void> {
   if (unassignedIds.length > 0) {
     log.info({ threshold: globalThreshold, storyCount: unassignedIds.length }, 'unassigned stories qualifying for assessment')
     allIds.push(...unassignedIds)
+  }
+
+  // Reject pre_analyzed stories from the snapshot that don't meet any threshold
+  const qualifiedSet = new Set(allIds)
+  const belowThreshold = allPreAnalyzed.filter(id => !qualifiedSet.has(id))
+
+  if (belowThreshold.length > 0) {
+    await prisma.story.updateMany({
+      where: { id: { in: belowThreshold } },
+      data: { status: 'rejected' },
+    })
+    log.info({ count: belowThreshold.length }, 'rejected pre_analyzed stories below assessment threshold')
   }
 
   if (allIds.length === 0) {

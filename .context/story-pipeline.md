@@ -19,7 +19,7 @@ fetched → pre_analyzed → analyzed → selected → published
 | `analyzed` | Assess job | Full LLM analysis complete: detailed factors, ratings, summary, blurb, etc. |
 | `selected` | Select job | LLM chose this story for publication from the analyzed pool. |
 | `published` | Admin action | Live on the public site. |
-| `rejected` | Select job or admin | Not relevant enough, or manually excluded. |
+| `rejected` | Assess job, select job, or admin | Not relevant enough, or manually excluded. |
 | `trashed` | Admin action | Soft-deleted. |
 
 **Archive behavior:** Rejected and trashed stories are retained indefinitely as a historical archive. There is no automated cleanup or purging. Admins can review rejected stories via the admin panel and manually re-assess or republish them if needed.
@@ -27,8 +27,8 @@ fetched → pre_analyzed → analyzed → selected → published
 ### Transition Rules
 
 - **fetched → pre_analyzed**: Pre-assess job first assigns each story to an issue via LLM (nano model), then groups stories by assigned issue and batch pre-screens them (~10 per batch) using the medium model.
-- **pre_analyzed → analyzed**: Assess job picks stories with `relevancePre >= 3`. Stories rated 1-2 stay as `pre_analyzed` and are effectively filtered out.
-- **analyzed → selected/rejected**: Select job takes all `analyzed` stories with `relevance >= config.selection.relevanceMin` (default 5) and selects ~`config.selection.ratio` (default 50%, rounded up). The rest become `rejected`. When there are more than `config.selection.maxGroupSize` (default 20) candidates, they are split into roughly equal groups and each group is sent to the LLM separately (e.g. 25 stories → 2 groups of 13 + 12).
+- **pre_analyzed → analyzed/rejected**: Assess job picks stories with `relevancePre >= threshold` (per-issue `minPreRating` or global `fullAssessmentThreshold`, default 5). Stories below threshold are rejected.
+- **analyzed → selected/rejected**: Select job takes `analyzed` stories with `relevance >= config.selection.relevanceMin` (default 5). Stories below threshold are rejected. Remaining candidates go through LLM selection (~`config.selection.ratio`, default 50%, rounded up). The rest become `rejected`. When there are more than `config.selection.maxGroupSize` (default 20) candidates, they are split into roughly equal groups and each group is sent to the LLM separately (e.g. 25 stories → 2 groups of 13 + 12).
 - **selected → published**: Publish job or manual admin action. The `publish_stories` job publishes all `selected` stories, sets `datePublished` if not already set, and generates a URL slug if the story doesn't have one yet.
 - **Any → trashed**: Admin can trash any story at any time.
 
