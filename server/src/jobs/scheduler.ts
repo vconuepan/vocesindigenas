@@ -65,23 +65,80 @@ function estimateCronIntervalMs(cronExpr: string): number | null {
   const parts = cronExpr.split(' ')
   if (parts.length < 5) return null
 
-  const [, hourPart] = parts
+  const [, hourPart, , , dowPart] = parts
+
+  // Base interval from hour field
+  let baseHours: number | null = null
 
   // "*/N" pattern → every N hours
   const everyMatch = hourPart.match(/^\*\/(\d+)$/)
-  if (everyMatch) return parseInt(everyMatch[1]) * 60 * 60 * 1000
+  if (everyMatch) baseHours = parseInt(everyMatch[1])
 
   // "H1,H2,H3" pattern → interval between entries
-  const hours = hourPart.split(',').map(Number).filter(n => !isNaN(n))
-  if (hours.length >= 2) {
-    const avgGap = 24 / hours.length
-    return avgGap * 60 * 60 * 1000
+  if (baseHours === null) {
+    const hours = hourPart.split(',').map(Number).filter(n => !isNaN(n))
+    if (hours.length >= 2) {
+      baseHours = 24 / hours.length
+    }
   }
 
   // Single hour → daily
-  if (/^\d+$/.test(hourPart)) return 24 * 60 * 60 * 1000
+  if (baseHours === null && /^\d+$/.test(hourPart)) baseHours = 24
 
-  return null
+  if (baseHours === null) return null
+
+  // Factor in day-of-week restrictions
+  // If only specific days are scheduled, the actual interval between
+  // runs is longer than the hour-based estimate (e.g. weekly jobs)
+  const dowMultiplier = estimateDowMultiplier(dowPart)
+
+  return baseHours * dowMultiplier * 60 * 60 * 1000
+}
+
+/**
+ * Estimate how many days between runs based on the day-of-week field.
+ * Returns 1 for daily schedules, 7 for weekly, etc.
+ */
+function estimateDowMultiplier(dowPart: string): number {
+  // "*" or missing → runs every day
+  if (!dowPart || dowPart === '*') return 1
+
+  // Count how many days per week this expression covers
+  const daysPerWeek = countDaysInDowExpr(dowPart)
+  if (daysPerWeek === null || daysPerWeek <= 0 || daysPerWeek >= 7) return 1
+
+  // Average gap between runs in days
+  return 7 / daysPerWeek
+}
+
+function countDaysInDowExpr(expr: string): number | null {
+  const days = new Set<number>()
+
+  for (const part of expr.split(',')) {
+    // Range: "1-5"
+    const rangeMatch = part.match(/^(\d+)-(\d+)$/)
+    if (rangeMatch) {
+      const start = parseInt(rangeMatch[1])
+      const end = parseInt(rangeMatch[2])
+      if (start <= end) {
+        for (let d = start; d <= end; d++) days.add(d % 7)
+      } else {
+        // Wrap-around range: e.g., 5-2 = Fri,Sat,Sun,Mon,Tue
+        for (let d = start; d <= 6; d++) days.add(d % 7)
+        for (let d = 0; d <= end; d++) days.add(d % 7)
+      }
+      continue
+    }
+    // Single day: "6"
+    if (/^\d+$/.test(part)) {
+      days.add(parseInt(part) % 7)
+      continue
+    }
+    // Unrecognized pattern (e.g. "*/2") → fall back
+    return null
+  }
+
+  return days.size
 }
 
 async function runJob(jobName: string, handler: () => Promise<void>): Promise<void> {
@@ -123,8 +180,8 @@ async function runJob(jobName: string, handler: () => Promise<void>): Promise<vo
   }
 }
 
-// Exported for manual trigger via admin API
-export { runJob, runningJobs }
+// Exported for manual trigger via admin API and testing
+export { runJob, runningJobs, estimateCronIntervalMs }
 
 export async function reloadJob(jobName: string): Promise<void> {
   // Stop existing task if any

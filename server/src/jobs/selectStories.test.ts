@@ -54,7 +54,7 @@ describe('runSelectStories', () => {
     await runSelectStories()
 
     expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['story-2', 'story-3'] } },
+      where: { id: { in: ['story-2', 'story-3'] }, status: 'analyzed' },
       data: { status: 'rejected' },
     })
   })
@@ -79,7 +79,7 @@ describe('runSelectStories', () => {
 
     expect(mockSelectStoriesInGroups).not.toHaveBeenCalled()
     expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['story-low-1', 'story-low-2'] } },
+      where: { id: { in: ['story-low-1', 'story-low-2'] }, status: 'analyzed' },
       data: { status: 'rejected' },
     })
   })

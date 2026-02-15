@@ -45,7 +45,7 @@ export async function runAssessStories(): Promise<void> {
 
   if (belowThreshold.length > 0) {
     await prisma.story.updateMany({
-      where: { id: { in: belowThreshold } },
+      where: { id: { in: belowThreshold }, status: 'pre_analyzed' },
       data: { status: 'rejected' },
     })
     log.info({ count: belowThreshold.length }, 'rejected pre_analyzed stories below assessment threshold')

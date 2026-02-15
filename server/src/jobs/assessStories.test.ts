@@ -85,7 +85,7 @@ describe('runAssessStories', () => {
 
     // story-2 and story-3 are below threshold (not in qualified set)
     expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['story-2', 'story-3'] } },
+      where: { id: { in: ['story-2', 'story-3'] }, status: 'pre_analyzed' },
       data: { status: 'rejected' },
     })
   })
@@ -115,7 +115,7 @@ describe('runAssessStories', () => {
 
     expect(mockAssessStories).not.toHaveBeenCalled()
     expect(mockPrisma.story.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['story-low-1', 'story-low-2'] } },
+      where: { id: { in: ['story-low-1', 'story-low-2'] }, status: 'pre_analyzed' },
       data: { status: 'rejected' },
     })
   })

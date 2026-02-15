@@ -21,7 +21,7 @@ export async function runSelectStories(): Promise<void> {
 
   if (belowThreshold.length > 0) {
     await prisma.story.updateMany({
-      where: { id: { in: belowThreshold } },
+      where: { id: { in: belowThreshold }, status: 'analyzed' },
       data: { status: 'rejected' },
     })
     log.info({ count: belowThreshold.length }, 'rejected analyzed stories below selection relevance minimum')
