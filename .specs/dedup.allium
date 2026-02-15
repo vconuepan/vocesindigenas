@@ -1,0 +1,183 @@
+-- dedup.allium
+-- Distilled from: server/src/services/{dedup,clusters,embeddings}.ts
+--
+-- Two-stage duplicate detection: fast embedding pre-filter narrows
+-- candidates, then LLM confirms same-event coverage. Clusters group
+-- duplicates and elect a primary; non-primaries are auto-rejected
+-- so only the best version reaches readers.
+
+use "./story-pipeline.allium" as pipeline
+
+config {
+    max_candidates: Integer = 6
+    time_window_days: Integer = 14
+}
+
+-- Cluster entity is defined in story-pipeline.allium alongside Story.
+-- Accessible here via the pipeline import.
+
+-- ─── Detection ─────────────────────────────────────────────────────
+
+-- Chained from the Assess rule in story-pipeline.allium.
+-- Fires after the transaction commits (fire-and-forget).
+
+rule FindCandidates {
+    when: DetectDuplicates(story)
+    requires: story.embedding != null
+
+    let candidates = nearest_by_cosine(
+        story.embedding,
+        config.max_candidates,
+        within: config.time_window_days.days
+    ) where status in {analyzed, selected, published}
+      and is_primary
+
+    if candidates.count > 0:
+        ensures: ConfirmDuplicates(story, candidates)
+}
+
+rule ConfirmWithLLM {
+    when: ConfirmDuplicates(story, candidates)
+
+    -- LLM checks whether each candidate covers the same specific
+    -- event (not just the same broad topic).
+    let confirmed = LLM.confirm_duplicates(story, candidates)
+        where is_duplicate = true
+
+    if confirmed.count > 0:
+        ensures: FormCluster(story, confirmed)
+}
+
+-- ─── Cluster Formation ─────────────────────────────────────────────
+
+rule FormCluster {
+    when: FormCluster(source, duplicates)
+
+    -- Merge into existing cluster or create new one
+    let existing = duplicates.any(d => d.cluster)?.cluster
+
+    if existing != null:
+        ensures: source.cluster = existing
+        for dup in duplicates where cluster = null:
+            ensures: dup.cluster = existing
+        ensures: ElectPrimary(existing)
+    else:
+        let cluster = Cluster.created(primary: source)
+        ensures: source.cluster = cluster
+        for dup in duplicates:
+            ensures: dup.cluster = cluster
+        ensures: ElectPrimary(cluster)
+}
+
+-- ─── Primary Election ──────────────────────────────────────────────
+
+-- Primary selection priority:
+--   1. Published stories win (already surfaced to readers)
+--   2. Among published: earliest date_published
+--   3. Among unpublished: highest relevance score
+--   4. Tie-breaker: earliest date_crawled
+
+rule ElectPrimary {
+    when: ElectPrimary(cluster)
+
+    let best = cluster.members
+        .sort_by(
+            status = published desc,
+            date_published asc,
+            relevance desc,
+            date_crawled asc
+        )
+        .first
+
+    ensures: cluster.primary = best
+    ensures: AutoRejectNonPrimaries(cluster, include_published: false)
+}
+
+-- ─── Auto-Rejection ────────────────────────────────────────────────
+
+rule AutoRejectNonPrimaries {
+    when: AutoRejectNonPrimaries(cluster, include_published)
+
+    let targets = cluster.members
+        where this != cluster.primary
+        and status not in {rejected, trashed}
+
+    for member in targets:
+        if include_published or member.status != published:
+            ensures: member.status = rejected
+}
+
+-- ─── Admin Cluster Operations ──────────────────────────────────────
+
+rule CreateManualCluster {
+    when: AdminCreatesCluster(stories, designated_primary)
+    requires: stories.count >= 2
+    requires: stories.all(s => s.cluster = null)
+
+    let cluster = Cluster.created(primary: designated_primary)
+    for story in stories:
+        ensures: story.cluster = cluster
+    ensures: AutoRejectNonPrimaries(cluster, include_published: true)
+}
+
+rule SetPrimary {
+    when: AdminSetsPrimary(cluster, new_primary)
+    requires: new_primary.cluster = cluster
+
+    ensures: cluster.primary = new_primary
+    ensures: AutoRejectNonPrimaries(cluster, include_published: true)
+}
+
+rule RemoveFromCluster {
+    when: AdminRemovesMember(cluster, member)
+    requires: member.cluster = cluster
+
+    ensures: member.cluster = null
+    if member.status = rejected:
+        ensures: member.status = analyzed
+
+    if cluster.member_count <= 1:
+        ensures: DissolveCluster(cluster)
+    else:
+        ensures: ElectPrimary(cluster)
+}
+
+rule DissolveCluster {
+    when: DissolveCluster(cluster)
+
+    for member in cluster.members:
+        ensures: member.cluster = null
+        if member.status = rejected:
+            ensures: member.status = analyzed
+
+    ensures: not exists cluster
+}
+
+rule MergeClusters {
+    when: AdminMergesClusters(source, target)
+
+    for member in source.members:
+        ensures: member.cluster = target
+
+    ensures: not exists source
+    ensures: ElectPrimary(target)
+}
+
+-- ─── Public Redirect ───────────────────────────────────────────────
+-- When a published story becomes non-primary (e.g. after manual
+-- re-clustering), its public URL 301-redirects to the primary.
+
+surface StoryPage {
+    facing visitor: User
+
+    context story: Story where slug = requested_slug
+
+    exposes:
+        story.title
+        story.summary
+        story.date_published
+
+    guarantee:
+        if not story.is_primary:
+            redirect_to StoryPage(story.cluster.primary)
+}

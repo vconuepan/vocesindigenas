@@ -1,0 +1,175 @@
+-- story-pipeline.allium
+-- Distilled from: server/src/services/{stories,preAnalysis,analysis,selection}.ts
+--
+-- The core editorial funnel. Stories flow through LLM stages that
+-- progressively filter and enrich, with config-driven thresholds
+-- controlling how aggressively the funnel narrows.
+
+config {
+    full_assessment_threshold: Integer = 5
+    preassess_batch_size: Integer = 10
+    selection_relevance_min: Integer = 5
+    selection_ratio: Float = 0.5
+    selection_max_group_size: Integer = 20
+}
+
+-- Feed and Issue are owned by the source management domain.
+-- We depend on their shape but don't control their lifecycle.
+external entity Feed { issue: Issue? }
+external entity Issue { slug: String, min_pre_rating: Integer? }
+
+entity Story {
+    -- Source data (immutable after crawl)
+    source_url: URL
+    source_title: String
+    source_content: String
+    feed: Feed
+    date_crawled: Timestamp
+
+    status: fetched
+          | pre_analyzed
+          | analyzed
+          | selected
+          | published
+          | rejected
+          | trashed
+
+    -- Pre-assessment fields
+    issue: Issue?
+    relevance_pre: Integer?                              -- 1-10 conservative
+    emotion_tag: uplifting | frustrating | scary | calm | null
+
+    -- Full assessment fields
+    title: String?
+    title_label: String?
+    summary: String?
+    relevance: Integer?                                  -- 1-10 detailed
+    marketing_blurb: String?
+
+    -- Publishing fields (immutable after first set)
+    slug: String?
+    date_published: Timestamp?
+
+    -- Embedding
+    embedding: Embedding?
+
+    -- Cluster membership
+    cluster: Cluster?
+
+    -- Derived
+    effective_issue: issue ?? feed.issue
+    assessment_threshold:
+        effective_issue?.min_pre_rating ?? config.full_assessment_threshold
+    is_primary: cluster = null or cluster.primary = this
+}
+
+value Embedding {
+    vector: List<Float>                                  -- 1536 dimensions
+    content_hash: String                                 -- prevents needless regeneration
+}
+
+entity Cluster {
+    members: Story with cluster = this                   -- one-to-many
+    primary: Story                                       -- best representative
+
+    -- Derived
+    member_count: members.count
+}
+
+-- ─── Stage 1: Pre-Assessment ───────────────────────────────────────
+
+rule PreAssess {
+    when: story: Story.status becomes fetched
+    -- In practice batched (preassess_batch_size), but the domain
+    -- rule is per-story. Batching is an implementation concern.
+
+    -- LLM assigns issue + conservative rating + emotion
+    ensures: story.issue = LLM.classify_issue(story) ?? story.feed.issue
+    ensures: story.relevance_pre = LLM.pre_rate(story)
+    ensures: story.emotion_tag = LLM.tag_emotion(story)
+    ensures: story.status = pre_analyzed
+}
+
+-- ─── Stage 2: Full Assessment ──────────────────────────────────────
+
+rule Assess {
+    when: story: Story.status becomes pre_analyzed
+    requires: story.relevance_pre >= story.assessment_threshold
+
+    -- LLM generates editorial content + detailed rating
+    ensures: story.title = LLM.generate_title(story)
+    ensures: story.title_label = LLM.generate_label(story)
+    ensures: story.summary = LLM.generate_summary(story)
+    ensures: story.relevance = LLM.rate(story)
+    ensures: story.marketing_blurb = LLM.generate_blurb(story)
+
+    -- Embedding generated atomically before state change.
+    -- If generation fails, entire transition rolls back.
+    ensures: story.embedding = Embedding.created(
+        vector: embed(story.title, story.title_label, story.summary),
+        content_hash: hash(story.title, story.title_label, story.summary)
+    )
+
+    ensures: story.status = analyzed
+
+    -- Dedup fires after commit (see dedup.allium)
+    ensures: DetectDuplicates(story)
+}
+
+-- ─── Stage 3: Selection ────────────────────────────────────────────
+
+-- Stories below the relevance floor are never considered.
+-- Non-primary cluster members are auto-rejected as a safety net.
+
+rule RejectBelowFloor {
+    when: story: Story.status becomes analyzed
+    requires: story.relevance < config.selection_relevance_min
+    ensures: story.status = rejected
+}
+
+rule RejectNonPrimary {
+    when: story: Story.status becomes analyzed
+    requires: not story.is_primary
+    ensures: story.status = rejected
+}
+
+rule Select {
+    when: story: Story.status becomes analyzed
+    requires: story.relevance >= config.selection_relevance_min
+    requires: story.is_primary
+    -- LLM picks top ~selection_ratio from eligible pool.
+    -- Implementation splits into groups of selection_max_group_size.
+    -- Selected stories advance; remainder rejected.
+    ensures: story.status = selected or story.status = rejected
+}
+
+-- ─── Stage 4: Publishing ───────────────────────────────────────────
+
+rule Publish {
+    when: story: Story.status becomes selected
+
+    -- Slug generated once, never changes
+    let new_slug = story.slug ?? slugify(story.title ?? story.source_title)
+
+    -- Embedding must exist (fail-fast if missing)
+    requires: story.embedding != null
+
+    ensures: story.slug = new_slug
+    ensures: story.date_published = story.date_published ?? now
+    ensures: story.status = published
+}
+
+-- ─── Manual Transitions ────────────────────────────────────────────
+
+-- Admin can trash any story (soft delete) or reject it.
+-- These are external stimuli, not automated rules.
+
+rule TrashStory {
+    when: AdminTrashesStory(story)
+    ensures: story.status = trashed
+}
+
+rule RejectStory {
+    when: AdminRejectsStory(story)
+    ensures: story.status = rejected
+}
