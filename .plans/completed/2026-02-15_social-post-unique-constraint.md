@@ -82,13 +82,19 @@ Remove the `open question` block (lines 155-156) since this is now resolved. Rep
 
 ## Migration Workflow
 
-Per project conventions (`.context/database-migrations.md`):
+Migration file: `server/prisma/migrations/20260215120000_add_social_post_story_unique/migration.sql`
 
-1. Create migration SQL file manually
-2. User executes in pgAdmin
-3. Mark as resolved with `npm run db:migrate:resolve --prefix server`
-4. Update `schema.prisma` with `@unique`
-5. Ask user to stop dev server, then run `npm run db:generate --prefix server`
+1. Pre-flight duplicate check in pgAdmin:
+   ```sql
+   SELECT story_id, COUNT(*) FROM bluesky_posts GROUP BY story_id HAVING COUNT(*) > 1;
+   SELECT story_id, COUNT(*) FROM mastodon_posts GROUP BY story_id HAVING COUNT(*) > 1;
+   ```
+   If duplicates exist, clean them up manually before proceeding.
+2. Execute the migration SQL in pgAdmin
+3. Mark as resolved: `npm run db:migrate:resolve --prefix server -- --applied 20260215120000_add_social_post_story_unique`
+4. Stop the dev server, then run `npm run db:generate --prefix server`
+
+**Status: Applied 2026-02-15.**
 
 ## Scope
 
