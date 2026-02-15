@@ -1,5 +1,7 @@
 # Bluesky Integration
 
+> **Spec:** [`.specs/social-posting.allium`](../.specs/social-posting.allium) -- channel sum type, story selection, draft generation, publishing, duplicate prevention (shared with Mastodon). This file covers Bluesky-specific implementation details, authentication, API endpoints, and configuration.
+
 ## Overview
 
 Automated and manual posting of stories to Bluesky via the AT Protocol API. Stories can be posted manually from the admin stories page (single or bulk with LLM selection) or automatically via a twice-daily cron job. Each post includes LLM-generated text, a link card to the Actually Relevant story page, and an inline link to the original source article.

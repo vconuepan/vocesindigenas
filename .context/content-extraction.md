@@ -1,5 +1,7 @@
 # Content Extraction
 
+> **Spec:** [`.specs/crawl-and-extraction.allium`](../.specs/crawl-and-extraction.allium) -- extraction tiers, API throttle rules, adaptive failure tracking, feed crawl lifecycle. This file covers implementation details, resource limits, and operational guides.
+
 The crawler fetches RSS feeds and extracts article content using a 3-tier fallback chain. Each tier is tried in order; the first one that produces enough text wins.
 
 ## Extraction Chain

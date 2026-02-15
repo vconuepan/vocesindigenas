@@ -5,6 +5,7 @@ const mockPrisma = {
   pendingSubscription: {
     findFirst: vi.fn(),
     create: vi.fn(),
+    deleteMany: vi.fn(),
   },
 }
 
@@ -24,6 +25,7 @@ describe('subscribe service', () => {
     vi.clearAllMocks()
     mockPrisma.pendingSubscription.findFirst.mockResolvedValue(null)
     mockPrisma.pendingSubscription.create.mockResolvedValue({ id: '1' })
+    mockPrisma.pendingSubscription.deleteMany.mockResolvedValue({ count: 0 })
     mockPlunk.createContact.mockResolvedValue({ id: 'contact-1' })
     mockPlunk.sendTransactional.mockResolvedValue(undefined)
     mockPlunk.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: false })
@@ -132,6 +134,51 @@ describe('subscribe service', () => {
 
       expect(mockPlunk.verifyEmail).not.toHaveBeenCalled()
       expect(mockPlunk.createContact).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('re-subscribe (unconfirmed)', () => {
+    it('deletes existing unconfirmed entries before creating new one', async () => {
+      mockPrisma.pendingSubscription.deleteMany.mockResolvedValue({ count: 1 })
+
+      await subscribe({ email: 'retry@example.com' })
+
+      expect(mockPrisma.pendingSubscription.deleteMany).toHaveBeenCalledWith({
+        where: { email: 'retry@example.com', confirmedAt: null },
+      })
+      expect(mockPrisma.pendingSubscription.create).toHaveBeenCalled()
+    })
+
+    it('deletes unconfirmed entries after email verification', async () => {
+      const callOrder: string[] = []
+      mockPlunk.verifyEmail.mockImplementation(async () => {
+        callOrder.push('verify')
+        return { valid: true, domainExists: true, isDisposable: false }
+      })
+      mockPrisma.pendingSubscription.deleteMany.mockImplementation(async () => {
+        callOrder.push('deleteMany')
+        return { count: 0 }
+      })
+
+      await subscribe({ email: 'test@example.com' })
+
+      expect(callOrder).toEqual(['verify', 'deleteMany'])
+    })
+
+    it('does not delete confirmed entries', async () => {
+      await subscribe({ email: 'test@example.com' })
+
+      expect(mockPrisma.pendingSubscription.deleteMany).toHaveBeenCalledWith({
+        where: expect.objectContaining({ confirmedAt: null }),
+      })
+    })
+
+    it('skips re-subscribe cleanup when already confirmed', async () => {
+      mockPrisma.pendingSubscription.findFirst.mockResolvedValue({ confirmedAt: new Date() })
+
+      await subscribe({ email: 'confirmed@example.com' })
+
+      expect(mockPrisma.pendingSubscription.deleteMany).not.toHaveBeenCalled()
     })
   })
 })

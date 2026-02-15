@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { config } from '../config.js'
 
 const mockParseFeed = vi.hoisted(() => vi.fn())
 const mockExtractContent = vi.hoisted(() => vi.fn())
@@ -338,10 +339,15 @@ describe('crawlFeed', () => {
   })
 
   it('skips local extraction after consecutive API-only successes reach threshold', async () => {
-    // With concurrency=3, the first 3 articles run concurrently (all with skipLocal=false).
-    // Use concurrency=1 via 5 sequential articles to test threshold (default 3).
+    const batch = config.concurrency.crawlArticles
+    const threshold = config.crawl.localFailThreshold
+    // Articles in concurrent batches all check skipLocal before any finish,
+    // so the threshold takes effect at the next batch boundary.
+    const articlesBeforeSkip = batch * Math.ceil(threshold / batch)
+    const totalArticles = articlesBeforeSkip + 1
+
     mockGetFeedById.mockResolvedValue(sampleFeed)
-    const items = Array.from({ length: 5 }, (_, i) => ({
+    const items = Array.from({ length: totalArticles }, (_, i) => ({
       url: `https://example.com/art-${i}`,
       title: `Art ${i}`,
       datePublished: null,
@@ -349,7 +355,7 @@ describe('crawlFeed', () => {
     }))
     mockParseFeed.mockResolvedValue(rssResult(items))
     mockGetExistingUrls.mockResolvedValue(new Set())
-    // All return API method (diffbot)
+    // All return API method (diffbot) — each increments localFailCount
     mockExtractContent.mockResolvedValue({
       title: 'T', content: 'Content', datePublished: null, method: 'diffbot',
     })
@@ -357,23 +363,28 @@ describe('crawlFeed', () => {
 
     await crawlFeed('feed-1')
 
-    // The first crawlArticles (3) articles run concurrently with skipLocal=false.
-    // After those 3 complete (all diffbot), localFailCount=3 → skipLocal=true.
-    // Articles 4 and 5 should have skipLocalExtraction=true.
     const calls = mockExtractContent.mock.calls
-    expect(calls).toHaveLength(5)
-    // First 3 calls: skipLocalExtraction=false (concurrent batch)
-    expect(calls[0][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: false })
-    expect(calls[1][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: false })
-    expect(calls[2][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: false })
-    // Remaining calls: skipLocalExtraction=true
-    expect(calls[3][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: true })
-    expect(calls[4][1]).toMatchObject({ htmlSelector: null, skipLocalExtraction: true })
+    expect(calls).toHaveLength(totalArticles)
+    // Articles before threshold batch boundary: skipLocalExtraction=false
+    for (let i = 0; i < articlesBeforeSkip; i++) {
+      expect(calls[i][1]).toMatchObject({ skipLocalExtraction: false })
+    }
+    // Articles after threshold: skipLocalExtraction=true
+    for (let i = articlesBeforeSkip; i < totalArticles; i++) {
+      expect(calls[i][1]).toMatchObject({ skipLocalExtraction: true })
+    }
   })
 
   it('skips remaining articles after consecutive total extraction failures', async () => {
+    const batch = config.concurrency.crawlArticles
+    const threshold = config.crawl.totalFailThreshold
+    // Concurrent batches all call extractContent before any can set skipAll.
+    // The batch that pushes totalFailCount ≥ threshold is fully attempted.
+    const expectedCalls = batch * Math.ceil(threshold / batch)
+    const totalArticles = expectedCalls + batch // extra articles to verify they're skipped
+
     mockGetFeedById.mockResolvedValue(sampleFeed)
-    const items = Array.from({ length: 6 }, (_, i) => ({
+    const items = Array.from({ length: totalArticles }, (_, i) => ({
       url: `https://example.com/art-${i}`,
       title: `Art ${i}`,
       datePublished: null,
@@ -386,10 +397,9 @@ describe('crawlFeed', () => {
 
     const result = await crawlFeed('feed-1')
 
-    // First 3 (concurrent batch) attempt extraction → all fail → totalFailCount=3 → skipAll=true
-    // Articles 4-6 are skipped entirely without calling extractContent
-    expect(mockExtractContent).toHaveBeenCalledTimes(3)
-    expect(result.errors).toBe(6)
+    // Only articles in batches up to (and including) the threshold batch call extractContent
+    expect(mockExtractContent).toHaveBeenCalledTimes(expectedCalls)
+    expect(result.errors).toBe(totalArticles)
   })
 
   it('resets total fail count when extraction succeeds', async () => {

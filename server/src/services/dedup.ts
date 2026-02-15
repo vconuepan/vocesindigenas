@@ -105,15 +105,36 @@ export async function confirmDuplicates(
 
 // ──── Stage 3: Cluster management ────────────────────────────────────────────
 
-async function findExistingCluster(storyIds: string[]): Promise<{ id: string } | null> {
-  const story = await prisma.story.findFirst({
+export async function findExistingCluster(storyIds: string[]): Promise<{ id: string; otherClusterIds?: string[] } | null> {
+  const stories = await prisma.story.findMany({
     where: {
       id: { in: storyIds },
       clusterId: { not: null },
     },
-    select: { clusterId: true },
+    select: { clusterId: true, dateCrawled: true },
+    orderBy: { dateCrawled: 'desc' },
   })
-  return story?.clusterId ? { id: story.clusterId } : null
+
+  if (stories.length === 0) return null
+
+  // Pick the cluster of the newest duplicate
+  const primaryClusterId = stories[0].clusterId!
+
+  // Check for multi-cluster collision
+  const uniqueClusterIds = [...new Set(stories.map(s => s.clusterId!))]
+  const otherClusterIds = uniqueClusterIds.filter(id => id !== primaryClusterId)
+
+  if (otherClusterIds.length > 0) {
+    log.warn(
+      { targetCluster: primaryClusterId, otherClusters: otherClusterIds, duplicateIds: storyIds },
+      'multi-cluster collision: duplicates span multiple clusters, joining newest'
+    )
+  }
+
+  return {
+    id: primaryClusterId,
+    ...(otherClusterIds.length > 0 ? { otherClusterIds } : {}),
+  }
 }
 
 async function createCluster(sourceId: string, duplicateIds: string[]): Promise<{ id: string }> {

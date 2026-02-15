@@ -1,5 +1,7 @@
 # Newsletter & Podcast Generation
 
+> **Spec:** [`.specs/newsletter-and-podcast.allium`](../.specs/newsletter-and-podcast.allium) -- workflow rules (assign, select, generate, send), entity models, issue ordering. This file covers implementation details, templates, API endpoints, and modification guides.
+
 ## Overview
 
 Newsletters and podcasts are content formats generated from published/selected stories. Both follow a create-assign-generate workflow via admin API endpoints. Newsletters use template-based formatting; podcasts use LLM-generated scripts.

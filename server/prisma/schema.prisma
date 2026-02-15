@@ -238,7 +238,7 @@ model JobRun {
 
 model BlueskyPost {
   id               String    @id @default(uuid())
-  storyId          String    @map("story_id")
+  storyId          String    @unique @map("story_id")
   story            Story     @relation(fields: [storyId], references: [id])
   postUri          String?   @unique @map("post_uri")
   postCid          String?   @map("post_cid")
@@ -254,7 +254,6 @@ model BlueskyPost {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  @@index([storyId])
   @@index([status])
   @@index([publishedAt])
   @@map("bluesky_posts")
@@ -264,7 +263,7 @@ model BlueskyPost {
 
 model MastodonPost {
   id               String    @id @default(uuid())
-  storyId          String    @map("story_id")
+  storyId          String    @unique @map("story_id")
   story            Story     @relation(fields: [storyId], references: [id])
   statusId         String?   @unique @map("status_id")
   statusUrl        String?   @map("status_url")
@@ -279,7 +278,6 @@ model MastodonPost {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  @@index([storyId])
   @@index([status])
   @@index([publishedAt])
   @@map("mastodon_posts")

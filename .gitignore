@@ -25,3 +25,6 @@ logs/
 # AI development artifacts
 nul
 .playwright-mcp
+
+# Non-coding-related project files
+DOCS/

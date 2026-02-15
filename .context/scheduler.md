@@ -1,5 +1,7 @@
 # Job Scheduler
 
+> **Spec:** [`.specs/scheduler.allium`](../.specs/scheduler.allium) -- cron job entity, overlap prevention, overdue detection, hot reload, bulk task lifecycle. This file covers operational details, job registry, concurrency configuration, and admin API.
+
 The scheduler runs jobs in-process using `node-cron`, with configuration and run history stored in the `job_runs` database table. No external job queue infrastructure is needed.
 
 ## How It Works

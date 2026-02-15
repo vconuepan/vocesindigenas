@@ -4,7 +4,7 @@ import { HumanMessage } from '@langchain/core/messages'
 import { paginate } from '../lib/paginate.js'
 import { slugify } from '../utils/slugify.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
-import { generateEmbeddingForContent, batchGenerateEmbeddings, generateSearchEmbedding } from './embedding.js'
+import { generateEmbeddingForContent, generateSearchEmbedding, ensureEmbedding, ensureEmbeddings } from './embedding.js'
 import { searchByEmbedding, fetchStoryForEmbedding, saveEmbeddingTx } from '../lib/vectors.js'
 import { createLogger } from '../lib/logger.js'
 import { config } from '../config.js'
@@ -347,19 +347,7 @@ export async function updateStoryStatus(id: string, status: string): Promise<Sto
   const data: Record<string, any> = { status: status as StoryStatus }
   if (status === 'published') {
     Object.assign(data, await preparePublishData(id))
-
-    // Generate embedding before publishing
-    const currentStory = await fetchStoryForEmbedding(id)
-    if (!currentStory) throw new Error('Story not found')
-    const embeddingData = await generateEmbeddingForContent(currentStory)
-
-    return prisma.$transaction(async (tx) => {
-      const story = await tx.story.update({ where: { id }, data })
-      if (embeddingData) {
-        await saveEmbeddingTx(tx, id, embeddingData.embedding, embeddingData.hash)
-      }
-      return story
-    })
+    await ensureEmbedding(id)
   }
   return prisma.story.update({ where: { id }, data })
 }
@@ -417,50 +405,25 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
 
     const slugMap = await generateUniqueSlugs(storiesNeedingSlugs)
 
-    // Generate embeddings BEFORE publishing — only publish stories that succeed
-    const embeddingResults = await batchGenerateEmbeddings(ids, 'selected')
-    const succeeded = embeddingResults.filter(r => r.success).map(r => r.id)
-    const failed = embeddingResults.filter(r => !r.success)
+    // Ensure all stories have embeddings (no-op for already-embedded stories)
+    await ensureEmbeddings(ids)
 
-    if (succeeded.length === 0 && ids.length > 0) {
-      throw new Error('All embedding generations failed. No stories were published.')
-    }
-
-    // Apply slug updates + status updates + embeddings atomically
     const now = new Date()
-    const succeededSet = new Set(succeeded)
     await prisma.$transaction(async (tx) => {
-      // Set slugs for stories that need them (only succeeded ones)
       for (const [storyId, slug] of slugMap.entries()) {
-        if (succeededSet.has(storyId)) {
-          await tx.story.update({ where: { id: storyId }, data: { slug } })
-        }
+        await tx.story.update({ where: { id: storyId }, data: { slug } })
       }
-      // Update status for stories that already have datePublished
       await tx.story.updateMany({
-        where: { id: { in: succeeded }, datePublished: { not: null } },
+        where: { id: { in: ids }, datePublished: { not: null } },
         data: { status: status as StoryStatus },
       })
-      // Update status + set datePublished for stories without one
       await tx.story.updateMany({
-        where: { id: { in: succeeded }, datePublished: null },
+        where: { id: { in: ids }, datePublished: null },
         data: { status: status as StoryStatus, datePublished: now },
       })
-      // Persist the generated embeddings
-      for (const result of embeddingResults) {
-        if (result.success && result.embedding && result.hash) {
-          await saveEmbeddingTx(tx, result.id, result.embedding, result.hash)
-        }
-      }
     })
 
-    return {
-      count: succeeded.length,
-      ...(failed.length > 0 ? {
-        failed: failed.map(f => f.id),
-        embeddingWarning: `${failed.length} story(s) not published due to embedding failure.`,
-      } : {}),
-    }
+    return { count: ids.length }
   }
   return prisma.story.updateMany({
     where: { id: { in: ids } },
@@ -968,24 +931,13 @@ export async function getStoriesByStatus(
 
 export async function publishStory(id: string): Promise<Story> {
   const publishData = await preparePublishData(id)
-
-  // Generate embedding before publishing — roll back on failure
-  const currentStory = await fetchStoryForEmbedding(id)
-  if (!currentStory) throw new Error('Story not found')
-  const embeddingData = await generateEmbeddingForContent(currentStory)
-
-  return prisma.$transaction(async (tx) => {
-    const story = await tx.story.update({
-      where: { id },
-      data: {
-        status: StoryStatus.published,
-        ...publishData,
-      },
-    })
-    if (embeddingData) {
-      await saveEmbeddingTx(tx, id, embeddingData.embedding, embeddingData.hash)
-    }
-    return story
+  await ensureEmbedding(id)
+  return prisma.story.update({
+    where: { id },
+    data: {
+      status: StoryStatus.published,
+      ...publishData,
+    },
   })
 }
 

@@ -73,7 +73,7 @@ export function FeedTable({ feeds, issues, qualityMetrics, onEdit, onCrawl, onDe
                         : feed.lastCrawlError}
                     </span>
                   )}
-                  {feed.consecutiveEmptyCrawls >= 5 && (
+                  {feed.consecutiveEmptyCrawls >= 3 && (
                     <span
                       title={`No new articles in last ${feed.consecutiveEmptyCrawls} crawls${feed.lastSuccessfulCrawlAt ? ` (last success: ${formatDateWithTime(feed.lastSuccessfulCrawlAt)})` : ''}`}
                       className="shrink-0 text-neutral-400"

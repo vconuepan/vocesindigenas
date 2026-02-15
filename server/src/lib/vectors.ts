@@ -60,16 +60,19 @@ export async function fetchStoryForEmbedding(
   return { ...mapRow(rows[0]), status: rows[0].status }
 }
 
-/** Fetch multiple stories' embedding-relevant fields. Defaults to published only. */
+/** Fetch multiple stories' embedding-relevant fields. Optionally filter by status. */
 export async function fetchStoriesForEmbedding(
   storyIds: string[],
-  statusFilter: 'published' | 'selected' | 'analyzed' = 'published',
+  statusFilter?: 'published' | 'selected' | 'analyzed',
 ): Promise<StoryEmbeddingRow[]> {
   if (storyIds.length === 0) return []
+  const statusClause = statusFilter
+    ? Prisma.sql`AND status = ${statusFilter}::"StoryStatus"`
+    : Prisma.empty
   const rows = await prisma.$queryRaw<RawStoryRow[]>`
     SELECT id, title, title_label, summary, embedding_content_hash
     FROM stories
-    WHERE id IN (${Prisma.join(storyIds)}) AND status = ${statusFilter}::"StoryStatus"
+    WHERE id IN (${Prisma.join(storyIds)}) ${statusClause}
   `
   return rows.map(mapRow)
 }

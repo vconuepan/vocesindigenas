@@ -5,11 +5,12 @@ describe('TTLCache', () => {
   let cache: TTLCache<string>
 
   beforeEach(() => {
-    cache = new TTLCache<string>(1000) // 1 second TTL
     vi.useFakeTimers()
+    cache = new TTLCache<string>(1000) // 1 second TTL
   })
 
   afterEach(() => {
+    cache.destroy()
     vi.useRealTimers()
   })
 
@@ -82,6 +83,7 @@ describe('TTLCache', () => {
     objCache.set('obj', { count: 42 })
 
     expect(objCache.get('obj')).toEqual({ count: 42 })
+    objCache.destroy()
   })
 
   it('handles null values correctly', () => {
@@ -90,6 +92,34 @@ describe('TTLCache', () => {
 
     // null is a valid cached value
     expect(nullableCache.get('key')).toBeNull()
+    nullableCache.destroy()
+  })
+
+  it('sweep removes expired entries', () => {
+    cache.set('expired1', 'val1')
+    cache.set('expired2', 'val2')
+
+    vi.advanceTimersByTime(1001) // Both entries now expired
+
+    cache.set('fresh', 'val3') // Add a fresh entry
+
+    const removed = cache.sweep()
+
+    expect(removed).toBe(2)
+    expect(cache.get('expired1')).toBeUndefined()
+    expect(cache.get('expired2')).toBeUndefined()
+    expect(cache.get('fresh')).toBe('val3')
+  })
+
+  it('sweep keeps non-expired entries', () => {
+    cache.set('key1', 'val1')
+    cache.set('key2', 'val2')
+
+    const removed = cache.sweep()
+
+    expect(removed).toBe(0)
+    expect(cache.get('key1')).toBe('val1')
+    expect(cache.get('key2')).toBe('val2')
   })
 })
 
@@ -97,11 +127,12 @@ describe('cached', () => {
   let cache: TTLCache<string>
 
   beforeEach(() => {
-    cache = new TTLCache<string>(1000)
     vi.useFakeTimers()
+    cache = new TTLCache<string>(1000)
   })
 
   afterEach(() => {
+    cache.destroy()
     vi.useRealTimers()
   })
 

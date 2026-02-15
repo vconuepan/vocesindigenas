@@ -1,5 +1,7 @@
 # Server-Side Task Queue
 
+> **Spec:** [`.specs/scheduler.allium`](../.specs/scheduler.allium) (BulkTask section) -- task lifecycle, progress tracking, cleanup rules. This file covers implementation details, client/server architecture, polling, and concurrency configuration.
+
 ## Overview
 
 Bulk LLM operations (pre-assess, assess, select) run as background tasks on the server with concurrency control via `Semaphore`. The client submits a single request and polls for progress.

@@ -243,10 +243,7 @@ router.put('/:id/status', validateBody(updateStoryStatusSchema), async (req, res
 router.post('/bulk-status', validateBody(bulkUpdateStatusSchema), async (req, res) => {
   try {
     const result = await storyService.bulkUpdateStatus(req.body.ids, req.body.status)
-    const response: Record<string, unknown> = { updated: result.count }
-    if ('embeddingWarning' in result) response.embeddingWarning = result.embeddingWarning
-    if ('failed' in result) response.failed = result.failed
-    res.json(response)
+    res.json({ updated: result.count })
   } catch (err) {
     log.error({ err }, 'failed to bulk update story status')
     res.status(500).json({ error: 'Failed to bulk update story status' })

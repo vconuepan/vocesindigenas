@@ -1,0 +1,203 @@
+-- crawl-and-extraction.allium
+-- Distilled from: server/src/services/{crawler,extractor,rssParser}.ts,
+--                 server/src/lib/crawlLimiter.ts
+--
+-- Ingestion pipeline: fetch RSS feeds, deduplicate URLs, extract
+-- article content through a tiered fallback chain, and create stories.
+-- Stories enter the pipeline in 'fetched' status (see story-pipeline.allium).
+--
+-- The extraction tier adapts at runtime: consecutive local failures
+-- skip local extraction for the remainder of the feed; consecutive
+-- total failures abort the entire feed.
+
+use "./story-pipeline.allium" as pipeline
+use "./feed-management.allium" as feeds
+
+config {
+    http_timeout_ms: Integer = 15000
+    rss_item_limit: Integer = 50
+    min_content_length: Integer = 200
+    max_response_bytes: Integer = 5242880             -- 5 MB
+    local_fail_threshold: Integer = 3
+    total_fail_threshold: Integer = 5
+    crawl_concurrency_feeds: Integer = 3
+    crawl_concurrency_articles: Integer = 5
+    api_base_delay_ms: Integer = 500
+    api_backoff_ms: Integer = 30000
+    api_max_delay_ms: Integer = 30000
+}
+
+-- ─── RSS Parsing ──────────────────────────────────────────────────
+
+value RSSItem {
+    url: String
+    title: String
+    date_published: String?
+    description: String?
+}
+
+-- ─── Content Extraction ──────────────────────────────────────────
+
+value ExtractionResult {
+    title: String?
+    content: String
+    date_published: String?
+    method: selector | readability | diffbot | pipfeed
+}
+
+-- ─── API Throttle ────────────────────────────────────────────────
+-- Shared in-memory state machine that governs the pace of external
+-- extraction API calls across all concurrent crawl tasks.
+-- Calls are serialized (one at a time) through the throttle.
+
+entity ApiThrottle {
+    delay_ms: Integer                                  -- current inter-call delay
+    backoff_until: Timestamp?                          -- wait until this time after 429
+
+    -- Derived
+    is_backing_off: backoff_until != null and backoff_until > now
+}
+
+default ApiThrottle throttle = {
+    delay_ms: config.api_base_delay_ms,
+    backoff_until: null
+}
+
+-- On 429 response: double the inter-call delay (capped at
+-- api_max_delay_ms) and set a backoff period. No API calls
+-- are made until the backoff period expires.
+rule ThrottleOnRateLimit {
+    when: ApiCallReceives429()
+
+    let new_delay = throttle.delay_ms * 2
+    ensures: throttle.delay_ms =
+        if new_delay > config.api_max_delay_ms: config.api_max_delay_ms
+        else if new_delay = 0: config.api_backoff_ms
+        else: new_delay
+    ensures: throttle.backoff_until = now + config.api_backoff_ms.milliseconds
+}
+
+-- On successful API call: halve the delay back toward the base.
+-- This gradual recovery prevents oscillation between fast and slow.
+rule ThrottleOnSuccess {
+    when: ApiCallSucceeds()
+    requires: throttle.delay_ms > config.api_base_delay_ms
+
+    let reduced = throttle.delay_ms / 2
+    ensures: throttle.delay_ms =
+        if reduced < config.api_base_delay_ms: config.api_base_delay_ms
+        else: reduced
+}
+
+-- ─── Feed Crawl ──────────────────────────────────────────────────
+
+-- Scheduled job crawls all feeds whose crawl interval has elapsed.
+-- Feeds are processed concurrently (up to crawl_concurrency_feeds).
+
+rule CrawlAllDueFeeds {
+    when: CrawlJobRuns()
+
+    for feed in feeds/Feeds
+        where is_due_for_crawl:
+        ensures: CrawlFeed(feed)
+}
+
+rule CrawlFeed {
+    when: CrawlFeed(feed)
+
+    -- Step 1: Parse RSS with conditional caching (ETag / If-Modified-Since)
+    let rss_result = parse_rss(feed.rss_url, feed.last_etag, feed.last_modified)
+
+    -- Persist new cache headers if returned
+    if rss_result.cache_headers.etag != null
+        or rss_result.cache_headers.last_modified != null:
+        ensures: feed.last_etag = rss_result.cache_headers.etag
+        ensures: feed.last_modified = rss_result.cache_headers.last_modified
+
+    -- 304 Not Modified — nothing new
+    if rss_result.not_modified:
+        ensures: FeedCrawlComplete(feed, new_count: 0, error_count: 0)
+
+    if not rss_result.not_modified:
+        ensures: ProcessRSSItems(feed, rss_result.items)
+}
+
+rule ProcessRSSItems {
+    when: ProcessRSSItems(feed, items)
+
+    -- Step 2: Normalize and deduplicate URLs
+    -- - Normalize each URL (strip tracking params, fragments, etc.)
+    -- - Deduplicate within the RSS batch (same URL appears twice)
+    -- - Deduplicate against existing stories in the database
+    let normalized = normalize_urls(items)
+    let unique = deduplicate_within_batch(normalized)
+    let new_items = unique where not exists pipeline/Story{source_url: url}
+
+    -- Step 3: Extract content for each new item (concurrent, up to
+    -- crawl_concurrency_articles). Adaptive failure tracking:
+    -- - After local_fail_threshold consecutive local failures, skip local
+    --   extraction for remaining articles (go straight to API tier)
+    -- - After total_fail_threshold consecutive total failures, abort
+    --   remaining articles entirely
+    for item in new_items:
+        ensures: ExtractAndCreate(feed, item)
+}
+
+rule ExtractAndCreate {
+    when: ExtractAndCreate(feed, item)
+
+    -- Tiered extraction: each tier is tried in order, first success wins.
+    --   Tier 1: CSS selector (if feed.html_selector is set)
+    --   Tier 2: Readability (Mozilla's algorithm)
+    --   Tier 3: Configured API (Diffbot or PipFeed, via shared throttle)
+    --
+    -- Local extraction (tiers 1-2) is skipped when the adaptive skip
+    -- flag is set (too many consecutive local failures for this feed).
+    -- API calls (tier 3) go through the ApiThrottle which serializes
+    -- calls and adapts pacing on 429 responses.
+
+    let extracted = extract_content(item.url, feed.html_selector)
+
+    if extracted != null:
+        ensures: pipeline/Story.created(
+            source_url: item.url,
+            source_title: extracted.title ?? item.title,
+            source_content: extracted.content,
+            feed: feed,
+            source_date_published: extracted.date_published ?? item.date_published
+        )
+
+    -- Concurrent insert race: if another crawl already created this URL,
+    -- the unique constraint violation is silently treated as a skip (not
+    -- an error).
+}
+
+-- ─── Manual Crawl ────────────────────────────────────────────────
+-- Admin can crawl a single URL into a specific feed.
+
+rule CrawlSingleUrl {
+    when: AdminCrawlsUrl(url, feed)
+    let normalized = normalize_url(url)
+
+    requires: not exists pipeline/Story{source_url: normalized}
+
+    let extracted = extract_content(normalized, feed.html_selector)
+    requires: extracted != null
+
+    ensures: pipeline/Story.created(
+        source_url: normalized,
+        source_title: extracted.title ?? "Untitled",
+        source_content: extracted.content,
+        feed: feed,
+        source_date_published: extracted.date_published
+    )
+}
+
+-- ─── Resource Limits ─────────────────────────────────────────────
+-- These constraints apply at the extraction level to prevent OOM
+-- and runaway resource usage. They are behavioral because they
+-- determine whether extraction succeeds or fails.
+--
+-- - HTTP responses are capped at max_response_bytes (5 MB)
+-- - JSDOM windows are explicitly closed after Readability extraction
+-- - Redirect chains are validated against an allowlist (isAllowedUrl)

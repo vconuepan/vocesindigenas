@@ -1,5 +1,7 @@
 # Semantic Search & Embeddings
 
+> **Spec:** [`.specs/search.allium`](../.specs/search.allium) -- hybrid RRF search, related stories with LRU cache, emotion filtering. This file covers embedding generation, database schema, backfill scripts, and configuration.
+
 ## Overview
 
 Stories get vector embeddings generated from their content (titleLabel + title + summary) using OpenAI's `text-embedding-3-small` model. These embeddings power hybrid semantic+text search on the public API.
@@ -18,14 +20,13 @@ A SHA-256 hash of the embedding input string is stored as `embedding_content_has
 
 ### Trigger Points
 
-Embeddings are generated **before** the state change is committed, using Prisma interactive transactions for atomicity. If embedding generation fails (after 3 retries via `withRetry`), the entire operation rolls back. No story can reach `analyzed`, `selected`, or `published` status without a valid embedding.
+Embeddings are generated **before** the state change is committed during assessment. If embedding generation fails (after 3 retries via `withRetry`), the assess operation rolls back. No story reaches `analyzed` without a valid embedding, and since publish requires a prior `analyzed` state, published stories are guaranteed to have embeddings.
 
 1. **On assessment** (`assessStory`): Embedding generated from LLM analysis results, saved atomically with the analysis data
-2. **On publish** (`publishStory`, `updateStoryStatus`, `bulkUpdateStatus`): Embedding generated before setting status to `published`
-3. **On edit of published story** (`updateStory`): Regenerates if title/titleLabel/summary changed, saved atomically with the edit
-4. **Backfill script**: `npm run migration:backfill-embeddings --prefix server` for existing stories
+2. **On edit of published story** (`updateStory`): Regenerates if title/titleLabel/summary changed, saved atomically with the edit
+3. **Backfill script**: `npm run migration:backfill-embeddings --prefix server` for existing stories
 
-For bulk publish operations, embeddings are generated for all stories first. Only stories with successful embeddings are published; failures are reported in the response (`failed` and `embeddingWarning` fields).
+The publish step uses `ensureEmbedding()` / `ensureEmbeddings()` as a safety net. These check if an embedding exists and generate one only if missing (e.g., when an admin manually publishes an unassessed story). For stories that went through the normal pipeline, this is a no-op.
 
 ## Hybrid Search (RRF)
 

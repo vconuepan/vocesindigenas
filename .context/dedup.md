@@ -1,5 +1,7 @@
 # Story Deduplication
 
+> **Spec:** [`.specs/dedup.allium`](../.specs/dedup.allium) -- detection rules, cluster formation, primary election, auto-rejection, admin operations, public redirect. This file covers implementation details, admin UI, configuration, and modification guides.
+
 Detects and clusters stories that cover the same event across different feeds. Prevents duplicate coverage from reaching the public site and shows "Also covered by" source attribution.
 
 ## How It Works
@@ -27,6 +29,10 @@ fetched -> pre_analyzed -> analyzed -> [embedding + dedup] -> selected -> publis
 After `assessStories()` completes, each newly analyzed story:
 1. Gets its embedding generated (via `generateStoryEmbedding`)
 2. Runs through `detectAndCluster()` which finds candidates, confirms duplicates via LLM, and creates/joins clusters
+
+## Multi-Cluster Collisions
+
+When confirmed duplicates belong to different existing clusters, the source story joins the cluster of the **newest duplicate** (by `dateCrawled`). Other clusters are not auto-merged — merging requires explicit admin action via the clusters page. A warning is logged when this occurs. Duplicates already in a different cluster stay where they are; only unclustered duplicates are added to the target cluster.
 
 ## Selection Safety Net
 
@@ -109,8 +115,8 @@ In `server/src/config.ts` under `dedup`:
 
 ## Public URL Redirect
 
-When a published story becomes a non-primary cluster member (e.g. after manual clustering), its public URL redirects (301) to the primary story's URL instead of returning 404:
+When a published story becomes a non-primary cluster member (e.g. after manual clustering), its public URL redirects (302, temporary) to the primary story's URL instead of returning 404. A temporary redirect is used because cluster primaries can change via admin actions (re-clustering, merge, set-primary).
 
-- **Server:** `GET /api/stories/:slug` calls `getClusterRedirectSlug()` when the story is not found as published. Returns 301 redirect to `/api/stories/<primary-slug>` if the slug belongs to a non-primary cluster member whose primary is published.
+- **Server:** `GET /api/stories/:slug` calls `getClusterRedirectSlug()` when the story is not found as published. Returns 302 redirect to `/api/stories/<primary-slug>` if the slug belongs to a non-primary cluster member whose primary is published.
 - **Client:** `StoryPage` detects when the returned story's slug differs from the URL param and does a `navigate(replace: true)` to update the browser URL.
 - **Service:** `getClusterRedirectSlug()` in `story.ts` looks up the story by slug (any status), checks if it's a non-primary cluster member, and returns the primary's slug if the primary is published.

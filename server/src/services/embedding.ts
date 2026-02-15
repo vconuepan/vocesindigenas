@@ -4,6 +4,7 @@ import { withRetry } from '../lib/retry.js'
 import { createLogger } from '../lib/logger.js'
 import { config } from '../config.js'
 import {
+  fetchStoryForEmbedding,
   fetchStoriesForEmbedding,
   saveEmbedding,
   type StoryEmbeddingRow,
@@ -144,7 +145,7 @@ export interface EmbeddingResult {
  */
 export async function batchGenerateEmbeddings(
   storyIds: string[],
-  statusFilter: 'published' | 'selected' | 'analyzed' = 'published',
+  statusFilter?: 'published' | 'selected' | 'analyzed',
 ): Promise<EmbeddingResult[]> {
   if (storyIds.length === 0) return []
 
@@ -205,4 +206,44 @@ export async function batchGenerateEmbeddings(
   }
 
   return results
+}
+
+/**
+ * Ensure a story has an embedding. If one already exists (and content hasn't
+ * changed), this is a no-op. If missing, generates and persists one.
+ * Used as a safety net when publishing stories that may not have been assessed.
+ */
+export async function ensureEmbedding(storyId: string): Promise<void> {
+  try {
+    const story = await fetchStoryForEmbedding(storyId)
+    if (!story) return
+
+    const embeddingData = await generateEmbeddingForContent(story)
+    if (embeddingData) {
+      await saveEmbedding(storyId, embeddingData.embedding, embeddingData.hash)
+    }
+  } catch (err) {
+    log.warn({ err, storyId }, 'failed to ensure embedding, proceeding without')
+  }
+}
+
+/**
+ * Batch version: ensures embeddings exist for multiple stories.
+ * Skips stories that already have up-to-date embeddings (content hash match).
+ */
+export async function ensureEmbeddings(storyIds: string[]): Promise<void> {
+  if (storyIds.length === 0) return
+
+  const results = await batchGenerateEmbeddings(storyIds)
+
+  for (const result of results) {
+    if (result.success && result.embedding && result.hash) {
+      await saveEmbedding(result.id, result.embedding, result.hash)
+    }
+  }
+
+  const failed = results.filter(r => !r.success)
+  if (failed.length > 0) {
+    log.warn({ failedCount: failed.length }, 'some embeddings failed during ensure')
+  }
 }

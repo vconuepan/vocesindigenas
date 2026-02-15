@@ -1,0 +1,209 @@
+-- newsletter-and-podcast.allium
+-- Distilled from: server/src/services/{newsletter,podcast,carousel,plunk}.ts
+--
+-- Content creation workflows for newsletters and podcasts. Both follow
+-- the same pattern: create → assign stories → generate content via LLM.
+-- Newsletters add HTML rendering and Plunk campaign delivery on top.
+-- Podcasts produce a script with an appended story list.
+
+use "./story-pipeline.allium" as pipeline
+use "./authentication.allium" as auth
+
+config {
+    story_assignment_days: Integer = 7
+    stories_per_issue: Integer = 3
+    select_model_tier: String = "medium"
+    content_model_tier: String = "large"
+    test_segment_id: String? = null
+}
+
+-- ─── Newsletter ──────────────────────────────────────────────────
+
+entity Newsletter {
+    title: String
+    status: draft | published                          -- Prisma ContentStatus enum
+    story_ids: List<String>                            -- longlist (all candidates)
+    selected_story_ids: List<String>                   -- shortlist (LLM-selected)
+    content: String?                                   -- markdown with issue headers
+    html: String?                                      -- rendered email template
+
+    -- Relationships
+    sends: NewsletterSend with newsletter = this
+}
+
+entity NewsletterSend {
+    newsletter: Newsletter
+    plunk_campaign_id: String
+    is_test: Boolean
+    status: sent | scheduled | sending
+    html_content: String
+    sent_at: Timestamp?
+    stats: String?                                     -- JSON from Plunk API
+}
+
+-- ─── Newsletter Workflow ─────────────────────────────────────────
+
+-- Step 1: Assign — gather recently published stories as candidates.
+rule AssignStories {
+    when: AdminAssignsStories(newsletter)
+
+    let recent = pipeline/Stories
+        where status = published
+        and date_crawled >= now - config.story_assignment_days.days
+    requires: recent.count > 0
+
+    ensures: newsletter.story_ids = recent -> id
+}
+
+-- Step 2: Select — LLM picks the best stories per issue, balanced
+-- across the four top-level issues.
+rule SelectStories {
+    when: AdminSelectsStories(newsletter)
+    requires: newsletter.story_ids.count > 0
+
+    -- LLM receives all longlist stories with their issue names and
+    -- picks stories_per_issue per distinct top-level issue.
+    let selected = LLM.select_newsletter_stories(
+        newsletter.story_ids,
+        config.stories_per_issue
+    )
+
+    ensures: newsletter.selected_story_ids = selected
+}
+
+-- Step 3: Generate content — LLM writes an editorial intro; stories
+-- are grouped by issue in a fixed order (human-development,
+-- planet-climate, existential-threats, science-technology) and
+-- formatted as markdown with issue section headers.
+rule GenerateContent {
+    when: AdminGeneratesContent(newsletter)
+    requires: newsletter.selected_story_ids.count > 0
+
+    -- LLM produces an editorial intro summarizing the edition's themes.
+    -- Story blocks alternate between relevanceSummary (2/3) and
+    -- pull-quote (1/3) for variety.
+    let content = LLM.generate_newsletter_content(
+        newsletter.selected_story_ids
+    )
+
+    ensures: newsletter.content = content
+}
+
+-- Step 4: Render HTML — converts markdown content into a
+-- table-based email template with colored issue dots, favicon
+-- images, and branded header/footer.
+rule GenerateHtml {
+    when: AdminGeneratesHtml(newsletter)
+    requires: newsletter.content != null
+
+    let html = render_email_template(newsletter)
+    ensures: newsletter.html = html
+}
+
+-- Step 5a: Send test — creates a Plunk campaign targeted at the
+-- test segment (or all subscribers if no segment configured).
+rule SendTest {
+    when: AdminSendsTest(newsletter)
+    requires: newsletter.html != null
+
+    let campaign = create_plunk_campaign(
+        name: "[TEST] " + newsletter.title,
+        subject: "[TEST] " + newsletter.title,
+        body: newsletter.html,
+        audience: config.test_segment_id ?? "ALL"
+    )
+
+    ensures: NewsletterSend.created(
+        newsletter: newsletter,
+        plunk_campaign_id: campaign.id,
+        is_test: true,
+        status: sent,
+        html_content: newsletter.html,
+        sent_at: now
+    )
+}
+
+-- Step 5b: Send live — creates a Plunk campaign for all subscribers,
+-- optionally scheduled for a future time. Marks the newsletter as
+-- published (the edition is finalized and sent to the full list).
+rule SendLive {
+    when: AdminSendsLive(newsletter, scheduled_for?)
+    requires: newsletter.html != null
+
+    let campaign = create_plunk_campaign(
+        name: newsletter.title,
+        subject: newsletter.title,
+        body: newsletter.html,
+        audience: "ALL"
+    )
+
+    ensures: newsletter.status = published
+
+    ensures: NewsletterSend.created(
+        newsletter: newsletter,
+        plunk_campaign_id: campaign.id,
+        is_test: false,
+        status: if scheduled_for != null: scheduled else: sending,
+        html_content: newsletter.html,
+        sent_at: if scheduled_for = null: now else: null
+    )
+}
+
+-- Stats refresh — polls Plunk for campaign delivery metrics.
+rule RefreshSendStats {
+    when: AdminRefreshesStats(send)
+    requires: send.plunk_campaign_id != null
+
+    let stats = get_plunk_campaign_stats(send.plunk_campaign_id)
+    ensures: send.stats = stats
+}
+
+-- ─── Carousel ────────────────────────────────────────────────────
+-- Generates social media carousel images (1200x675px per story),
+-- packaged as a ZIP file. Used for Instagram/social sharing.
+
+deferred CarouselGeneration.generate   -- see: server/src/services/carousel.ts
+
+-- ─── Podcast ─────────────────────────────────────────────────────
+
+entity Podcast {
+    title: String
+    status: draft | published                          -- Prisma ContentStatus enum
+    story_ids: List<String>
+    script: String?
+}
+
+-- Step 1: Assign — gather recent published/selected stories.
+rule AssignPodcastStories {
+    when: AdminAssignsPodcastStories(podcast)
+
+    let recent = pipeline/Stories
+        where status in {published, selected}
+        and date_crawled >= now - config.story_assignment_days.days
+    requires: recent.count > 0
+
+    ensures: podcast.story_ids = recent -> id
+}
+
+-- Step 2: Generate script — LLM writes a podcast script from the
+-- assigned stories, followed by a formatted story list with links.
+rule GenerateScript {
+    when: AdminGeneratesScript(podcast)
+    requires: podcast.story_ids.count > 0
+
+    let script = LLM.generate_podcast_script(podcast.story_ids)
+    ensures: podcast.script = script
+}
+
+-- ─── Issue Ordering ──────────────────────────────────────────────
+-- Newsletter stories are sorted by a fixed issue display order,
+-- then alphabetically by title within each group. This ordering
+-- is a presentation concern but has behavioral impact: it
+-- determines section header placement in the generated content.
+--
+-- Fixed order:
+--   1. Human Development
+--   2. Planet & Climate
+--   3. Existential Threats
+--   4. Science & Technology
+--   (unlisted issues sort to the end)
