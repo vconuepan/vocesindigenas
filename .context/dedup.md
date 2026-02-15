@@ -109,8 +109,8 @@ In `server/src/config.ts` under `dedup`:
 
 ## Public URL Redirect
 
-When a published story becomes a non-primary cluster member (e.g. after manual clustering), its public URL redirects (301) to the primary story's URL instead of returning 404:
+When a published story becomes a non-primary cluster member (e.g. after manual clustering), its public URL redirects (302, temporary) to the primary story's URL instead of returning 404. A temporary redirect is used because cluster primaries can change via admin actions (re-clustering, merge, set-primary).
 
-- **Server:** `GET /api/stories/:slug` calls `getClusterRedirectSlug()` when the story is not found as published. Returns 301 redirect to `/api/stories/<primary-slug>` if the slug belongs to a non-primary cluster member whose primary is published.
+- **Server:** `GET /api/stories/:slug` calls `getClusterRedirectSlug()` when the story is not found as published. Returns 302 redirect to `/api/stories/<primary-slug>` if the slug belongs to a non-primary cluster member whose primary is published.
 - **Client:** `StoryPage` detects when the returned story's slug differs from the URL param and does a `navigate(replace: true)` to update the browser URL.
 - **Service:** `getClusterRedirectSlug()` in `story.ts` looks up the story by slug (any status), checks if it's a non-primary cluster member, and returns the primary's slug if the primary is published.

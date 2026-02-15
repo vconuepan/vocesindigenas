@@ -165,7 +165,9 @@ rule MergeClusters {
 
 -- ─── Public Redirect ───────────────────────────────────────────────
 -- When a published story becomes non-primary (e.g. after manual
--- re-clustering), its public URL 301-redirects to the primary.
+-- re-clustering), its public URL temporarily redirects (302) to the
+-- primary. Temporary because cluster primaries can change via admin
+-- actions (re-clustering, merge, set-primary).
 
 surface StoryPage {
     facing visitor: User
@@ -179,5 +181,5 @@ surface StoryPage {
 
     guarantee:
         if not story.is_primary:
-            redirect_to StoryPage(story.cluster.primary)
+            temporary_redirect_to StoryPage(story.cluster.primary)
 }
