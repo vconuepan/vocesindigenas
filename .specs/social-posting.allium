@@ -1,0 +1,211 @@
+-- social-posting.allium
+-- Distilled from: server/src/services/{socialMedia,bluesky,mastodon}.ts
+--
+-- Multi-platform social media posting. A shared story-picking step
+-- feeds into platform-specific formatters. The channel adapter
+-- pattern means adding a new platform requires a new variant,
+-- not new selection logic.
+
+use "./story-pipeline.allium" as pipeline
+
+config {
+    lookback_hours: Integer = 25
+    post_delay: Duration = 2.seconds
+}
+
+-- ─── Channel as Sum Type ───────────────────────────────────────────
+-- Each platform has distinct formatting rules but shares the
+-- draft → published → failed lifecycle.
+
+entity SocialPost {
+    story: Story
+    status: draft | published | failed
+    post_text: String
+    published_at: Timestamp?
+    error: String?
+    channel: Bluesky | Mastodon                          -- discriminator
+}
+
+variant Bluesky : SocialPost {
+    post_uri: String?
+    post_cid: String?
+    like_count: Integer = 0
+    repost_count: Integer = 0
+    reply_count: Integer = 0
+    quote_count: Integer = 0
+}
+
+variant Mastodon : SocialPost {
+    status_id: String?
+    status_url: String?
+    favourite_count: Integer = 0
+    boost_count: Integer = 0
+    reply_count: Integer = 0
+}
+
+value ChannelConfig {
+    name: String
+    char_limit: Integer
+    enabled: Boolean
+    is_configured: Boolean
+
+    -- Derived
+    is_active: enabled and is_configured
+}
+
+value MetadataLine {
+    issue_name: String?
+    emotion_tag: String?
+    publisher_name: String?
+
+    -- Derived: "Issue | Emotion | found on Publisher"
+    -- Null segments filtered out
+    formatted: join(
+        [issue_name, capitalize(emotion_tag),
+         "found on " + publisher_name]
+            where this != null,
+        " | "
+    )
+}
+
+-- ─── Story Selection (shared) ──────────────────────────────────────
+
+rule FindCandidates {
+    when: SocialAutoPostJobRuns()
+
+    let enabled_channels = ChannelConfig where is_active
+    requires: enabled_channels.count > 0
+
+    -- A story is a candidate if it hasn't been posted to
+    -- at least one enabled channel.
+    let candidates = Story
+        where status = published
+        and date_published >= now - config.lookback_hours.hours
+        and title != null and summary != null and slug != null
+        and enabled_channels.any(ch =>
+            not exists SocialPost where story = this
+                and channel = ch.name and status = published
+        )
+
+    if candidates.count > 0:
+        ensures: PickBestStory(candidates, enabled_channels)
+}
+
+rule PickBestStory {
+    when: PickBestStory(candidates, channels)
+
+    -- Single LLM call picks one story for all channels.
+    -- Criteria: timeliness, emotional appeal, broad relevance,
+    -- shareability, uniqueness.
+    let pick = LLM.pick_best_for_social(candidates)
+
+    for channel in channels:
+        if not exists SocialPost
+            where story = pick and channel = channel.name
+                and status = published:
+            ensures: GenerateDraft(pick, channel)
+}
+
+-- ─── Draft Generation ──────────────────────────────────────────────
+
+rule GenerateDraft {
+    when: GenerateDraft(story, channel)
+    requires: not exists SocialPost
+        where story = story and channel = channel.name
+
+    let meta = MetadataLine(
+        issue_name: story.effective_issue?.name,
+        emotion_tag: story.emotion_tag,
+        publisher_name: story.feed.title
+    )
+
+    -- Available chars for LLM blurb depends on platform
+    let available = channel.char_limit - meta.formatted.length - overhead(channel)
+    let blurb = LLM.generate_social_blurb(story, max_chars: available)
+
+    ensures: SocialPost.created(
+        story: story,
+        channel: channel.name,
+        post_text: assemble(blurb, meta, story, channel),
+        status: draft
+    )
+}
+
+-- ─── Publishing ────────────────────────────────────────────────────
+
+rule PublishPost {
+    when: post: SocialPost.status transitions_to draft
+    -- Auto-post job publishes immediately after draft.
+    -- Manual flow: admin edits draft, then triggers publish.
+
+    ensures: post.status = published
+    ensures: post.published_at = now
+}
+
+rule PublishFails {
+    when: PublishAttemptFails(post, error)
+    ensures: post.status = failed
+    ensures: post.error = error
+}
+
+-- ─── Duplicate Prevention ──────────────────────────────────────────
+-- Invariant: at most one SocialPost per (story, channel).
+-- Enforced by database unique constraint on story_id per table,
+-- with application-level pre-check for friendlier error messages.
+-- Admins can delete a failed post and regenerate via the admin UI.
+
+-- ─── Admin Surface ─────────────────────────────────────────────────
+
+surface SocialPostManager {
+    facing admin: Admin
+
+    context post: SocialPost
+
+    exposes:
+        post.story.title
+        post.post_text
+        post.status
+        post.published_at
+        post.error
+
+    exposes:
+        if post.channel = Bluesky:
+            post.like_count
+            post.repost_count
+        if post.channel = Mastodon:
+            post.favourite_count
+            post.boost_count
+
+    provides:
+        AdminEditsDraft(post, new_text)
+            when post.status = draft
+
+        AdminPublishesPost(post)
+            when post.status = draft
+
+        AdminDeletesPost(post)
+
+    guidance:
+        "Character/grapheme counter should be visible during
+        draft editing. Bluesky counts graphemes (300 limit),
+        Mastodon counts characters (500 default)."
+}
+
+surface SocialPostPicker {
+    facing admin: Admin
+
+    context stories: List<Story>
+        where status = published
+
+    provides:
+        AdminPicksAndDrafts(stories, channel)
+            when stories.count >= 1
+
+        AdminPostsSingle(story, channel)
+            when stories.count = 1
+
+    guidance:
+        "When multiple stories are selected, the LLM picks the
+        best candidate and explains its reasoning. The admin
+        reviews the pick before publishing."
+}
