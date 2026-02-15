@@ -1,5 +1,7 @@
 # Story Pipeline
 
+> **Spec:** [`.specs/story-pipeline.allium`](../.specs/story-pipeline.allium) -- status transitions, stage rules, config thresholds, entity definitions. This file covers implementation details, job schedules, admin endpoints, and field reference.
+
 Stories are the core entity. They flow through a status pipeline from crawling to publication, driven by scheduled jobs and manual admin actions.
 
 ## Status Flow

@@ -1,5 +1,7 @@
 # Authentication
 
+> **Spec:** [`.specs/authentication.allium`](../.specs/authentication.allium) -- entity definitions, token rotation rules, reuse detection, role hierarchy, rate limiting. This file covers implementation details.
+
 The admin panel uses JWT-only authentication: access tokens (15 min) with httpOnly refresh token cookies (24 hours) for browser sessions. A separate `requireApiKey` middleware exists for public API consumers (mobile apps, etc.) that need authenticated read access — the static API key cannot access admin endpoints.
 
 ## Architecture

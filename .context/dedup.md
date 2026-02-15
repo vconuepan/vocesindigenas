@@ -1,5 +1,7 @@
 # Story Deduplication
 
+> **Spec:** [`.specs/dedup.allium`](../.specs/dedup.allium) -- detection rules, cluster formation, primary election, auto-rejection, admin operations, public redirect. This file covers implementation details, admin UI, configuration, and modification guides.
+
 Detects and clusters stories that cover the same event across different feeds. Prevents duplicate coverage from reaching the public site and shows "Also covered by" source attribution.
 
 ## How It Works

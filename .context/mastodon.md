@@ -1,5 +1,7 @@
 # Mastodon Integration
 
+> **Spec:** [`.specs/social-posting.allium`](../.specs/social-posting.allium) -- channel sum type, story selection, draft generation, publishing, duplicate prevention (shared with Bluesky). This file covers Mastodon-specific implementation details, authentication, API endpoints, and configuration.
+
 ## Overview
 
 Automated and manual posting of stories to Mastodon via the REST API. Stories can be posted manually from the admin stories page (single or bulk with LLM selection) or automatically via the unified `social_auto_post` cron job. Each post includes LLM-generated text, a metadata line, and a story URL (Mastodon auto-generates link previews from og: tags).
