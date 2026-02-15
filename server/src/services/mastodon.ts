@@ -44,31 +44,36 @@ function buildMetaLine(parts: {
 
 /**
  * Assemble the structured post text from parts.
- * Format: editorial text\nmetadata\nstory URL
+ * Format: editorial text\nmetadata\nsource URL\nstory URL
+ *
+ * The source URL (original article) appears first so Mastodon generates
+ * its link preview card from the original article, not the AR page.
  */
 export function assemblePostText(parts: {
   blurb: string
   issueName: string | null
   emotionTag: string | null
   publisherName: string
+  sourceUrl: string
   storyUrl: string
 }): string {
   const metaLine = buildMetaLine(parts)
-  return `${parts.blurb}\n${metaLine}\n${parts.storyUrl}`
+  return `${parts.blurb}\n${metaLine}\n${parts.sourceUrl}\n${parts.storyUrl}`
 }
 
 /**
- * Calculate max chars for the LLM editorial text given the metadata line and URL.
+ * Calculate max chars for the LLM editorial text given the metadata line and both URLs.
  */
 function calcMaxBlurbChars(parts: {
   issueName: string | null
   emotionTag: string | null
   publisherName: string
+  sourceUrl: string
   storyUrl: string
 }): number {
   const metaLine = buildMetaLine(parts)
-  // charLimit minus metadata line, URL, and two newlines
-  return Math.max(50, config.mastodon.charLimit - metaLine.length - parts.storyUrl.length - 2)
+  // charLimit minus metadata line, source URL, story URL, and three newlines
+  return Math.max(50, config.mastodon.charLimit - metaLine.length - parts.sourceUrl.length - parts.storyUrl.length - 3)
 }
 
 // ---------------------------------------------------------------------------
@@ -100,12 +105,14 @@ export async function generateDraft(storyId: string) {
   const publisherName = story.feed.displayTitle || story.feed.title
   const issueName = story.issue?.name ?? null
   const emotionTag = story.emotionTag
+  const sourceUrl = story.sourceUrl
   const storyUrl = `${config.siteUrl}/stories/${story.slug}`
 
   const maxChars = calcMaxBlurbChars({
     issueName,
     emotionTag,
     publisherName,
+    sourceUrl,
     storyUrl,
   })
 
@@ -138,6 +145,7 @@ export async function generateDraft(storyId: string) {
     issueName,
     emotionTag,
     publisherName,
+    sourceUrl,
     storyUrl,
   })
 

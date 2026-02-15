@@ -50,15 +50,18 @@ const { assemblePostText, generateDraft, updateDraft, deletePostRecord, publishP
   await import('./mastodon.js')
 
 describe('assemblePostText', () => {
-  it('assembles editorial text, metadata, and URL', () => {
+  it('assembles editorial text, metadata, source URL, and story URL', () => {
     const result = assemblePostText({
       blurb: 'A great discovery.',
       issueName: 'Climate',
       emotionTag: 'uplifting',
       publisherName: 'Nature',
+      sourceUrl: 'https://nature.com/articles/great-discovery',
       storyUrl: 'https://actuallyrelevant.com/stories/great-discovery',
     })
-    expect(result).toBe('A great discovery.\nClimate | Uplifting | found on Nature\nhttps://actuallyrelevant.com/stories/great-discovery')
+    expect(result).toBe(
+      'A great discovery.\nClimate | Uplifting | found on Nature\nhttps://nature.com/articles/great-discovery\nhttps://actuallyrelevant.com/stories/great-discovery',
+    )
   })
 
   it('capitalizes emotion tag', () => {
@@ -67,6 +70,7 @@ describe('assemblePostText', () => {
       issueName: 'Climate',
       emotionTag: 'uplifting',
       publisherName: 'Nature',
+      sourceUrl: 'https://nature.com/article',
       storyUrl: 'https://example.com/s',
     })
     expect(result).toContain('Uplifting')
@@ -79,6 +83,7 @@ describe('assemblePostText', () => {
       issueName: null,
       emotionTag: 'calm',
       publisherName: 'Reuters',
+      sourceUrl: 'https://reuters.com/article',
       storyUrl: 'https://example.com/s',
     })
     expect(result).toContain('Calm | found on Reuters')
@@ -91,24 +96,27 @@ describe('assemblePostText', () => {
       issueName: 'Science',
       emotionTag: null,
       publisherName: 'Reuters',
+      sourceUrl: 'https://reuters.com/article',
       storyUrl: 'https://example.com/s',
     })
     expect(result).toContain('Science | found on Reuters')
   })
 
-  it('includes story URL on third line', () => {
+  it('places source URL on third line and story URL on fourth line', () => {
     const result = assemblePostText({
       blurb: 'Hook.',
       issueName: 'Science',
       emotionTag: 'calm',
       publisherName: 'Reuters',
+      sourceUrl: 'https://reuters.com/article/test',
       storyUrl: 'https://actuallyrelevant.com/stories/test',
     })
     const lines = result.split('\n')
-    expect(lines).toHaveLength(3)
+    expect(lines).toHaveLength(4)
     expect(lines[0]).toBe('Hook.')
     expect(lines[1]).toContain('found on Reuters')
-    expect(lines[2]).toBe('https://actuallyrelevant.com/stories/test')
+    expect(lines[2]).toBe('https://reuters.com/article/test')
+    expect(lines[3]).toBe('https://actuallyrelevant.com/stories/test')
   })
 })
 
@@ -161,6 +169,25 @@ describe('generateDraft', () => {
   it('throws if story has no title', async () => {
     mockPrisma.story.findUnique.mockResolvedValue({ ...mockStory, title: null })
     await expect(generateDraft('story-1')).rejects.toThrow('must be fully analyzed')
+  })
+
+  it('trims LLM blurb so assembled post fits within character limit', async () => {
+    const longUrlStory = {
+      ...mockStory,
+      sourceUrl: 'https://example.com/very/long/path/to/article/with/many/segments/that/are/quite/verbose',
+    }
+    mockPrisma.story.findUnique.mockResolvedValue(longUrlStory)
+    mockPrisma.mastodonPost.findFirst.mockResolvedValue(null)
+    // Return a blurb that's intentionally oversized — the service should trim it
+    mockLlm.invoke.mockResolvedValue({ postText: 'A'.repeat(400) })
+    mockPrisma.mastodonPost.create.mockImplementation(({ data }: any) =>
+      Promise.resolve({ id: 'post-1', ...data, story: longUrlStory }),
+    )
+
+    await generateDraft('story-1')
+
+    const createCall = mockPrisma.mastodonPost.create.mock.calls[0][0] as any
+    expect(createCall.data.postText.length).toBeLessThanOrEqual(500)
   })
 
   it('throws if story already has a Mastodon post', async () => {

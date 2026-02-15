@@ -23,7 +23,7 @@ Write a short, informal editorial hook for Mastodon (max ${story.maxChars} chara
 - No URLs, links, or @mentions (these are added automatically after your text)
 - No clickbait phrases like "You won't believe" or "This changes everything"
 - Do NOT repeat the story title
-- Do NOT restate the article summary — readers already see it in the link preview
+- Do NOT restate the article summary — readers see the original article in the link preview
 - DO draw from the "Why it matters" angle: broader implications, who is affected, what could change
 - Write in a warm, conversational, slightly informal voice — like a knowledgeable friend pointing something out
 - Start with a hook or observation, then give the "why it matters" angle

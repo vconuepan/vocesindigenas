@@ -29,9 +29,10 @@ Each Mastodon post consists of:
 
 1. **Editorial text** — LLM-generated hook (similar to Bluesky but with different constraints)
 2. **Metadata line** — `Issue | Emotion | found on Publisher`
-3. **Story URL** — Direct link to the Actually Relevant story page (Mastodon auto-generates a link preview from og: tags)
+3. **Source URL** — Original article URL (appears first so Mastodon generates a link preview card from the original article's og: tags, giving readers context)
+4. **Story URL** — Link to the Actually Relevant story page (secondary link, no card preview)
 
-Mastodon posts are limited to 500 characters (configurable via `MASTODON_CHAR_LIMIT`). The LLM text max chars are calculated dynamically as `charLimit - metaLine.length - storyUrl.length - 2` (two newlines). If the LLM overshoots, the text is trimmed with an ellipsis. Unlike Bluesky, the URL is included in the post text (not as an external embed). Posts use `unlisted` visibility by default (configurable via `MASTODON_VISIBILITY`).
+Mastodon posts are limited to 500 characters (configurable via `MASTODON_CHAR_LIMIT`). The LLM text max chars are calculated dynamically as `charLimit - metaLine.length - sourceUrl.length - storyUrl.length - 3` (three newlines). If the LLM overshoots, the text is trimmed with an ellipsis. Unlike Bluesky, URLs are included in the post text (not as an external embed). The source URL appears first so Mastodon's auto-generated link preview card shows the original article's og:image, title, and description. Posts use `unlisted` visibility by default (configurable via `MASTODON_VISIBILITY`).
 
 ## Shared Social Media Logic
 

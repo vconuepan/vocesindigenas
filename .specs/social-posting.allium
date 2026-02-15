@@ -121,6 +121,8 @@ rule GenerateDraft {
     )
 
     -- Available chars for LLM blurb depends on platform
+    -- Mastodon: overhead = source_url + story_url + 3 newlines
+    -- Bluesky:  overhead = 1 newline (URL is in external embed, not text)
     let available = channel.char_limit - meta.formatted.length - overhead(channel)
     let blurb = LLM.generate_social_blurb(story, max_chars: available)
 
@@ -130,6 +132,8 @@ rule GenerateDraft {
         post_text: assemble(blurb, meta, story, channel),
         status: draft
     )
+    -- Mastodon text: blurb\nmeta\nsource_url\nstory_url
+    -- Source URL first so Mastodon generates link preview from original article
 }
 
 -- ─── Publishing ────────────────────────────────────────────────────
