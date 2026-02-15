@@ -58,7 +58,7 @@ vi.mock('../schemas/llm.js', () => ({
   dedupConfirmationSchema: {},
 }))
 
-const { confirmDuplicates, updatePrimary, autoRejectNonPrimary } = await import('./dedup.js')
+const { confirmDuplicates, updatePrimary, autoRejectNonPrimary, findExistingCluster } = await import('./dedup.js')
 
 // ──── confirmDuplicates ──────────────────────────────────────────────────────
 
@@ -442,5 +442,84 @@ describe('autoRejectNonPrimary', () => {
 
     expect(result).toEqual([])
     expect(mockPrisma.story.updateMany).not.toHaveBeenCalled()
+  })
+})
+
+// ──── findExistingCluster ──────────────────────────────────────────────────
+
+describe('findExistingCluster', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns null when no stories have clusters', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+
+    const result = await findExistingCluster(['story-1', 'story-2'])
+
+    expect(result).toBeNull()
+  })
+
+  it('returns cluster of the single clustered story', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { clusterId: 'cluster-A', dateCrawled: new Date('2024-01-05') },
+    ])
+
+    const result = await findExistingCluster(['story-1', 'story-2'])
+
+    expect(result).toEqual({ id: 'cluster-A' })
+  })
+
+  it('picks cluster of the newest duplicate when multiple share the same cluster', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { clusterId: 'cluster-A', dateCrawled: new Date('2024-01-10') },
+      { clusterId: 'cluster-A', dateCrawled: new Date('2024-01-05') },
+    ])
+
+    const result = await findExistingCluster(['story-1', 'story-2'])
+
+    expect(result).toEqual({ id: 'cluster-A' })
+  })
+
+  it('picks cluster of the newest duplicate when duplicates span multiple clusters', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { clusterId: 'cluster-B', dateCrawled: new Date('2024-01-10') },
+      { clusterId: 'cluster-A', dateCrawled: new Date('2024-01-05') },
+    ])
+
+    const result = await findExistingCluster(['story-1', 'story-2'])
+
+    expect(result).toEqual({ id: 'cluster-B', otherClusterIds: ['cluster-A'] })
+  })
+
+  it('returns otherClusterIds for all non-primary clusters', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([
+      { clusterId: 'cluster-C', dateCrawled: new Date('2024-01-15') },
+      { clusterId: 'cluster-A', dateCrawled: new Date('2024-01-10') },
+      { clusterId: 'cluster-B', dateCrawled: new Date('2024-01-05') },
+    ])
+
+    const result = await findExistingCluster(['story-1', 'story-2', 'story-3'])
+
+    expect(result).toEqual({
+      id: 'cluster-C',
+      otherClusterIds: expect.arrayContaining(['cluster-A', 'cluster-B']),
+    })
+    expect(result!.otherClusterIds).toHaveLength(2)
+  })
+
+  it('queries with correct ordering and filters', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+
+    await findExistingCluster(['s1', 's2'])
+
+    expect(mockPrisma.story.findMany).toHaveBeenCalledWith({
+      where: {
+        id: { in: ['s1', 's2'] },
+        clusterId: { not: null },
+      },
+      select: { clusterId: true, dateCrawled: true },
+      orderBy: { dateCrawled: 'desc' },
+    })
   })
 })

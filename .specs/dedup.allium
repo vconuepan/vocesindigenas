@@ -53,8 +53,12 @@ rule ConfirmWithLLM {
 rule FormCluster {
     when: FormCluster(source, duplicates)
 
-    -- Merge into existing cluster or create new one
-    let existing = duplicates.any(d => d.cluster)?.cluster
+    -- If duplicates belong to existing clusters, join the cluster
+    -- of the newest duplicate (by date_crawled). Duplicates in other
+    -- clusters stay where they are — merging is an admin action.
+    let clustered = duplicates where cluster != null
+        .sort_by(date_crawled desc)
+    let existing = clustered.first?.cluster
 
     if existing != null:
         ensures: source.cluster = existing

@@ -28,6 +28,10 @@ After `assessStories()` completes, each newly analyzed story:
 1. Gets its embedding generated (via `generateStoryEmbedding`)
 2. Runs through `detectAndCluster()` which finds candidates, confirms duplicates via LLM, and creates/joins clusters
 
+## Multi-Cluster Collisions
+
+When confirmed duplicates belong to different existing clusters, the source story joins the cluster of the **newest duplicate** (by `dateCrawled`). Other clusters are not auto-merged — merging requires explicit admin action via the clusters page. A warning is logged when this occurs. Duplicates already in a different cluster stay where they are; only unclustered duplicates are added to the target cluster.
+
 ## Selection Safety Net
 
 In `selectStories()`, before passing candidates to the LLM, non-primary cluster members are filtered out. This catches edge cases where dedup hasn't run or a story was manually un-rejected.
