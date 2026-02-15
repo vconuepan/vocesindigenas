@@ -7,6 +7,7 @@
 -- not new selection logic.
 
 use "./story-pipeline.allium" as pipeline
+use "./authentication.allium" as auth
 
 config {
     lookback_hours: Integer = 25
@@ -157,7 +158,7 @@ rule PublishFails {
 -- ─── Admin Surface ─────────────────────────────────────────────────
 
 surface SocialPostManager {
-    facing admin: Admin
+    facing admin: auth/Admin
 
     context post: SocialPost
 
@@ -192,7 +193,7 @@ surface SocialPostManager {
 }
 
 surface SocialPostPicker {
-    facing admin: Admin
+    facing admin: auth/Admin
 
     context stories: List<Story>
         where status = published

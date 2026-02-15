@@ -10,6 +10,11 @@
 -- stories and processes them in bulk. The rules below describe
 -- per-story semantics; batching and concurrency are implementation
 -- concerns.
+--
+-- Story creation: stories enter this pipeline in 'fetched' status,
+-- created by the crawl domain (see crawl-and-extraction.allium).
+-- This spec does not define creation rules — it consumes stories
+-- that the crawler produces.
 
 config {
     full_assessment_threshold: Integer = 5
@@ -19,9 +24,9 @@ config {
     selection_max_group_size: Integer = 20
 }
 
--- Feed and Issue are owned by the source management domain.
--- We depend on their shape but don't control their lifecycle.
-external entity Feed { issue: Issue? }
+-- Feed is owned by feed-management.allium. We depend on its shape
+-- but don't control its lifecycle. Issue is shared across specs.
+external entity Feed { issue: Issue? }       -- see: feed-management.allium
 external entity Issue { slug: String, min_pre_rating: Integer? }
 
 entity Story {

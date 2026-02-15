@@ -167,6 +167,10 @@ rule MergeClusters {
     ensures: ElectPrimary(target)
 }
 
+-- Unauthenticated public visitor. Not the same as auth/User
+-- (admin accounts with password and role).
+external entity Visitor {}
+
 -- ─── Public Redirect ───────────────────────────────────────────────
 -- When a published story becomes non-primary (e.g. after manual
 -- re-clustering), its public URL temporarily redirects (302) to the
@@ -174,7 +178,7 @@ rule MergeClusters {
 -- actions (re-clustering, merge, set-primary).
 
 surface StoryPage {
-    facing visitor: User
+    facing visitor: Visitor
 
     context story: Story where slug = requested_slug
 
