@@ -51,6 +51,13 @@ export async function subscribe({ email, firstName }: SubscribeParams) {
     log.warn({ err, email }, 'email verification failed, skipping check')
   }
 
+  // Delete any existing unconfirmed pending subscriptions for this email.
+  // This handles the re-subscribe case: user gets a fresh token and a new
+  // confirmation email instead of accumulating stale entries.
+  await prisma.pendingSubscription.deleteMany({
+    where: { email, confirmedAt: null },
+  })
+
   // Create contact in Plunk (subscribed: false until confirmed)
   let plunkContactId: string | null = null
   try {
