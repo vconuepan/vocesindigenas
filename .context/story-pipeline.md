@@ -29,7 +29,7 @@ fetched → pre_analyzed → analyzed → selected → published
 - **fetched → pre_analyzed**: Pre-assess job first assigns each story to an issue via LLM (nano model), then groups stories by assigned issue and batch pre-screens them (~10 per batch) using the medium model.
 - **pre_analyzed → analyzed/rejected**: Assess job picks stories with `relevancePre >= threshold` (per-issue `minPreRating` or global `fullAssessmentThreshold`, default 5). Stories below threshold are rejected.
 - **analyzed → selected/rejected**: Select job takes `analyzed` stories with `relevance >= config.selection.relevanceMin` (default 5). Stories below threshold are rejected. Remaining candidates go through LLM selection (~`config.selection.ratio`, default 50%, rounded up). The rest become `rejected`. When there are more than `config.selection.maxGroupSize` (default 20) candidates, they are split into roughly equal groups and each group is sent to the LLM separately (e.g. 25 stories → 2 groups of 13 + 12).
-- **selected → published**: Publish job or manual admin action. The `publish_stories` job publishes all `selected` stories, sets `datePublished` if not already set, and generates a URL slug if the story doesn't have one yet.
+- **selected → published**: Publish job or manual admin action. The `publish_stories` job publishes all `selected` stories, sets `datePublished` if not already set, and generates a URL slug if the story doesn't have one yet. Embeddings must already exist from the assessment step; `ensureEmbedding()` acts as a safety net for edge cases.
 - **Any → trashed**: Admin can trash any story at any time.
 
 ### Slugs

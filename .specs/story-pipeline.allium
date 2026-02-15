@@ -168,7 +168,9 @@ rule Publish {
     -- Slug generated once, never changes
     let new_slug = story.slug ?? slugify(story.title ?? story.source_title)
 
-    -- Embedding must exist (fail-fast if missing)
+    -- Embedding already exists from the assess step.
+    -- ensureEmbedding() is a safety net for edge cases (e.g. manual publish
+    -- of an unassessed story); it's a no-op when the embedding is current.
     requires: story.embedding != null
 
     ensures: story.slug = new_slug

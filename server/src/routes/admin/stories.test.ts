@@ -48,11 +48,13 @@ vi.mock('../../services/crawler.js', () => ({
 }))
 
 const mockGenerateEmbeddingForContent = vi.hoisted(() => vi.fn().mockResolvedValue(null))
-const mockBatchGenerateEmbeddings = vi.hoisted(() => vi.fn().mockResolvedValue([]))
+const mockEnsureEmbedding = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const mockEnsureEmbeddings = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
 vi.mock('../../services/embedding.js', () => ({
   generateEmbeddingForContent: mockGenerateEmbeddingForContent,
-  batchGenerateEmbeddings: mockBatchGenerateEmbeddings,
   generateSearchEmbedding: vi.fn(),
+  ensureEmbedding: mockEnsureEmbedding,
+  ensureEmbeddings: mockEnsureEmbeddings,
 }))
 const mockFetchStoryForEmbedding = vi.hoisted(() => vi.fn().mockResolvedValue({
   id: 'story-1', title: 'Test', titleLabel: null, summary: null, embeddingContentHash: null, status: 'selected',
@@ -332,18 +334,8 @@ describe('Admin Stories API', () => {
 
   describe('POST /api/admin/stories/bulk-status', () => {
     it('bulk updates story statuses', async () => {
-      const ids = [
-        '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0000-000000000002',
-        '00000000-0000-0000-0000-000000000003',
-      ]
-      // Mock batch embedding generation to succeed for all IDs
-      mockBatchGenerateEmbeddings.mockResolvedValueOnce(
-        ids.map(id => ({ id, success: true })),
-      )
       // findMany for stories needing slugs
       mockPrisma.story.findMany.mockResolvedValueOnce([])
-      // findMany for existing slugs check (empty = no conflicts)
       mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 1 })
       mockPrisma.story.updateMany.mockResolvedValueOnce({ count: 2 })
 
@@ -479,10 +471,8 @@ describe('Admin Stories API', () => {
     })
 
     it('returns 404 for unknown story', async () => {
-      // preparePublishData calls findUnique — returns null
       mockPrisma.story.findUnique.mockResolvedValue(null)
-      // fetchStoryForEmbedding returns null → throws 'Story not found'
-      mockFetchStoryForEmbedding.mockResolvedValueOnce(null)
+      mockPrisma.story.update.mockRejectedValue({ code: 'P2025' })
 
       const res = await request(app)
         .post('/api/admin/stories/unknown/publish')
