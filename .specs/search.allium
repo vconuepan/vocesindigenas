@@ -1,0 +1,176 @@
+-- search.allium
+-- Distilled from: server/src/services/story.ts, server/src/lib/vectors.ts
+--
+-- Two search systems, both operating on published stories:
+--   1. Hybrid search — combines semantic (embedding) and text search
+--      using reciprocal rank fusion (RRF) for user-facing queries
+--   2. Related stories — cosine similarity candidates re-ranked by
+--      LLM, with an in-memory LRU cache
+--
+-- Both systems gracefully degrade: if embedding generation or LLM
+-- calls fail, they fall back to text-only or cosine-only results.
+--
+-- Visitors are unauthenticated public users, distinct from the
+-- admin User entity in authentication.allium.
+
+use "./story-pipeline.allium" as pipeline
+
+config {
+    rrf_fetch_limit: Integer = 50
+    rrf_k: Integer = 60
+    related_display_count: Integer = 4
+    related_candidate_multiplier: Integer = 3
+    related_cache_hours: Integer = 24
+    related_max_cache_size: Integer = 500
+    related_model_tier: String = "medium"
+}
+
+-- Unauthenticated public visitor. Not the same as auth/User
+-- (admin accounts with password and role).
+external entity Visitor {}
+
+-- ─── Hybrid Search (RRF) ─────────────────────────────────────────
+-- Used when a visitor enters a search query on the public site.
+-- Runs two search legs in parallel and fuses their rankings.
+
+rule HybridSearch {
+    when: VisitorSearches(query, issue_slug?, page, page_size)
+
+    -- Leg 1: Semantic search
+    -- Generate a query embedding via OpenAI, then find the nearest
+    -- published stories by cosine distance (pgvector <=> operator).
+    -- Capped at rrf_fetch_limit results.
+    -- On failure: returns empty (graceful degradation).
+    let semantic_ids = semantic_search(query, issue_slug, config.rrf_fetch_limit)
+
+    -- Leg 2: Text search
+    -- Prisma case-insensitive contains on title + summary fields.
+    -- Ordered by datePublished desc, capped at rrf_fetch_limit.
+    let text_ids = text_search(query, issue_slug, config.rrf_fetch_limit)
+
+    -- Reciprocal Rank Fusion: score each story by its rank position
+    -- in both result sets. Formula: score(d) = sum(1 / (k + rank_i))
+    -- where k is a constant (rrf_k = 60) that dampens the influence
+    -- of high-ranking results.
+    --
+    -- Stories appearing in both legs get higher combined scores.
+    -- The final ranking is sorted by descending RRF score.
+    let ranked = rrf_fuse(semantic_ids, text_ids, config.rrf_k)
+
+    ensures: SearchResults(ranked, page, page_size)
+}
+
+-- ─── Related Stories ──────────────────────────────────────────────
+-- Shown on individual story pages. Uses a two-stage approach:
+-- cosine similarity to find candidates, then LLM re-ranking to
+-- pick the most editorially relevant ones.
+
+rule GetRelatedStories {
+    when: VisitorViewsStory(slug, limit?)
+
+    let display_count = limit ?? config.related_display_count
+
+    -- Step 1: Check in-memory cache (LRU, max related_max_cache_size
+    -- entries, related_cache_hours TTL)
+    let cached = related_cache_get(slug)
+    if cached != null:
+        ensures: RelatedStoriesResult(cached, display_count)
+    else:
+        ensures: ComputeRelatedStories(slug, display_count)
+}
+
+rule ComputeRelatedStories {
+    when: ComputeRelatedStories(slug, display_count)
+
+    -- Step 2: Find source story and verify it has an embedding
+    let source = pipeline/Story{slug: slug}
+    requires: exists source
+    requires: source.embedding != null
+
+    -- Step 3: Get a larger candidate pool via cosine distance
+    -- (candidate_multiplier * display_count candidates)
+    let candidate_count = display_count * config.related_candidate_multiplier
+    let candidates = nearest_by_cosine(
+        source.embedding,
+        candidate_count,
+        exclude: source.id,
+        where_status: published
+    )
+
+    -- Step 4: If fewer candidates than needed, skip LLM and return all
+    if candidates.count <= display_count:
+        ensures: related_cache_set(slug, candidates -> id)
+        ensures: RelatedStoriesResult(candidates -> id, display_count)
+    else:
+        -- Step 5: LLM re-ranking — pick the most editorially relevant
+        -- candidates based on title/label similarity to the source.
+        -- Falls back to cosine order if LLM fails or returns no valid IDs.
+        let selected = LLM.rank_related_stories(
+            source, candidates, display_count
+        )
+        let final_ids =
+            if selected.count > 0: selected
+            else: candidates -> id
+
+        ensures: related_cache_set(slug, final_ids)
+        ensures: RelatedStoriesResult(final_ids, display_count)
+}
+
+-- ─── Cache Behavior ──────────────────────────────────────────────
+-- The related stories cache is an in-memory LRU map:
+--   - Max size: related_max_cache_size entries
+--   - TTL: related_cache_hours per entry
+--   - Eviction: expired entries swept hourly; when at capacity,
+--     the entry with the earliest expiry is evicted
+--   - Cache key: story slug
+--   - Cache value: ordered list of related story IDs
+
+-- ─── Emotion Filtering ───────────────────────────────────────────
+-- The positivity slider (0-100%) filters stories by emotion tag
+-- entirely on the client side. No server round-trip is needed.
+-- The server returns emotionTag with each published story and the
+-- client applies a weighted mix based on the slider position.
+-- This is noted here for completeness but has no server-side rules.
+
+-- ─── Search Surface ──────────────────────────────────────────────
+
+surface PublicSearch {
+    facing visitor: Visitor
+
+    provides:
+        VisitorSearches(query, issue_slug?, page, page_size)
+
+    exposes:
+        -- Search results include standard published story fields.
+        -- The result set is produced by the HybridSearch rule.
+        pipeline/Story.title
+        pipeline/Story.slug
+        pipeline/Story.summary
+        pipeline/Story.date_published
+        pipeline/Story.emotion_tag
+        pipeline/Story.feed.title
+
+    guidance:
+        "Search is triggered by the query parameter on the stories
+        list page. Results are paginated. When a search query is
+        present, the API switches from standard chronological
+        listing to hybrid RRF search."
+}
+
+surface RelatedStories {
+    facing visitor: Visitor
+
+    context source: pipeline/Story where slug = requested_slug
+
+    exposes:
+        -- Related stories returned by GetRelatedStories rule.
+        pipeline/Story.title
+        pipeline/Story.slug
+        pipeline/Story.summary
+        pipeline/Story.date_published
+        pipeline/Story.emotion_tag
+
+    guidance:
+        "Related stories are displayed below the main story content.
+        Typically 4 stories. Cached for 24 hours per source story."
+}

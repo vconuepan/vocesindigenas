@@ -1,0 +1,171 @@
+-- subscription.allium
+-- Distilled from: server/src/services/{subscribe,plunk}.ts,
+--                 server/src/routes/public/subscribe.ts
+--
+-- Email subscription with double opt-in: visitor submits email,
+-- receives a confirmation link, clicks to confirm. Plunk handles
+-- email delivery and contact management. Graceful degradation
+-- throughout — if Plunk is down, subscription still proceeds
+-- where possible.
+--
+-- Visitors are unauthenticated public users, distinct from the
+-- admin User entity in authentication.allium.
+
+config {
+    confirm_token_expiry_hours: Integer = 48
+}
+
+-- Unauthenticated public visitor. Not the same as auth/User
+-- (admin accounts with password and role).
+external entity Visitor {}
+
+external entity PlunkContact {
+    id: String
+    email: String
+    subscribed: Boolean
+}
+
+-- ─── Entities ─────────────────────────────────────────────────────
+
+entity PendingSubscription {
+    email: String
+    token: String                                      -- UUID, single-use
+    plunk_contact_id: String?                          -- linked Plunk contact
+    expires_at: Timestamp
+    confirmed_at: Timestamp?
+
+    -- Derived
+    is_confirmed: confirmed_at != null
+    is_expired: expires_at <= now and not is_confirmed
+}
+
+-- ─── Email Validation ─────────────────────────────────────────────
+-- Validated both client-side (basic format regex) and server-side
+-- (Plunk verify API). The server-side check is the authoritative
+-- one; client-side validation is a UX convenience only.
+--
+-- Plunk checks three conditions — all must pass:
+--   1. valid: email format is correct
+--   2. domainExists: DNS MX record exists for the domain
+--   3. isDisposable: rejects throwaway email services
+--
+-- If the Plunk API itself is unreachable, validation is skipped
+-- entirely (graceful degradation — better to allow a potentially
+-- bad email than to block all subscriptions).
+
+value EmailVerifyResult {
+    valid: Boolean
+    domain_exists: Boolean
+    is_disposable: Boolean
+}
+
+-- ─── Subscribe ────────────────────────────────────────────────────
+
+rule Subscribe {
+    when: VisitorSubscribes(email, first_name?)
+
+    -- Idempotency: only check for already-confirmed subscriptions.
+    -- Unconfirmed pending subscriptions do NOT trigger early return.
+    let confirmed = PendingSubscriptions
+        where email = email and is_confirmed
+    if confirmed.count > 0:
+        ensures: SubscriptionAlreadyConfirmed(email)
+
+    if confirmed.count = 0:
+        ensures: ValidateAndCreateSubscription(email, first_name)
+}
+
+rule ValidateAndCreateSubscription {
+    when: ValidateAndCreateSubscription(email, first_name?)
+
+    -- Email validation via Plunk API (graceful degradation — if
+    -- the API call fails, skip validation and proceed).
+    -- This is NOT a hard requires: on API failure the subscription
+    -- continues. Only explicit validation failures are rejected.
+    let verify_result = try_verify_email(email)
+
+    -- Reject only on explicit failure, not on API unavailability
+    if verify_result != null:
+        requires: verify_result.valid
+        requires: verify_result.domain_exists
+        requires: not verify_result.is_disposable
+
+    -- Delete any existing unconfirmed pending subscriptions for this
+    -- email. This handles the re-subscribe case: user gets a fresh
+    -- token and a new confirmation email.
+    let stale = PendingSubscriptions
+        where email = email and not is_confirmed
+    for entry in stale:
+        ensures: not exists entry
+
+    -- Create Plunk contact (subscribed: false until confirmed).
+    -- Graceful: if Plunk fails, plunk_contact_id will be null.
+    let plunk_contact = try_create_plunk_contact(email, subscribed: false)
+
+    -- Create pending subscription with confirmation token
+    let token = random_uuid()
+    ensures: PendingSubscription.created(
+        email: email,
+        token: token,
+        plunk_contact_id: plunk_contact?.id,
+        expires_at: now + config.confirm_token_expiry_hours.hours
+    )
+
+    -- Send confirmation email via Plunk transactional API
+    ensures: ConfirmationEmailSent(email, token, first_name)
+}
+
+-- ─── Confirm ──────────────────────────────────────────────────────
+
+rule ConfirmSubscription {
+    when: VisitorConfirmsSubscription(token, email)
+
+    let pending = PendingSubscription{token: token, email: email}
+    requires: exists pending
+    requires: not pending.is_confirmed
+    requires: not pending.is_expired
+
+    -- Update Plunk contact to subscribed (graceful degradation —
+    -- if Plunk fails, still mark as confirmed locally)
+    if pending.plunk_contact_id != null:
+        ensures: try_update_plunk_contact(pending.plunk_contact_id,
+            subscribed: true)
+
+    ensures: pending.confirmed_at = now
+}
+
+-- ─── Surfaces ─────────────────────────────────────────────────────
+
+surface SubscribeForm {
+    facing visitor: Visitor
+
+    provides:
+        VisitorSubscribes(email, first_name?)
+
+    guidance:
+        "Show a single email field with optional first name.
+        Client-side: validate email format with regex before submitting.
+        Server-side: Plunk verify API provides authoritative validation.
+        On success, display a message directing the visitor to check
+        their inbox. On EmailValidationError, show the error inline."
+}
+
+surface ConfirmationPage {
+    facing visitor: Visitor
+
+    context pending: PendingSubscription
+        where token = requested_token and email = requested_email
+
+    exposes:
+        pending.is_confirmed
+        pending.is_expired
+
+    provides:
+        VisitorConfirmsSubscription(pending.token, pending.email)
+            when not pending.is_confirmed and not pending.is_expired
+
+    guidance:
+        "Confirmation link is GET /api/subscribe/confirm?token=...&email=...
+        On success, redirect to the homepage with a success message.
+        On expired link, show error with suggestion to re-subscribe."
+}

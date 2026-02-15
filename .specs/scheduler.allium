@@ -1,0 +1,251 @@
+-- scheduler.allium
+-- Distilled from: server/src/jobs/scheduler.ts, server/src/services/job.ts,
+--                 server/src/lib/taskRegistry.ts
+--
+-- Two scheduling systems:
+--   1. Cron scheduler — recurring jobs with overlap prevention
+--   2. Task registry — ephemeral bulk operations with polling progress
+--
+-- The cron scheduler runs in-process (node-cron) and persists job
+-- metadata in the database. The task registry is in-memory only,
+-- used for admin-initiated bulk LLM operations.
+--
+-- Execution model: overlap prevention and running-state tracking
+-- are managed via in-memory sets (runningJobs), not persisted fields.
+-- The database stores timing metadata (last_started_at, last_completed_at)
+-- and error state only.
+
+use "./authentication.allium" as auth
+
+config {
+    overdue_multiplier: Integer = 2
+    task_cleanup_interval: Duration = 1.minute
+    task_completed_ttl: Duration = 10.minutes
+    task_max_errors: Integer = 20
+}
+
+-- ─── Cron Scheduler ──────────────────────────────────────────────
+
+entity JobRun {
+    job_name: String                                   -- unique identifier
+    cron_expression: String
+    enabled: Boolean
+    last_started_at: Timestamp?
+    last_completed_at: Timestamp?
+    last_error: String?
+
+    -- Derived
+    estimated_interval: Duration?                      -- parsed from cron expression
+    is_overdue: last_completed_at = null
+        or (estimated_interval != null
+            and now - last_completed_at > estimated_interval * config.overdue_multiplier)
+}
+
+-- Running state is tracked in-memory via a Set<string>, not
+-- persisted as a database field. This is an external concern
+-- visible to the scheduler but not part of the entity schema.
+external entity RunningJobSet {
+    has(job_name: String): Boolean
+    add(job_name: String): void
+    remove(job_name: String): void
+}
+
+-- ─── Overdue Estimation ──────────────────────────────────────────
+-- Parsing cron expressions to estimate expected intervals:
+--
+--   "*/N" in hour field → every N hours
+--   "H1,H2,H3" in hour field → 24 / count(hours) hours
+--   Single digit in hour field → daily (24 hours)
+--
+-- Day-of-week restrictions (e.g. "0 9 * * 1-5" for weekdays)
+-- are NOT factored into the interval estimate. The overdue check
+-- uses a 2x multiplier which provides sufficient headroom for
+-- weekend gaps in weekday-only schedules (max gap ~63h for a
+-- Friday→Monday schedule, vs 2x24h=48h threshold, but the
+-- multiplier applies to estimated interval not absolute time).
+-- This is a deliberate simplification: the heuristic is "good
+-- enough" for triggering overdue runs without needing a full
+-- cron expression evaluator.
+
+-- On startup, all enabled jobs are registered with node-cron.
+-- Overdue jobs (haven't run in 2x their expected interval) are
+-- triggered immediately.
+rule InitScheduler {
+    when: ServerStarts()
+
+    for job in JobRuns where enabled:
+        ensures: RegisterCronJob(job)
+        if job.is_overdue:
+            ensures: RunJobFromScheduler(job)
+}
+
+-- Overlap prevention: if a job is already running when its cron
+-- fires, the new execution is silently skipped.
+rule CronTriggersJob {
+    when: CronFires(job)
+    requires: not RunningJobSet.has(job.job_name)
+
+    ensures: ExecuteJob(job)
+}
+
+-- Admin manual trigger respects the same overlap prevention.
+rule ManualTrigger {
+    when: AdminTriggersJob(job)
+    requires: not RunningJobSet.has(job.job_name)
+
+    ensures: ExecuteJob(job)
+}
+
+-- Internal chained trigger from InitScheduler for overdue jobs.
+rule RunJobFromScheduler {
+    when: RunJobFromScheduler(job)
+    requires: not RunningJobSet.has(job.job_name)
+
+    ensures: ExecuteJob(job)
+}
+
+-- Shared execution logic for all trigger paths.
+rule ExecuteJob {
+    when: ExecuteJob(job)
+
+    ensures: RunningJobSet.add(job.job_name)
+    ensures: job.last_started_at = now
+    ensures: job.last_error = null
+    ensures: InvokeJobHandler(job)
+}
+
+rule JobSucceeds {
+    when: JobHandlerCompletes(job)
+
+    ensures: job.last_completed_at = now
+    ensures: RunningJobSet.remove(job.job_name)
+}
+
+rule JobFails {
+    when: JobHandlerFails(job, error)
+
+    ensures: job.last_error = error
+    ensures: job.last_completed_at = now
+    ensures: RunningJobSet.remove(job.job_name)
+    ensures: NotifyJobFailure(job.job_name, error)
+}
+
+-- Admin can update a job's cron expression or enabled state.
+-- Changes take effect on the next schedule cycle (hot reload).
+rule UpdateJob {
+    when: AdminUpdatesJob(job, cron_expression?, enabled?)
+
+    if cron_expression != null:
+        ensures: job.cron_expression = cron_expression
+    if enabled != null:
+        ensures: job.enabled = enabled
+    ensures: ReloadJob(job)
+}
+
+-- Hot reload: stop the existing cron task, re-read config from DB,
+-- and re-register if still enabled with a valid expression.
+rule ReloadJob {
+    when: ReloadJob(job)
+
+    ensures: UnregisterCronJob(job)
+    if job.enabled:
+        ensures: RegisterCronJob(job)
+}
+
+-- ─── Task Registry (Bulk Operations) ─────────────────────────────
+-- In-memory task tracking for admin-initiated bulk LLM operations
+-- (preassess, assess, select, reclassify, emotion tagging).
+-- Tasks are not persisted — they exist only while the server is running.
+
+entity BulkTask {
+    type: preassess | assess | select | reclassify | emotion
+    status: running | completed | failed
+    total: Integer
+    completed_count: Integer
+    failed_count: Integer
+    errors: List<String>                               -- capped at task_max_errors
+    story_ids: List<String>
+    created_at: Timestamp
+    completed_at: Timestamp?
+}
+
+-- Submit a bulk operation: stories are processed with concurrency
+-- limits. The caller gets a task ID to poll for progress.
+rule CreateBulkTask {
+    when: AdminSubmitsBulkTask(type, story_ids)
+    requires: story_ids.count > 0
+
+    ensures: BulkTask.created(
+        type: type,
+        status: running,
+        total: story_ids.count,
+        completed_count: 0,
+        failed_count: 0,
+        errors: [],
+        story_ids: story_ids,
+        created_at: now
+    )
+}
+
+-- As each story is processed, increment the appropriate counter.
+rule IncrementTaskProgress {
+    when: TaskItemProcessed(task, success, error?)
+
+    if success:
+        ensures: task.completed_count = task.completed_count + 1
+    else:
+        ensures: task.failed_count = task.failed_count + 1
+        if error != null and task.errors.count < config.task_max_errors:
+            ensures: task.errors = task.errors + [error]
+}
+
+-- When all items are processed, mark the task as complete.
+-- Status is 'failed' only if every single item failed.
+rule CompleteTask {
+    when: AllTaskItemsProcessed(task)
+
+    let final_status =
+        if task.failed_count > 0 and task.completed_count = 0: failed
+        else: completed
+
+    ensures: task.status = final_status
+    ensures: task.completed_at = now
+}
+
+-- Cleanup: completed tasks are evicted after task_completed_ttl.
+-- Runs on a periodic timer (task_cleanup_interval).
+rule CleanupCompletedTasks {
+    when: TaskCleanupTimerFires()
+
+    for task in BulkTasks
+        where completed_at != null
+        and now - completed_at > config.task_completed_ttl:
+        ensures: not exists task
+}
+
+-- ─── Processing Indicator ────────────────────────────────────────
+-- The task registry exposes which story IDs are currently being
+-- processed (across all running tasks). The admin UI uses this to
+-- show processing indicators on individual stories.
+
+surface TaskProgress {
+    facing admin: auth/Admin
+
+    context task: BulkTask
+
+    exposes:
+        task.type
+        task.status
+        task.total
+        task.completed_count
+        task.failed_count
+        task.errors
+        task.created_at
+        task.completed_at
+
+    guidance:
+        "Poll GET /stories/tasks/:taskId for progress updates.
+        Show a progress bar (completed_count + failed_count) / total.
+        Stories whose IDs appear in any running task should show
+        a processing indicator in the admin table."
+}

@@ -1,0 +1,267 @@
+-- authentication.allium
+-- Distilled from: server/src/services/{auth,user}.ts, server/src/middleware/auth.ts,
+--                 server/src/routes/auth.ts, server/src/middleware/rateLimit.ts
+--
+-- Dual-mode authentication: JWT access tokens for admin sessions,
+-- static API key for programmatic access. Refresh tokens use
+-- family-based rotation with reuse detection — if a rotated token
+-- is presented again, the entire family is revoked (compromise signal).
+--
+-- Role hierarchy:
+--   admin  — full access including user management
+--   editor — all admin features except user management
+--   viewer — reserved for future public user profiles; currently
+--            locked out of all admin routes
+
+config {
+    bcrypt_rounds: Integer = 12
+    access_token_expiry: Duration = 15.minutes
+    refresh_token_expiry: Duration = 24.hours
+    refresh_cookie_path: String = "/api/auth"
+    login_rate_limit: Integer = 5                      -- per 15 min per IP
+    login_rate_window: Duration = 15.minutes
+    refresh_rate_limit: Integer = 30                   -- per 15 min per IP
+    refresh_rate_window: Duration = 15.minutes
+}
+
+-- ─── Entities ─────────────────────────────────────────────────────
+
+enum UserRole { admin | editor | viewer }
+
+entity User {
+    email: String
+    name: String
+    password_hash: String
+    role: UserRole
+
+    -- Relationships
+    refresh_tokens: RefreshToken with user = this
+
+    -- Derived
+    can_access_admin: role in {admin, editor}
+    can_manage_users: role = admin
+}
+
+entity RefreshToken {
+    token: String                                      -- 40 random hex bytes
+    user: User
+    family_id: String                                  -- groups tokens from same login session
+    expires_at: Timestamp
+    rotated_at: Timestamp?                             -- set when this token is replaced
+
+    -- Derived
+    is_expired: expires_at <= now
+    is_rotated: rotated_at != null
+}
+
+value AccessTokenPayload {
+    user_id: String
+    email: String
+    role: String
+}
+
+-- ─── Rate Limiting ────────────────────────────────────────────────
+-- Login and refresh endpoints are rate-limited per IP to prevent
+-- brute-force attacks. Rate limiting is behavioral: it determines
+-- when requests are rejected before any auth logic runs.
+
+rule RejectRateLimitedLogin {
+    when: UserLogsIn(email, password)
+    requires: login_attempts_in_window(request_ip) < config.login_rate_limit
+}
+
+rule RejectRateLimitedRefresh {
+    when: UserRefreshesToken(old_token_value)
+    requires: refresh_attempts_in_window(request_ip) < config.refresh_rate_limit
+}
+
+-- ─── Login ────────────────────────────────────────────────────────
+
+rule Login {
+    when: UserLogsIn(email, password)
+
+    let user = User{email: email}
+    requires: exists user
+    requires: verify(password, user.password_hash)
+
+    let access_token = sign_jwt(user, config.access_token_expiry)
+
+    ensures: RefreshToken.created(
+        token: random_hex(40),
+        user: user,
+        family_id: random_uuid(),
+        expires_at: now + config.refresh_token_expiry
+    )
+    ensures: SessionStarted(user, access_token)
+}
+
+-- ─── Token Refresh ────────────────────────────────────────────────
+
+rule RefreshAccessToken {
+    when: UserRefreshesToken(old_token_value)
+
+    let record = RefreshToken{token: old_token_value}
+    requires: exists record
+    requires: not record.is_expired
+    requires: not record.is_rotated
+
+    -- Soft-rotate: mark old token as used, don't delete yet (forensics)
+    ensures: record.rotated_at = now
+
+    -- Issue new pair in the same family
+    let access_token = sign_jwt(record.user, config.access_token_expiry)
+    ensures: RefreshToken.created(
+        token: random_hex(40),
+        user: record.user,
+        family_id: record.family_id,
+        expires_at: now + config.refresh_token_expiry
+    )
+    ensures: TokensRefreshed(record.user, access_token)
+}
+
+-- ─── Reuse Detection ──────────────────────────────────────────────
+-- If a token that was already rotated is presented again, an attacker
+-- may have stolen the old value. Revoke the entire family as a
+-- precautionary measure.
+
+rule DetectTokenReuse {
+    when: UserRefreshesToken(old_token_value)
+
+    let record = RefreshToken{token: old_token_value}
+    requires: exists record
+    requires: record.is_rotated
+
+    -- Revoke entire family
+    let family_tokens = RefreshTokens
+        where family_id = record.family_id
+    for token in family_tokens:
+        ensures: not exists token
+
+    ensures: TokenReuseDetected(record.user)
+}
+
+-- Expired tokens are cleaned up — caller gets an error and the
+-- token is deleted so it doesn't linger.
+rule RejectExpiredToken {
+    when: UserRefreshesToken(old_token_value)
+
+    let record = RefreshToken{token: old_token_value}
+    requires: exists record
+    requires: record.is_expired
+
+    ensures: not exists record
+    ensures: TokenExpired(record.user)
+}
+
+-- ─── Logout ───────────────────────────────────────────────────────
+
+rule Logout {
+    when: UserLogsOut(token_value)
+
+    let record = RefreshToken{token: token_value}
+    if exists record:
+        ensures: not exists record
+}
+
+-- ─── Password Management ──────────────────────────────────────────
+
+rule ChangePassword {
+    when: UserChangesPassword(user, current_password, new_password)
+    requires: verify(current_password, user.password_hash)
+
+    ensures: user.password_hash = hash(new_password)
+    -- Revoke all sessions — user must re-login everywhere
+    for token in user.refresh_tokens:
+        ensures: not exists token
+}
+
+rule ResetPassword {
+    when: AdminResetsPassword(user, new_password)
+
+    ensures: user.password_hash = hash(new_password)
+    -- Revoke all sessions
+    for token in user.refresh_tokens:
+        ensures: not exists token
+}
+
+-- ─── Expired Token Cleanup ────────────────────────────────────────
+
+rule CleanupExpiredTokens {
+    when: TokenCleanupJobRuns()
+
+    for token in RefreshTokens where is_expired:
+        ensures: not exists token
+}
+
+-- ─── User Management ─────────────────────────────────────────────
+
+rule CreateUser {
+    when: AdminCreatesUser(email, name, password, role?)
+    requires: not exists User{email: email}
+
+    ensures: User.created(
+        email: email,
+        name: name,
+        password_hash: hash(password),
+        role: role ?? viewer
+    )
+}
+
+rule DeleteUser {
+    when: AdminDeletesUser(user)
+    -- Cascade: all refresh tokens are removed with the user
+    for token in user.refresh_tokens:
+        ensures: not exists token
+    ensures: not exists user
+}
+
+-- ─── Actor Declarations ──────────────────────────────────────────
+-- Canonical actor definitions. Other specs import these via
+-- use "./authentication.allium" as auth.
+
+actor Admin {
+    identified_by: User where can_access_admin
+}
+
+actor SuperAdmin {
+    identified_by: User where can_manage_users
+}
+
+-- ─── Auth Surfaces ───────────────────────────────────────────────
+
+-- Admin routes require JWT authentication (no API key fallback).
+-- The access token is verified with HS256 algorithm restriction.
+surface AdminRoute {
+    facing admin: Admin
+
+    guarantee:
+        "Access tokens must be signed with HS256"
+
+    guidance:
+        "Refresh token is stored in an httpOnly cookie scoped to
+        /api/auth. In production: Secure + SameSite=None (cross-origin).
+        In development: SameSite=Strict."
+}
+
+-- User management requires the SuperAdmin actor (admin role only).
+surface UserManagement {
+    facing super: SuperAdmin
+
+    provides:
+        AdminCreatesUser(email, name, password, role?)
+        AdminDeletesUser(user)
+        AdminResetsPassword(user, new_password)
+
+    guidance:
+        "Editors can access all admin features except this surface.
+        The viewer role is reserved for future public user profiles."
+}
+
+-- Public API routes accept a static API key as Bearer token.
+-- Timing-safe comparison prevents timing attacks.
+surface PublicApiRoute {
+    facing client: User
+
+    guarantee:
+        "API key comparison uses constant-time comparison"
+}

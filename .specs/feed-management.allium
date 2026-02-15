@@ -1,0 +1,230 @@
+-- feed-management.allium
+-- Distilled from: server/src/services/{feed,favicon}.ts
+--
+-- Feed lifecycle: CRUD with soft-delete protection (feeds with
+-- published stories are deactivated, not deleted), crawl health
+-- tracking with consecutive failure counters, cache header
+-- persistence, and favicon fetching with multi-tier fallback.
+--
+-- This spec owns the canonical Feed entity. Other specs that
+-- need Feed fields import it from here (e.g. story-pipeline
+-- declares an external entity with a subset of fields).
+
+use "./authentication.allium" as auth
+
+config {
+    max_consecutive_failures: Integer = 3
+    consecutive_empty_warning: Integer = 3
+    quality_cache_minutes: Integer = 15
+    favicon_max_bytes: Integer = 100000
+    favicon_fetch_timeout_ms: Integer = 10000
+    favicon_concurrency: Integer = 5
+    google_globe_max_bytes: Integer = 400
+}
+
+external entity Issue { name: String, slug: String }
+
+-- ─── Feed Entity ─────────────────────────────────────────────────
+
+entity Feed {
+    title: String
+    rss_url: String
+    url: String?                                       -- homepage URL
+    display_title: String?
+    language: String?
+    region: String?
+    issue: Issue
+    crawl_interval_hours: Integer
+    html_selector: String?                             -- CSS selector for content extraction
+    active: Boolean
+
+    -- Crawl status
+    last_crawled_at: Timestamp?
+    last_successful_crawl_at: Timestamp?
+    last_crawl_error: String?
+    last_crawl_error_at: Timestamp?
+    last_crawl_result: String?
+    consecutive_failed_crawls: Integer
+    consecutive_empty_crawls: Integer
+
+    -- Cache headers (for conditional RSS requests)
+    last_etag: String?
+    last_modified: String?
+
+    -- Derived
+    has_stories: stories.count > 0
+    is_due_for_crawl: active
+        and (last_crawled_at = null
+            or now - last_crawled_at > crawl_interval_hours.hours)
+    has_empty_crawl_warning: consecutive_empty_crawls >= config.consecutive_empty_warning
+}
+
+-- ─── CRUD ────────────────────────────────────────────────────────
+
+rule CreateFeed {
+    when: AdminCreatesFeed(title, rss_url, issue_id, data?)
+    -- Issue must exist
+    requires: exists Issue{id: issue_id}
+
+    ensures: Feed.created(
+        title: title,
+        rss_url: rss_url,
+        issue: Issue{id: issue_id},
+        active: true,
+        consecutive_failed_crawls: 0,
+        consecutive_empty_crawls: 0,
+        crawl_interval_hours: data?.crawl_interval_hours ?? 6
+    )
+}
+
+-- Soft-delete: feeds with stories are deactivated, not removed.
+-- This preserves the relationship between published stories and
+-- their source feed (used in attribution, newsletters, etc.).
+rule DeleteFeed {
+    when: AdminDeletesFeed(feed)
+
+    if feed.has_stories:
+        ensures: feed.active = false
+    else:
+        ensures: not exists feed
+}
+
+-- ─── Crawl Status Tracking ───────────────────────────────────────
+-- After each crawl attempt, the feed's health metrics are updated.
+-- The logic distinguishes several outcomes:
+--
+-- Success (at least one article extracted):
+--   - Advance lastCrawledAt
+--   - Clear error fields and failure counters
+--   - Update lastSuccessfulCrawlAt
+--
+-- Total failure (all articles failed extraction):
+--   - Increment consecutiveFailedCrawls
+--   - After max_consecutive_failures, force-advance lastCrawledAt
+--     to prevent infinite retry loops
+--
+-- 304 Not Modified:
+--   - Leave error fields untouched (preserve previous error info)
+--   - Do not advance lastCrawledAt (feed hasn't changed)
+--
+-- Empty feed (RSS returned zero items, not 304):
+--   - Increment consecutiveEmptyCrawls
+
+rule UpdateCrawlStatusSuccess {
+    when: CrawlCompletes(feed, outcome)
+    requires: outcome.had_success
+
+    ensures: feed.last_crawled_at = now
+    ensures: feed.last_successful_crawl_at = now
+    ensures: feed.consecutive_failed_crawls = 0
+    ensures: feed.consecutive_empty_crawls = 0
+    ensures: feed.last_crawl_error = null
+    ensures: feed.last_crawl_error_at = null
+}
+
+rule UpdateCrawlStatusFailure {
+    when: CrawlCompletes(feed, outcome)
+    requires: not outcome.had_success
+    requires: outcome.new_item_count > 0
+
+    let new_fail_count = feed.consecutive_failed_crawls + 1
+
+    if outcome.error_message != null:
+        ensures: feed.last_crawl_error = outcome.error_message
+        ensures: feed.last_crawl_error_at = now
+
+    -- After N consecutive total failures, force-advance to break
+    -- the retry loop
+    if new_fail_count >= config.max_consecutive_failures:
+        ensures: feed.last_crawled_at = now
+        ensures: feed.consecutive_failed_crawls = 0
+    else:
+        ensures: feed.consecutive_failed_crawls = new_fail_count
+}
+
+rule UpdateCrawlStatusEmpty {
+    when: CrawlCompletes(feed, outcome)
+    requires: outcome.new_item_count = 0
+    requires: not outcome.not_modified
+
+    ensures: feed.last_crawled_at = now
+    ensures: feed.consecutive_empty_crawls = feed.consecutive_empty_crawls + 1
+}
+
+-- ─── Feed Quality Metrics ────────────────────────────────────────
+-- Computed aggregate statistics per feed: total stories crawled,
+-- how many were published, publish rate, and average relevance.
+-- Cached in memory for quality_cache_minutes.
+
+value FeedQualityMetrics {
+    total_crawled: Integer
+    published_count: Integer
+    publish_rate: Decimal                              -- published / total
+    avg_relevance: Decimal?                            -- avg of analyzed+ stories
+}
+
+deferred FeedQuality.compute   -- see: server/src/services/feed.ts
+
+-- ─── Favicon ─────────────────────────────────────────────────────
+-- Fetches a favicon image for each feed and saves it as a PNG.
+-- Multi-tier fallback, tried in order for each domain (from the
+-- feed's hostname progressively up to the base domain):
+--
+--   1. Google Favicon API (filtered: reject generic globe icon
+--      by checking size <= google_globe_max_bytes)
+--   2. HTML parsing (fetch homepage, parse <link rel="icon">,
+--      prefer sizes closest to 32px)
+--   3. Direct /favicon.ico fetch
+--
+-- Images are capped at favicon_max_bytes (100 KB). Already-fetched
+-- favicons are skipped unless force=true.
+
+rule FetchFavicon {
+    when: AdminFetchesFavicon(feed, force?)
+    if not force and favicon_exists(feed):
+        ensures: FaviconAlreadyExists(feed)
+    else:
+        -- Try progressively shorter domains from the feed's URL
+        -- e.g. feeder-prod.int.politico.com -> int.politico.com -> politico.com
+        let buffer = fetch_favicon_with_fallback(
+            feed.url ?? feed.rss_url
+        )
+        if buffer != null:
+            ensures: FaviconSaved(feed, buffer)
+}
+
+rule FetchAllFavicons {
+    when: AdminFetchesAllFavicons()
+
+    for feed in Feeds where active:
+        ensures: AdminFetchesFavicon(feed, force: false)
+}
+
+-- ─── Admin Surface ───────────────────────────────────────────────
+
+surface FeedManager {
+    facing admin: auth/Admin
+
+    exposes:
+        for feed in Feeds:
+            feed.title
+            feed.rss_url
+            feed.active
+            feed.last_crawled_at
+            feed.last_successful_crawl_at
+            feed.consecutive_failed_crawls
+            feed.consecutive_empty_crawls
+            feed.has_empty_crawl_warning
+
+    provides:
+        AdminCreatesFeed(title, rss_url, issue_id, data?)
+        AdminDeletesFeed(feed)
+        AdminFetchesFavicon(feed, force?)
+        AdminFetchesAllFavicons()
+
+    guidance:
+        "When has_empty_crawl_warning is true (3+ consecutive empty
+        crawls), display a warning icon with a tooltip explaining
+        that the feed's RSS has returned no new items recently.
+        This helps the admin investigate stale or misconfigured feeds."
+}
