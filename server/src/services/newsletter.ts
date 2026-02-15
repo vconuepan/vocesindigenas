@@ -569,8 +569,13 @@ ${introSection}
           <!-- Footer -->
           <tr>
             <td style="padding: 20px 32px 24px; text-align: center; background-color: #fafafa; border-top: 1px solid #e5e5e5; margin-top: 16px;">
-              <p style="margin: 0 0 8px; font-size: 12px; color: #a3a3a3;">
+              <p style="margin: 0 0 10px; font-size: 12px; color: #a3a3a3;">
                 <a href="https://actuallyrelevant.news" style="color: #2563eb; text-decoration: none;">actuallyrelevant.news</a>
+              </p>
+              <p style="margin: 0 0 10px; font-size: 12px; color: #a3a3a3;">
+                <a href="https://bsky.app/profile/actuallyrelevant.bsky.social" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://actuallyrelevant.news/images/social/bluesky.png" alt="Bluesky" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Bluesky</a>
+                <span style="color: #d4d4d4; margin: 0 6px;">&middot;</span>
+                <a href="https://mastodon.social/@actuallyrelevant" rel="me" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://actuallyrelevant.news/images/social/mastodon.png" alt="Mastodon" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Mastodon</a>
               </p>
               <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
                 <a href="https://app.useplunk.com/unsubscribe/{{plunk_id}}" style="color: #737373; text-decoration: underline;">Unsubscribe</a>

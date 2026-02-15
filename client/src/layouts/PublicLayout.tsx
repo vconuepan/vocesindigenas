@@ -11,6 +11,8 @@ import SubscribeProvider, {
 import { PositivityProvider } from "../contexts/PositivityContext";
 import { MoodDialPanel } from "../components/PositivitySlider";
 const KOFI_URL = "https://ko-fi.com/odinmb";
+const BLUESKY_URL = "https://bsky.app/profile/actuallyrelevant.bsky.social";
+const MASTODON_URL = "https://mastodon.social/@actuallyrelevant";
 
 const ISSUE_LINKS = [
   {
@@ -571,6 +573,26 @@ function PublicLayoutInner() {
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
                 {BRAND.claim}
               </p>
+              <div className="flex gap-2 mt-4">
+                <a
+                  href={BLUESKY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  aria-label="Follow us on Bluesky (opens in new tab)"
+                >
+                  <img src="/images/optimized/social/bluesky-thumb-w.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" aria-hidden="true" />
+                </a>
+                <a
+                  href={MASTODON_URL}
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  aria-label="Follow us on Mastodon (opens in new tab)"
+                >
+                  <img src="/images/optimized/social/mastodon-thumb-w.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" aria-hidden="true" />
+                </a>
+              </div>
               <ul className="hidden md:flex gap-4 mt-4">
                 {FOOTER_LEGAL.map((link) => (
                   <li key={link.label}>
