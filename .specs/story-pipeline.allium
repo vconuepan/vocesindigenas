@@ -4,6 +4,12 @@
 -- The core editorial funnel. Stories flow through LLM stages that
 -- progressively filter and enrich, with config-driven thresholds
 -- controlling how aggressively the funnel narrows.
+--
+-- Execution model: all stage transitions are driven by scheduled
+-- polling jobs, not event triggers. Each job queries for eligible
+-- stories and processes them in bulk. The rules below describe
+-- per-story semantics; batching and concurrency are implementation
+-- concerns.
 
 config {
     full_assessment_threshold: Integer = 5
@@ -79,9 +85,8 @@ entity Cluster {
 -- ─── Stage 1: Pre-Assessment ───────────────────────────────────────
 
 rule PreAssess {
-    when: story: Story.status becomes fetched
-    -- In practice batched (preassess_batch_size), but the domain
-    -- rule is per-story. Batching is an implementation concern.
+    when: PreAssessJobRuns(story)
+    -- Polls for stories where status = fetched.
 
     -- LLM assigns issue + conservative rating + emotion
     ensures: story.issue = LLM.classify_issue(story) ?? story.feed.issue
@@ -93,7 +98,8 @@ rule PreAssess {
 -- ─── Stage 2: Full Assessment ──────────────────────────────────────
 
 rule Assess {
-    when: story: Story.status becomes pre_analyzed
+    when: AssessJobRuns(story)
+    -- Polls for pre_analyzed stories above threshold.
     requires: story.relevance_pre >= story.assessment_threshold
 
     -- LLM generates editorial content + detailed rating
@@ -118,23 +124,11 @@ rule Assess {
 
 -- ─── Stage 3: Selection ────────────────────────────────────────────
 
--- Stories below the relevance floor are never considered.
--- Non-primary cluster members are auto-rejected as a safety net.
-
-rule RejectBelowFloor {
-    when: story: Story.status becomes analyzed
-    requires: story.relevance < config.selection_relevance_min
-    ensures: story.status = rejected
-}
-
-rule RejectNonPrimary {
-    when: story: Story.status becomes analyzed
-    requires: not story.is_primary
-    ensures: story.status = rejected
-}
-
 rule Select {
-    when: story: Story.status becomes analyzed
+    when: SelectJobRuns(story)
+    -- Polls for analyzed stories with relevance >= selection_relevance_min
+    -- and is_primary. Non-primary cluster members are force-rejected
+    -- as a safety net before LLM selection.
     requires: story.relevance >= config.selection_relevance_min
     requires: story.is_primary
     -- LLM picks top ~selection_ratio from eligible pool.
@@ -146,7 +140,8 @@ rule Select {
 -- ─── Stage 4: Publishing ───────────────────────────────────────────
 
 rule Publish {
-    when: story: Story.status becomes selected
+    when: PublishJobRuns(story)
+    -- Polls for stories where status = selected.
 
     -- Slug generated once, never changes
     let new_slug = story.slug ?? slugify(story.title ?? story.source_title)
