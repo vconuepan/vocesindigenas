@@ -37,6 +37,7 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/stewardship', priority: 0.6, changefreq: 'monthly' },
   { path: '/widgets', priority: 0.4, changefreq: 'monthly' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
+  { path: '/thank-you', priority: 0.3, changefreq: 'yearly' },
 ]
 
 function formatDate(date: Date): string {

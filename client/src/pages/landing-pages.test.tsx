@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import MethodologyPage from './MethodologyPage'
 import StewardshipPage from './StewardshipPage'
+import ThankYouPage from './ThankYouPage'
 
 vi.mock('../components/SubscribeProvider', () => ({
   useSubscribe: () => ({ openSubscribe: vi.fn() }),
@@ -44,5 +45,14 @@ describe('StewardshipPage', () => {
     renderPage(<StewardshipPage />)
     expect(screen.getByRole('heading', { level: 1, name: /long-term home/i })).toBeInTheDocument()
     expect(screen.getByText(/82\+/)).toBeInTheDocument()
+  })
+})
+
+describe('ThankYouPage', () => {
+  it('renders heading and credit sections', () => {
+    renderPage(<ThankYouPage />)
+    expect(screen.getByRole('heading', { level: 1, name: /thank you/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /frontend/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /backend/i })).toBeInTheDocument()
   })
 })
