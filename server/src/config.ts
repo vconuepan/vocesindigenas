@@ -172,6 +172,11 @@ export const config = {
     visibility: (process.env.MASTODON_VISIBILITY || 'unlisted') as 'public' | 'unlisted' | 'private',
     charLimit: parseInt(process.env.MASTODON_CHAR_LIMIT || '500', 10),
   },
+  feedback: {
+    rateLimitWindowMs: parseInt(process.env.FEEDBACK_RATE_LIMIT_WINDOW_MS || String(60 * 60 * 1000), 10),
+    rateLimitMax: parseInt(process.env.FEEDBACK_RATE_LIMIT_MAX || '3', 10),
+    messageMaxLength: 2000,
+  },
   socialAutoPost: {
     lookbackHours: parseInt(process.env.SOCIAL_LOOKBACK_HOURS || process.env.BLUESKY_LOOKBACK_HOURS || '25', 10),
     pickModelTier: 'medium' as const,

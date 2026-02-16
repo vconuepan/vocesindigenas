@@ -1,6 +1,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { NavLink, Outlet, Navigate } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
+import { useQuery } from '@tanstack/react-query'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -16,9 +17,11 @@ import {
   Square3Stack3DIcon,
   ArrowTopRightOnSquareIcon,
   ChatBubbleLeftRightIcon,
+  ChatBubbleLeftEllipsisIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
+import { adminApi } from '../lib/admin-api'
 import { useServerTime } from '../hooks/useJobs'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ToastProvider } from '../components/ui/Toast'
@@ -34,11 +37,12 @@ const navigation = [
   { name: 'Podcasts', href: '/admin/podcasts', icon: MicrophoneIcon },
   { name: 'Bluesky', href: '/admin/bluesky', icon: ChatBubbleLeftRightIcon },
   { name: 'Mastodon', href: '/admin/mastodon', icon: GlobeAltIcon },
+  { name: 'Feedback', href: '/admin/feedback', icon: ChatBubbleLeftEllipsisIcon, badge: true },
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
 ]
 
-function NavItems({ onClick }: { onClick?: () => void }) {
+function NavItems({ onClick, unreadFeedbackCount }: { onClick?: () => void; unreadFeedbackCount: number }) {
   return (
     <>
       {navigation.map(item => (
@@ -58,6 +62,11 @@ function NavItems({ onClick }: { onClick?: () => void }) {
         >
           <item.icon className="h-5 w-5 shrink-0" />
           {item.name}
+          {item.badge && unreadFeedbackCount > 0 && (
+            <span className="ml-auto inline-flex items-center justify-center rounded-full bg-brand-600 px-1.5 py-0.5 text-[10px] font-bold text-white min-w-[1.25rem]">
+              {unreadFeedbackCount > 99 ? '99+' : unreadFeedbackCount}
+            </span>
+          )}
         </NavLink>
       ))}
     </>
@@ -78,6 +87,13 @@ function ServerClock() {
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
+  const feedbackCountQuery = useQuery({
+    queryKey: ['feedbackCount'],
+    queryFn: () => adminApi.feedback.count(),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  })
+  const unreadFeedbackCount = feedbackCountQuery.data?.unreadCount ?? 0
 
   return (
     <div className="flex h-full flex-col">
@@ -85,7 +101,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <span className="text-lg font-bold text-neutral-900">Admin</span>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Admin navigation">
-        <NavItems onClick={onNavigate} />
+        <NavItems onClick={onNavigate} unreadFeedbackCount={unreadFeedbackCount} />
       </nav>
       <ServerClock />
       <div className="border-t border-neutral-200 px-3 py-3">

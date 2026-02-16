@@ -8,6 +8,7 @@ import sitemapRouter from './sitemap.js'
 import homepageRouter from './homepage.js'
 import docsRouter from './docs.js'
 import sourcesRouter from './sources.js'
+import feedbackRouter from './feedback.js'
 
 const router = Router()
 
@@ -22,5 +23,6 @@ router.use('/feed', feedRouter)
 router.use('/subscribe', subscribeRouter)
 router.use('/sitemap.xml', sitemapRouter)
 router.use('/docs', docsRouter)
+router.use('/feedback', feedbackRouter)
 
 export default router

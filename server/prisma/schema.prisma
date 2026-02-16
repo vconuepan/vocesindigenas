@@ -300,6 +300,36 @@ model PendingSubscription {
 }
 
 
+// --- Feedback Tables ---
+
+enum FeedbackCategory {
+  general
+  bug
+  suggestion
+  other
+}
+
+enum FeedbackStatus {
+  unread
+  read
+  archived
+}
+
+model Feedback {
+  id        String           @id @default(uuid())
+  category  FeedbackCategory
+  message   String
+  email     String?
+  status    FeedbackStatus   @default(unread)
+  ipHash    String           @map("ip_hash")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("feedback")
+}
+
 // --- Auth Tables ---
 
 model User {

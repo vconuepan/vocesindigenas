@@ -20,6 +20,16 @@ import type {
   MastodonFeedResponse,
 } from '@shared/types'
 
+export interface FeedbackItem {
+  id: string
+  category: 'general' | 'bug' | 'suggestion' | 'other'
+  message: string
+  email: string | null
+  status: 'unread' | 'read' | 'archived'
+  createdAt: string
+  updatedAt: string
+}
+
 export interface FeedQualityMetrics {
   totalCrawled: number
   publishedCount: number
@@ -376,6 +386,20 @@ export const adminApi = {
       request<{ success: boolean }>('/mastodon/metrics/refresh', { method: 'POST' }),
     getFeed: (params?: { maxId?: string; limit?: number }) =>
       request<MastodonFeedResponse>(`/mastodon/feed${toQueryString((params || {}) as Record<string, unknown>)}`),
+  },
+
+  // Feedback
+  feedback: {
+    list: (params?: { status?: string; category?: string; page?: number; limit?: number }) =>
+      request<{ items: FeedbackItem[]; total: number; page: number; limit: number; unreadCount: number }>(
+        `/feedback${toQueryString((params || {}) as Record<string, unknown>)}`
+      ),
+    count: () => request<{ unreadCount: number }>('/feedback/count'),
+    updateStatus: (id: string, status: string) =>
+      request<FeedbackItem>(`/feedback/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    delete: (id: string) => request<void>(`/feedback/${id}`, { method: 'DELETE' }),
+    bulk: (ids: string[], action: string) =>
+      request<{ affected: number }>('/feedback/bulk', { method: 'POST', body: JSON.stringify({ ids, action }) }),
   },
 
   // Users

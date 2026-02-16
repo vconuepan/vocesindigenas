@@ -8,9 +8,7 @@ import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
   useSubscribe,
 } from "../components/SubscribeProvider";
-import FeedbackProvider, {
-  useFeedback,
-} from "../components/FeedbackProvider";
+import FeedbackProvider from "../components/FeedbackProvider";
 import { PositivityProvider } from "../contexts/PositivityContext";
 import { MoodDialPanel } from "../components/PositivitySlider";
 const KOFI_URL = "https://ko-fi.com/odinmb";
@@ -136,7 +134,6 @@ function PublicLayoutInner() {
   const [searchQuery, setSearchQuery] = useState("");
   const [savedCount, setSavedCount] = useState(0);
   const { openSubscribe } = useSubscribe();
-  const { openFeedback } = useFeedback();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
@@ -645,76 +642,42 @@ function PublicLayoutInner() {
                 <li className="flex items-center">
                   <Link
                     to="/newsletter"
-                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
+                    <img src="/images/optimized/icons/newsletter-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
                     Newsletter
                   </Link>
                 </li>
                 <li className="flex items-center">
                   <a
                     href={`${API_BASE}/feed`}
-                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg
-                      className="w-3.5 h-3.5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z" />
-                    </svg>
+                    <img src="/images/optimized/icons/rss-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
                     RSS Feed
                   </a>
                 </li>
                 <li className="flex items-center">
                   <Link
                     to="/widgets"
-                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg
-                      className="w-3.5 h-3.5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      aria-hidden="true"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
+                    <img src="/images/optimized/icons/code-embed-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
                     For Your Website
                   </Link>
                 </li>
                 <li className="flex items-center">
                   <span className="text-sm leading-5 text-neutral-400 px-0.5">
-                    <svg
-                      className="inline-block w-3.5 h-3.5 shrink-0 mr-1.5 -mt-0.5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      aria-hidden="true"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M7 16l-4-4 4-4" />
-                    </svg>
+                    <img src="/images/optimized/icons/code-api-thumb-w.webp" alt="" width={14} height={14} className="inline-block w-3.5 h-3.5 shrink-0 mr-1.5 -mt-0.5" aria-hidden="true" />
                     <Link to="/free-api" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">Free API</Link> (<Link to="/free-api" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">Intro</Link>, <Link to="/developers" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">Docs</Link>)
                   </span>
                 </li>
                 <li className="flex items-center">
                   <Link
                     to="/stewardship"
-                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg
-                      className="w-3.5 h-3.5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      aria-hidden="true"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                    </svg>
+                    <img src="/images/optimized/icons/stewardship-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
                     Stewardship
                   </Link>
                 </li>
@@ -723,37 +686,21 @@ function PublicLayoutInner() {
                     href={KOFI_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg
-                      className="w-3.5 h-3.5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
+                    <img src="/images/optimized/icons/heart-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
                     Support Us
                     <span className="sr-only">(opens in new tab)</span>
                   </a>
                 </li>
                 <li className="flex items-center">
-                  <button
-                    onClick={() => openFeedback()}
-                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  <Link
+                    to="/feedback"
+                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
-                    <svg
-                      className="w-3.5 h-3.5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      aria-hidden="true"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                    </svg>
+                    <img src="/images/optimized/icons/feedback-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
                     Feedback
-                  </button>
+                  </Link>
                 </li>
               </ul>
             </div>
