@@ -164,7 +164,8 @@ rule ExtractAndCreate {
             source_title: extracted.title ?? item.title,
             source_content: extracted.content,
             feed: feed,
-            source_date_published: extracted.date_published ?? item.date_published
+            source_date_published: extracted.date_published ?? item.date_published,
+            crawl_method: extracted.method
         )
 
     -- Concurrent insert race: if another crawl already created this URL,
@@ -189,7 +190,8 @@ rule CrawlSingleUrl {
         source_title: extracted.title ?? "Untitled",
         source_content: extracted.content,
         feed: feed,
-        source_date_published: extracted.date_published
+        source_date_published: extracted.date_published,
+        crawl_method: extracted.method
     )
 }
 

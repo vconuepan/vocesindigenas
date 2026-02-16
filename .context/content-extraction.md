@@ -40,6 +40,10 @@ When consecutive articles in a feed all fail local extraction (tiers 1+2), the c
 
 When consecutive articles all fail extraction entirely (local + API both return nothing), the crawler stops attempting remaining articles (controlled by `config.crawl.totalFailThreshold`, default 3). This prevents burning API quota on feeds where the source blocks all extraction methods. The counter resets when any article succeeds.
 
+### Extraction Method Tracking
+
+The extraction method that succeeded (`selector`, `readability`, `diffbot`, or `pipfeed`) is persisted to `Story.crawlMethod` when the story is created. This field is used by the feed quality metrics to show a per-feed breakdown of which extraction tiers are working. The admin panel displays the dominant method in the feed table and a full percentage breakdown in the feed edit panel. Stories created before this feature have `crawlMethod = null` and are excluded from the breakdown.
+
 ### Mid-Flight Cancellation
 
 The crawler passes a `shouldAbort` callback (tied to the `skipAll` flag) through `extractContent()` → `extractByApi()` → `ApiThrottle.run()`. This allows in-flight extractions to bail out before making expensive API calls — even if they started before `skipAll` was set. The abort is checked at three points: before the API tier in `extractContent()`, before entering the throttle in `extractByApi()`, and after dequeuing/backoff-waiting inside `ApiThrottle.run()`. This prevents wasting 30+ seconds on API backoff waits for articles in a feed that has already been identified as failing.

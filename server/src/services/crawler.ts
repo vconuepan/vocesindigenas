@@ -126,6 +126,7 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
           sourceContent: extracted.content,
           feedId,
           sourceDatePublished: extracted.datePublished || item.datePublished || undefined,
+          crawlMethod: extracted.method,
         })
 
         result.newStories++
@@ -228,6 +229,7 @@ export async function crawlUrl(url: string, feedId: string): Promise<{ storyId: 
     sourceContent: extracted.content,
     feedId,
     sourceDatePublished: extracted.datePublished || undefined,
+    crawlMethod: extracted.method,
   })
 
   return { storyId: story.id }

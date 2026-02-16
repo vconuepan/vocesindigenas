@@ -153,14 +153,15 @@ rule UpdateCrawlStatusEmpty {
 
 -- ─── Feed Quality Metrics ────────────────────────────────────────
 -- Computed aggregate statistics per feed: total stories crawled,
--- how many were published, publish rate, and average relevance.
--- Cached in memory for quality_cache_minutes.
+-- how many were published, publish rate, average relevance, and
+-- extraction method breakdown. Cached in memory for quality_cache_minutes.
 
 value FeedQualityMetrics {
     total_crawled: Integer
     published_count: Integer
     publish_rate: Decimal                              -- published / total
     avg_relevance: Decimal?                            -- avg of analyzed+ stories
+    extraction_methods: Map<String, Integer>            -- method → count (only stories with crawl_method set)
 }
 
 deferred FeedQuality.compute   -- see: server/src/services/feed.ts
@@ -227,4 +228,8 @@ surface FeedManager {
         crawls), display a warning icon with a tooltip explaining
         that the feed's RSS has returned no new items recently.
         This helps the admin investigate stale or misconfigured feeds."
+
+        "Feed quality metrics include extraction_methods (per-method
+        story counts). The feed table shows the dominant method;
+        the edit panel shows a full percentage breakdown."
 }

@@ -73,6 +73,25 @@ function FaviconSection({ feedId }: { feedId: string }) {
   )
 }
 
+function ExtractionMethodBreakdown({ methods }: { methods: Record<string, number> }) {
+  const entries = Object.entries(methods).sort((a, b) => b[1] - a[1])
+  if (entries.length === 0) return <span className="font-medium">No data yet</span>
+
+  const total = entries.reduce((sum, [, count]) => sum + count, 0)
+  return (
+    <div className="flex flex-wrap gap-1">
+      {entries.map(([method, count]) => (
+        <span
+          key={method}
+          className="inline-flex items-center rounded-full bg-neutral-200 px-2 py-0.5 text-xs font-medium text-neutral-700"
+        >
+          {method} {Math.round((count / total) * 100)}%
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function QualityCard({ feedId }: { feedId: string }) {
   const { data: metrics } = useFeedQuality()
   const m = metrics?.[feedId]
@@ -86,6 +105,8 @@ function QualityCard({ feedId }: { feedId: string }) {
         <span className="font-medium">{Math.round(m.publishRate * 100)}% ({m.publishedCount} of {m.totalCrawled})</span>
         <span>Avg Relevance:</span>
         <span className="font-medium">{m.avgRelevance?.toFixed(1) ?? '--'}</span>
+        <span>Extraction:</span>
+        <ExtractionMethodBreakdown methods={m.extractionMethods} />
       </div>
     </div>
   )

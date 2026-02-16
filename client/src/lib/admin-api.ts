@@ -25,6 +25,7 @@ export interface FeedQualityMetrics {
   publishedCount: number
   publishRate: number
   avgRelevance: number | null
+  extractionMethods: Record<string, number>
 }
 
 const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'

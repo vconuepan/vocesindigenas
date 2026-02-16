@@ -254,6 +254,7 @@ export async function createStory(data: {
   sourceContent: string
   feedId: string
   sourceDatePublished?: string
+  crawlMethod?: 'selector' | 'readability' | 'diffbot' | 'pipfeed'
 }): Promise<Story> {
   const feed = await prisma.feed.findUnique({ where: { id: data.feedId } })
   if (!feed) {
@@ -266,6 +267,7 @@ export async function createStory(data: {
       sourceContent: data.sourceContent,
       feedId: data.feedId,
       sourceDatePublished: data.sourceDatePublished ? new Date(data.sourceDatePublished) : null,
+      crawlMethod: data.crawlMethod || null,
     },
   })
 }

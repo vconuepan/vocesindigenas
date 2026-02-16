@@ -235,6 +235,28 @@ describe('crawlFeed', () => {
     )
   })
 
+  it('passes extraction method to createStory', async () => {
+    mockGetFeedById.mockResolvedValue(sampleFeed)
+    mockParseFeed.mockResolvedValue(rssResult([
+      { url: 'https://example.com/a', title: 'A', datePublished: null, description: null },
+      { url: 'https://example.com/b', title: 'B', datePublished: null, description: null },
+    ]))
+    mockGetExistingUrls.mockResolvedValue(new Set())
+    mockExtractContent
+      .mockResolvedValueOnce({ title: 'A', content: 'Content', datePublished: null, method: 'selector' })
+      .mockResolvedValueOnce({ title: 'B', content: 'Content', datePublished: null, method: 'diffbot' })
+    mockCreateStory.mockResolvedValue({ id: 'story-1' })
+
+    await crawlFeed('feed-1')
+
+    expect(mockCreateStory).toHaveBeenCalledWith(
+      expect.objectContaining({ sourceUrl: 'https://example.com/a', crawlMethod: 'selector' })
+    )
+    expect(mockCreateStory).toHaveBeenCalledWith(
+      expect.objectContaining({ sourceUrl: 'https://example.com/b', crawlMethod: 'diffbot' })
+    )
+  })
+
   it('does not claim success when all items are skipped (preserves previous error)', async () => {
     mockGetFeedById.mockResolvedValue(sampleFeed)
     mockParseFeed.mockResolvedValue(rssResult([
@@ -544,6 +566,7 @@ describe('crawlUrl', () => {
         sourceTitle: 'Article Title',
         sourceContent: 'Article content',
         feedId: 'feed-1',
+        crawlMethod: 'readability',
       })
     )
   })

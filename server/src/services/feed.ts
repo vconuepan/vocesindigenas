@@ -173,6 +173,7 @@ export interface FeedQualityMetrics {
   publishedCount: number
   publishRate: number
   avgRelevance: number | null
+  extractionMethods: Record<string, number>
 }
 
 interface RawQualityRow {
@@ -200,6 +201,24 @@ export async function getAllFeedQualityMetrics(): Promise<Map<string, FeedQualit
     GROUP BY f.id
   `
 
+  // Extraction method breakdown per feed
+  const methodRows = await prisma.$queryRaw<{ feed_id: string; crawl_method: string; method_count: bigint }[]>`
+    SELECT feed_id, crawl_method, COUNT(*) AS method_count
+    FROM stories
+    WHERE crawl_method IS NOT NULL
+    GROUP BY feed_id, crawl_method
+  `
+
+  const methodsByFeed = new Map<string, Record<string, number>>()
+  for (const row of methodRows) {
+    let methods = methodsByFeed.get(row.feed_id)
+    if (!methods) {
+      methods = {}
+      methodsByFeed.set(row.feed_id, methods)
+    }
+    methods[row.crawl_method] = Number(row.method_count)
+  }
+
   const result = new Map<string, FeedQualityMetrics>()
   for (const row of rows) {
     const totalCrawled = Number(row.total_crawled)
@@ -207,7 +226,10 @@ export async function getAllFeedQualityMetrics(): Promise<Map<string, FeedQualit
     const avgRelevance = row.avg_relevance ? Math.round(row.avg_relevance * 10) / 10 : null
     const publishRate = totalCrawled > 0 ? Math.round((publishedCount / totalCrawled) * 1000) / 1000 : 0
 
-    result.set(row.feed_id, { totalCrawled, publishedCount, publishRate, avgRelevance })
+    result.set(row.feed_id, {
+      totalCrawled, publishedCount, publishRate, avgRelevance,
+      extractionMethods: methodsByFeed.get(row.feed_id) || {},
+    })
   }
 
   qualityCache = {
