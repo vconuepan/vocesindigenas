@@ -26,6 +26,7 @@ const NoAdsNoTrackingPage = lazy(() => import('./pages/NoAdsNoTrackingPage'))
 const NewsFatiguePage = lazy(() => import('./pages/NewsFatiguePage'))
 const FreeApiPage = lazy(() => import('./pages/FreeApiPage'))
 const StewardshipPage = lazy(() => import('./pages/StewardshipPage'))
+const NewsletterPage = lazy(() => import('./pages/NewsletterPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -45,6 +46,7 @@ const UsersPage = lazy(() => import('./pages/admin/UsersPage'))
 const ClustersPage = lazy(() => import('./pages/admin/ClustersPage'))
 const BlueskyPage = lazy(() => import('./pages/admin/BlueskyPage'))
 const MastodonPage = lazy(() => import('./pages/admin/MastodonPage'))
+const FeedbackPage = lazy(() => import('./pages/admin/FeedbackPage'))
 
 /** Preload the admin layout and dashboard chunks (call from LoginPage). */
 export function preloadAdminChunks() {
@@ -102,6 +104,7 @@ export default function App() {
         <Route path="/news-fatigue" element={<LazyPage><NewsFatiguePage /></LazyPage>} />
         <Route path="/free-api" element={<LazyPage><FreeApiPage /></LazyPage>} />
         <Route path="/stewardship" element={<LazyPage><StewardshipPage /></LazyPage>} />
+        <Route path="/newsletter" element={<LazyPage><NewsletterPage /></LazyPage>} />
       </Route>
 
       {/* Embed page — no layout wrapper */}
@@ -149,6 +152,7 @@ export default function App() {
         <Route path="bluesky" element={<BlueskyPage />} />
         <Route path="mastodon" element={<MastodonPage />} />
         <Route path="users" element={<UsersPage />} />
+        <Route path="feedback" element={<FeedbackPage />} />
       </Route>
 
       {/* Catch-all */}

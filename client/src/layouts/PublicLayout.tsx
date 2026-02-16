@@ -8,6 +8,9 @@ import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
   useSubscribe,
 } from "../components/SubscribeProvider";
+import FeedbackProvider, {
+  useFeedback,
+} from "../components/FeedbackProvider";
 import { PositivityProvider } from "../contexts/PositivityContext";
 import { MoodDialPanel } from "../components/PositivitySlider";
 const KOFI_URL = "https://ko-fi.com/odinmb";
@@ -119,7 +122,9 @@ export default function PublicLayout() {
   return (
     <PositivityProvider>
       <SubscribeProvider>
-        <PublicLayoutInner />
+        <FeedbackProvider>
+          <PublicLayoutInner />
+        </FeedbackProvider>
       </SubscribeProvider>
     </PositivityProvider>
   );
@@ -131,6 +136,7 @@ function PublicLayoutInner() {
   const [searchQuery, setSearchQuery] = useState("");
   const [savedCount, setSavedCount] = useState(0);
   const { openSubscribe } = useSubscribe();
+  const { openFeedback } = useFeedback();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
@@ -637,13 +643,13 @@ function PublicLayoutInner() {
               </p>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 <li className="flex items-center">
-                  <button
-                    onClick={() => openSubscribe()}
+                  <Link
+                    to="/newsletter"
                     className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                   >
                     <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                     Newsletter
-                  </button>
+                  </Link>
                 </li>
                 <li className="flex items-center">
                   <a
@@ -730,6 +736,24 @@ function PublicLayoutInner() {
                     Support Us
                     <span className="sr-only">(opens in new tab)</span>
                   </a>
+                </li>
+                <li className="flex items-center">
+                  <button
+                    onClick={() => openFeedback()}
+                    className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    Feedback
+                  </button>
                 </li>
               </ul>
             </div>

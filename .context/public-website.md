@@ -12,6 +12,7 @@ The public site uses `PublicLayout` with hardcoded navigation links to issue pag
 | `/methodology` | `MethodologyPage` | Three-criteria framework explanation |
 | `/about` | `AboutPage` | Mission and approach |
 | `/contact` | `ContactPage` | Email + bilingual imprint (EN/DE) |
+| `/newsletter` | `NewsletterPage` | Inline subscribe form (reuses `SubscribeForm`) |
 
 All routes are registered in both `App.tsx` and `routes.ts` (for sitemap generation). Static routes (issues, methodology, about, contact) are prerendered at build time. Dynamic story routes are added to the sitemap via `generate-sitemap.ts`.
 

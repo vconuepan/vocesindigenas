@@ -36,6 +36,7 @@ export const routes: RouteConfig[] = [
   { path: '/news-fatigue', priority: 0.7, changefreq: 'monthly' },
   { path: '/free-api', priority: 0.7, changefreq: 'monthly' },
   { path: '/stewardship', priority: 0.6, changefreq: 'monthly' },
+  { path: '/newsletter', priority: 0.7, changefreq: 'monthly' },
   { path: '/saved', priority: 0.2, changefreq: 'yearly' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
   // Dynamic story routes are added at build time by generate-sitemap.ts
