@@ -36,6 +36,8 @@ actually-relevant/
 
 ## Commands
 
+**Assume the client dev server is already running** -- do not start it yourself. Use Playwright to verify visual changes.
+
 Use `--prefix` for all npm commands:
 
 ```bash

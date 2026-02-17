@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import ObfuscatedAddress from "../components/ObfuscatedAddress";
 import ObfuscatedEmail from "../components/ObfuscatedEmail";
+import ProfileCard from "../components/ProfileCard";
 import { SEO, CommonOgTags } from "../lib/seo";
 
 export default function ImprintPage() {
@@ -27,6 +28,8 @@ export default function ImprintPage() {
         <h1 className="page-title">Legal Notice</h1>
 
         <div className="prose max-w-none">
+          <ProfileCard className="float-right ml-6 mb-4" />
+
           <h2 className="section-heading mt-8">
             Information (German &sect; 5 DDG)
           </h2>
@@ -51,6 +54,7 @@ export default function ImprintPage() {
             . (You will be pleasantly surprised.)
           </p>
         </div>
+
       </div>
     </>
   );
