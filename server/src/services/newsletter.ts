@@ -577,9 +577,6 @@ ${introSection}
                 <span style="color: #d4d4d4; margin: 0 6px;">&middot;</span>
                 <a href="https://mastodon.social/@actuallyrelevant" rel="me" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://actuallyrelevant.news/images/social/mastodon.png" alt="Mastodon" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Mastodon</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
-                <a href="https://app.useplunk.com/unsubscribe/{{plunk_id}}" style="color: #737373; text-decoration: underline;">Unsubscribe</a>
-              </p>
             </td>
           </tr>
         </table>

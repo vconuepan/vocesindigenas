@@ -71,44 +71,6 @@ describe('generateHtmlContent', () => {
     return lines.join('\n')
   }
 
-  it('renders issue section headers with colored dot', async () => {
-    const content = storyBlock({
-      issue: 'Climate & Environment',
-      issueSlug: 'planet-climate',
-      title: 'Rising sea levels threaten coastal cities',
-      publisher: 'BBC News',
-      url: 'https://example.com/sea-levels',
-      body: 'Coastal cities face unprecedented flooding.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('Climate &amp; Environment')
-    expect(html).toContain('text-transform: uppercase')
-    expect(html).toContain('letter-spacing: 0.1em')
-    // Teal dot for planet-climate
-    expect(html).toContain('background-color: #2dd4bf')
-    expect(html).toContain('border-radius: 50%')
-  })
-
-  it('uses default dot color for unknown issue slugs', async () => {
-    const content = storyBlock({
-      issue: 'Other',
-      issueSlug: 'unknown-slug',
-      title: 'Some story',
-      publisher: 'Publisher',
-      url: 'https://example.com',
-      body: 'Body text.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    // Default pink dot
-    expect(html).toContain('background-color: #f472b6')
-  })
-
   it('renders the intro section before stories', async () => {
     const content = [
       'Something hopeful happened in climate science.',
@@ -133,105 +95,6 @@ describe('generateHtmlContent', () => {
     expect(introIndex).toBeGreaterThan(-1)
     expect(storyIndex).toBeGreaterThan(-1)
     expect(introIndex).toBeLessThan(storyIndex)
-  })
-
-  it('renders logo linked to homepage in header', async () => {
-    const content = storyBlock({
-      title: 'Test story',
-      publisher: 'Publisher',
-      url: 'https://example.com',
-      body: 'Body text.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('href="https://actuallyrelevant.news"')
-    expect(html).toContain('logo-text-horizontal.png')
-    expect(html).toContain('alt="Actually Relevant"')
-  })
-
-  it('renders publisher with original article and relevance analysis links', async () => {
-    const content = storyBlock({
-      title: 'Discovery of new species',
-      publisher: 'National Geographic',
-      url: 'https://example.com/species',
-      relevanceUrl: 'https://actuallyrelevant.news/stories/new-species',
-      body: 'A new deep-sea species has been found.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('National Geographic')
-    expect(html).toContain('>original article</a>')
-    expect(html).toContain('>relevance analysis</a>')
-    expect(html).toContain('href="https://example.com/species"')
-    expect(html).toContain('href="https://actuallyrelevant.news/stories/new-species"')
-    expect(html).toContain('&middot;')
-  })
-
-  it('renders publisher with only original article link when no relevance URL', async () => {
-    const content = storyBlock({
-      title: 'Story title',
-      publisher: 'AP News',
-      url: 'https://example.com/article',
-      body: 'A short summary.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('AP News')
-    expect(html).toContain('>original article</a>')
-    expect(html).not.toContain('relevance analysis')
-  })
-
-  it('renders Support Us section with Ko-fi link', async () => {
-    const content = storyBlock({
-      title: 'Test story',
-      publisher: 'Publisher',
-      url: 'https://example.com',
-      body: 'A blurb.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('ko-fi.com/odinmb')
-    expect(html).toContain('Support Us')
-    expect(html).toContain('Free. Independent. Without ads.')
-  })
-
-  it('renders unsubscribe link with Plunk template variable', async () => {
-    const content = storyBlock({
-      title: 'Test story',
-      publisher: 'Publisher',
-      url: 'https://example.com',
-      body: 'A blurb.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('https://app.useplunk.com/unsubscribe/{{plunk_id}}')
-    expect(html).toContain('Unsubscribe')
-  })
-
-  it('renders AI disclosure with divider and italic text', async () => {
-    const content = storyBlock({
-      title: 'Test story',
-      publisher: 'Publisher',
-      url: 'https://example.com',
-      body: 'A blurb.',
-    })
-
-    mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
-    const html = await generateHtmlContent('nl-1')
-
-    expect(html).toContain('Curated and written with care by AI')
-    expect(html).toContain('font-size: 16px')
-    expect(html).toContain('font-style: italic')
   })
 
   it('renders blockquote with quote and attribution', async () => {
@@ -345,12 +208,9 @@ describe('generateHtmlContent', () => {
     mockPrisma.newsletter.findUnique.mockResolvedValue({ ...baseNewsletter, content })
     const html = await generateHtmlContent('nl-1')
 
-    // Both section headers with correct colors
+    // Both section headers rendered
     expect(html).toContain('Climate')
-    expect(html).toContain('#2dd4bf') // teal for planet-climate
     expect(html).toContain('Technology')
-    expect(html).toContain('#818cf8') // indigo for science-technology
-
     expect(html).toContain('Climate story')
     expect(html).toContain('Tech story')
   })

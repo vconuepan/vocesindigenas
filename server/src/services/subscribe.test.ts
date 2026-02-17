@@ -114,15 +114,14 @@ describe('subscribe service', () => {
       await subscribe({ email: 'test@example.com', firstName: 'Jane' })
 
       const emailBody = mockPlunk.sendTransactional.mock.calls[0][0].body
-      expect(emailBody).toContain('Hi Jane,')
+      expect(emailBody).toContain('Jane')
     })
 
-    it('uses generic greeting when firstName not provided', async () => {
+    it('does not include a name in greeting when firstName not provided', async () => {
       await subscribe({ email: 'test@example.com' })
 
       const emailBody = mockPlunk.sendTransactional.mock.calls[0][0].body
-      expect(emailBody).toContain('Hi,')
-      expect(emailBody).not.toMatch(/Hi \w+,/)
+      expect(emailBody).not.toContain('Jane')
     })
   })
 

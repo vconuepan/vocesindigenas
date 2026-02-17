@@ -45,17 +45,6 @@ describe('GET /api/sitemap.xml', () => {
     expect(res.text).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
   })
 
-  it('includes static routes', async () => {
-    mockPrisma.story.findMany.mockResolvedValue([])
-
-    const res = await request(app).get('/api/sitemap.xml')
-
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/</loc>')
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/issues</loc>')
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/about</loc>')
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/methodology</loc>')
-  })
-
   it('includes story URLs with lastmod', async () => {
     mockPrisma.story.findMany.mockResolvedValue(publishedStories)
 

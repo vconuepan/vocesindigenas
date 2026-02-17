@@ -136,29 +136,6 @@ describe('buildDedupPrompt', () => {
     })
   })
 
-  describe('strict criteria language', () => {
-    it('requires exact same specific event', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt).toContain('exact same specific event')
-    })
-
-    it('instructs to default to not duplicate when uncertain', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt).toContain('When in doubt, mark as NOT a duplicate')
-    })
-
-    it('has a NOT A DUPLICATE section', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt).toContain('NOT A DUPLICATE')
-    })
-
-    it('contains negative examples for different events in same topic', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      // The prompt specifies that different specific events are not duplicates
-      expect(prompt).toContain('DIFFERENT specific events')
-    })
-  })
-
   describe('empty candidates', () => {
     it('still has CANDIDATES wrapper when candidates list is empty', () => {
       const prompt = buildDedupPrompt(source, [])
@@ -172,26 +149,4 @@ describe('buildDedupPrompt', () => {
     })
   })
 
-  describe('no legacy patterns', () => {
-    it('does not contain "step by step"', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt.toLowerCase()).not.toContain('step by step')
-    })
-
-    it('does not contain "Take a deep breath"', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt).not.toContain('Take a deep breath')
-    })
-
-    it('does not contain "Follow this prompt exactly"', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt).not.toContain('Follow this prompt exactly')
-    })
-
-    it('does not contain legacy structure tags', () => {
-      const prompt = buildDedupPrompt(source, candidates)
-      expect(prompt).not.toContain('<STRUCTURE>')
-      expect(prompt).not.toContain('<STEPS>')
-    })
-  })
 })

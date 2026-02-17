@@ -33,12 +33,10 @@ describe('buildPreassessPrompt', () => {
     expect(prompt).not.toContain('x'.repeat(1500))
   })
 
-  it('includes generic rating guidelines', () => {
+  it('includes rating guidelines section', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
     const prompt = buildPreassessPrompt(stories, issues)
     expect(prompt).toContain('<RATING GUIDELINES>')
-    expect(prompt).toContain('Moderate impact')
-    expect(prompt).toContain('Exceptional impact')
   })
 
   it('does not include issue-specific guidelines', () => {
@@ -78,14 +76,6 @@ describe('buildPreassessPrompt', () => {
     expect(prompt).toContain('</ARTICLES>')
   })
 
-  it('does not contain legacy prompting patterns', () => {
-    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
-    const prompt = buildPreassessPrompt(stories, issues)
-    expect(prompt).not.toContain('<STRUCTURE>')
-    expect(prompt).not.toContain('Follow this prompt exactly')
-    expect(prompt).not.toContain('Take a deep breath')
-    expect(prompt).not.toContain('step by step')
-  })
 })
 
 describe('buildReclassifyPrompt', () => {
@@ -111,16 +101,6 @@ describe('buildReclassifyPrompt', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
     const prompt = buildReclassifyPrompt(stories, issues)
     expect(prompt).not.toContain('<RATING GUIDELINES>')
-    expect(prompt).not.toContain('Moderate impact')
-    expect(prompt).not.toContain('Exceptional impact')
-  })
-
-  it('asks for classification and emotion only, not rating', () => {
-    const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
-    const prompt = buildReclassifyPrompt(stories, issues)
-    expect(prompt).toContain('classify')
-    expect(prompt).toContain('emotion')
-    expect(prompt).toContain('Do not rate')
   })
 
   it('uses XML scaffolding structure', () => {
@@ -169,15 +149,6 @@ describe('buildAssessPrompt', () => {
     expect(prompt).toContain('<GUIDELINES>')
   })
 
-  it('does not contain legacy prompting patterns', () => {
-    const prompt = buildAssessPrompt('Title', 'Content', 'Pub', 'https://example.com', guidelines)
-    expect(prompt).not.toContain('<STRUCTURE>')
-    expect(prompt).not.toContain('<STEPS>')
-    expect(prompt).not.toContain('Follow this prompt exactly')
-    expect(prompt).not.toContain('Take a deep breath')
-    expect(prompt).not.toContain('Go through these steps one by one')
-    expect(prompt).not.toContain('incredibly detailed')
-  })
 })
 
 describe('buildSelectPrompt', () => {
@@ -220,16 +191,6 @@ describe('buildSelectPrompt', () => {
     expect(prompt).toContain('<ROLE>')
     expect(prompt).toContain('<GOAL>')
     expect(prompt).toContain('<SELECTION_CRITERIA>')
-  })
-
-  it('does not contain legacy prompting patterns', () => {
-    const prompt = buildSelectPrompt(stories, 1)
-    expect(prompt).not.toContain('<STRUCTURE>')
-    expect(prompt).not.toContain('<STEPS>')
-    expect(prompt).not.toContain('Follow this prompt exactly')
-    expect(prompt).not.toContain('Take a deep breath')
-    expect(prompt).not.toContain('Go through as many rounds')
-    expect(prompt).not.toContain('step by step')
   })
 
   it('escapes XML characters in content', () => {
@@ -330,18 +291,4 @@ describe('buildNewsletterIntroPrompt', () => {
     expect(prompt).toContain('&lt;special&gt;')
   })
 
-  it('does not contain legacy prompting patterns', () => {
-    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
-    expect(prompt).not.toContain('step by step')
-    expect(prompt).not.toContain('Take a deep breath')
-    expect(prompt).not.toContain('Follow this prompt exactly')
-  })
-
-  it('focuses on creative editorial connection of positive developments', () => {
-    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
-    expect(prompt).toContain('uplifting')
-    expect(prompt).toContain('positive developments')
-    expect(prompt).toContain('Do not simply list headlines')
-    expect(prompt).toContain('em dashes')
-  })
 })

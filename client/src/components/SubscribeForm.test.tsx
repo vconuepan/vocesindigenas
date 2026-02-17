@@ -88,13 +88,13 @@ describe('SubscribeForm', () => {
   it('hides heading when hideHeading is true', () => {
     render(<SubscribeForm idPrefix="test" hideHeading />)
 
-    expect(screen.queryByText('Stay informed')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument()
   })
 
   it('shows heading by default', () => {
     render(<SubscribeForm idPrefix="test" />)
 
-    expect(screen.getByText('Stay informed')).toBeInTheDocument()
+    expect(screen.getByRole('heading')).toBeInTheDocument()
   })
 
   it('includes firstName when provided', async () => {
