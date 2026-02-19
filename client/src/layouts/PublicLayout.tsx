@@ -44,6 +44,7 @@ const FOOTER_NAV = [
   { label: "Issues", href: "/issues" },
   { label: "Compare", href: "/compare" },
   { label: "News Fatigue", href: "/news-fatigue" },
+  { label: "Thank You", href: "/thank-you" },
 ];
 
 const FOOTER_LEGAL = [
