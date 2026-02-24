@@ -28,3 +28,11 @@ nul
 
 # Non-coding-related project files
 DOCS/
+
+# Project management repo (separate git repo, contains sensitive strategy/personal data)
+pm/
+
+# Claude Code user-specific settings
+.claude/settings.json
+.claude/settings.local.json
+.claude/to-add-for-batches.txt

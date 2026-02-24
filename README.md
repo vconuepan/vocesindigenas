@@ -1,5 +1,8 @@
 # Actually Relevant
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Looking for Maintainer](https://img.shields.io/badge/looking%20for-maintainer-orange)](https://actuallyrelevant.news/stewardship)
+
 AI-curated news platform that evaluates article relevance to humanity using LLM analysis. Crawls news sources, assesses relevance with structured AI analysis, and publishes curated stories.
 
 ## Tech Stack
@@ -21,7 +24,7 @@ AI-curated news platform that evaluates article relevance to humanity using LLM 
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/OdinMB/actually-relevant.git
    cd actually-relevant
    ```
 
@@ -42,8 +45,9 @@ AI-curated news platform that evaluates article relevance to humanity using LLM 
 
 4. Configure environment variables:
    ```bash
-   cp server/.env.sample server/.env
-   # Edit server/.env with your DATABASE_URL, OPENAI_API_KEY, JWT_SECRET, and PUBLIC_API_KEY
+   # Create server/.env with at minimum these required variables:
+   # DATABASE_URL, OPENAI_API_KEY, JWT_SECRET, FRONTEND_URL
+   # See server/src/config.ts for all available settings and their defaults.
    ```
 
 5. Run database migrations:
@@ -158,8 +162,24 @@ actually-relevant/
 │   ├── dist/        # Built output (gitignored)
 │   └── package.json
 ├── shared/          # Shared types and constants
+├── .context/        # Implementation documentation (17 files)
+├── .specs/          # Behavioral specifications (Allium)
+├── CONTRIBUTING.md  # Contribution guidelines
+├── LICENSE          # AGPL v3
 └── README.md        # This file
 ```
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, including how to set up the development environment, submit pull requests, and the project's lightweight contributor agreement.
+
+## Stewardship
+
+Actually Relevant is actively seeking a long-term institutional owner in journalism, civic tech, or effective altruism. If your organization could give this project a home, visit [actuallyrelevant.news/stewardship](https://actuallyrelevant.news/stewardship) to learn more.
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). Organizations interested in running actuallyrelevant.news as a long-term steward can receive more accommodating license terms — see [Stewardship](https://actuallyrelevant.news/stewardship).
 
 ## Troubleshooting
 
