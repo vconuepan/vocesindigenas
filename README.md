@@ -3,7 +3,9 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Looking for Maintainer](https://img.shields.io/badge/looking%20for-maintainer-orange)](https://actuallyrelevant.news/stewardship)
 
-AI-curated news platform that evaluates article relevance to humanity using LLM analysis. Crawls news sources, assesses relevance with structured AI analysis, and publishes curated stories.
+News that matter to humanity. Curated with care by AI.
+
+Crawls news sources, assesses relevance with structured AI analysis, and publishes curated stories.
 
 ## Tech Stack
 

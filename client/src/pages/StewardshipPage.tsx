@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { GITHUB_REPO_URL, GITHUB_LICENSE_URL } from '../config'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildBreadcrumbSchema } from '../lib/structured-data'
 import StructuredData from '../components/StructuredData'
@@ -189,6 +190,30 @@ export default function StewardshipPage() {
             </div>
           ))}
         </div>
+
+        <p className="text-sm text-neutral-600 mt-4 leading-relaxed">
+          The platform is publicly licensed under{' '}
+          <a
+            href={GITHUB_LICENSE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          >
+            AGPL v3
+            <span className="sr-only"> (opens in new tab)</span>
+          </a>
+          , and the full source code is on{' '}
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          >
+            GitHub
+            <span className="sr-only"> (opens in new tab)</span>
+          </a>
+          . If you need different license terms as steward, we'll make that work. The goal is to find the right home, not to impose constraints.
+        </p>
 
         {/* Operating Costs — expandable */}
         <div className="mt-6 border border-neutral-200 rounded-lg overflow-hidden">

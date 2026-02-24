@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async'
+import { GITHUB_REPO_URL } from '../config'
 import { SEO, CommonOgTags } from '../lib/seo'
 import StructuredData from '../components/StructuredData'
 import { buildBreadcrumbSchema } from '../lib/structured-data'
@@ -101,6 +102,17 @@ export default function ThankYouPage() {
         <h1 className="page-title">Thank You</h1>
         <p className="page-intro">
           Actually Relevant is built on the work of many talented people and open-source communities.
+          The platform itself is{' '}
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          >
+            open source on GitHub
+            <span className="sr-only"> (opens in new tab)</span>
+          </a>
+          .
         </p>
 
         <div className="prose max-w-none">

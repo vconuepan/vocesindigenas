@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
+import { GITHUB_REPO_URL, GITHUB_LICENSE_URL } from "../config";
 import { SEO, CommonOgTags } from "../lib/seo";
 import StructuredData from "../components/StructuredData";
 import { buildBreadcrumbSchema } from "../lib/structured-data";
@@ -96,6 +97,32 @@ export default function AboutPage() {
             >
               Learn more about stewardship
             </Link>
+            .
+          </p>
+
+          <h2 className="section-heading mt-8">Open Source</h2>
+
+          <p>
+            The entire platform is open source under the{" "}
+            <a
+              href={GITHUB_LICENSE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+            >
+              GNU AGPL v3 license
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
+            . You can browse the code, report issues, or contribute on{" "}
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+            >
+              GitHub
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
             .
           </p>
         </div>

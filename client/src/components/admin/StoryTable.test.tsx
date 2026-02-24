@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { StoryTable } from './StoryTable'
 import type { Story } from '@shared/types'
 
@@ -126,22 +127,24 @@ describe('StoryTable', () => {
 
     it('renders "Cluster" badge when story has clusterId but is not primary', () => {
       render(
-        <StoryTable
-          {...defaultProps}
-          stories={[
-            makeStory({
-              id: 'story-1',
-              title: 'Secondary Story',
-              clusterId: 'cluster-1',
-              cluster: {
-                id: 'cluster-1',
-                primaryStoryId: 'story-other',
-                _count: { stories: 3 },
-                stories: [],
-              },
-            }),
-          ]}
-        />,
+        <MemoryRouter>
+          <StoryTable
+            {...defaultProps}
+            stories={[
+              makeStory({
+                id: 'story-1',
+                title: 'Secondary Story',
+                clusterId: 'cluster-1',
+                cluster: {
+                  id: 'cluster-1',
+                  primaryStoryId: 'story-other',
+                  _count: { stories: 3 },
+                  stories: [],
+                },
+              }),
+            ]}
+          />
+        </MemoryRouter>,
       )
       expect(screen.getByText('Cluster')).toBeInTheDocument()
       expect(screen.queryByText('Primary')).not.toBeInTheDocument()
@@ -149,22 +152,24 @@ describe('StoryTable', () => {
 
     it('renders "Primary" badge when story is the primary of its cluster', () => {
       render(
-        <StoryTable
-          {...defaultProps}
-          stories={[
-            makeStory({
-              id: 'story-1',
-              title: 'Primary Story',
-              clusterId: 'cluster-1',
-              cluster: {
-                id: 'cluster-1',
-                primaryStoryId: 'story-1',
-                _count: { stories: 3 },
-                stories: [],
-              },
-            }),
-          ]}
-        />,
+        <MemoryRouter>
+          <StoryTable
+            {...defaultProps}
+            stories={[
+              makeStory({
+                id: 'story-1',
+                title: 'Primary Story',
+                clusterId: 'cluster-1',
+                cluster: {
+                  id: 'cluster-1',
+                  primaryStoryId: 'story-1',
+                  _count: { stories: 3 },
+                  stories: [],
+                },
+              }),
+            ]}
+          />
+        </MemoryRouter>,
       )
       expect(screen.getByText('Primary')).toBeInTheDocument()
       expect(screen.queryByText('Cluster')).not.toBeInTheDocument()

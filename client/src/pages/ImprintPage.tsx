@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ObfuscatedAddress from "../components/ObfuscatedAddress";
 import ObfuscatedEmail from "../components/ObfuscatedEmail";
 import ProfileCard from "../components/ProfileCard";
+import { GITHUB_REPO_URL, GITHUB_LICENSE_URL } from "../config";
 import { SEO, CommonOgTags } from "../lib/seo";
 
 export default function ImprintPage() {
@@ -52,6 +53,30 @@ export default function ImprintPage() {
               Privacy Policy
             </Link>
             . (You will be pleasantly surprised.)
+          </p>
+
+          <p>
+            Actually Relevant is open source under the{" "}
+            <a
+              href={GITHUB_LICENSE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-700 hover:text-brand-800"
+            >
+              GNU AGPL v3 license
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
+            . Source code is available on{" "}
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-700 hover:text-brand-800"
+            >
+              GitHub
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
+            .
           </p>
         </div>
 
