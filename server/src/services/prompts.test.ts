@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt, buildNewsletterIntroPrompt } from '../prompts/index.js'
+import { buildPreassessPrompt, buildReclassifyPrompt, buildAssessPrompt, buildSelectPrompt, buildPodcastPrompt, buildNewsletterIntroPrompt, pickIntroStyle } from '../prompts/index.js'
 
 const guidelines = {
   factors: 'Technology advancement\nScientific discovery',
@@ -289,6 +289,24 @@ describe('buildNewsletterIntroPrompt', () => {
     const prompt = buildNewsletterIntroPrompt(storiesWithSpecial, ['Tech'])
     expect(prompt).toContain('&amp;')
     expect(prompt).toContain('&lt;special&gt;')
+  })
+
+  it('includes a STYLE block', () => {
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames)
+    expect(prompt).toContain('<STYLE>')
+    expect(prompt).toContain('</STYLE>')
+  })
+
+  it('uses an explicit style when provided', () => {
+    const customStyle = 'Start with a bold claim.'
+    const prompt = buildNewsletterIntroPrompt(stories, issueNames, customStyle)
+    expect(prompt).toContain(customStyle)
+  })
+
+  it('pickIntroStyle returns a non-empty string', () => {
+    const style = pickIntroStyle()
+    expect(style).toBeTruthy()
+    expect(typeof style).toBe('string')
   })
 
 })

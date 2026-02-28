@@ -5,7 +5,7 @@ export { buildSelectPrompt } from './select.js'
 export { buildPodcastPrompt } from './podcast.js'
 export { buildNewsletterSelectPrompt } from './newsletter-select.js'
 export { buildEmotionTagPrompt } from './emotion-tag.js'
-export { buildNewsletterIntroPrompt } from './newsletter-intro.js'
+export { buildNewsletterIntroPrompt, pickIntroStyle } from './newsletter-intro.js'
 export { buildRelatedStoriesPrompt } from './related-stories.js'
 export { buildDedupPrompt } from './dedup.js'
 
