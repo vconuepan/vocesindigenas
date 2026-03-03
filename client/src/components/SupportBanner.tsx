@@ -21,7 +21,7 @@ export default function SupportBanner() {
         <br /> Ayudanos a mantenerlo asi.
       </p>
       
-        href={KOFI_URL}
+        <a href={KOFI_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
