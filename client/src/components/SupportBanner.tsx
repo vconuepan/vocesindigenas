@@ -10,9 +10,7 @@ function HeartIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-const KOFI_URL = "https://ko-fi.com/odinmb";
-
+const KOFI_URL = "https://ko-fi.com/impactoindigena";
 export default function SupportBanner() {
   return (
     <div className="py-8 md:py-10 text-center max-w-2xl mx-auto">
@@ -28,18 +26,18 @@ export default function SupportBanner() {
         />
       </div>
       <p className="text-lg text-neutral-600 leading-relaxed mb-4">
-        Free. Independent. Without ads.
-        <br /> Help us keep it that way.
+        Gratuito. Independiente. Sin publicidad.
+        <br /> Ayúdanos a mantenerlo así.
       </p>
-      <a
+      
         href={KOFI_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
       >
         <HeartIcon className="w-4 h-4" />
-        Support Us
-        <span className="sr-only">(opens in new tab)</span>
+        Apóyanos
+        <span className="sr-only">(abre en nueva pestaña)</span>
       </a>
     </div>
   );
