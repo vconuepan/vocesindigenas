@@ -255,21 +255,32 @@ export default function MethodologyPage() {
 
           <h2 className="section-heading mt-10">Sobre este proyecto</h2>
           <p>
-            Impacto Indigena es un proyecto de <strong>Venancio Conuepan Mesias</strong>, desarrollado
-            en el marco de la cohorte <strong>LatAm 2025</strong> de{' '}
+            Impacto Indigena News es una iniciativa de{' '}
+            <a href="https://www.linkedin.com/in/vconuepan/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800">
+              Venancio Conuepan Mesias
+            </a>
+            , fundador de{' '}
+            <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800">
+              Impacto Indigena SpA
+            </a>
+            , la empresa matriz de esta plataforma. El prototipo fue desarrollado en el marco de la
+            cohorte <strong>LatAm AI 2025</strong> de{' '}
             <a href="https://changemakerxchange.ai" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800">
               Changemakerxchange.ai
             </a>
-            , una iniciativa global de Ashoka que apoya a agentes de cambio en el uso de inteligencia
+            , una organizacion global que conecta y apoya a agentes de cambio que usan inteligencia
             artificial para resolver problemas sociales complejos.
           </p>
           <p className="mt-4">
-            El prototipo fue desarrollado con el apoyo de <strong>Odin Muhlebein</strong>, experto en
-            inteligencia artificial de la red de mentores del <strong>Ashoka AI Lab</strong>. Odin
-            acompaño a Venancio en el Taller de Prototipos de IA, ayudandole a transformar una idea
-            clara — crear una plataforma que analice grandes cantidades de datos y simplifique el
-            analisis para lideres indigenas — en una herramienta tangible que demuestra el impacto
-            posible de este trabajo.
+            El desarrollo del prototipo fue acompanado por{' '}
+            <a href="https://www.linkedin.com/in/odinmuehlenbein/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800">
+              Odin Muhlebein
+            </a>
+            , mentor de la cohorte LatAm AI 2025 de Changemakerxchange.ai y experto en inteligencia
+            artificial del <strong>Ashoka AI Lab</strong>. A traves del Taller de Prototipos de IA,
+            Odin acompaño a Venancio en transformar una vision clara — crear una plataforma que
+            analice grandes volumenes de informacion y simplifique el acceso al conocimiento para
+            lideres y comunidades indigenas — en una herramienta tangible y funcional.
           </p>
           <p className="mt-4">
             Este proyecto nace de la conviccion de que los pueblos indigenas son los primeros
