@@ -1,5 +1,4 @@
 import { escapeXml } from './shared.js'
-
 export interface StoryForSelect {
   id: string
   title: string | null
@@ -9,34 +8,28 @@ export interface StoryForSelect {
   relevanceCalculation: string | null
   emotionTag: string | null
 }
-
 export function buildSelectPrompt(
   stories: StoryForSelect[],
   toSelect: number,
 ): string {
   let query = `<ROLE>
-You are a senior editorial curator for a website that publishes stories most relevant to humanity across four areas, weighted equally:
-1. Human Development — health, education, poverty, governance, human rights
-2. Planet and Climate — environment, biodiversity, climate action, sustainability
-3. Existential Threats — pandemics, nuclear risk, AI safety, civilizational risks
-4. Science and Technology — breakthroughs, capabilities, long-term technological progress
+Eres un curador editorial senior de un sitio web que publica las noticias más relevantes para los pueblos indígenas del mundo, organizadas en cuatro temas con igual peso:
+1. Cambio Climático y Biodiversidad — medio ambiente, territorios indígenas, biodiversidad, acción climática
+2. Derechos Indígenas — derechos territoriales, reconocimiento legal, autodeterminación, derechos humanos
+3. Desarrollo Sostenible y Autodeterminado — economías indígenas, gobernanza propia, educación intercultural
+4. Reconciliación y Paz — justicia histórica, reparaciones, diálogo intercultural, resolución de conflictos
 </ROLE>
-
 <GOAL>
-Select exactly ${toSelect} articles from the ${stories.length} candidates below. Return only their IDs.
-
-All candidates are worthy of publication. Your job is to choose among them — pick the ones that, all things considered, matter most to humanity. Comparing across categories is inherently difficult; use your best judgment.
+Selecciona exactamente ${toSelect} artículos de los ${stories.length} candidatos a continuación. Devuelve solo sus IDs.
+Todos los candidatos merecen ser publicados. Tu trabajo es elegir entre ellos — selecciona los que, considerando todo, importan más para los pueblos indígenas. Comparar entre categorías es inherentemente difícil; usa tu mejor criterio.
 </GOAL>
-
-<SELECTION_CRITERIA>
-- Systemic change over isolated events: Prefer stories about shifts in policies, international agreements, norms, or systems over isolated incidents — these have compounding, ongoing effects. (Particularly important incidents can of course be relevant, too.)
-- Concrete over speculative: Prefer stories with demonstrated real-world impact over announcements, proposals, or early-stage research that hasn't yet materialized. (Promising early research that excites an entire field can of course be relevant, too.)
-- Scale and reach: Prefer stories where the number of people significantly affected is larger (including future generations), or the consequences are more lasting.
-- Uplifting stories: When choosing between stories of similar relevance, give a slight preference to uplifting stories (tagged "uplifting" in the Emotion field). The final selection should include uplifting stories where possible, without sacrificing overall relevance.
-</SELECTION_CRITERIA>
-
+<CRITERIOS_DE_SELECCION>
+- Cambio sistémico sobre eventos aislados: Prefiere noticias sobre cambios en políticas, acuerdos internacionales, normas o sistemas que afecten a los pueblos indígenas — estos tienen efectos continuos y multiplicadores.
+- Concreto sobre especulativo: Prefiere noticias con impacto real demostrado sobre anuncios, propuestas o investigaciones tempranas que aún no se han materializado.
+- Escala y alcance: Prefiere noticias donde el número de personas indígenas significativamente afectadas es mayor, o las consecuencias son más duraderas.
+- Noticias positivas: Al elegir entre noticias de relevancia similar, da una ligera preferencia a noticias alentadoras (etiquetadas como "uplifting"). La selección final debe incluir noticias positivas donde sea posible, sin sacrificar relevancia general.
+</CRITERIOS_DE_SELECCION>
 `
-
   for (const story of stories) {
     query += '<ARTICLE>\n'
       + `<ID>${story.id}</ID>\n`
@@ -48,6 +41,5 @@ All candidates are worthy of publication. Your job is to choose among them — p
       + `<Calculation>${escapeXml(story.relevanceCalculation || '')}</Calculation>\n`
       + '</ARTICLE>\n'
   }
-
   return query
 }
