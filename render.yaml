@@ -42,6 +42,6 @@ services:
 
 databases:
   - name: vocesindigenas-db
-    plan: plan: basic-256mb
+    plan: basic-256mb
     databaseName: vocesindigenas_db
     user: vocesindigenas_db_user
