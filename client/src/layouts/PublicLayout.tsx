@@ -11,65 +11,58 @@ import SubscribeProvider, {
 import FeedbackProvider from "../components/FeedbackProvider";
 import { PositivityProvider } from "../contexts/PositivityContext";
 import { MoodDialPanel } from "../components/PositivitySlider";
-const KOFI_URL = "https://ko-fi.com/odinmb";
-const BLUESKY_URL = "https://bsky.app/profile/actuallyrelevant.bsky.social";
-const MASTODON_URL = "https://mastodon.social/@actuallyrelevant";
+
+const KOFI_URL = "https://ko-fi.com/vocesindigenas";
+const INSTAGRAM_URL = "https://www.instagram.com/vocesindigenasorg";
+const TWITTER_URL = "https://x.com/vocesindigenas";
+const YOUTUBE_URL = "https://www.youtube.com/@impactoindigena/";
 const GITHUB_URL = GITHUB_REPO_URL;
 
 const ISSUE_LINKS = [
   {
-    label: "Human Development",
-    slug: "human-development",
-    href: "/issues/human-development",
+    label: "Cambio Climático y Biodiversidad",
+    slug: "cambio-climatico",
+    href: "/issues/cambio-climatico",
   },
   {
-    label: "Planet & Climate",
-    slug: "planet-climate",
-    href: "/issues/planet-climate",
+    label: "Derechos Indígenas",
+    slug: "derechos-indigenas",
+    href: "/issues/derechos-indigenas",
   },
   {
-    label: "Existential Threats",
-    slug: "existential-threats",
-    href: "/issues/existential-threats",
+    label: "Desarrollo Sostenible",
+    slug: "desarrollo-sostenible-y-autodeterminado",
+    href: "/issues/desarrollo-sostenible-y-autodeterminado",
   },
   {
-    label: "Science & Technology",
-    slug: "science-technology",
-    href: "/issues/science-technology",
+    label: "Reconciliación y Paz",
+    slug: "reconciliacion-y-paz",
+    href: "/issues/reconciliacion-y-paz",
   },
 ];
 
 const FOOTER_NAV = [
-  { label: "About", href: "/about" },
-  { label: "Methodology", href: "/methodology" },
-  { label: "Issues", href: "/issues" },
-  { label: "Compare", href: "/compare" },
-  { label: "News Fatigue", href: "/news-fatigue" },
-  { label: "Thank You", href: "/thank-you" },
+  { label: "Acerca de", href: "/about" },
+  { label: "Metodología", href: "/methodology" },
+  { label: "Temas", href: "/issues" },
+  { label: "Boletín", href: "/newsletter" },
+  { label: "Contacto", href: "/feedback" },
 ];
 
 const FOOTER_LEGAL = [
-  { label: "Legal notice / Impressum", href: "/imprint" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "No tracking", href: "/no-ads-no-tracking" },
+  { label: "Aviso legal", href: "/imprint" },
+  { label: "Privacidad", href: "/privacy" },
+  { label: "Sin rastreo", href: "/no-ads-no-tracking" },
 ];
 
 function BrandLogo({ onClick }: { onClick?: () => void }) {
   return (
     <Link to="/" onClick={onClick} className="flex flex-col items-center shrink-0">
-      <picture>
-        <source
-          srcSet="/images/optimized/logo-text-horizontal-small-h.webp"
-          type="image/webp"
-        />
-        <img
-          src="/images/logo-text-horizontal.png"
-          alt="Actually Relevant"
-          className="h-14 md:h-16 aspect-[5/2]"
-        />
-      </picture>
+      <span className="text-2xl md:text-3xl font-bold font-nexa text-neutral-900 tracking-tight">
+        Voces Indígenas
+      </span>
       <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
-        {BRAND.claim.replace(/\.$/, "")}
+        Noticias que importan a los pueblos indígenas
       </span>
     </Link>
   );
@@ -88,12 +81,7 @@ function CategoryColorStrip({ className }: { className?: string }) {
 
 function NewsletterIcon({ className }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" />
     </svg>
   );
@@ -101,19 +89,8 @@ function NewsletterIcon({ className }: { className?: string }) {
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-      />
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
   );
 }
@@ -139,10 +116,8 @@ function PublicLayoutInner() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
-
   const location = useLocation();
 
-  // Track saved stories count reactively
   const refreshSavedCount = useCallback(() => {
     setSavedCount(getSavedSlugs().length);
   }, []);
@@ -160,162 +135,83 @@ function PublicLayoutInner() {
   const isActiveIssue = (href: string) =>
     location.pathname === href || location.pathname.startsWith(href + "/");
 
-  // Sync mobile menu dialog open/close
   useEffect(() => {
     const dialog = menuDialogRef.current;
     if (!dialog) return;
-    if (menuOpen) {
-      dialog.showModal();
-    } else {
-      dialog.close();
-    }
+    if (menuOpen) { dialog.showModal(); } else { dialog.close(); }
   }, [menuOpen]);
 
-  // Handle dialog cancel (Escape key / native close)
   useEffect(() => {
     const dialog = menuDialogRef.current;
     if (!dialog) return;
-    const handleCancel = (e: Event) => {
-      e.preventDefault();
-      setMenuOpen(false);
-    };
+    const handleCancel = (e: Event) => { e.preventDefault(); setMenuOpen(false); };
     dialog.addEventListener("cancel", handleCancel);
     return () => dialog.removeEventListener("cancel", handleCancel);
   }, []);
 
-  // Close search on Escape
   useEffect(() => {
     if (!searchOpen) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (searchQuery) {
-          setSearchQuery("");
-        } else {
-          setSearchOpen(false);
-        }
+        if (searchQuery) { setSearchQuery(""); } else { setSearchOpen(false); }
       }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [searchOpen, searchQuery]);
 
-  // Auto-focus search input when opened
   useEffect(() => {
-    if (searchOpen) {
-      // Small delay to allow the DOM to render
-      requestAnimationFrame(() => searchInputRef.current?.focus());
-    }
+    if (searchOpen) { requestAnimationFrame(() => searchInputRef.current?.focus()); }
   }, [searchOpen]);
 
-  // Close search on route change and scroll to top
   useEffect(() => {
     setSearchOpen(false);
     setSearchQuery("");
   }, [location.pathname]);
 
-  useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="Actually Relevant RSS Feed"
-          href={`${API_BASE}/feed`}
-        />
+        <link rel="alternate" type="application/rss+xml" title="Voces Indígenas RSS Feed" href={`${API_BASE}/feed`} />
       </Helmet>
 
-      {/* Skip to content */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500"
-      >
-        Skip to content
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500">
+        Ir al contenido
       </a>
 
       <header>
-        {/* Logo bar — centered logo, engagement actions right */}
         <div className="bg-white border-b border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-start justify-center relative">
-            {/* Logo */}
             <BrandLogo />
-
-            {/* Desktop: Mood Dial — vertically centered on logo (top matches py-4, h matches logo h-16) */}
             <div className="hidden lg:flex items-center absolute left-12 top-4 h-16">
               <MoodDialPanel />
             </div>
-
-            {/* Desktop: saved + subscribe — vertically centered on logo */}
             <div className="hidden lg:flex items-center gap-1 absolute right-12 top-4 h-16">
-              <Link
-                to="/saved"
-                className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
-              >
+              <Link to="/saved" className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700">
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
-                Saved{savedCount > 0 && ` (${savedCount})`}
+                Guardados{savedCount > 0 && ` (${savedCount})`}
               </Link>
-              <button
-                onClick={() => openSubscribe()}
-                className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700"
-              >
+              <button onClick={() => openSubscribe()} className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700">
                 <NewsletterIcon className="w-4 h-4 shrink-0" />
-                Subscribe
+                Suscribirse
               </button>
             </div>
-
-            {/* Mobile: search on left, menu on right — vertically centered on logo */}
             <div className="lg:hidden absolute left-4 top-3 md:top-4 h-14 md:h-16 flex items-center">
-              <button
-                onClick={() => {
-                  setSearchOpen(!searchOpen);
-                  setMenuOpen(false);
-                }}
-                className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                  searchOpen
-                    ? "text-brand-700"
-                    : "text-neutral-400 hover:text-neutral-600"
-                }`}
-                aria-label={searchOpen ? "Close search" : "Open search"}
-                aria-expanded={searchOpen}
-                aria-controls="search-panel"
-              >
+              <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${searchOpen ? "text-brand-700" : "text-neutral-400 hover:text-neutral-600"}`} aria-label={searchOpen ? "Cerrar búsqueda" : "Abrir búsqueda"} aria-expanded={searchOpen} aria-controls="search-panel">
                 <SearchIcon className="w-5 h-5" />
               </button>
             </div>
             <div className="lg:hidden absolute right-4 top-3 md:top-4 h-14 md:h-16 flex items-center">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
-                aria-expanded={menuOpen}
-                aria-controls="mobile-nav-menu"
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
+              <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500" aria-expanded={menuOpen} aria-controls="mobile-nav-menu" aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   {menuOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   )}
                 </svg>
               </button>
@@ -323,23 +219,10 @@ function PublicLayoutInner() {
           </div>
         </div>
 
-        {/* Issue category navigation — desktop */}
-        <nav
-          className="hidden lg:block border-b border-neutral-200"
-          aria-label="Issue categories"
-        >
+        <nav className="hidden lg:block border-b border-neutral-200" aria-label="Categorías temáticas">
           <ul className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-0">
-            {/* Search button as first item */}
             <li>
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className={`issue-nav-link ${
-                  searchOpen ? "!text-brand-700" : ""
-                }`}
-                aria-label={searchOpen ? "Close search" : "Open search"}
-                aria-expanded={searchOpen}
-                aria-controls="search-panel"
-              >
+              <button onClick={() => setSearchOpen(!searchOpen)} className={`issue-nav-link ${searchOpen ? "!text-brand-700" : ""}`} aria-label={searchOpen ? "Cerrar búsqueda" : "Abrir búsqueda"} aria-expanded={searchOpen} aria-controls="search-panel">
                 <SearchIcon className="w-5 h-5" />
               </button>
             </li>
@@ -348,20 +231,8 @@ function PublicLayoutInner() {
               const active = isActiveIssue(link.href);
               return (
                 <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="issue-nav-link"
-                    data-active={active}
-                    style={
-                      { "--issue-color": colors.hex } as React.CSSProperties
-                    }
-                  >
-                    <span
-                      className={`w-2.5 h-2.5 rounded-full -translate-y-px ${
-                        colors.dotBg
-                      } ${active ? "opacity-100" : "opacity-60"}`}
-                      aria-hidden="true"
-                    />
+                  <Link to={link.href} className="issue-nav-link" data-active={active} style={{ "--issue-color": colors.hex } as React.CSSProperties}>
+                    <span className={`w-2.5 h-2.5 rounded-full -translate-y-px ${colors.dotBg} ${active ? "opacity-100" : "opacity-60"}`} aria-hidden="true" />
                     {link.label}
                   </Link>
                 </li>
@@ -370,23 +241,12 @@ function PublicLayoutInner() {
           </ul>
         </nav>
 
-        {/* Mobile nav — dialog for built-in focus trap */}
-        <dialog
-          ref={menuDialogRef}
-          id="mobile-nav-menu"
-          className="lg:hidden fixed top-0 left-0 w-full h-[100dvh] max-w-none max-h-none m-0 p-0 bg-transparent backdrop:bg-transparent overflow-hidden open:flex open:flex-col"
-          aria-label="Mobile navigation"
-        >
-          {/* Dialog header: logo + close + color strip */}
+        <dialog ref={menuDialogRef} id="mobile-nav-menu" className="lg:hidden fixed top-0 left-0 w-full h-[100dvh] max-w-none max-h-none m-0 p-0 bg-transparent backdrop:bg-transparent overflow-hidden open:flex open:flex-col" aria-label="Navegación móvil">
           <div className="bg-white">
             <div className="border-b border-neutral-100 px-4 py-3 md:py-4 flex items-start justify-center relative">
               <BrandLogo onClick={() => setMenuOpen(false)} />
               <div className="absolute right-4 top-3 md:top-4 h-14 md:h-16 flex items-center">
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
-                  aria-label="Close menu"
-                >
+                <button onClick={() => setMenuOpen(false)} className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="Cerrar menú">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -397,157 +257,64 @@ function PublicLayoutInner() {
           </div>
           <div className="bg-white border-b border-neutral-200 shadow-lg">
             <nav className="px-4 py-3">
-              {/* Mood Dial — centered */}
               <div className="mb-3 py-2 flex justify-center">
                 <MoodDialPanel />
               </div>
-
-              {/* Issue categories */}
               <ul className="mb-3 border-t border-neutral-100 pt-3">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug);
                   return (
                     <li key={link.href}>
-                      <Link
-                        to={link.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${
-                          isActiveIssue(link.href)
-                            ? "text-neutral-900"
-                            : "text-neutral-600 hover:text-neutral-900"
-                        }`}
-                      >
-                        <span
-                          className={`w-2 h-2 rounded-full ${colors.dotBg}`}
-                          aria-hidden="true"
-                        />
+                      <Link to={link.href} onClick={() => setMenuOpen(false)} className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${isActiveIssue(link.href) ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"}`}>
+                        <span className={`w-2 h-2 rounded-full ${colors.dotBg}`} aria-hidden="true" />
                         {link.label}
                       </Link>
                     </li>
                   );
                 })}
               </ul>
-
-              {/* Saved, Subscribe & Support — each on its own line */}
               <div className="border-t border-neutral-100 pt-3 px-2 flex flex-col">
-                <Link
-                  to="/saved"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                >
+                <Link to="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                   <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                   </svg>
-                  Saved Stories{savedCount > 0 && ` (${savedCount})`}
+                  Noticias guardadas{savedCount > 0 && ` (${savedCount})`}
                 </Link>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    openSubscribe();
-                  }}
-                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                >
+                <button onClick={() => { setMenuOpen(false); openSubscribe(); }} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
-                  Subscribe
+                  Suscribirse
                 </button>
-                <a
-                  href={KOFI_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                >
-                  <svg
-                    className="w-3.5 h-3.5 shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                  Support Us
-                  <span className="sr-only">(opens in new tab)</span>
-                </a>
               </div>
             </nav>
           </div>
-          {/* Tap-to-close area below menu */}
-          <div
-            className="flex-1 bg-black/40"
-            onClick={() => setMenuOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="flex-1 bg-black/40" onClick={() => setMenuOpen(false)} aria-hidden="true" />
         </dialog>
 
-        {/* Search bar */}
         {searchOpen && (
           <div id="search-panel" className="bg-white border-b border-neutral-200 shadow-lg">
             <div className="max-w-3xl mx-auto px-4 py-4">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (searchQuery.trim()) {
-                    navigate(
-                      `/search?q=${encodeURIComponent(searchQuery.trim())}`
-                    );
-                    setSearchOpen(false);
-                  }
-                }}
-                className="relative"
-              >
+              <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) { navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setSearchOpen(false); } }} className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search stories..."
-                  className="w-full pl-10 pr-10 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
-                  aria-label="Search stories"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    searchQuery ? setSearchQuery("") : setSearchOpen(false);
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                  aria-label="Close search"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                <input ref={searchInputRef} type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar noticias..." className="w-full pl-10 pr-10 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors" aria-label="Buscar noticias" />
+                <button type="button" onClick={() => { searchQuery ? setSearchQuery("") : setSearchOpen(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded" aria-label="Cerrar búsqueda">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </form>
-              <p className="text-xs text-neutral-400 mt-2 text-center">
-                Search by meaning, not just keywords.
-              </p>
+              <p className="text-xs text-neutral-400 mt-2 text-center">Búsqueda por significado, no solo por palabras clave.</p>
             </div>
           </div>
         )}
       </header>
 
-      {/* Category color strip — mobile only */}
       <CategoryColorStrip className="lg:hidden" />
 
       <main id="main-content" className="flex-1">
         <Outlet />
       </main>
 
-      {/* Editorial sign-off */}
-      <div
-        className="bg-neutral-50 border-t border-neutral-200 py-10 md:py-14 text-center"
-        aria-hidden="true"
-      >
+      <div className="bg-neutral-50 border-t border-neutral-200 py-10 md:py-14 text-center" aria-hidden="true">
         <div className="max-w-md mx-auto px-4">
           <div className="flex items-center justify-center gap-4 mb-4">
             <span className="flex-1 border-t border-neutral-200" />
@@ -560,50 +327,38 @@ function PublicLayoutInner() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-neutral-900 text-neutral-300">
-        {/* Category color strip */}
         <CategoryColorStrip />
-
         <div className="max-w-5xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 md:gap-10">
-            {/* Brand column */}
             <div className="col-span-2">
-              <Link
-                to="/"
-                className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-              >
-                Actually Relevant
+              <Link to="/" className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                Voces Indígenas
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
-                {BRAND.claim}
+                Noticias que importan a los pueblos indígenas del mundo.
               </p>
               <div className="flex gap-2 mt-4">
-                <a
-                  href={BLUESKY_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
-                  aria-label="Follow us on Bluesky (opens in new tab)"
-                >
-                  <img src="/images/optimized/social/bluesky-thumb-w.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" aria-hidden="true" />
+                {/* Instagram */}
+                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="Síguenos en Instagram (abre en nueva pestaña)">
+                  <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
                 </a>
-                <a
-                  href={MASTODON_URL}
-                  target="_blank"
-                  rel="noopener noreferrer me"
-                  className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
-                  aria-label="Follow us on Mastodon (opens in new tab)"
-                >
-                  <img src="/images/optimized/social/mastodon-thumb-w.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" aria-hidden="true" />
+                {/* Twitter/X */}
+                <a href={TWITTER_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="Síguenos en X/Twitter (abre en nueva pestaña)">
+                  <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.259 5.631L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+                  </svg>
                 </a>
-                <a
-                  href={GITHUB_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
-                  aria-label="View source on GitHub (opens in new tab)"
-                >
+                {/* YouTube */}
+                <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="Síguenos en YouTube (abre en nueva pestaña)">
+                  <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </a>
+                {/* GitHub */}
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500" aria-label="Ver código en GitHub (abre en nueva pestaña)">
                   <svg className="w-[18px] h-[18px] text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
                   </svg>
@@ -612,33 +367,23 @@ function PublicLayoutInner() {
               <ul className="hidden md:flex gap-4 mt-4">
                 {FOOTER_LEGAL.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      to={link.href}
-                      className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                    >
+                    <Link to={link.href} className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                       {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
               <p className="hidden md:block text-xs text-neutral-400 mt-2">
-                &copy; {new Date().getFullYear()} Actually Relevant. All rights
-                reserved.
+                &copy; {new Date().getFullYear()} Voces Indígenas. Todos los derechos reservados.
               </p>
             </div>
 
-            {/* Navigation column */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">
-                Navigate
-              </p>
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">Navegar</p>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 {FOOTER_NAV.map((link) => (
                   <li key={link.label} className="flex items-center">
-                    <Link
-                      to={link.href}
-                      className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                    >
+                    <Link to={link.href} className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                       {link.label}
                     </Link>
                   </li>
@@ -646,96 +391,41 @@ function PublicLayoutInner() {
               </ul>
             </div>
 
-            {/* Connect column */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">
-                Connect
-              </p>
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">Conectar</p>
               <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 <li className="flex items-center">
-                  <Link
-                    to="/newsletter"
-                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
-                    <img src="/images/optimized/icons/newsletter-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
-                    Newsletter
+                  <Link to="/newsletter" className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                    Boletín
                   </Link>
                 </li>
                 <li className="flex items-center">
-                  <a
-                    href={`${API_BASE}/feed`}
-                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
-                    <img src="/images/optimized/icons/rss-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
+                  <a href={`${API_BASE}/feed`} className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                     RSS Feed
                   </a>
                 </li>
                 <li className="flex items-center">
-                  <Link
-                    to="/widgets"
-                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
-                    <img src="/images/optimized/icons/code-embed-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
-                    For Your Website
-                  </Link>
-                </li>
-                <li className="flex items-center">
-                  <span className="text-sm leading-5 text-neutral-400 px-0.5">
-                    <img src="/images/optimized/icons/code-api-thumb-w.webp" alt="" width={14} height={14} className="inline-block w-3.5 h-3.5 shrink-0 mr-1.5 -mt-0.5" aria-hidden="true" />
-                    <Link to="/free-api" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">Free API</Link> (<Link to="/free-api" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">Intro</Link>, <Link to="/developers" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">Docs</Link>)
-                  </span>
-                </li>
-                <li className="flex items-center">
-                  <Link
-                    to="/stewardship"
-                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
-                    <img src="/images/optimized/icons/stewardship-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
-                    Stewardship
-                  </Link>
-                </li>
-                <li className="flex items-center">
-                  <a
-                    href={KOFI_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
-                    <img src="/images/optimized/icons/heart-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
-                    Support Us
-                    <span className="sr-only">(opens in new tab)</span>
+                  <a href={KOFI_URL} target="_blank" rel="noopener noreferrer" className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                    Apóyanos
                   </a>
                 </li>
                 <li className="flex items-center">
-                  <Link
-                    to="/feedback"
-                    className="group inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
-                    <img src="/images/optimized/icons/feedback-thumb-w.webp" alt="" width={14} height={14} className="w-3.5 h-3.5 shrink-0 transition-[filter] group-hover:brightness-[10]" aria-hidden="true" />
-                    Feedback
+                  <Link to="/feedback" className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                    Contacto
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Issues column */}
             <div className="col-span-2 md:col-span-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">
-                Issues
-              </p>
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">Temas</p>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1 auto-rows-[1.25rem]">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug);
                   return (
                     <li key={link.href} className="flex items-center">
-                      <Link
-                        to={link.href}
-                        className="inline-flex items-center gap-2 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${colors.dotBg} opacity-70 shrink-0`}
-                          aria-hidden="true"
-                        />
+                      <Link to={link.href} className="inline-flex items-center gap-2 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${colors.dotBg} opacity-70 shrink-0`} aria-hidden="true" />
                         {link.label}
                       </Link>
                     </li>
@@ -745,28 +435,22 @@ function PublicLayoutInner() {
             </div>
           </div>
 
-          {/* Legal links + copyright — mobile only */}
           <div className="mt-7 md:hidden text-center">
             <ul className="flex justify-center gap-5">
               {FOOTER_LEGAL.map((link) => (
                 <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-                  >
+                  <Link to={link.href} className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
             <p className="text-xs text-neutral-400 mt-3">
-              &copy; {new Date().getFullYear()} Actually Relevant. All rights
-              reserved.
+              &copy; {new Date().getFullYear()} Voces Indígenas. Todos los derechos reservados.
             </p>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }
