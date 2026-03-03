@@ -219,10 +219,10 @@ function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; varia
 // ---------------------------------------------------------------------------
 
 const ISSUE_ORDER = [
-  'human-development',
-  'planet-climate',
-  'existential-threats',
-  'science-technology',
+  'cambio-climatico',
+  'derechos-indigenas',
+  'desarrollo-sostenible-y-autodeterminado',
+  'reconciliacion-y-paz',
 ]
 
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
