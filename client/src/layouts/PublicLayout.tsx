@@ -12,9 +12,9 @@ import FeedbackProvider from "../components/FeedbackProvider";
 import { PositivityProvider } from "../contexts/PositivityContext";
 import { MoodDialPanel } from "../components/PositivitySlider";
 
-const KOFI_URL = "https://ko-fi.com/vocesindigenas";
-const INSTAGRAM_URL = "https://www.instagram.com/vocesindigenasorg";
-const TWITTER_URL = "https://x.com/vocesindigenas";
+const KOFI_URL = "https://ko-fi.com/impactoindigena";
+const INSTAGRAM_URL = "https://www.instagram.com/impactoindigena";
+const TWITTER_URL = "https://x.com/impactoindigena";
 const YOUTUBE_URL = "https://www.youtube.com/@impactoindigena/";
 const GITHUB_URL = GITHUB_REPO_URL;
 
@@ -59,10 +59,10 @@ function BrandLogo({ onClick }: { onClick?: () => void }) {
   return (
     <Link to="/" onClick={onClick} className="flex flex-col items-center shrink-0">
       <span className="text-2xl md:text-3xl font-bold font-nexa text-neutral-900 tracking-tight">
-        Voces Indígenas
+        Impacto Indígena
       </span>
       <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
-        Noticias que importan a los pueblos indígenas
+        Analizando el impacto global en los pueblos indígenas
       </span>
     </Link>
   );
@@ -174,7 +174,7 @@ function PublicLayoutInner() {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <link rel="alternate" type="application/rss+xml" title="Voces Indígenas RSS Feed" href={`${API_BASE}/feed`} />
+        <link rel="alternate" type="application/rss+xml" title="Impacto Indígena RSS Feed" href={`${API_BASE}/feed`} />
       </Helmet>
 
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500">
@@ -333,10 +333,10 @@ function PublicLayoutInner() {
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 md:gap-10">
             <div className="col-span-2">
               <Link to="/" className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-                Voces Indígenas
+                Impacto Indígena
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
-                Noticias que importan a los pueblos indígenas del mundo.
+                Analizando el impacto global en los pueblos indígenas del mundo.
               </p>
               <div className="flex gap-2 mt-4">
                 {/* Instagram */}
@@ -374,7 +374,7 @@ function PublicLayoutInner() {
                 ))}
               </ul>
               <p className="hidden md:block text-xs text-neutral-400 mt-2">
-                &copy; {new Date().getFullYear()} Voces Indígenas. Todos los derechos reservados.
+                &copy; {new Date().getFullYear()} Impacto Indígena. Todos los derechos reservados.
               </p>
             </div>
 
@@ -446,7 +446,7 @@ function PublicLayoutInner() {
               ))}
             </ul>
             <p className="text-xs text-neutral-400 mt-3">
-              &copy; {new Date().getFullYear()} Voces Indígenas. Todos los derechos reservados.
+              &copy; {new Date().getFullYear()} Impacto Indígena. Todos los derechos reservados.
             </p>
           </div>
         </div>
