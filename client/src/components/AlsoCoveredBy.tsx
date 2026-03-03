@@ -8,7 +8,7 @@ export default function AlsoCoveredBy({ slug }: { slug: string }) {
 
   return (
     <p className="text-sm text-neutral-500 mt-4">
-      Also covered by:{' '}
+      Tambien cubierto por:{' '}
       {data.sources.map((s, i) => (
         <Fragment key={s.sourceUrl}>
           {i > 0 && ', '}
