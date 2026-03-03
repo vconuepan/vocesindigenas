@@ -6,18 +6,18 @@ export default function PrivacyPage() {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy - {SEO.siteName}</title>
+        <title>Politica de Privacidad - {SEO.siteName}</title>
         <meta
           name="description"
-          content="Actually Relevant respects your privacy. No cookies, no tracking pixels, no invasive analytics. Learn what minimal data we collect."
+          content="Impacto Indigena respeta tu privacidad. Sin cookies, sin rastreo, sin analitica invasiva. Conoce los datos minimos que recopilamos."
         />
         <meta
           property="og:title"
-          content={`Privacy Policy - ${SEO.siteName}`}
+          content={`Politica de Privacidad - ${SEO.siteName}`}
         />
         <meta
           property="og:description"
-          content="Actually Relevant respects your privacy. No cookies, no tracking pixels, no invasive analytics."
+          content="Impacto Indigena respeta tu privacidad. Sin cookies, sin rastreo, sin analitica invasiva."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/privacy`} />
@@ -25,20 +25,21 @@ export default function PrivacyPage() {
       </Helmet>
 
       <div className="page-section">
-        <h1 className="page-title">Privacy Policy</h1>
+        <h1 className="page-title">Politica de Privacidad</h1>
 
         <div className="prose max-w-none">
           <p>
-            We do not use cookies, tracking pixels, Google Analytics,
-            advertising scripts, or any other invasive data collection. When you
-            visit this site as a reader, nothing is stored on your device.
+            No usamos cookies, pixels de rastreo, Google Analytics, scripts
+            publicitarios ni ningun otro metodo invasivo de recopilacion de
+            datos. Cuando visitas este sitio como lector, nada se almacena en
+            tu dispositivo.
           </p>
 
-          <h2 className="section-heading mt-10">What We Collect</h2>
+          <h2 className="section-heading mt-10">Que recopilamos</h2>
 
-          <h3 className="text-lg font-normal mt-6 mb-2">Website Analytics</h3>
+          <h3 className="text-lg font-normal mt-6 mb-2">Analitica del sitio</h3>
           <p>
-            We use{" "}
+            Usamos{" "}
             <a
               href="https://www.simpleanalytics.com/"
               className="text-brand-700 hover:text-brand-800"
@@ -47,28 +48,29 @@ export default function PrivacyPage() {
             >
               Simple Analytics
             </a>
-            , a privacy-focused analytics service that:
+            , un servicio de analitica enfocado en privacidad que:
           </p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
             <li>
-              Does <strong>not</strong> use cookies
+              <strong>No</strong> usa cookies
             </li>
             <li>
-              Does <strong>not</strong> track individual visitors
+              <strong>No</strong> rastrea visitantes individuales
             </li>
             <li>
-              Does <strong>not</strong> collect personal data
+              <strong>No</strong> recopila datos personales
             </li>
             <li>
-              Does <strong>not</strong> store your IP address
+              <strong>No</strong> almacena tu direccion IP
             </li>
-            <li>Respects Do Not Track settings</li>
-            <li>Is fully GDPR, CCPA, and PECR compliant</li>
+            <li>Respeta la configuracion Do Not Track</li>
+            <li>Cumple con GDPR, CCPA y PECR</li>
           </ul>
           <p className="mt-3">
-            Simple Analytics collects only aggregated, anonymous data such as
-            page views and referrer sources. No information is ever tied to you
-            as an individual. You can view their privacy policy at{" "}
+            Simple Analytics recopila unicamente datos agregados y anonimos
+            como vistas de pagina y fuentes de referencia. Ninguna informacion
+            se vincula a ti como individuo. Puedes consultar su politica de
+            privacidad en{" "}
             <a
               href="https://simpleanalytics.com/privacy"
               className="text-brand-700 hover:text-brand-800"
@@ -81,16 +83,15 @@ export default function PrivacyPage() {
           </p>
 
           <h3 className="text-lg font-normal mt-6 mb-2">
-            Newsletter (Optional)
+            Boletin de noticias (opcional)
           </h3>
-          <p>If you choose to subscribe to our newsletter, we collect:</p>
+          <p>Si decides suscribirte a nuestro boletin, recopilamos:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
             <li>
-              Your <strong>email address</strong> (provided voluntarily by you)
+              Tu <strong>correo electronico</strong> (proporcionado voluntariamente por ti)
             </li>
             <li>
-              Your <strong>IP address</strong> (recorded by our newsletter
-              provider,{" "}
+              Tu <strong>direccion IP</strong> (registrada por nuestro proveedor de boletin,{" "}
               <a
                 href="https://www.useplunk.com/"
                 className="text-brand-700 hover:text-brand-800"
@@ -99,67 +100,70 @@ export default function PrivacyPage() {
               >
                 Plunk
               </a>
-              , to prevent spam and abuse)
+              , para prevenir spam y abuso)
             </li>
           </ul>
           <p className="mt-3">
-            This data is used solely to send you updates about Actually Relevant
-            and to prevent abuse of the newsletter service. We will never share,
-            sell, or distribute your email address to any third party.
+            Estos datos se usan unicamente para enviarte actualizaciones de
+            Impacto Indigena y para prevenir el abuso del servicio. Nunca
+            compartiremos, venderemos ni distribuiremos tu correo electronico
+            a terceros.
           </p>
           <p className="mt-3">
-            Our newsletter provider, Plunk, automatically tracks email
-            opens and link clicks as part of their delivery infrastructure. We
-            cannot disable this functionality. We do not use this data for
-            profiling, advertising, or any purpose beyond basic delivery
-            monitoring.
+            Nuestro proveedor de boletin, Plunk, registra automaticamente las
+            aperturas de correo y clics en enlaces como parte de su
+            infraestructura de entrega. No podemos desactivar esta
+            funcionalidad. No usamos estos datos para perfilamiento,
+            publicidad ni ningun otro proposito mas alla del monitoreo basico
+            de entrega.
           </p>
           <p>
-            You can unsubscribe at any time using the unsubscribe link included
-            in every email.
+            Puedes cancelar tu suscripcion en cualquier momento usando el
+            enlace de cancelacion incluido en cada correo.
           </p>
 
-          <h3 className="text-lg font-normal mt-6 mb-2">Server Logs</h3>
+          <h3 className="text-lg font-normal mt-6 mb-2">Registros del servidor</h3>
           <p>
-            Our server records basic request metadata (URL path, HTTP status,
-            response time) for operational monitoring. These logs are retained
-            for 14 days and then automatically deleted. Sensitive information
-            such as authentication headers and cookies is redacted from all
-            logs.
+            Nuestro servidor registra metadatos basicos de las solicitudes
+            (ruta URL, estado HTTP, tiempo de respuesta) para monitoreo
+            operacional. Estos registros se conservan durante 14 dias y luego
+            se eliminan automaticamente. La informacion sensible como
+            encabezados de autenticacion y cookies se oculta en todos los
+            registros.
           </p>
 
           <h2 className="section-heading mt-10">
-            What We Store on Your Device
+            Que almacenamos en tu dispositivo
           </h2>
           <p>
-            We do not set cookies, and we do not use sessionStorage, IndexedDB,
-            or any other browser storage mechanism for public visitors.
+            No usamos cookies, ni sessionStorage, IndexedDB ni ningun otro
+            mecanismo de almacenamiento del navegador para visitantes publicos.
           </p>
           <p>
-            The only data stored on your device is your{" "}
-            <strong>positivity slider preference</strong> (a single number
-            between 0 and 100), saved in localStorage so the slider stays where
-            you left it between visits. This value never leaves your browser and
-            is not sent to our servers.
+            El unico dato almacenado en tu dispositivo es tu{" "}
+            <strong>preferencia del filtro emocional</strong> (un numero entre
+            0 y 100), guardado en localStorage para que el control permanezca
+            donde lo dejaste entre visitas. Este valor nunca sale de tu
+            navegador y no se envia a nuestros servidores.
           </p>
           <p>
-            Our administrative interface, which is not accessible to the public,
-            uses secure, httpOnly authentication cookies.
+            Nuestra interfaz de administracion, que no es accesible al publico,
+            usa cookies de autenticacion seguras y httpOnly.
           </p>
 
-          <h2 className="section-heading mt-10">Third-Party Services</h2>
+          <h2 className="section-heading mt-10">Servicios de terceros</h2>
           <div className="overflow-x-auto mt-4">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="border-b border-neutral-200">
                   <th scope="col" className="text-left align-top py-2 pr-4 font-normal">
-                    Service
+                    Servicio
                   </th>
                   <th scope="col" className="text-left align-top py-2 pr-4 font-normal">
-                    Purpose
+                    Proposito
                   </th>
                   <th scope="col" className="text-left align-top py-2 font-normal">
-                    Data Shared
+                    Datos compartidos
                   </th>
                 </tr>
               </thead>
@@ -175,9 +179,9 @@ export default function PrivacyPage() {
                       Simple Analytics
                     </a>
                   </td>
-                  <td className="align-top py-2 pr-4">Privacy-first analytics</td>
+                  <td className="align-top py-2 pr-4">Analitica con privacidad</td>
                   <td className="align-top py-2">
-                    Anonymous page views only. No cookies, no personal data.
+                    Solo vistas de pagina anonimas. Sin cookies, sin datos personales.
                   </td>
                 </tr>
                 <tr className="border-b border-neutral-100">
@@ -191,16 +195,16 @@ export default function PrivacyPage() {
                       Plunk
                     </a>
                   </td>
-                  <td className="align-top py-2 pr-4">Newsletter delivery</td>
+                  <td className="align-top py-2 pr-4">Envio del boletin</td>
                   <td className="align-top py-2">
-                    Email address and IP address (if you subscribe). See their{" "}
+                    Correo electronico y direccion IP (si te suscribes). Ver su{" "}
                     <a
                       href="https://www.useplunk.com/privacy"
                       className="text-brand-700 hover:text-brand-800"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      privacy policy
+                      politica de privacidad
                     </a>
                     .
                   </td>
@@ -216,37 +220,38 @@ export default function PrivacyPage() {
                       Render
                     </a>
                   </td>
-                  <td className="align-top py-2 pr-4">Website hosting</td>
+                  <td className="align-top py-2 pr-4">Alojamiento web</td>
                   <td className="align-top py-2">
-                    Standard HTTP data (IP address, user agent) as part of
-                    hosting infrastructure. We have no access to Render's
-                    infrastructure logs.
+                    Datos HTTP estandar (direccion IP, agente de usuario) como
+                    parte de la infraestructura de alojamiento. No tenemos
+                    acceso a los registros de infraestructura de Render.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="mt-4">
-            All fonts used on this site are self-hosted. We do not load fonts,
-            scripts, or other resources from external CDNs like Google, meaning
-            your IP address is not shared with third parties when you visit.
+            Todas las fuentes tipograficas usadas en este sitio son
+            auto-alojadas. No cargamos fuentes, scripts ni otros recursos
+            desde CDNs externos como Google, lo que significa que tu direccion
+            IP no se comparte con terceros cuando visitas el sitio.
           </p>
 
-          <h2 className="section-heading mt-10">Your Rights</h2>
-          <p>Under GDPR (and similar regulations), you have the right to:</p>
+          <h2 className="section-heading mt-10">Tus derechos</h2>
+          <p>Bajo el GDPR (y regulaciones similares), tienes derecho a:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
-            <li>Request access to any personal data we hold about you</li>
-            <li>Request correction or deletion of your data</li>
-            <li>Object to data processing</li>
-            <li>Lodge a complaint with a supervisory authority</li>
+            <li>Solicitar acceso a cualquier dato personal que tengamos sobre ti</li>
+            <li>Solicitar la correccion o eliminacion de tus datos</li>
+            <li>Oponerte al procesamiento de datos</li>
+            <li>Presentar una queja ante una autoridad supervisora</li>
           </ul>
           <p className="mt-3">
-            Since we collect almost no personal data, there is typically very
-            little (if anything) for us to provide. If you have subscribed to
-            our newsletter, we can delete your email address upon request.
+            Dado que recopilamos casi ningun dato personal, generalmente hay
+            muy poco (o nada) que proporcionar. Si te has suscrito a nuestro
+            boletin, podemos eliminar tu correo electronico a peticion.
           </p>
           <p>
-            For any privacy-related questions, contact us at{" "}
+            Para cualquier consulta relacionada con privacidad, contactanos en{" "}
             <ObfuscatedEmail className="text-brand-700 hover:text-brand-800" />.
           </p>
         </div>
