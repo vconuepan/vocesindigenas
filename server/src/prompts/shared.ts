@@ -32,10 +32,10 @@ export function containsChineseCharacters(str: string): boolean {
  * Include in any prompt that asks the LLM to assign emotion tags.
  */
 export const EMOTION_TAGS_PROMPT_BLOCK = `<EMOTION TAGS>
-- uplifting: Clearly positive or inspiring. The positivity should be obvious and unambiguous — not dependent on a particular viewpoint or bias. A story can be mildly positive and still be uplifting, as long as the positive nature is clear. If there is any real debate about whether it's good news, use calm instead.
-- frustrating: Negative, disappointing, or angering.
-- scary: Frightening (e.g. increased existential risks, wars, threats).
-- calm: Neutral, mixed, or ambiguously positive. Use this as the default when the emotional tone is debatable, when the positivity depends on a specific perspective, or when the story is too nuanced to call clearly positive or negative.
+- alentador: Claramente positivo o inspirador para los pueblos indígenas. La positividad debe ser obvia y no depender de un punto de vista particular. Si existe debate real sobre si es una buena noticia, usa tranquilo.
+- frustrante: Negativo, decepcionante o que genera indignación.
+- alarmante: Inquietante o amenazante (p. ej., violencia contra líderes indígenas, amenazas a territorios o derechos fundamentales).
+- tranquilo: Neutral, mixto o ambiguamente positivo. Úsalo como opción predeterminada cuando el tono emocional sea debatible o dependa de una perspectiva específica.
 </EMOTION TAGS>`
 
 /**
@@ -43,11 +43,11 @@ export const EMOTION_TAGS_PROMPT_BLOCK = `<EMOTION TAGS>
  * Keeps structured output guidance consistent with prompt blocks.
  */
 export const EMOTION_TAG_SCHEMA_DESCRIPTION =
-  'Emotion tag based on how the article affects readers. ' +
-  'uplifting: clearly positive or inspiring — the positivity should be obvious and not dependent on a particular viewpoint. A story can be mildly positive and still be uplifting, as long as it is clearly good news. When in doubt, use calm. ' +
-  'frustrating: negative, disappointing, or angering. ' +
-  'scary: frightening (e.g. increased existential risks, wars, threats). ' +
-  'calm: neutral, mixed, or ambiguously positive — use as the default when the emotional tone is debatable or depends on perspective.'
+  'Etiqueta emocional basada en cómo el artículo afecta a los lectores. ' +
+  'alentador: claramente positivo o inspirador para pueblos indígenas. Cuando haya duda, usar tranquilo. ' +
+  'frustrante: negativo, decepcionante o que genera indignación. ' +
+  'alarmante: inquietante o amenazante (p. ej., violencia contra líderes, amenazas a territorios indígenas). ' +
+  'tranquilo: neutral, mixto o ambiguamente positivo — usar como opción predeterminada.'
 
 // ---------------------------------------------------------------------------
 // Shared prompt building blocks
