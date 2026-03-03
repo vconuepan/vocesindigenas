@@ -69,13 +69,13 @@ export function FeedCreateForm({ open, onClose, issues }: FeedCreateFormProps) {
       await createFeed.mutateAsync({
         title: form.title,
         rssUrl: form.rssUrl,
-        url: form.url || null,
-        displayTitle: form.displayTitle || null,
+        url: form.url || undefined,
+        displayTitle: form.displayTitle || undefined,
         issueId: form.issueId,
         language: form.language,
-        region: (form.region || null) as FeedRegion | null,
+        region: (form.region || undefined) as FeedRegion | undefined,
         crawlIntervalHours: Number(form.crawlIntervalHours),
-        htmlSelector: form.htmlSelector || null,
+        htmlSelector: form.htmlSelector || undefined,
         active: form.active,
       })
       toast('success', 'Feed created')
