@@ -14,7 +14,7 @@ export default function RelatedStories({ slug }: RelatedStoriesProps) {
 
   return (
     <section className="mt-10 pt-8 border-t border-neutral-200">
-      <h2 className="section-heading mb-4">Related Stories</h2>
+      <h2 className="section-heading mb-4">Historias relacionadas</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {stories.map((story) => (
           <StoryCard key={story.id} story={story} variant="compact" />
