@@ -1,18 +1,16 @@
 import { ReactNode } from 'react'
 import { BRAND } from '../config'
-
 // Shared SEO constants
 export const SEO = {
-  siteName: 'Actually Relevant',
-  siteUrl: 'https://actuallyrelevant.news',
-  defaultTitle: 'Actually Relevant - News That Matters to Humanity',
+  siteName: 'Impacto Indígena',
+  siteUrl: 'https://impactoindigena.news',
+  defaultTitle: 'Impacto Indígena - Noticias que importan a los pueblos indígenas',
   defaultDescription: `${BRAND.claim} ${BRAND.claimSupport}`,
-  ogImage: 'https://actuallyrelevant.news/images/og-image.png',
+  ogImage: 'https://impactoindigena.news/images/og-image.png',
   ogImageWidth: '1200',
   ogImageHeight: '630',
   twitterCard: 'summary_large_image' as const,
 }
-
 /**
  * Common OG meta tags that should appear on every page.
  * Use inside <Helmet> after page-specific tags.
