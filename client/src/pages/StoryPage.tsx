@@ -205,7 +205,7 @@ export default function StoryPage() {
                 rel="noopener noreferrer"
                 className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
-                Original article
+                Artículo original
                 <span className="sr-only"> (opens in new tab)</span>
               </a>
               <span className="text-neutral-300">|</span>
@@ -213,7 +213,7 @@ export default function StoryPage() {
                 to="/methodology"
                 className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
-                AI-generated
+                Generado por IA
               </Link>
               {story.slug && (
                 <>
@@ -276,7 +276,7 @@ export default function StoryPage() {
           {/* Why This Matters */}
           {story.relevanceReasons && (
             <AnalysisSection
-              title="Why This Matters"
+              title="Por qué importa"
               text={story.relevanceReasons}
               accentColor={colors.hex}
             />
@@ -285,7 +285,7 @@ export default function StoryPage() {
           {/* Caveats */}
           {story.antifactors && (
             <AnalysisSection
-              title="Caveats"
+              title="Advertencias"
               text={story.antifactors}
               accentColor={shiftHex(colors.hex, -0.25)}
             />
@@ -300,7 +300,7 @@ export default function StoryPage() {
               to={`/search?q=${encodeURIComponent(headline)}`}
               className="text-sm text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              Find similar stories &rarr;
+              Buscar noticias similares &rarr;
             </Link>
           </div>
 
@@ -310,13 +310,13 @@ export default function StoryPage() {
               to="/"
               className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              &larr; Back to all stories
+              &larr; Volver al inicio
             </Link>
             <Link
               to={`/issues/${issueSlug}`}
               className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              More in {issueName} &rarr;
+              Más en {issueName} &rarr;
             </Link>
           </div>
 
