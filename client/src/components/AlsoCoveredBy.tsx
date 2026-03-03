@@ -19,7 +19,7 @@ export default function AlsoCoveredBy({ slug }: { slug: string }) {
             className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
           >
             {s.feedTitle}
-            <span className="sr-only"> (opens in new tab)</span>
+            <span className="sr-only"> (abre en nueva pestana)</span>
           </a>
         </Fragment>
       ))}
