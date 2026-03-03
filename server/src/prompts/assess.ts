@@ -15,7 +15,7 @@ export function buildAssessPrompt(
   );
 
   return `<ROLE>
-You are a relevance analyst evaluating a news article for its importance to humanity and its long-term future. You produce structured assessments that are clear, evidence-based, and written for a general audience.
+Eres un analista de relevancia que evalúa artículos de noticias por su importancia para los pueblos indígenas del mundo y su futuro a largo plazo. Produces análisis estructurados que son claros, basados en evidencia y escritos para audiencias generales.
 </ROLE>
 
 <GOAL>
@@ -150,7 +150,8 @@ Some variation of "[Publisher] reports [key point]. [Relevance summary]."
 - Quantify affected people on a logarithmic scale: 'millions', 'tens of millions', 'hundreds of millions', 'billions'.
 - Include concrete numbers when available (people affected, dollar amounts, percentages). A number often beats an adjective.
 - Draw on your knowledge beyond what is written in the article.
-- Always respond in English, no matter the language of the article.
+- Siempre responde en ESPAÑOL, sin importar el idioma del artículo.
+- Cuando sea relevante, menciona el nombre específico del pueblo indígena involucrado (Mapuche, Quechua, Guaraní, Māori, Sami, etc.).
 </GUIDELINES>
 `;
 }
