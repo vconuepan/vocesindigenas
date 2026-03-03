@@ -25,13 +25,13 @@ export const config = {
   },
   assess: {
     contentMaxLength: 4000,
-    fullAssessmentThreshold: 5,
+    fullAssessmentThreshold: 3,
     modelTier: "medium" as const,
   },
   selection: {
     maxGroupSize: parseInt(process.env.SELECT_MAX_GROUP_SIZE || "20", 10),
     ratio: parseFloat(process.env.SELECT_RATIO || "0.5"),
-    relevanceMin: parseInt(process.env.SELECT_RELEVANCE_MIN || "5", 10),
+    relevanceMin: parseInt(process.env.SELECT_RELEVANCE_MIN || "3", 10),
     modelTier: "large" as const,
   },
   embedding: {
