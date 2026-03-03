@@ -62,7 +62,7 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
           type="button"
           onClick={onClose}
           className="absolute top-3 right-3 p-1.5 text-neutral-400 hover:text-neutral-600 transition-colors rounded focus-visible:ring-2 focus-visible:ring-brand-500"
-          aria-label="Close"
+          aria-label="Cerrar"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
