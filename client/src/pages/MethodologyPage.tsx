@@ -9,34 +9,34 @@ import { useSources } from '../hooks/useSources'
 import { getCategoryColor } from '../lib/category-colors'
 
 const META = {
-  title: 'Our Methodology \u2014 How AI Curates the News | Actually Relevant',
+  title: 'Metodologia \u2014 Como la IA cura las noticias | Impacto Indigena',
   description:
-    '82 sources, a multi-stage AI pipeline, and full transparency. Learn exactly how Actually Relevant selects the stories that matter most to humanity.',
+    'Fuentes especializadas, un pipeline de IA en multiples etapas y total transparencia. Aprende exactamente como Impacto Indigena selecciona las noticias mas relevantes para los pueblos indigenas.',
   url: `${SEO.siteUrl}/methodology`,
 }
 
 const techArticleSchema = {
   '@context': 'https://schema.org',
   '@type': 'TechArticle',
-  headline: 'Our Methodology \u2014 How AI Curates the News',
+  headline: 'Metodologia \u2014 Como la IA cura las noticias',
   description:
-    "Detailed explanation of Actually Relevant's multi-stage AI news curation pipeline, covering 82+ sources across 5 languages.",
+    'Explicacion detallada del pipeline de curation de noticias con IA de Impacto Indigena, cubriendo fuentes especializadas en pueblos indigenas de todo el mundo.',
   url: META.url,
   author: {
     '@type': 'Organization',
-    name: 'Actually Relevant',
+    name: 'Impacto Indigena',
     url: SEO.siteUrl,
   },
   about: [
-    { '@type': 'Thing', name: 'AI news curation' },
-    { '@type': 'Thing', name: 'Algorithmic transparency' },
-    { '@type': 'Thing', name: 'News aggregation methodology' },
+    { '@type': 'Thing', name: 'Curación de noticias con IA' },
+    { '@type': 'Thing', name: 'Transparencia algorítmica' },
+    { '@type': 'Thing', name: 'Pueblos indigenas' },
   ],
 }
 
 const breadcrumb = buildBreadcrumbSchema([
-  { name: 'Home', url: SEO.siteUrl },
-  { name: 'Methodology', url: META.url },
+  { name: 'Inicio', url: SEO.siteUrl },
+  { name: 'Metodologia', url: META.url },
 ])
 
 function ChevronIcon({ className }: { className?: string }) {
@@ -63,57 +63,53 @@ export default function MethodologyPage() {
       <StructuredData data={[techArticleSchema, breadcrumb]} />
 
       <div className="page-section">
-        <h1 className="page-title">Our Methodology</h1>
+        <h1 className="page-title">Nuestra Metodologia</h1>
         <div className="prose max-w-none">
-          <h2 className="section-heading mt-8">What Does "Relevant" Mean?</h2>
+          <h2 className="section-heading mt-8">Que significa "impacto" para nosotros?</h2>
           <p>
-            We only feature stories that are important for humanity and its long-term future. Most
-            daily news focuses on events that are dramatic, local, or short-lived. We filter for
-            stories that affect large numbers of people, shift long-term trends, or represent genuine
-            progress in our understanding of the world.
+            Solo publicamos noticias que tienen importancia real para los pueblos indigenas del mundo
+            y su futuro a largo plazo. La mayoria de los medios enfocan las noticias sobre pueblos
+            indigenas desde una perspectiva de vulnerabilidad. Nosotros filtramos por noticias que
+            documentan contribuciones, avances, derechos, conocimiento ancestral y colaboracion
+            entre lo indigena y lo moderno.
           </p>
 
-          <h2 className="section-heading mt-8">Our Process</h2>
-          <p>We use AI to find the most relevant news for you:</p>
+          <h2 className="section-heading mt-8">Nuestro Proceso</h2>
+          <p>Usamos inteligencia artificial para encontrar las noticias mas relevantes:</p>
 
-          {/* Process funnel */}
           <div className="my-6">
-            {/* Legend */}
             <div className="flex items-center gap-1.5 justify-end mb-4 text-xs text-neutral-400">
-              <span
-                className="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0"
-                aria-hidden="true"
-              />
-              <span>= story</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0" aria-hidden="true" />
+              <span>= noticia</span>
             </div>
 
             <div>
               {[
                 {
-                  label: 'Collection',
+                  label: 'Recoleccion',
                   desc: sources
-                    ? `We crawl ${sources.totalCount} curated news sources across five languages and four issue areas. Article content is extracted automatically using a three-tier system that handles different site formats.`
-                    : 'We crawl curated news sources across five languages and four issue areas. Article content is extracted automatically using a three-tier system that handles different site formats.',
+                    ? `Monitoreamos ${sources.totalCount} fuentes de noticias especializadas en pueblos indigenas de todo el mundo, en multiples idiomas y cuatro areas tematicas. El contenido se extrae automaticamente desde feeds RSS y sitios web especializados.`
+                    : 'Monitoreamos fuentes especializadas en pueblos indigenas de todo el mundo, en multiples idiomas y cuatro areas tematicas. El contenido se extrae automaticamente desde feeds RSS y sitios web especializados.',
                   dots: 20,
                 },
                 {
-                  label: 'Pre-screening',
-                  desc: 'A large language model reads each article and makes a first-pass judgment: Does this story matter beyond its immediate context? Articles that don\u2019t meet the threshold are filtered out, along with duplicates of the same event.',
+                  label: 'Pre-evaluacion',
+                  desc: 'Un modelo de lenguaje lee cada articulo y hace una primera evaluacion: tiene relevancia directa para los pueblos indigenas, su historia, cultura, territorio o derechos? Los articulos que no superan el umbral son filtrados automaticamente.',
                   dots: 10,
                 },
                 {
-                  label: 'Analysis',
-                  desc: 'We identify the Issue area that a story belongs to, assess how relevant it is for humanity based on that Issue\u2019s criteria, give a rating, and generate a summary. Ratings consider factors like scale of impact, novelty, policy implications, and humanitarian significance.',
+                  label: 'Analisis completo',
+                  desc: 'Identificamos el tema al que pertenece la noticia, evaluamos su relevancia para los pueblos indigenas, asignamos una calificacion y generamos un resumen. Las calificaciones consideran factores como escala de impacto, implicaciones legales o politicas, y contribuciones al conocimiento indigena.',
                   dots: 4,
                 },
                 {
-                  label: 'Comparison',
-                  desc: 'We compare stories against each other and select the most relevant ones for publication.',
+                  label: 'Comparacion y seleccion',
+                  desc: 'Comparamos las noticias entre si y seleccionamos las mas relevantes para publicacion, priorizando diversidad tematica y geografica.',
                   dots: 2,
                 },
                 {
-                  label: 'Newsletter curation',
-                  desc: 'We identify the 8 most relevant stories of the week, 2 from each Issue.',
+                  label: 'Publicacion',
+                  desc: 'Las noticias seleccionadas se publican en el sitio con su analisis completo, cita clave y resumen de relevancia.',
                   dots: 1,
                 },
               ].map((step) => (
@@ -122,11 +118,10 @@ export default function MethodologyPage() {
                     <strong className="text-neutral-800">{step.label}</strong>
                     <p className="text-sm text-neutral-500 mt-1 leading-relaxed">{step.desc}</p>
                   </div>
-                  {/* Dot cluster — fewer stories = stronger color */}
                   <div
                     className="w-16 md:w-20 shrink-0 flex flex-wrap justify-end gap-[5px]"
                     role="img"
-                    aria-label={`~${step.dots} stories remaining`}
+                    aria-label={`~${step.dots} noticias restantes`}
                   >
                     {Array.from({ length: step.dots }).map((_, j) => (
                       <span
@@ -142,18 +137,18 @@ export default function MethodologyPage() {
             </div>
           </div>
 
-          <h2 className="section-heading mt-8">Issue Areas</h2>
+          <h2 className="section-heading mt-8">Cuatro Temas Principales</h2>
           <p>
-            We cover four main issue areas, each with adapted evaluation criteria. Some areas have
-            subcategories with further adjusted criteria.
+            Cubrimos cuatro areas tematicas, cada una con criterios de evaluacion adaptados al
+            contexto indigena especifico.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {[
-            { slug: 'human-development', title: 'Human Development', description: 'Poverty, health, education, migration, human rights' },
-            { slug: 'planet-climate', title: 'Planet & Climate', description: 'Climate change, biodiversity, ecosystems, energy' },
-            { slug: 'existential-threats', title: 'Existential Threats', description: 'Nuclear weapons, pandemics, AI risks, conflict' },
-            { slug: 'science-technology', title: 'Science & Technology', description: 'Research breakthroughs, innovation, AI policy' },
+            { slug: 'cambio-climatico', title: 'Cambio Climatico y Biodiversidad', description: 'Territorios indigenas, medio ambiente, biodiversidad, accion climatica' },
+            { slug: 'derechos-indigenas', title: 'Derechos Indigenas', description: 'Derechos territoriales, autodeterminacion, reconocimiento legal, derechos humanos' },
+            { slug: 'desarrollo-sostenible', title: 'Desarrollo Sostenible', description: 'Economias indigenas, gobernanza propia, educacion intercultural' },
+            { slug: 'reconciliacion-paz', title: 'Reconciliacion y Paz', description: 'Justicia historica, reparaciones, dialogo intercultural, consolidacion de la paz' },
           ].map((card) => {
             const colors = getCategoryColor(card.slug)
             return (
@@ -171,12 +166,11 @@ export default function MethodologyPage() {
         </div>
         <div className="prose max-w-none">
 
-          {/* Our Sources */}
-          <h2 className="section-heading mt-10">Our Sources</h2>
+          <h2 className="section-heading mt-10">Nuestras Fuentes</h2>
           <p>
-            We monitor{sources ? ` ${sources.totalCount}` : ''} curated publications. Every source
-            is chosen for editorial quality, regional coverage, or subject-matter expertise — not
-            for traffic volume.
+            Monitoreamos{sources ? ` ${sources.totalCount}` : ''} publicaciones especializadas. Cada
+            fuente es seleccionada por su calidad editorial, cobertura regional o experiencia en
+            asuntos indigenas, no por volumen de trafico.
           </p>
 
           {sourcesLoading ? (
@@ -189,13 +183,13 @@ export default function MethodologyPage() {
             <div className="mt-6 space-y-2">
               <Disclosure as="div" className="border border-neutral-200 rounded-lg">
                 <DisclosureButton className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-neutral-800 hover:bg-neutral-50 transition-colors rounded-lg focus-visible:ring-2 focus-visible:ring-brand-500">
-                  By Region
+                  Por Region
                   <ChevronIcon className="w-5 h-5 text-neutral-400 data-[open]:rotate-180 transition-transform shrink-0" />
                 </DisclosureButton>
                 <DisclosurePanel className="px-5 pb-4 space-y-2">
                   {Object.entries(sources.byRegion).map(([region, names]) => (
                     <p key={region} className="text-sm">
-                      <strong>{region}:</strong> {names.join(', ')}
+                      <strong>{region}:</strong> {(names as string[]).join(', ')}
                     </p>
                   ))}
                 </DisclosurePanel>
@@ -203,13 +197,13 @@ export default function MethodologyPage() {
 
               <Disclosure as="div" className="border border-neutral-200 rounded-lg">
                 <DisclosureButton className="flex w-full items-center justify-between px-5 py-4 text-left font-bold text-neutral-800 hover:bg-neutral-50 transition-colors rounded-lg focus-visible:ring-2 focus-visible:ring-brand-500">
-                  By Issue Area
+                  Por Tema
                   <ChevronIcon className="w-5 h-5 text-neutral-400 data-[open]:rotate-180 transition-transform shrink-0" />
                 </DisclosureButton>
                 <DisclosurePanel className="px-5 pb-4 space-y-2">
                   {Object.entries(sources.byIssue).map(([issue, names]) => (
                     <p key={issue} className="text-sm">
-                      <strong>{issue}</strong> — {names.join(', ')}
+                      <strong>{issue}</strong> — {(names as string[]).join(', ')}
                     </p>
                   ))}
                 </DisclosurePanel>
@@ -217,75 +211,76 @@ export default function MethodologyPage() {
             </div>
           ) : null}
 
-          {/* What We Don't Do */}
-          <h2 className="section-heading mt-10">What We Don't Do</h2>
+          <h2 className="section-heading mt-10">Lo que NO hacemos</h2>
           <ul className="list-disc pl-6 space-y-2 mt-3">
             <li>
-              <strong>We don't personalize.</strong> Everyone sees the same stories. There's no
-              filter bubble.
+              <strong>No personalizamos.</strong> Todos ven las mismas noticias. No hay burbuja de
+              filtro.
             </li>
             <li>
-              <strong>We don't optimize for clicks.</strong> No engagement metrics influence
-              selection.
+              <strong>No optimizamos para clics.</strong> Ningun metrica de engagement influye en la
+              seleccion.
             </li>
             <li>
-              <strong>We don't do original reporting.</strong> Every story links to the original
-              source article. Summaries, blurbs, and relevance analyses are AI-generated and clearly
-              labeled as such.
+              <strong>No hacemos reporteria original.</strong> Cada noticia enlaza al articulo
+              original. Los resumenes y analisis son generados por IA y claramente etiquetados como
+              tal.
             </li>
             <li>
-              <strong>We don't sell data.</strong> No tracking, no analytics profiles, no ad
-              targeting.
+              <strong>No vendemos datos.</strong> Sin rastreo, sin perfiles de analitica, sin
+              publicidad.
             </li>
           </ul>
 
-          {/* The Positivity Slider */}
-          <h2 className="section-heading mt-10">The Positivity Dial</h2>
+          <h2 className="section-heading mt-10">El Filtro Emocional</h2>
           <p>
-            Readers can adjust a 5-position positivity dial that filters stories by emotional tone.
-            This doesn't change what we select — it lets you control how much difficult news you see
-            in a given session. It's a tool for managing news fatigue, not an editorial filter.
-          </p>
-          <p className="mt-2">
-            <Link
-              to="/news-fatigue"
-              className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-            >
-              Learn more about our approach to news fatigue{' '}
-            </Link>
+            Los lectores pueden ajustar un control de 5 posiciones que filtra las noticias por tono
+            emocional. Esto no cambia lo que seleccionamos — te permite controlar cuanta noticias
+            dificiles ves en una sesion. Es una herramienta para manejar la fatiga informativa, no
+            un filtro editorial.
           </p>
 
-          {/* Transparency */}
-          <h2 className="section-heading mt-10">Transparency</h2>
+          <h2 className="section-heading mt-10">Transparencia</h2>
           <p>
-            For every published story, we show the AI-generated analysis: why the story matters, what
-            factors contributed to its rating, and potential caveats. We believe readers deserve to
-            understand not just <em>what</em> is relevant, but <em>why</em>.
+            Para cada noticia publicada, mostramos el analisis generado por IA: por que importa la
+            noticia, que factores contribuyeron a su calificacion y posibles consideraciones.
+            Creemos que los lectores merecen entender no solo <em>que</em> es relevante, sino
+            <em> por que</em>.
           </p>
           <p className="mt-4">
-            AI curation is only trustworthy if you can verify it. We name our sources, explain our
-            pipeline, and publish an open API so anyone can inspect what we produce.
-          </p>
-          <p className="mt-2">
-            <Link
-              to="/compare"
-              className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-            >
-              See how we compare to other aggregators{' '}
-            </Link>
-            {' | '}
-            <Link
-              to="/free-api"
-              className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-            >
-              Explore the free API
-            </Link>
+            La curation con IA solo es confiable si puedes verificarla. Nombramos nuestras fuentes
+            y explicamos nuestro pipeline con total transparencia.
           </p>
         </div>
 
+          <h2 className="section-heading mt-10">Sobre este proyecto</h2>
+          <p>
+            Impacto Indigena es un proyecto de <strong>Venancio Conuepan Mesias</strong>, desarrollado
+            en el marco de la cohorte <strong>LatAm 2025</strong> de{' '}
+            <a href="https://changemakerxchange.ai" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800">
+              Changemakerxchange.ai
+            </a>
+            , una iniciativa global de Ashoka que apoya a agentes de cambio en el uso de inteligencia
+            artificial para resolver problemas sociales complejos.
+          </p>
+          <p className="mt-4">
+            El prototipo fue desarrollado con el apoyo de <strong>Odin Muhlebein</strong>, experto en
+            inteligencia artificial de la red de mentores del <strong>Ashoka AI Lab</strong>. Odin
+            acompaño a Venancio en el Taller de Prototipos de IA, ayudandole a transformar una idea
+            clara — crear una plataforma que analice grandes cantidades de datos y simplifique el
+            analisis para lideres indigenas — en una herramienta tangible que demuestra el impacto
+            posible de este trabajo.
+          </p>
+          <p className="mt-4">
+            Este proyecto nace de la conviccion de que los pueblos indigenas son los primeros
+            innovadores sociales de la humanidad, y que la inteligencia artificial puede ser un
+            puente para amplificar su voz, su conocimiento y su liderazgo en la solucion de los
+            desafios globales que nos afectan a todos.
+          </p>
+
         <LandingCta
-          heading="See it in action."
-          description="Visit actuallyrelevant.news to read today's curated stories — or subscribe to the newsletter."
+          heading="Miralo en accion."
+          description="Visita impactoindigena.news para leer las noticias curadas de hoy, o suscribete al boletin semanal."
         />
       </div>
     </>
