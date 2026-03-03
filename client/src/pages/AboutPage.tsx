@@ -223,17 +223,45 @@ export default function AboutPage() {
 
           <h2 className="section-heading mt-10">Sobre esta plataforma</h2>
           <p>
-            Impacto Indigena News fue desarrollada como prototipo en el marco de la cohorte{" "}
+            Impacto Indigena News es una plataforma de noticias curada por inteligencia
+            artificial que monitorea fuentes especializadas en todo el mundo, analiza el impacto
+            real de las noticias en los pueblos indigenas y presenta esa informacion de forma
+            clara, accesible y sin publicidad.
+          </p>
+          <p>
+            Su proposito es concreto: cambiar la narrativa global sobre los pueblos indigenas.
+            No presentarlos como victimas o grupos vulnerables que necesitan ser defendidos, sino
+            como lo que realmente son: innovadores sociales, guardianes del conocimiento
+            ancestral y protagonistas activos en la solucion de los desafios globales que nos
+            afectan a todos. Construimos puentes entre pueblos indigenas, sociedad civil,
+            empresas responsables y Estados, integrando el conocimiento ancestral con el
+            desarrollo economico, la accion climatica y la consolidacion de la paz.
+          </p>
+          <p>
+            La plataforma fue desarrollada como una adaptacion con enfoque exclusivo indigena
+            del proyecto{" "}
+            <a href="https://github.com/OdinMB/actually-relevant" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+              Actually Relevant
+            </a>
+            , creado originalmente por{" "}
+            <a href="https://www.linkedin.com/in/odinmuehlenbein/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+              Odin Muhlebein
+            </a>
+            . Mientras Actually Relevant cura noticias relevantes para la humanidad en general,
+            Impacto Indigena News adapta esa misma tecnologia y pipeline de inteligencia
+            artificial con un foco exclusivo en los pueblos indigenas del mundo: sus territorios,
+            derechos, culturas, conocimientos y contribuciones. Una herramienta pensada para
+            amplificar las voces invisibilizadas y demostrar que lo ancestral y lo moderno
+            pueden y deben unirse.
+          </p>
+          <p>
+            El prototipo fue desarrollado en el marco de la cohorte{" "}
             <strong>LatAm AI 2025</strong> de{" "}
             <a href="https://changemakerxchange.ai" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
               Changemakerxchange.ai
             </a>
-            , con el apoyo de{" "}
-            <a href="https://www.linkedin.com/in/odinmuehlenbein/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-              Odin Muhlebein
-            </a>
-            , experto en inteligencia artificial del Ashoka AI Lab y mentor de la cohorte.
-            El codigo de la plataforma es abierto y esta disponible en{" "}
+            , con el apoyo de Odin como mentor de la cohorte y experto en inteligencia
+            artificial del Ashoka AI Lab. El codigo es abierto y esta disponible en{" "}
             <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
               GitHub
             </a>.
