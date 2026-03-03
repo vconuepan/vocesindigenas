@@ -20,11 +20,11 @@ Para cada artículo: clasíficalo en el tema más relevante, califica su relevan
 ${formatIssuesBlock(issues)}
 
 <CRITERIOS DE CALIFICACION>
-1-2: Sin relevancia directa para pueblos indígenas; el artículo no menciona ni afecta a comunidades, territorios, derechos o culturas indígenas.
-3-4: Relevancia indirecta o marginal; afecta a una comunidad indígena específica de forma limitada, o toca temas relacionados de forma tangencial.
-5-6: Relevancia clara; afecta directamente a una o más comunidades indígenas, sus territorios, derechos, culturas o medios de vida, a nivel local o regional.
-7-8: Alta relevancia; afecta a múltiples pueblos indígenas o tiene implicaciones para los derechos indígenas a nivel nacional o internacional.
-9-10: Relevancia excepcional; transforma las condiciones de vida y derechos de pueblos indígenas a escala global, o establece precedentes históricos para el movimiento indígena mundial.
+1-2: Sin relevancia para pueblos indígenas; el artículo no menciona ni involucra a comunidades, territorios, culturas, historia o derechos indígenas de ninguna forma.
+3-4: Mención tangencial; los pueblos indígenas aparecen como contexto secundario o el tema indígena es muy periférico.
+5-6: Relevancia directa; el artículo trata sobre comunidades indígenas, su historia, cultura, territorio, derechos, literatura, arte, conocimiento tradicional, o eventos que los afectan directamente, aunque sea a escala local.
+7-8: Alta relevancia; afecta o documenta a múltiples pueblos indígenas, establece precedentes legales, políticas públicas, o preserva conocimiento cultural significativo a nivel regional o nacional.
+9-10: Relevancia excepcional; transforma derechos indígenas a escala global o establece precedentes históricos para el movimiento indígena mundial.
 </CRITERIOS DE CALIFICACION>
 
 ${EMOTION_TAGS_PROMPT_BLOCK}
