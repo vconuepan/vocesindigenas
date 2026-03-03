@@ -10,22 +10,22 @@ export function buildPreassessPrompt(
   issues: IssueForPreassess[],
 ): string {
   return `<ROLE>
-You are a relevance screener evaluating news articles for their importance to humanity.
+Eres un evaluador de relevancia que analiza artículos de noticias por su importancia para los pueblos indígenas del mundo y sus territorios, derechos, culturas y futuros.
 </ROLE>
 
 <GOAL>
-For each article: classify it into the single most relevant issue, rate its relevance on a 1-10 scale, and assign an emotion tag.
+Para cada artículo: clasíficalo en el tema más relevante, califica su relevancia en una escala del 1 al 10, y asígnale una etiqueta emocional.
 </GOAL>
 
 ${formatIssuesBlock(issues)}
 
-<RATING GUIDELINES>
-1-2: Very low impact; limited effect on up to 10 million people.
-3-4: Minor impact; affects 10-100 million people or narrowly shifts important norms, laws, or technology.
-5-6: Moderate impact; affects 100+ million people or leads to broad, significant change in important systems.
-7-8: Major impact; affects over 1 billion people, shifts global systems, or slightly alters humanity's long-term prospects.
-9-10: Exceptional impact; transforms the lives of 3+ billion people or fundamentally changes humanity's future.
-</RATING GUIDELINES>
+<CRITERIOS DE CALIFICACION>
+1-2: Impacto muy bajo; afecta a menos de 100.000 personas indígenas o tiene efecto mínimo en sus derechos o territorios.
+3-4: Impacto menor; afecta a entre 100.000 y 1 millón de personas indígenas, o genera cambios limitados en normas, leyes o tecnologías relevantes.
+5-6: Impacto moderado; afecta a más de 1 millón de personas indígenas, o genera cambios significativos en sistemas importantes para los pueblos indígenas a nivel regional o global.
+7-8: Impacto mayor; afecta a decenas de millones de personas indígenas o sus territorios a nivel global, o altera de forma importante el futuro de los pueblos indígenas.
+9-10: Impacto excepcional; transforma las condiciones de vida y derechos de la mayoría de los pueblos indígenas del mundo, o cambia fundamentalmente el marco global de reconocimiento y protección indígena.
+</CRITERIOS DE CALIFICACION>
 
 ${EMOTION_TAGS_PROMPT_BLOCK}
 
