@@ -20,11 +20,11 @@ Para cada artículo: clasíficalo en el tema más relevante, califica su relevan
 ${formatIssuesBlock(issues)}
 
 <CRITERIOS DE CALIFICACION>
-1-2: Impacto muy bajo; afecta a menos de 100.000 personas indígenas o tiene efecto mínimo en sus derechos o territorios.
-3-4: Impacto menor; afecta a entre 100.000 y 1 millón de personas indígenas, o genera cambios limitados en normas, leyes o tecnologías relevantes.
-5-6: Impacto moderado; afecta a más de 1 millón de personas indígenas, o genera cambios significativos en sistemas importantes para los pueblos indígenas a nivel regional o global.
-7-8: Impacto mayor; afecta a decenas de millones de personas indígenas o sus territorios a nivel global, o altera de forma importante el futuro de los pueblos indígenas.
-9-10: Impacto excepcional; transforma las condiciones de vida y derechos de la mayoría de los pueblos indígenas del mundo, o cambia fundamentalmente el marco global de reconocimiento y protección indígena.
+1-2: Sin relevancia directa para pueblos indígenas; el artículo no menciona ni afecta a comunidades, territorios, derechos o culturas indígenas.
+3-4: Relevancia indirecta o marginal; afecta a una comunidad indígena específica de forma limitada, o toca temas relacionados de forma tangencial.
+5-6: Relevancia clara; afecta directamente a una o más comunidades indígenas, sus territorios, derechos, culturas o medios de vida, a nivel local o regional.
+7-8: Alta relevancia; afecta a múltiples pueblos indígenas o tiene implicaciones para los derechos indígenas a nivel nacional o internacional.
+9-10: Relevancia excepcional; transforma las condiciones de vida y derechos de pueblos indígenas a escala global, o establece precedentes históricos para el movimiento indígena mundial.
 </CRITERIOS DE CALIFICACION>
 
 ${EMOTION_TAGS_PROMPT_BLOCK}
