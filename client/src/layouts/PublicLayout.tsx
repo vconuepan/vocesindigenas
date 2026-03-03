@@ -57,13 +57,12 @@ const FOOTER_LEGAL = [
 
 function BrandLogo({ onClick }: { onClick?: () => void }) {
   return (
-    <Link to="/" onClick={onClick} className="flex flex-col items-center shrink-0">
-      <span className="text-2xl md:text-3xl font-bold font-nexa text-neutral-900 tracking-tight">
-        Impacto Indígena
-      </span>
-      <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-neutral-500 mt-1">
-        Analizando el impacto global en los pueblos indígenas
-      </span>
+    <Link to="/" onClick={onClick} className="flex items-center shrink-0">
+      <img
+        src="/images/logo-horizontal.png"
+        alt="Impacto Indígena"
+        className="h-12 md:h-14 w-auto"
+      />
     </Link>
   );
 }
