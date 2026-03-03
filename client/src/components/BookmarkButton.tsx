@@ -42,8 +42,8 @@ export default function BookmarkButton({ slug, size = 'sm', hoverReveal = false,
           ? 'text-brand-600 hover:text-brand-700'
           : 'text-neutral-300 hover:text-neutral-500'
       } ${visibilityClass} ${className}`}
-      aria-label={saved ? 'Remove bookmark' : 'Bookmark story'}
-      title={saved ? 'Remove bookmark' : 'Bookmark'}
+      aria-label={saved ? 'Quitar marcador' : 'Guardar historia'}
+title={saved ? 'Quitar marcador' : 'Guardar'}
     >
       <svg className={iconSize} viewBox="0 2 24 22" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
