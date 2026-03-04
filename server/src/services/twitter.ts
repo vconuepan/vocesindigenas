@@ -1,18 +1,14 @@
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
 import { createTweet, getTweetMetrics, isTwitterConfigured } from '../lib/twitter.js'
+import { generateStoryImage } from '../lib/imageGen.js'
 
 const log = createLogger('twitter-service')
 
 // ---------------------------------------------------------------------------
-// Draft generation (reuses Bluesky post text)
+// Draft generation
 // ---------------------------------------------------------------------------
 
-/**
- * Generate a Twitter post draft for a story.
- * Reuses el texto del post de Bluesky si existe, si no usa marketingBlurb.
- * Guarda un registro TwitterPost con status "draft".
- */
 export async function generateDraft(storyId: string) {
   const story = await prisma.story.findUnique({
     where: { id: storyId },
@@ -34,29 +30,39 @@ export async function generateDraft(storyId: string) {
     orderBy: { createdAt: 'desc' },
   })
 
+  const baseText = blueskyPost?.postText || story.marketingBlurb || story.summary || story.title || ''
   const storyUrl = `https://impactoindigena.news/stories/${story.slug}`
-const baseText = blueskyPost?.postText || story.marketingBlurb || story.summary || story.title || ''
 
-// Agregar el link al final del texto
-const textWithLink = `${baseText}\n\n${storyUrl}`
+  // Agregar link al final
+  const textWithLink = `${baseText}\n\n${storyUrl}`
+  const trimmed = textWithLink.length > 275
+    ? baseText.slice(0, 235) + '…\n\n' + storyUrl
+    : textWithLink
 
-const postText = textWithLink
-
-  // Twitter tiene límite de 280 chars
-  const trimmed = postText.length > 260
-  ? baseText.slice(0, 235) + '…\n\n' + storyUrl
-  : postText
+  // Generar imagen con DALL-E
+  let imageUrl: string | null = null
+  try {
+    imageUrl = await generateStoryImage(
+      storyId,
+      story.title,
+      story.summary || story.marketingBlurb || '',
+    )
+    log.info({ storyId, imageUrl }, 'image generated for Twitter post')
+  } catch (err) {
+    log.warn({ err, storyId }, 'failed to generate image, posting without image')
+  }
 
   const post = await prisma.twitterPost.create({
     data: {
       storyId,
       postText: trimmed,
+      imageUrl,
       status: 'draft',
     },
     include: { story: { include: { feed: true, issue: true } } },
   })
 
-  log.info({ postId: post.id, storyId, textLength: trimmed.length }, 'Twitter draft generated')
+  log.info({ postId: post.id, storyId, textLength: trimmed.length, hasImage: !!imageUrl }, 'Twitter draft generated')
   return post
 }
 
@@ -64,9 +70,6 @@ const postText = textWithLink
 // Publishing
 // ---------------------------------------------------------------------------
 
-/**
- * Publicar un draft en Twitter/X.
- */
 export async function publishPost(postId: string) {
   if (!isTwitterConfigured()) {
     throw new Error('Twitter credentials not configured')
@@ -81,7 +84,7 @@ export async function publishPost(postId: string) {
   if (post.status !== 'draft') throw new Error('Can only publish draft posts')
 
   try {
-    const result = await createTweet(post.postText)
+    const result = await createTweet(post.postText, post.imageUrl ?? undefined)
 
     const updated = await prisma.twitterPost.update({
       where: { id: postId },
@@ -111,9 +114,6 @@ export async function publishPost(postId: string) {
 // Metrics
 // ---------------------------------------------------------------------------
 
-/**
- * Actualizar métricas de engagement para tweets recientes publicados.
- */
 export async function updateMetrics() {
   if (!isTwitterConfigured()) {
     log.warn('Twitter not configured, skipping metrics update')
