@@ -38,7 +38,7 @@ Cinematic composition, high contrast, visually striking.
     response_format: 'b64_json',
   })
 
-  const b64 = response.data[0]?.b64_json
+  const b64 = response.data?.[0]?.b64_json
   if (!b64) throw new Error('No image data returned from DALL-E')
 
   const imageBuffer = Buffer.from(b64, 'base64')
