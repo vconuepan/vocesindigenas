@@ -89,6 +89,7 @@ model Story {
   primaryOfCluster       StoryCluster? @relation("ClusterPrimary")
   blueskyPosts           BlueskyPost[]
   mastodonPosts          MastodonPost[]
+  twitterPosts           TwitterPost[]
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -281,6 +282,30 @@ model MastodonPost {
   @@index([status])
   @@index([publishedAt])
   @@map("mastodon_posts")
+}
+// --- Twitter Tables ---
+
+model TwitterPost {
+  id               String    @id @default(uuid())
+  storyId          String    @unique @map("story_id")
+  story            Story     @relation(fields: [storyId], references: [id])
+  tweetId          String?   @unique @map("tweet_id")
+  tweetUrl         String?   @map("tweet_url")
+  status           String    @default("draft") // draft | published | failed
+  postText         String    @map("post_text")
+  error            String?
+  publishedAt      DateTime? @map("published_at")
+  likeCount        Int       @default(0) @map("like_count")
+  retweetCount     Int       @default(0) @map("retweet_count")
+  replyCount       Int       @default(0) @map("reply_count")
+  quoteCount       Int       @default(0) @map("quote_count")
+  metricsUpdatedAt DateTime? @map("metrics_updated_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([publishedAt])
+  @@map("twitter_posts")
 }
 
 // --- Subscription Tables ---
