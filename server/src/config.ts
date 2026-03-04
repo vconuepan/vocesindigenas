@@ -193,4 +193,11 @@ twitter: {
       maxAgeDays: parseInt(process.env.TWITTER_METRICS_MAX_AGE_DAYS || '7', 10),
     },
   },
+r2: {
+    endpoint: process.env.R2_ENDPOINT || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    bucketName: process.env.R2_BUCKET_NAME || 'impacto-indigena-media',
+    publicUrl: process.env.R2_PUBLIC_URL || '',
+  },
 } as const;
