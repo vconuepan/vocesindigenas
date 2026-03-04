@@ -294,6 +294,7 @@ model TwitterPost {
   status           String    @default("draft") // draft | published | failed
   postText         String    @map("post_text")
   error            String?
+  imageUrl         String?   @map("image_url")
   publishedAt      DateTime? @map("published_at")
   likeCount        Int       @default(0) @map("like_count")
   retweetCount     Int       @default(0) @map("retweet_count")
