@@ -59,7 +59,7 @@ export function formatStatus(status: string): string {
 const currentYear = new Date().getFullYear()
 
 /** Date only, no time. Omits year if current year. */
-export function formatShortDate(dateStr: string | null, timeZone = 'UTC'): string {
+export function formatShortDate(dateStr: string | null, timeZone = 'America/Santiago'): string {
   if (!dateStr) return '—'
   const date = new Date(dateStr)
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone }
@@ -68,7 +68,7 @@ export function formatShortDate(dateStr: string | null, timeZone = 'UTC'): strin
 }
 
 /** Date with time. Omits year if current year. */
-export function formatDateWithTime(dateStr: string | null, timeZone = 'UTC'): string {
+export function formatDateWithTime(dateStr: string | null, timeZone = 'America/Santiago'): string {
   if (!dateStr) return '—'
   const date = new Date(dateStr)
   const opts: Intl.DateTimeFormatOptions = {
@@ -83,7 +83,7 @@ export function formatDateWithTime(dateStr: string | null, timeZone = 'UTC'): st
 }
 
 /** Full date with time and year. For edit views. */
-export function formatDate(dateStr: string | null, timeZone = 'UTC'): string {
+export function formatDate(dateStr: string | null, timeZone = 'America/Santiago'): string {
   if (!dateStr) return '—'
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -97,7 +97,7 @@ export function formatDate(dateStr: string | null, timeZone = 'UTC'): string {
 }
 
 /** Relative time string, e.g. "5m ago", "2h ago", "3d ago". */
-export function formatRelativeTime(dateStr: string | null, timeZone = 'UTC'): string {
+export function formatRelativeTime(dateStr: string | null, timeZone = 'America/Santiago'): string {
   if (!dateStr) return '—'
   const diffMs = Date.now() - new Date(dateStr).getTime()
   const diffMin = Math.floor(diffMs / 60_000)
