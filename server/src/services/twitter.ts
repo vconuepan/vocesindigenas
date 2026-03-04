@@ -34,12 +34,18 @@ export async function generateDraft(storyId: string) {
     orderBy: { createdAt: 'desc' },
   })
 
-  const postText = blueskyPost?.postText || story.marketingBlurb || story.summary || story.title || ''
+  const storyUrl = `https://impactoindigena.news/stories/${story.slug}`
+const baseText = blueskyPost?.postText || story.marketingBlurb || story.summary || story.title || ''
+
+// Agregar el link al final del texto
+const textWithLink = `${baseText}\n\n${storyUrl}`
+
+const postText = textWithLink
 
   // Twitter tiene límite de 280 chars
-  const trimmed = postText.length > 275
-    ? postText.slice(0, 274) + '…'
-    : postText
+  const trimmed = postText.length > 260
+  ? baseText.slice(0, 235) + '…\n\n' + storyUrl
+  : postText
 
   const post = await prisma.twitterPost.create({
     data: {
