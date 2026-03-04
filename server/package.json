@@ -60,7 +60,8 @@
     "pino-roll": "^4.0.0",
     "rss-parser": "^3.13.0",
     "zod": "^3.23.8",
-    "zod-openapi": "^4.2.4"
+    "zod-openapi": "^4.2.4",
+"twitter-api-v2": "^1.18.2"
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",
