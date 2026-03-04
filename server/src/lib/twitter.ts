@@ -13,19 +13,25 @@ function isConfigured(): boolean {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Post creation (OAuth 1.0a — required for posting tweets)
-// ---------------------------------------------------------------------------
-
 export interface CreateTweetResult {
   id: string
   url: string
 }
 
 /**
- * Create a tweet using Twitter API v2 with OAuth 1.0a.
+ * Descarga una imagen desde una URL y retorna el buffer.
  */
-export async function createTweet(text: string): Promise<CreateTweetResult> {
+async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
+  const response = await fetch(imageUrl)
+  if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`)
+  const arrayBuffer = await response.arrayBuffer()
+  return Buffer.from(arrayBuffer)
+}
+
+/**
+ * Crea un tweet con texto e imagen opcional usando Twitter API v2 con OAuth 1.0a.
+ */
+export async function createTweet(text: string, imageUrl?: string): Promise<CreateTweetResult> {
   if (!isConfigured()) {
     throw new Error('Twitter credentials not configured.')
   }
@@ -41,9 +47,28 @@ export async function createTweet(text: string): Promise<CreateTweetResult> {
         accessSecret: config.twitter.accessTokenSecret,
       })
 
-      log.info({ textLength: text.length }, 'creating tweet')
+      log.info({ textLength: text.length, hasImage: !!imageUrl }, 'creating tweet')
 
-      const result = await client.v2.tweet(text)
+      let mediaId: string | undefined
+
+      // Subir imagen si existe
+      if (imageUrl) {
+        try {
+          const imageBuffer = await fetchImageBuffer(imageUrl)
+          const mediaUpload = await client.v1.uploadMedia(imageBuffer, { mimeType: 'image/png' })
+          mediaId = mediaUpload
+          log.info({ mediaId }, 'image uploaded to Twitter')
+        } catch (err) {
+          log.warn({ err }, 'failed to upload image to Twitter, posting without image')
+        }
+      }
+
+      const tweetOptions: any = { text }
+      if (mediaId) {
+        tweetOptions.media = { media_ids: [mediaId] }
+      }
+
+      const result = await client.v2.tweet(tweetOptions)
 
       const tweetId = result.data.id
       const url = `https://x.com/ImpactoIndigena/status/${tweetId}`
@@ -66,9 +91,6 @@ export interface TweetMetrics {
   quoteCount: number
 }
 
-/**
- * Fetch engagement metrics for a tweet.
- */
 export async function getTweetMetrics(tweetId: string): Promise<TweetMetrics> {
   if (!isConfigured()) {
     throw new Error('Twitter credentials not configured.')
