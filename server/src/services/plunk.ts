@@ -80,7 +80,7 @@ export async function createCampaign(opts: CreateCampaignOpts): Promise<Campaign
         },
         recipients: opts.audienceType === 'SEGMENT' && opts.segmentId
           ? { listIds: [parseInt(opts.segmentId)] }
-          : { listIds: [] }, // Brevo: empty listIds = all contacts
+          : { listIds: [2] },
       }
 
       const { data } = await client.post('/emailCampaigns', payload)
