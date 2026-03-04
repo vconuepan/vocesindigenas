@@ -6,23 +6,15 @@ import { createLogger } from '../lib/logger.js'
 const log = createLogger('plunk')
 
 const client = axios.create({
-  baseURL: config.plunk.baseUrl,
+  baseURL: 'https://api.brevo.com/v3',
   timeout: 15000,
   maxContentLength: 1 * 1024 * 1024,
   headers: { 'Content-Type': 'application/json' },
 })
 
 client.interceptors.request.use((cfg) => {
-  cfg.headers.Authorization = `Bearer ${config.plunk.secretKey}`
+  cfg.headers['api-key'] = config.plunk.secretKey
   return cfg
-})
-
-// Plunk "next" API wraps responses in { success, data }; unwrap automatically
-client.interceptors.response.use((res) => {
-  if (res.data && typeof res.data === 'object' && 'success' in res.data && 'data' in res.data) {
-    res.data = res.data.data
-  }
-  return res
 })
 
 // --- Campaign types ---
@@ -77,13 +69,31 @@ export async function createCampaign(opts: CreateCampaignOpts): Promise<Campaign
   return withRetry(
     async () => {
       log.info({ name: opts.name, audienceType: opts.audienceType }, 'creating campaign')
-      const { data } = await client.post('/campaigns', {
-        ...opts,
-        from: opts.from || config.plunk.fromEmail,
-        fromName: opts.fromName || config.plunk.fromName,
-      })
+
+      const payload: Record<string, unknown> = {
+        name: opts.name,
+        subject: opts.subject,
+        htmlContent: opts.body,
+        sender: {
+          email: opts.from || config.plunk.fromEmail,
+          name: opts.fromName || config.plunk.fromName,
+        },
+        recipients: opts.audienceType === 'SEGMENT' && opts.segmentId
+          ? { listIds: [parseInt(opts.segmentId)] }
+          : { listIds: [] }, // Brevo: empty listIds = all contacts
+      }
+
+      const { data } = await client.post('/emailCampaigns', payload)
       log.info({ campaignId: data.id }, 'campaign created')
-      return data
+
+      return {
+        id: String(data.id),
+        name: opts.name,
+        subject: opts.subject,
+        type: 'classic',
+        status: 'draft',
+        scheduledAt: null,
+      }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -92,8 +102,18 @@ export async function createCampaign(opts: CreateCampaignOpts): Promise<Campaign
 export async function updateCampaign(id: string, opts: Partial<CreateCampaignOpts>): Promise<Campaign> {
   return withRetry(
     async () => {
-      const { data } = await client.patch(`/campaigns/${id}`, opts)
-      return data
+      const payload: Record<string, unknown> = {}
+      if (opts.name) payload.name = opts.name
+      if (opts.subject) payload.subject = opts.subject
+      if (opts.body) payload.htmlContent = opts.body
+      if (opts.from || opts.fromName) {
+        payload.sender = {
+          email: opts.from || config.plunk.fromEmail,
+          name: opts.fromName || config.plunk.fromName,
+        }
+      }
+      await client.put(`/emailCampaigns/${id}`, payload)
+      return { id, name: opts.name || '', subject: opts.subject || '', type: 'classic', status: 'draft', scheduledAt: null }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -103,20 +123,29 @@ export async function sendCampaign(id: string, scheduledFor?: string): Promise<v
   return withRetry(
     async () => {
       log.info({ campaignId: id, scheduledFor }, 'sending campaign')
-      const body = scheduledFor ? { scheduledFor } : {}
-      await client.post(`/campaigns/${id}/send`, body)
+      if (scheduledFor) {
+        // Schedule for future — Brevo uses scheduledAt in ISO format
+        await client.put(`/emailCampaigns/${id}`, { scheduledAt: scheduledFor })
+      }
+      await client.post(`/emailCampaigns/${id}/sendNow`)
       log.info({ campaignId: id }, 'campaign send triggered')
     },
     { retries: 3, retryOn: isRetryableError },
   )
 }
 
-
 export async function getCampaignStats(id: string): Promise<CampaignStats> {
   return withRetry(
     async () => {
-      const { data } = await client.get(`/campaigns/${id}/stats`)
-      return data
+      const { data } = await client.get(`/emailCampaigns/${id}`)
+      const stats = data.statistics?.campaignStats || {}
+      return {
+        delivered: stats.delivered || 0,
+        opened: stats.uniqueViews || 0,
+        clicked: stats.uniqueClicks || 0,
+        bounced: stats.hardBounces + stats.softBounces || 0,
+        complained: stats.unsubscriptions || 0,
+      }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -125,8 +154,15 @@ export async function getCampaignStats(id: string): Promise<CampaignStats> {
 export async function listCampaigns(): Promise<Campaign[]> {
   return withRetry(
     async () => {
-      const { data } = await client.get('/campaigns')
-      return data
+      const { data } = await client.get('/emailCampaigns')
+      return (data.campaigns || []).map((c: Record<string, unknown>) => ({
+        id: String(c.id),
+        name: c.name,
+        subject: c.subject,
+        type: c.type || 'classic',
+        status: c.status,
+        scheduledAt: c.scheduledAt || null,
+      }))
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -138,9 +174,24 @@ export async function createContact(opts: CreateContactOpts): Promise<Contact> {
   return withRetry(
     async () => {
       log.info({ email: opts.email, subscribed: opts.subscribed }, 'creating contact')
-      const { data } = await client.post('/contacts', opts)
+      const payload: Record<string, unknown> = {
+        email: opts.email,
+        attributes: opts.data || {},
+      }
+      // If subscribed, add to list 2 (default list); if not, just create
+      if (opts.subscribed) {
+        payload.listIds = [2]
+      }
+      const { data } = await client.post('/contacts', payload)
       log.info({ contactId: data.id }, 'contact created')
-      return data
+      return {
+        id: String(data.id),
+        email: opts.email,
+        subscribed: opts.subscribed,
+        data: opts.data || {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -149,8 +200,22 @@ export async function createContact(opts: CreateContactOpts): Promise<Contact> {
 export async function updateContact(id: string, updates: Partial<CreateContactOpts>): Promise<Contact> {
   return withRetry(
     async () => {
-      const { data } = await client.patch(`/contacts/${id}`, updates)
-      return data
+      // Brevo: update by email or id
+      const payload: Record<string, unknown> = {}
+      if (updates.data) payload.attributes = updates.data
+      if (updates.subscribed !== undefined) {
+        payload.listIds = updates.subscribed ? [2] : []
+        payload.unlinkListIds = updates.subscribed ? [] : [2]
+      }
+      await client.put(`/contacts/${id}`, payload)
+      return {
+        id,
+        email: '',
+        subscribed: updates.subscribed ?? true,
+        data: updates.data || {},
+        createdAt: '',
+        updatedAt: new Date().toISOString(),
+      }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -160,7 +225,14 @@ export async function getContact(id: string): Promise<Contact> {
   return withRetry(
     async () => {
       const { data } = await client.get(`/contacts/${id}`)
-      return data
+      return {
+        id: String(data.id),
+        email: data.email,
+        subscribed: !data.emailBlacklisted,
+        data: data.attributes || {},
+        createdAt: data.createdAt || '',
+        updatedAt: data.modifiedAt || '',
+      }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -179,9 +251,25 @@ export async function listContacts(cursor?: string, limit = 50): Promise<{ items
   return withRetry(
     async () => {
       const params: Record<string, string | number> = { limit }
-      if (cursor) params.cursor = cursor
+      if (cursor) params.offset = cursor
       const { data } = await client.get('/contacts', { params })
-      return data
+      const items = (data.contacts || []).map((c: Record<string, unknown>) => ({
+        id: String(c.id),
+        email: c.email,
+        subscribed: !c.emailBlacklisted,
+        data: (c as Record<string, unknown>).attributes || {},
+        createdAt: c.createdAt || '',
+        updatedAt: c.modifiedAt || '',
+      }))
+      const total = data.count || 0
+      const offset = parseInt(String(cursor || '0'))
+      const hasMore = offset + limit < total
+      return {
+        items,
+        nextCursor: hasMore ? String(offset + limit) : null,
+        hasMore,
+        total,
+      }
     },
     { retries: 3, retryOn: isRetryableError },
   )
@@ -201,12 +289,14 @@ export async function sendTransactional(opts: SendTransactionalOpts): Promise<vo
   return withRetry(
     async () => {
       log.info({ to: opts.to, subject: opts.subject }, 'sending transactional email')
-      await client.post('/v1/send', {
-        to: opts.to,
+      await client.post('/smtp/email', {
+        to: [{ email: opts.to }],
         subject: opts.subject,
-        body: opts.body,
-        from: opts.from || config.plunk.fromEmail,
-        name: opts.name || config.plunk.fromName,
+        htmlContent: opts.body,
+        sender: {
+          email: opts.from || config.plunk.fromEmail,
+          name: opts.name || config.plunk.fromName,
+        },
       })
       log.info({ to: opts.to }, 'transactional email sent')
     },
@@ -223,15 +313,9 @@ export interface EmailVerifyResult {
 }
 
 export async function verifyEmail(email: string): Promise<EmailVerifyResult> {
-  return withRetry(
-    async () => {
-      log.info({ email }, 'verifying email')
-      const { data } = await client.post('/v1/verify', { email })
-      log.info({ email, result: data }, 'email verification result')
-      return data
-    },
-    { retries: 3, retryOn: isRetryableError },
-  )
+  // Brevo no tiene endpoint de verificación directa — retornamos válido por defecto
+  log.info({ email }, 'email verification skipped (not supported by Brevo)')
+  return { valid: true, domainExists: true, isDisposable: false }
 }
 
 // --- Event tracking ---
@@ -240,7 +324,11 @@ export async function trackEvent(email: string, event: string, data?: Record<str
   return withRetry(
     async () => {
       log.debug({ email, event }, 'tracking event')
-      await client.post('/v1/track', { email, event, data })
+      await client.post('/events', {
+        email,
+        event,
+        properties: data || {},
+      })
     },
     { retries: 3, retryOn: isRetryableError },
   )
