@@ -263,7 +263,7 @@ export async function generateContent(newsletterId: string) {
     const issueName = resolved.name
     const issueSlug = resolved.slug
     const publisher = story.feed?.displayTitle || story.feed?.title || 'Unknown'
-    const relevanceUrl = story.slug ? `https://actuallyrelevant.news/stories/${story.slug}` : ''
+    const relevanceUrl = story.slug ? `https://impactoindigena.news/stories/${story.slug}` : ''
 
     // Add issue section header when the group changes
     if (issueName !== currentIssue) {
@@ -275,8 +275,8 @@ export async function generateContent(newsletterId: string) {
     content += `## ${story.title || story.sourceTitle}\n`
     const feedId = story.feed?.id || ''
     const linkParts = [feedId ? `{feed:${feedId}} ${publisher}` : publisher]
-    linkParts.push(`[original article](${story.sourceUrl})`)
-    if (relevanceUrl) linkParts.push(`[relevance analysis](${relevanceUrl})`)
+    linkParts.push(`[artículo original](${story.sourceUrl})`)
+    if (relevanceUrl) linkParts.push(`[análisis de relevancia](${relevanceUrl})`)
     content += `${linkParts.join(' · ')}\n\n`
 
     // Alternate between relevanceSummary (2/3) and quote (1/3)
@@ -336,30 +336,19 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
 }
 
-/**
- * Converts newsletter markdown content into an HTML email template.
- * Parses the markdown structure produced by generateContent():
- * - Optional intro paragraph(s) at the top (before first # heading)
- * - Issue section headers (# IssueName)
- * - Story blocks: h2 heading, publisher + "Read original article" link row,
- *   body text (relevanceSummary or blockquote with quote + attribution)
- */
 export async function generateHtmlContent(newsletterId: string): Promise<string> {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
   if (!newsletter.content) throw new Error('No content to convert')
 
-  // Split on --- separators to get individual blocks
   const sections = newsletter.content.split(/\n---\n/).filter(s => s.trim())
 
-  // Extract intro (sections before the first one containing ## heading)
   let introHtml = ''
   const contentSections: string[] = []
 
   for (const section of sections) {
     const trimmed = section.trim()
     if (!introHtml && !trimmed.startsWith('#')) {
-      // This is the intro — plain text before any headings
       introHtml = trimmed
         .split('\n')
         .filter(l => l.trim())
@@ -370,13 +359,11 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
     }
   }
 
-  // Parse content sections into HTML blocks (issue headers + stories)
   const htmlBlocks: string[] = []
 
   for (const section of contentSections) {
     const lines = section.split('\n').filter(l => l.trim())
 
-    // Check if this section starts with an issue header (# IssueName {slug})
     let issueHeader = ''
     let issueSlug = ''
     const storyChunks: string[][] = []
@@ -385,7 +372,6 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
     for (const line of lines) {
       const trimmed = line.trim()
       if (trimmed.startsWith('# ') && !trimmed.startsWith('## ')) {
-        // Parse "# Issue Name {slug}"
         const headerMatch = trimmed.slice(2).match(/^(.+?)\s*\{([^}]+)\}\s*$/)
         if (headerMatch) {
           issueHeader = headerMatch[1]
@@ -394,7 +380,6 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
           issueHeader = trimmed.slice(2)
         }
       } else if (trimmed.startsWith('## ') && currentChunk.length > 0) {
-        // Start of a new story — save previous chunk
         storyChunks.push(currentChunk)
         currentChunk = [trimmed]
       } else {
@@ -403,7 +388,6 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
     }
     if (currentChunk.length > 0) storyChunks.push(currentChunk)
 
-    // Render issue header with colored dot (matching website design)
     if (issueHeader) {
       const dotColor = getIssueDotColor(issueSlug)
       htmlBlocks.push(`
@@ -419,7 +403,6 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
     </tr>`)
     }
 
-    // Render each story in this section
     for (const storyLines of storyChunks) {
       let title = ''
       let metaLine = ''
@@ -432,7 +415,7 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
           continue
         } else if (!metaLine && trimmed.match(/\[.*\]\(https?:\/\//)) {
           metaLine = trimmed
-        } else if (trimmed.startsWith('> "') || trimmed.startsWith("> \u201C")) {
+        } else if (trimmed.startsWith('> "') || trimmed.startsWith('> \u201C')) {
           const quoteText = trimmed.slice(2).replace(/^[""\u201C]|[""\u201D]$/g, '').trim()
           bodyParts.push(`<p style="margin: 0 0 4px; font-size: 15px; font-style: italic; color: #525252; line-height: 1.6;">\u201C${escapeHtml(quoteText)}\u201D</p>`)
         } else if (trimmed.startsWith('> \u2014') || trimmed.startsWith('> —')) {
@@ -444,7 +427,6 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
       }
 
       if (title) {
-        // Parse meta: "Publisher · [original article](sourceUrl) · [relevance analysis](relevanceUrl)"
         let originalUrl = ''
         let relevanceUrl = ''
         let publisherName = ''
@@ -452,13 +434,11 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
         if (metaLine) {
           const links = [...metaLine.matchAll(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g)]
           for (const link of links) {
-            if (link[1] === 'original article') originalUrl = link[2]
-            else if (link[1] === 'relevance analysis') relevanceUrl = link[2]
+            if (link[1] === 'artículo original') originalUrl = link[2]
+            else if (link[1] === 'análisis de relevancia') relevanceUrl = link[2]
           }
-          // Extract feed ID if present: {feed:uuid}
           const feedMatch = metaLine.match(/\{feed:([^}]+)\}/)
           if (feedMatch) feedId = feedMatch[1]
-          // Publisher is plain text before the first link (after optional {feed:...} tag)
           const firstBracket = metaLine.indexOf('[')
           if (firstBracket > 0) {
             publisherName = metaLine.slice(0, firstBracket).replace(/\{feed:[^}]+\}\s*/, '').replace(/·\s*$/, '').trim()
@@ -473,11 +453,11 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
         if (publisherName || originalUrl) {
           const parts: string[] = []
           const faviconHtml = feedId
-            ? `<img src="https://actuallyrelevant.news/images/feeds/${feedId}.png" alt="" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; border-radius: 2px; margin-right: 4px;">`
+            ? `<img src="https://impactoindigena.news/images/feeds/${feedId}.png" alt="" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; border-radius: 2px; margin-right: 4px;">`
             : ''
           if (publisherName) parts.push(`${faviconHtml}<span style="vertical-align: middle;">${escapeHtml(publisherName)}</span>`)
-          if (originalUrl) parts.push(`<a href="${escapeHtml(originalUrl)}" style="color: #2563eb; text-decoration: none; vertical-align: middle;">original article</a>`)
-          if (relevanceUrl) parts.push(`<a href="${escapeHtml(relevanceUrl)}" style="color: #2563eb; text-decoration: none; vertical-align: middle;">relevance analysis</a>`)
+          if (originalUrl) parts.push(`<a href="${escapeHtml(originalUrl)}" style="color: #2563eb; text-decoration: none; vertical-align: middle;">artículo original</a>`)
+          if (relevanceUrl) parts.push(`<a href="${escapeHtml(relevanceUrl)}" style="color: #2563eb; text-decoration: none; vertical-align: middle;">análisis de relevancia</a>`)
           metaHtml = `<p style="margin: 0 0 12px; font-size: 13px; color: #737373; line-height: 20px;">${parts.join(' <span style="vertical-align: middle;">&middot;</span> ')}</p>`
         }
 
@@ -504,7 +484,7 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
     : ''
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -518,10 +498,10 @@ export async function generateHtmlContent(newsletterId: string): Promise<string>
           <!-- Header -->
           <tr>
             <td style="padding: 20px 32px 12px; text-align: center;">
-              <a href="https://actuallyrelevant.news" style="text-decoration: none;">
-                <img src="https://actuallyrelevant.news/images/logo-text-horizontal.png" alt="Actually Relevant" width="200" style="display: inline-block; max-width: 200px; height: auto;" />
+              <a href="https://impactoindigena.news" style="text-decoration: none;">
+                <img src="https://impactoindigena.news/images/logo-horizontal.png" alt="Impacto Indígena" width="200" style="display: inline-block; max-width: 200px; height: auto;" />
               </a>
-              <p style="margin: -2px 0 0; font-size: 15px; font-style: italic; color: #a3a3a3;">News that matter to humanity</p>
+              <p style="margin: -2px 0 0; font-size: 15px; font-style: italic; color: #a3a3a3;">Noticias de impacto indígena que están transformando el mundo</p>
             </td>
           </tr>
           <!-- Color strip -->
@@ -553,16 +533,16 @@ ${introSection}
           <!-- Support -->
           <tr>
             <td style="padding: 28px 32px; text-align: center; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0 0 14px; font-size: 14px; color: #525252;">Free. Independent. Without ads. Help us keep it that way.</p>
-              <a href="https://ko-fi.com/odinmb" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: #ffffff; background-color: #171717; border-radius: 8px; text-decoration: none;">&#10084; Support Us</a>
+              <p style="margin: 0 0 14px; font-size: 14px; color: #525252;">Gratuito. Independiente. Sin publicidad. Ayúdanos a seguir así.</p>
+              <a href="https://ko-fi.com/impactoindigena" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: #ffffff; background-color: #171717; border-radius: 8px; text-decoration: none;">&#10084; Apóyanos</a>
             </td>
           </tr>
 
           <!-- AI disclosure -->
           <tr>
             <td style="padding: 28px 32px 16px; text-align: center; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0; font-size: 16px; font-style: italic; color: #737373;">Curated and written with care by AI</p>
-              <p style="margin: 12px 0 0; font-size: 13px; color: #a3a3a3; line-height: 1.5;">Our app might have bugs. AI can make mistakes.<br>If something seems off, please reply to this email and let us know.</p>
+              <p style="margin: 0; font-size: 16px; font-style: italic; color: #737373;">Curado y redactado con cuidado por IA</p>
+              <p style="margin: 12px 0 0; font-size: 13px; color: #a3a3a3; line-height: 1.5;">Nuestra app puede tener errores. La IA puede equivocarse.<br>Si algo parece incorrecto, responde este correo y avísanos.</p>
             </td>
           </tr>
 
@@ -570,12 +550,10 @@ ${introSection}
           <tr>
             <td style="padding: 20px 32px 24px; text-align: center; background-color: #fafafa; border-top: 1px solid #e5e5e5; margin-top: 16px;">
               <p style="margin: 0 0 10px; font-size: 12px; color: #a3a3a3;">
-                <a href="https://actuallyrelevant.news" style="color: #2563eb; text-decoration: none;">actuallyrelevant.news</a>
+                <a href="https://impactoindigena.news" style="color: #2563eb; text-decoration: none;">impactoindigena.news</a>
               </p>
               <p style="margin: 0 0 10px; font-size: 12px; color: #a3a3a3;">
-                <a href="https://bsky.app/profile/actuallyrelevant.bsky.social" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://actuallyrelevant.news/images/social/bluesky.png" alt="Bluesky" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Bluesky</a>
-                <span style="color: #d4d4d4; margin: 0 6px;">&middot;</span>
-                <a href="https://mastodon.social/@actuallyrelevant" rel="me" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://actuallyrelevant.news/images/social/mastodon.png" alt="Mastodon" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Mastodon</a>
+                <a href="https://bsky.app/profile/impactoindigena.bsky.social" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://impactoindigena.news/images/social/bluesky.png" alt="Bluesky" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Bluesky</a>
               </p>
             </td>
           </tr>
