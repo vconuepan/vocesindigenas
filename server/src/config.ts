@@ -181,4 +181,16 @@ export const config = {
     lookbackHours: parseInt(process.env.SOCIAL_LOOKBACK_HOURS || process.env.BLUESKY_LOOKBACK_HOURS || '25', 10),
     pickModelTier: 'medium' as const,
   },
+twitter: {
+    apiKey: process.env.TWITTER_API_KEY || '',
+    apiSecret: process.env.TWITTER_API_SECRET || '',
+    accessToken: process.env.TWITTER_ACCESS_TOKEN || '',
+    accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET || '',
+    autoPost: {
+      enabled: process.env.TWITTER_AUTO_POST_ENABLED === 'true',
+    },
+    metrics: {
+      maxAgeDays: parseInt(process.env.TWITTER_METRICS_MAX_AGE_DAYS || '7', 10),
+    },
+  },
 } as const;
