@@ -23,7 +23,7 @@ router.get('/', async (_req, res) => {
 router.get('/server-time', (_req, res) => {
   res.json({
     time: new Date().toISOString(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone: 'America/Santiago',
   })
 })
 
