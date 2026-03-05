@@ -60,8 +60,8 @@ export async function createCarouselPost(
         childIds.push(data.id)
         log.info({ containerId: data.id }, 'carousel item created')
 
-        // Esperar 1 segundo entre cada imagen
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        // Esperar 3 segundos entre cada imagen
+        await new Promise((resolve) => setTimeout(resolve, 3000))
       }
 
       // Paso 2: Crear contenedor del carrusel
