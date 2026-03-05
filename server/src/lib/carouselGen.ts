@@ -116,9 +116,9 @@ function drawRainbowBar(ctx: any): void {
 
 /** Exporta canvas directamente en 2160x2160 para máxima nitidez */
 function exportCanvas(sourceCanvas: any): Buffer {
-  return sourceCanvas.toBuffer('image/png', { compressionLevel: 1 })
+  // Exportar como JPEG para menor tamaño — Instagram acepta JPEG
+  return sourceCanvas.toBuffer('image/jpeg', { quality: 0.92 })
 }
-
 // ---------------------------------------------------------------------------
 // Slide 1: Portada — Imagen IA + Título
 // ---------------------------------------------------------------------------
