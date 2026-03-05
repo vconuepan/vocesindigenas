@@ -264,60 +264,113 @@ async function generateSlide3(text: string): Promise<Buffer> {
   ctx.fillStyle = COLORS.green
   ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
 
-  // Renderizar texto con títulos en negrita
-  const FONT_SIZE = 30 * SCALE
-  const LINE_HEIGHT = 44 * SCALE
+  // Renderizar texto con formato markdown
+  const FONT_TITLE = 27 * SCALE
+  const FONT_BODY = 25 * SCALE
+  const LINE_HEIGHT = 38 * SCALE
   const MAX_WIDTH = RENDER_SIZE - 200 * SCALE
   const LEFT = 100 * SCALE
-  const MAX_LINES = 17
+  const MAX_LINES = 20
 
   const cleaned = cleanText(text)
-  // Separar por punto seguido de mayúscula
-  const sentences = cleaned
-    .split(/(?<=\.)\s+(?=[A-ZÁÉÍÓÚÑ])/)
-    .map((s: string) => s.trim())
+  // Separar bullets por "- **título:**"
+  const bullets = cleaned
+    .split(/(?=- \*\*|^- )/)
+    .map((s: string) => s.replace(/^-\s*/, '').trim())
     .filter(Boolean)
 
-  let currentY = headerH + 70 * SCALE
+  let currentY = headerH + 65 * SCALE
   let totalLines = 0
 
-  for (const sentence of sentences) {
+  for (const bullet of bullets) {
     if (totalLines >= MAX_LINES) break
 
-    // Detectar si es un título (termina en ":" o es corto sin punto)
-    const isTitle = sentence.endsWith(':') || (sentence.length < 70 && !sentence.includes('.'))
+    // Separar título del cuerpo: "**Título:** cuerpo"
+    const titleMatch = bullet.match(/^\*\*(.+?)\*\*[:\s]*(.*)/s)
 
-    if (isTitle) {
-      ctx.font = `bold ${FONT_SIZE}px Arial`
+    if (titleMatch) {
+      const title = titleMatch[1].trim() + ':'
+      const body = titleMatch[2].trim()
+
+      // Dibujar título en negrita
+      ctx.font = `bold ${FONT_TITLE}px Arial`
       ctx.fillStyle = COLORS.darkGray
-    } else {
-      ctx.font = `${FONT_SIZE}px Arial`
-      ctx.fillStyle = COLORS.mediumGray
-    }
+      ctx.textAlign = 'left'
 
-    ctx.textAlign = 'left'
-    const words = sentence.split(' ')
-    let line = ''
-
-    for (let i = 0; i < words.length; i++) {
-      if (totalLines >= MAX_LINES) break
-      const testLine = line + words[i] + ' '
-      if (ctx.measureText(testLine).width > MAX_WIDTH && line !== '') {
+      const titleWords = title.split(' ')
+      let line = ''
+      for (const word of titleWords) {
+        const test = line + word + ' '
+        if (ctx.measureText(test).width > MAX_WIDTH && line !== '') {
+          if (totalLines >= MAX_LINES) break
+          ctx.fillText(line.trim(), LEFT, currentY)
+          line = word + ' '
+          currentY += LINE_HEIGHT
+          totalLines++
+        } else {
+          line = test
+        }
+      }
+      if (line.trim() && totalLines < MAX_LINES) {
         ctx.fillText(line.trim(), LEFT, currentY)
-        line = words[i] + ' '
         currentY += LINE_HEIGHT
         totalLines++
-      } else {
-        line = testLine
       }
-    }
-    if (line.trim() && totalLines < MAX_LINES) {
-      ctx.fillText(line.trim(), LEFT, currentY)
-      currentY += LINE_HEIGHT + 8 * SCALE
-      totalLines++
+
+      // Dibujar cuerpo en normal
+      ctx.font = `${FONT_BODY}px Arial`
+      ctx.fillStyle = COLORS.mediumGray
+      const bodyWords = body.split(' ')
+      line = ''
+      for (const word of bodyWords) {
+        const test = line + word + ' '
+        if (ctx.measureText(test).width > MAX_WIDTH && line !== '') {
+          if (totalLines >= MAX_LINES) break
+          ctx.fillText(line.trim(), LEFT, currentY)
+          line = word + ' '
+          currentY += LINE_HEIGHT
+          totalLines++
+        } else {
+          line = test
+        }
+      }
+      if (line.trim() && totalLines < MAX_LINES) {
+        ctx.fillText(line.trim(), LEFT, currentY)
+        currentY += LINE_HEIGHT
+        totalLines++
+      }
+
+      // Espacio entre bullets
+      currentY += 10 * SCALE
+    } else {
+      // Sin formato especial — dibujar normal
+      ctx.font = `${FONT_BODY}px Arial`
+      ctx.fillStyle = COLORS.darkGray
+      ctx.textAlign = 'left'
+      const words = bullet.split(' ')
+      let line = ''
+      for (const word of words) {
+        const test = line + word + ' '
+        if (ctx.measureText(test).width > MAX_WIDTH && line !== '') {
+          if (totalLines >= MAX_LINES) break
+          ctx.fillText(line.trim(), LEFT, currentY)
+          line = word + ' '
+          currentY += LINE_HEIGHT
+          totalLines++
+        } else {
+          line = test
+        }
+      }
+      if (line.trim() && totalLines < MAX_LINES) {
+        ctx.fillText(line.trim(), LEFT, currentY)
+        currentY += LINE_HEIGHT + 10 * SCALE
+        totalLines++
+      }
     }
   }
 
+  // Número de slide
+  ctx.fillStyle = COLORS.green
   // Número de slide
   ctx.fillStyle = COLORS.green
   ctx.font = `bold ${22 * SCALE}px Arial`
