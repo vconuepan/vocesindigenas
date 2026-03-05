@@ -1,4 +1,4 @@
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import { uploadImageToR2 } from './imageStorage.js'
 import { createLogger } from './logger.js'
 
@@ -13,343 +13,348 @@ const COLORS = {
   orange: '#F97316',
   red: '#DC2626',
   yellow: '#EAB308',
-  lightGray: '#F5F5F5',
-  darkGray: '#333333',
-  mediumGray: '#666666',
+  darkGray: '#222222',
+  mediumGray: '#555555',
 }
 
-const SLIDE_SIZE = 1080
-const LOGO_URL = 'https://impactoindigena.news/images/logo-horizontal.png'
+const LOGO_WHITE = 'https://impactoindigena.com/wp-content/uploads/2025/04/cropped-logo-impacto-indigena_letras_blancas-1-scaled-1.png'
+const LOGO_BLACK = 'https://impactoindigena.com/wp-content/uploads/2025/04/1-2.png'
+
+// Renderizamos en 2x para máxima nitidez
+const SIZE = 1080
+const SCALE = 2
+const RENDER_SIZE = SIZE * SCALE
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function wrapText(
+/** Limpia markdown y caracteres problemáticos del texto */
+function cleanText(text: string): string {
+  return text
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/`/g, '')
+    .replace(/\n+/g, ' ')
+    .trim()
+}
+
+/** Dibuja texto con wrap automático, retorna Y final */
+function drawWrappedText(
   ctx: any,
   text: string,
   x: number,
   y: number,
   maxWidth: number,
   lineHeight: number,
+  maxLines: number = 10,
 ): number {
-  const words = text.split(' ')
+  const words = cleanText(text).split(' ')
   let line = ''
   let currentY = y
+  let lineCount = 0
 
-  for (const word of words) {
-    const testLine = line + word + ' '
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + ' '
     const metrics = ctx.measureText(testLine)
+
     if (metrics.width > maxWidth && line !== '') {
+      if (lineCount >= maxLines - 1 && i < words.length - 1) {
+        let truncated = line.trim()
+        while (ctx.measureText(truncated + '…').width > maxWidth && truncated.length > 0) {
+          truncated = truncated.slice(0, -1)
+        }
+        ctx.fillText(truncated + '…', x, currentY)
+        return currentY + lineHeight
+      }
       ctx.fillText(line.trim(), x, currentY)
-      line = word + ' '
+      line = words[i] + ' '
       currentY += lineHeight
+      lineCount++
     } else {
       line = testLine
     }
   }
+
   if (line.trim()) {
     ctx.fillText(line.trim(), x, currentY)
     currentY += lineHeight
   }
+
   return currentY
 }
 
-async function drawLogo(ctx: any, canvas: any): Promise<void> {
+/** Descarga y dibuja el logo */
+async function drawLogo(
+  ctx: any,
+  x: number,
+  y: number,
+  height: number,
+  logoUrl: string,
+): Promise<void> {
   try {
-    const logo = await loadImage(LOGO_URL)
-    const logoHeight = 60
-    const logoWidth = (logo.width / logo.height) * logoHeight
-    ctx.drawImage(logo, 40, 40, logoWidth, logoHeight)
-  } catch (err) {
-    // Si falla el logo, escribir texto
-    ctx.fillStyle = COLORS.black
-    ctx.font = 'bold 24px Arial'
-    ctx.fillText('IMPACTO INDÍGENA', 40, 80)
+    const logo = await loadImage(logoUrl)
+    const width = (logo.width / logo.height) * height
+    ctx.drawImage(logo, x, y, width, height)
+  } catch {
+    ctx.font = `bold ${28 * SCALE}px Arial`
+    ctx.fillText('IMPACTO INDÍGENA', x, y + height * 0.7)
   }
 }
 
-function drawAccentBar(ctx: any, color: string): void {
-  ctx.fillStyle = color
-  ctx.fillRect(0, SLIDE_SIZE - 12, SLIDE_SIZE, 12)
+/** Dibuja barra de colores multicolor en la parte inferior */
+function drawRainbowBar(ctx: any): void {
+  const barColors = [COLORS.blue, COLORS.green, COLORS.yellow, COLORS.orange, COLORS.red]
+  const barWidth = RENDER_SIZE / barColors.length
+  const barHeight = 14 * SCALE
+  barColors.forEach((color, i) => {
+    ctx.fillStyle = color
+    ctx.fillRect(i * barWidth, RENDER_SIZE - barHeight, barWidth, barHeight)
+  })
 }
 
-function drawSlideNumber(ctx: any, current: number, total: number): void {
-  ctx.fillStyle = COLORS.mediumGray
-  ctx.font = '20px Arial'
-  ctx.textAlign = 'right'
-  ctx.fillText(`${current}/${total}`, SLIDE_SIZE - 40, SLIDE_SIZE - 30)
-  ctx.textAlign = 'left'
+/** Exporta canvas renderizado 2x a Buffer PNG en tamaño final 1080x1080 */
+function exportCanvas(sourceCanvas: any): Buffer {
+  const outCanvas = createCanvas(SIZE, SIZE)
+  const outCtx = outCanvas.getContext('2d')
+  outCtx.drawImage(sourceCanvas, 0, 0, SIZE, SIZE)
+  return outCanvas.toBuffer('image/png', { compressionLevel: 1 })
 }
 
 // ---------------------------------------------------------------------------
 // Slide 1: Portada — Imagen IA + Título
 // ---------------------------------------------------------------------------
 
-async function generateSlide1(
-  title: string,
-  aiImageUrl: string,
-): Promise<Buffer> {
-  const canvas = createCanvas(SLIDE_SIZE, SLIDE_SIZE)
+async function generateSlide1(title: string, aiImageUrl: string): Promise<Buffer> {
+  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
   const ctx = canvas.getContext('2d')
 
-  // Fondo: imagen IA
+  // Fondo negro por defecto
+  ctx.fillStyle = COLORS.black
+  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+
+  // Imagen IA como fondo cuadrado
   try {
     const bgImage = await loadImage(aiImageUrl)
-    ctx.drawImage(bgImage, 0, 0, SLIDE_SIZE, SLIDE_SIZE)
+    const srcSize = Math.min(bgImage.width, bgImage.height)
+    const srcX = (bgImage.width - srcSize) / 2
+    const srcY = (bgImage.height - srcSize) / 2
+    ctx.drawImage(bgImage, srcX, srcY, srcSize, srcSize, 0, 0, RENDER_SIZE, RENDER_SIZE)
   } catch {
-    ctx.fillStyle = COLORS.black
-    ctx.fillRect(0, 0, SLIDE_SIZE, SLIDE_SIZE)
+    ctx.fillStyle = '#1a1a2e'
+    ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
   }
 
-  // Overlay oscuro en parte inferior para legibilidad
-  const gradient = ctx.createLinearGradient(0, SLIDE_SIZE * 0.4, 0, SLIDE_SIZE)
+  // Gradient oscuro en parte inferior
+  const gradient = ctx.createLinearGradient(0, RENDER_SIZE * 0.35, 0, RENDER_SIZE)
   gradient.addColorStop(0, 'rgba(0,0,0,0)')
-  gradient.addColorStop(1, 'rgba(0,0,0,0.85)')
+  gradient.addColorStop(0.5, 'rgba(0,0,0,0.72)')
+  gradient.addColorStop(1, 'rgba(0,0,0,0.93)')
   ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, SLIDE_SIZE, SLIDE_SIZE)
+  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
 
-  // Logo en esquina superior izquierda (sobre fondo semi-transparente)
-  ctx.fillStyle = 'rgba(255,255,255,0.9)'
-  ctx.beginPath()
-  ctx.roundRect(30, 30, 280, 75, 8)
-  ctx.fill()
-  await drawLogo(ctx, canvas)
+  // Logo blanco en esquina superior izquierda (sin recuadro)
+  await drawLogo(ctx, 40 * SCALE, 36 * SCALE, 60 * SCALE, LOGO_WHITE)
 
-  // Título
-  ctx.fillStyle = COLORS.white
-  ctx.font = 'bold 52px Arial'
+  // Etiqueta naranja encima del título
+  ctx.fillStyle = COLORS.orange
+  ctx.font = `bold ${18 * SCALE}px Arial`
   ctx.textAlign = 'left'
-  wrapText(ctx, title, 50, SLIDE_SIZE * 0.6, SLIDE_SIZE - 100, 65)
+  ctx.fillText('IMPACTO INDÍGENA', 50 * SCALE, RENDER_SIZE * 0.62)
 
-  // Barra de color inferior
-  drawAccentBar(ctx, COLORS.orange)
-  drawSlideNumber(ctx, 1, 4)
+  // Título grande blanco
+  ctx.fillStyle = COLORS.white
+  ctx.font = `bold ${46 * SCALE}px Arial`
+  drawWrappedText(
+    ctx,
+    cleanText(title),
+    50 * SCALE,
+    RENDER_SIZE * 0.67,
+    RENDER_SIZE - 100 * SCALE,
+    58 * SCALE,
+    3,
+  )
 
-  return canvas.toBuffer('image/png')
+  // Número de slide
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'
+  ctx.font = `${20 * SCALE}px Arial`
+  ctx.textAlign = 'right'
+  ctx.fillText('1 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
+
+  drawRainbowBar(ctx)
+  return exportCanvas(canvas)
 }
 
 // ---------------------------------------------------------------------------
 // Slide 2: ¿Por qué importa?
 // ---------------------------------------------------------------------------
 
-async function generateSlide2(whyItMatters: string): Promise<Buffer> {
-  const canvas = createCanvas(SLIDE_SIZE, SLIDE_SIZE)
+async function generateSlide2(text: string): Promise<Buffer> {
+  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
   const ctx = canvas.getContext('2d')
 
   // Fondo blanco
   ctx.fillStyle = COLORS.white
-  ctx.fillRect(0, 0, SLIDE_SIZE, SLIDE_SIZE)
+  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
 
-  // Franja de color superior
+  // Header azul
+  const headerH = 170 * SCALE
   ctx.fillStyle = COLORS.blue
-  ctx.fillRect(0, 0, SLIDE_SIZE, 130)
+  ctx.fillRect(0, 0, RENDER_SIZE, headerH)
 
-  // Logo en franja azul
-  try {
-    const logo = await loadImage(LOGO_URL)
-    const logoHeight = 55
-    const logoWidth = (logo.width / logo.height) * logoHeight
-    // Dibujar logo con tinte blanco sobre fondo azul
-    ctx.drawImage(logo, 40, 37, logoWidth, logoHeight)
-  } catch {
-    ctx.fillStyle = COLORS.white
-    ctx.font = 'bold 22px Arial'
-    ctx.fillText('IMPACTO INDÍGENA', 40, 80)
-  }
+  // Logo blanco en header
+  await drawLogo(ctx, 40 * SCALE, 42 * SCALE, 72 * SCALE, LOGO_WHITE)
 
-  // Título de slide
+  // Título del slide centrado
   ctx.fillStyle = COLORS.white
-  ctx.font = 'bold 38px Arial'
+  ctx.font = `bold ${38 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('¿POR QUÉ IMPORTA?', SLIDE_SIZE / 2, 88)
-  ctx.textAlign = 'left'
+  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_SIZE / 2, 116 * SCALE)
 
-  // Icono decorativo
+  // Línea decorativa azul vertical
   ctx.fillStyle = COLORS.blue
-  ctx.font = '80px Arial'
-  ctx.textAlign = 'center'
-  ctx.fillText('🌍', SLIDE_SIZE / 2, 260)
-  ctx.textAlign = 'left'
+  ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
 
   // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = '34px Arial'
-  ctx.textAlign = 'center'
-  
-  // Dividir texto en palabras y centrar
-  const words = whyItMatters.split(' ')
-  let line = ''
-  let y = 320
-  for (const word of words) {
-    const test = line + word + ' '
-    if (ctx.measureText(test).width > 900 && line !== '') {
-      ctx.fillText(line.trim(), SLIDE_SIZE / 2, y)
-      line = word + ' '
-      y += 50
-    } else {
-      line = test
-    }
-  }
-  if (line.trim()) ctx.fillText(line.trim(), SLIDE_SIZE / 2, y)
+  ctx.font = `${33 * SCALE}px Arial`
   ctx.textAlign = 'left'
+  drawWrappedText(
+    ctx,
+    cleanText(text),
+    100 * SCALE,
+    headerH + 65 * SCALE,
+    RENDER_SIZE - 160 * SCALE,
+    50 * SCALE,
+    9,
+  )
 
-  drawAccentBar(ctx, COLORS.blue)
-  drawSlideNumber(ctx, 2, 4)
+  // Número de slide
+  ctx.fillStyle = COLORS.blue
+  ctx.font = `bold ${22 * SCALE}px Arial`
+  ctx.textAlign = 'right'
+  ctx.fillText('2 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
 
-  return canvas.toBuffer('image/png')
+  drawRainbowBar(ctx)
+  return exportCanvas(canvas)
 }
 
 // ---------------------------------------------------------------------------
 // Slide 3: ¿Qué considerar?
 // ---------------------------------------------------------------------------
 
-async function generateSlide3(considerations: string): Promise<Buffer> {
-  const canvas = createCanvas(SLIDE_SIZE, SLIDE_SIZE)
+async function generateSlide3(text: string): Promise<Buffer> {
+  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
   const ctx = canvas.getContext('2d')
 
   // Fondo blanco
   ctx.fillStyle = COLORS.white
-  ctx.fillRect(0, 0, SLIDE_SIZE, SLIDE_SIZE)
+  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
 
-  // Franja de color superior
+  // Header verde
+  const headerH = 170 * SCALE
   ctx.fillStyle = COLORS.green
-  ctx.fillRect(0, 0, SLIDE_SIZE, 130)
+  ctx.fillRect(0, 0, RENDER_SIZE, headerH)
 
-  // Logo
-  try {
-    const logo = await loadImage(LOGO_URL)
-    const logoHeight = 55
-    const logoWidth = (logo.width / logo.height) * logoHeight
-    ctx.drawImage(logo, 40, 37, logoWidth, logoHeight)
-  } catch {
-    ctx.fillStyle = COLORS.white
-    ctx.font = 'bold 22px Arial'
-    ctx.fillText('IMPACTO INDÍGENA', 40, 80)
-  }
+  // Logo blanco en header
+  await drawLogo(ctx, 40 * SCALE, 42 * SCALE, 72 * SCALE, LOGO_WHITE)
 
-  // Título de slide
+  // Título del slide centrado
   ctx.fillStyle = COLORS.white
-  ctx.font = 'bold 38px Arial'
+  ctx.font = `bold ${38 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('¿QUÉ CONSIDERAR?', SLIDE_SIZE / 2, 88)
-  ctx.textAlign = 'left'
+  ctx.fillText('¿QUÉ CONSIDERAR?', RENDER_SIZE / 2, 116 * SCALE)
 
-  // Icono decorativo
+  // Línea decorativa verde vertical
   ctx.fillStyle = COLORS.green
-  ctx.font = '80px Arial'
-  ctx.textAlign = 'center'
-  ctx.fillText('🔍', SLIDE_SIZE / 2, 260)
-  ctx.textAlign = 'left'
+  ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
 
   // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = '34px Arial'
-  ctx.textAlign = 'center'
-
-  const words = considerations.split(' ')
-  let line = ''
-  let y = 320
-  for (const word of words) {
-    const test = line + word + ' '
-    if (ctx.measureText(test).width > 900 && line !== '') {
-      ctx.fillText(line.trim(), SLIDE_SIZE / 2, y)
-      line = word + ' '
-      y += 50
-    } else {
-      line = test
-    }
-  }
-  if (line.trim()) ctx.fillText(line.trim(), SLIDE_SIZE / 2, y)
+  ctx.font = `${33 * SCALE}px Arial`
   ctx.textAlign = 'left'
+  drawWrappedText(
+    ctx,
+    cleanText(text),
+    100 * SCALE,
+    headerH + 65 * SCALE,
+    RENDER_SIZE - 160 * SCALE,
+    50 * SCALE,
+    9,
+  )
 
-  drawAccentBar(ctx, COLORS.green)
-  drawSlideNumber(ctx, 3, 4)
+  // Número de slide
+  ctx.fillStyle = COLORS.green
+  ctx.font = `bold ${22 * SCALE}px Arial`
+  ctx.textAlign = 'right'
+  ctx.fillText('3 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
 
-  return canvas.toBuffer('image/png')
+  drawRainbowBar(ctx)
+  return exportCanvas(canvas)
 }
 
 // ---------------------------------------------------------------------------
 // Slide 4: Call to action
 // ---------------------------------------------------------------------------
 
-async function generateSlide4(storyUrl: string): Promise<Buffer> {
-  const canvas = createCanvas(SLIDE_SIZE, SLIDE_SIZE)
+async function generateSlide4(): Promise<Buffer> {
+  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
   const ctx = canvas.getContext('2d')
 
   // Fondo negro
   ctx.fillStyle = COLORS.black
-  ctx.fillRect(0, 0, SLIDE_SIZE, SLIDE_SIZE)
+  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
 
-  // Logo grande centrado
-  try {
-    const logo = await loadImage(LOGO_URL)
-    const logoHeight = 120
-    const logoWidth = (logo.width / logo.height) * logoHeight
-    // Fondo blanco detrás del logo
-    ctx.fillStyle = COLORS.white
-    ctx.beginPath()
-    ctx.roundRect(
-      SLIDE_SIZE / 2 - logoWidth / 2 - 20,
-      220,
-      logoWidth + 40,
-      logoHeight + 20,
-      12,
-    )
-    ctx.fill()
-    ctx.drawImage(logo, SLIDE_SIZE / 2 - logoWidth / 2, 230, logoWidth, logoHeight)
-  } catch {
-    ctx.fillStyle = COLORS.white
-    ctx.font = 'bold 40px Arial'
-    ctx.textAlign = 'center'
-    ctx.fillText('IMPACTO INDÍGENA', SLIDE_SIZE / 2, 300)
-  }
+  // Logo blanco grande centrado
+  const logoH = 110 * SCALE
+  const logoAspect = 3.2
+  const logoW = logoH * logoAspect
+  const logoX = (RENDER_SIZE - logoW) / 2
+  const logoY = 210 * SCALE
+  await drawLogo(ctx, logoX, logoY, logoH, LOGO_WHITE)
 
   // Texto principal
   ctx.fillStyle = COLORS.white
-  ctx.font = 'bold 38px Arial'
+  ctx.font = `bold ${42 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('Lee la noticia completa', SLIDE_SIZE / 2, 430)
+  ctx.fillText('Lee la noticia completa', RENDER_SIZE / 2, 430 * SCALE)
 
-  // URL
+  // URL en amarillo
   ctx.fillStyle = COLORS.yellow
-  ctx.font = '28px Arial'
-  ctx.fillText('impactoindigena.news', SLIDE_SIZE / 2, 490)
+  ctx.font = `${30 * SCALE}px Arial`
+  ctx.fillText('impactoindigena.news', RENDER_SIZE / 2, 480 * SCALE)
 
-  // Separador
+  // Separador naranja
   ctx.strokeStyle = COLORS.orange
-  ctx.lineWidth = 3
+  ctx.lineWidth = 3 * SCALE
   ctx.beginPath()
-  ctx.moveTo(100, 560)
-  ctx.lineTo(SLIDE_SIZE - 100, 560)
+  ctx.moveTo(120 * SCALE, 530 * SCALE)
+  ctx.lineTo(RENDER_SIZE - 120 * SCALE, 530 * SCALE)
   ctx.stroke()
 
-  // Tagline
+  // Tagline en gris
   ctx.fillStyle = COLORS.mediumGray
-  ctx.font = '26px Arial'
-  ctx.fillText('Noticias sobre pueblos indígenas', SLIDE_SIZE / 2, 620)
-  ctx.fillText('curadas con IA', SLIDE_SIZE / 2, 660)
+  ctx.font = `${27 * SCALE}px Arial`
+  ctx.fillText('Noticias sobre pueblos indígenas', RENDER_SIZE / 2, 590 * SCALE)
+  ctx.fillText('curadas con IA por Impacto Indígena', RENDER_SIZE / 2, 632 * SCALE)
 
-  // Hashtags
+  // Hashtags en naranja
   ctx.fillStyle = COLORS.orange
-  ctx.font = 'bold 24px Arial'
-  ctx.fillText('#PueblosIndígenas  #ImpactoIndígena', SLIDE_SIZE / 2, 730)
+  ctx.font = `bold ${25 * SCALE}px Arial`
+  ctx.fillText('#PueblosIndígenas  #ImpactoIndígena', RENDER_SIZE / 2, 710 * SCALE)
 
-  // Barra multicolor inferior
-  const barWidth = SLIDE_SIZE / 5
-  const colors = [COLORS.blue, COLORS.green, COLORS.yellow, COLORS.orange, COLORS.red]
-  colors.forEach((color, i) => {
-    ctx.fillStyle = color
-    ctx.fillRect(i * barWidth, SLIDE_SIZE - 12, barWidth, 12)
-  })
+  // Número de slide
+  ctx.fillStyle = COLORS.mediumGray
+  ctx.font = `${22 * SCALE}px Arial`
+  ctx.fillText('4 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
 
-  drawSlideNumber(ctx, 4, 4)
-
-  return canvas.toBuffer('image/png')
+  drawRainbowBar(ctx)
+  return exportCanvas(canvas)
 }
 
 // ---------------------------------------------------------------------------
-// Main: Generate all 4 slides and upload to R2
+// Main: Genera las 4 slides y las sube a R2
 // ---------------------------------------------------------------------------
 
 export interface CarouselSlide {
@@ -373,7 +378,7 @@ export async function generateCarousel(
     generateSlide1(title, aiImageUrl),
     generateSlide2(whyItMatters),
     generateSlide3(considerations),
-    generateSlide4(storyUrl),
+    generateSlide4(),
   ])
 
   const slides = [
