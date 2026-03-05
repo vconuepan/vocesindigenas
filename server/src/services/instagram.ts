@@ -3,65 +3,7 @@ import { createLogger } from '../lib/logger.js'
 import { createCarouselPost, isInstagramConfigured } from '../lib/instagram.js'
 import { generateCarousel } from '../lib/carouselGen.js'
 import { generateStoryImage } from '../lib/imageGen.js'
-import OpenAI from 'openai'
-import { config } from '../config.js'
-
 const log = createLogger('instagram-service')
-
-// ---------------------------------------------------------------------------
-// Generar textos de slides con IA
-// ---------------------------------------------------------------------------
-
-interface SlideTexts {
-  whyItMatters: string
-  considerations: string
-}
-
-async function generateSlideTexts(
-  title: string,
-  summary: string,
-  relevanceReasons: string,
-  antifactors: string,
-): Promise<SlideTexts> {
-  const openai = new OpenAI()
-
-  const prompt = `Eres editor de Impacto Indígena, medio de noticias sobre pueblos indígenas.
-
-Noticia: "${title}"
-Resumen: "${summary}"
-Por qué importa: "${relevanceReasons}"
-Consideraciones: "${antifactors}"
-
-Genera textos cortos para 2 slides de Instagram (máximo 350 caracteres cada uno):
-
-1. "¿Por qué importa?" - Explica el impacto real de esta noticia para los pueblos indígenas
-2. "¿Qué considerar?" - Da contexto importante o perspectiva crítica
-
-Responde SOLO en JSON sin markdown:
-{"whyItMatters": "...", "considerations": "..."}`
-
-  const response = await openai.chat.completions.create({
-    model: config.llm.models.small.name,
-    messages: [{ role: 'user', content: prompt }],
-    max_completion_tokens: 300,
-  })
-
-  const text = response.choices[0]?.message?.content || ''
-  const clean = text.replace(/```json|```/g, '').trim()
-
-  try {
-    const parsed = JSON.parse(clean)
-    return {
-      whyItMatters: parsed.whyItMatters?.slice(0, 400) || 'Esta noticia tiene impacto directo en las comunidades indígenas.',
-      considerations: parsed.considerations?.slice(0, 400) || 'Es importante escuchar las voces de las comunidades afectadas.',
-    }
-  } catch {
-    return {
-      whyItMatters: 'Esta noticia tiene impacto directo en las comunidades indígenas.',
-      considerations: 'Es importante escuchar las voces de las comunidades afectadas.',
-    }
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Draft generation
@@ -115,20 +57,19 @@ export async function generateDraft(storyId: string) {
     }
   }
 
-  // Generar textos de slides con IA
-  const slideTexts = await generateSlideTexts(
-    story.title,
-    story.summary || '',
+  // Slide 2: resumen directo, Slide 3: por qué importa + consideraciones
+  const slide2Text = story.summary || ''
+  const slide3Text = [
     story.relevanceReasons || '',
-    story.antifactors || '',
-  )
+    story.antifactors ? `Consideraciones: ${story.antifactors}` : '',
+  ].filter(Boolean).join(' — ')
 
   // Generar carrusel de 4 slides
   const slides = await generateCarousel(
     storyId,
     story.title,
-    slideTexts.whyItMatters,
-    slideTexts.considerations,
+    slide2Text,
+    slide3Text,
     storyUrl,
     aiImageUrl,
   )
