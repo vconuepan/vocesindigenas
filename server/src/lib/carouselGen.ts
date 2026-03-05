@@ -116,6 +116,8 @@ function drawRainbowBar(ctx: any): void {
 
 /** Exporta canvas directamente en 2160x2160 para máxima nitidez */
 function exportCanvas(sourceCanvas: any): Buffer {
+  return sourceCanvas.toBuffer('image/jpeg', { quality: 0.92 })
+}
   // Exportar como JPEG para menor tamaño — Instagram acepta JPEG
   return sourceCanvas.toBuffer('image/jpeg', { quality: 0.92 })
 }
@@ -429,7 +431,7 @@ export async function generateCarousel(
 
   for (const slide of slides) {
     const filename = `${storyId}-slide${slide.order}-${timestamp}.png`
-    const url = await uploadImageToR2(slide.buffer, filename)
+    const url = await uploadImageToR2(slide.buffer, filename.replace('.png', '.jpg'), 'image/jpeg')
     uploaded.push({ imageUrl: url, order: slide.order })
     log.info({ storyId, order: slide.order, url }, 'slide uploaded')
   }
