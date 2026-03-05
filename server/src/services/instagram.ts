@@ -43,7 +43,7 @@ Responde SOLO en JSON sin markdown:
   const response = await openai.chat.completions.create({
     model: config.llm.models.small.name,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 300,
+    max_completion_tokens: 300,
   })
 
   const text = response.choices[0]?.message?.content || ''
