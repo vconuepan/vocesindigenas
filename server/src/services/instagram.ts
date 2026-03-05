@@ -52,15 +52,15 @@ Responde SOLO en JSON sin markdown:
   try {
     const parsed = JSON.parse(clean)
     return {
-      whyItMatters: parsed.whyItMatters?.slice(0, 200) || 'Esta noticia tiene impacto directo en las comunidades indígenas.',
-      considerations: parsed.considerations?.slice(0, 200) || 'Es importante escuchar las voces de las comunidades afectadas.',
+      whyItMatters: parsed.whyItMatters?.slice(0, 400) || 'Esta noticia tiene impacto directo en las comunidades indígenas.',
+      considerations: parsed.considerations?.slice(0, 400) || 'Es importante escuchar las voces de las comunidades afectadas.',
     }
   } catch {
     return {
-    whyItMatters: parsed.whyItMatters?.slice(0, 400) || '...',
-considerations: parsed.considerations?.slice(0, 400) || '...',    }
+      whyItMatters: 'Esta noticia tiene impacto directo en las comunidades indígenas.',
+      considerations: 'Es importante escuchar las voces de las comunidades afectadas.',
+    }
   }
-}
 
 // ---------------------------------------------------------------------------
 // Draft generation
