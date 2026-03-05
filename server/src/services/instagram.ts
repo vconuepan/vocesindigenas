@@ -52,8 +52,9 @@ export async function generateDraft(storyId: string) {
       )
       log.info({ storyId, aiImageUrl }, 'AI image generated for Instagram')
     } catch (err) {
-      log.error({ err, storyId }, 'failed to generate AI image')
-      throw new Error('Failed to generate AI image for Instagram carousel')
+      log.error({ err, storyId }, 'failed to generate AI image, using fallback')
+      // Usar imagen genérica de fallback de Impacto Indígena
+      aiImageUrl = 'https://impactoindigena.com/wp-content/uploads/2025/04/cropped-logo-impacto-indigena_letras_blancas-1-scaled-1.png'
     }
   }
 
