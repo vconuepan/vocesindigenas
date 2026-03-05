@@ -44,9 +44,9 @@ export async function createCarouselPost(
         const params = new URLSearchParams({
           image_url: imageUrl,
           is_carousel_item: 'true',
+          media_type: 'IMAGE',
           access_token: accessToken,
         })
-
         const res = await fetch(`${baseUrl}/${userId}/media?${params}`, {
           method: 'POST',
         })
