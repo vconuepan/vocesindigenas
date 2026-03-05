@@ -17,6 +17,11 @@ import {
   publishPost as publishTwitterPost,
 } from '../services/twitter.js'
 import prisma from '../lib/prisma.js'
+import {
+  generateDraft as generateInstagramDraft,
+  publishPost as publishInstagramPost,
+} from '../services/instagram.js'
+import { isInstagramConfigured } from '../lib/instagram.js'
 
 const log = createLogger('social_auto_post')
 
@@ -77,6 +82,21 @@ function getEnabledChannels(): ChannelConfig[] {
       },
       generateDraft: async (storyId) => generateTwitterDraft(storyId),
       publishPost: async (postId) => publishTwitterPost(postId),
+    })
+  }
+  if (config.instagram.autoPost.enabled && isInstagramConfigured()) {
+    channels.push({
+      name: 'instagram',
+      enabled: true,
+      configured: true,
+      hasPost: async (storyId) => {
+        const existing = await prisma.instagramPost.findFirst({
+          where: { storyId, status: 'published' },
+        })
+        return existing !== null
+      },
+      generateDraft: async (storyId) => generateInstagramDraft(storyId),
+      publishPost: async (postId) => publishInstagramPost(postId),
     })
   }
 
