@@ -207,7 +207,7 @@ async function generateSlide2(text: string): Promise<Buffer> {
   ctx.fillStyle = COLORS.white
   ctx.font = `bold ${38 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_SIZE / 2, 116 * SCALE)
+  ctx.fillText('RESUMEN', RENDER_SIZE / 2, 116 * SCALE)
 
   // Línea decorativa azul vertical
   ctx.fillStyle = COLORS.blue
@@ -215,7 +215,7 @@ async function generateSlide2(text: string): Promise<Buffer> {
 
   // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = `${52 * SCALE}px Arial`
+  ctx.font = `${40 * SCALE}px Arial`
   ctx.textAlign = 'left'
   drawWrappedText(
     ctx,
@@ -223,8 +223,8 @@ async function generateSlide2(text: string): Promise<Buffer> {
     100 * SCALE,
     headerH + 80 * SCALE,
     RENDER_SIZE - 180 * SCALE,
-    72 * SCALE,
-    10,
+    58 * SCALE,
+    13,
   )
 
   // Número de slide
@@ -261,25 +261,65 @@ async function generateSlide3(text: string): Promise<Buffer> {
   ctx.fillStyle = COLORS.white
   ctx.font = `bold ${38 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('¿QUÉ CONSIDERAR?', RENDER_SIZE / 2, 116 * SCALE)
+  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_SIZE / 2, 116 * SCALE)
 
   // Línea decorativa verde vertical
   ctx.fillStyle = COLORS.green
   ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
 
-  // Texto principal
-  ctx.fillStyle = COLORS.darkGray
-  ctx.font = `${38 * SCALE}px Arial`
-  ctx.textAlign = 'left'
-  drawWrappedText(
-    ctx,
-    cleanText(text),
-    100 * SCALE,
-    headerH + 60 * SCALE,
-    RENDER_SIZE - 180 * SCALE,
-    52 * SCALE,
-    14,
-  )
+  // Renderizar texto con títulos en negrita
+  const FONT_SIZE = 30 * SCALE
+  const LINE_HEIGHT = 44 * SCALE
+  const MAX_WIDTH = RENDER_SIZE - 200 * SCALE
+  const LEFT = 100 * SCALE
+  const MAX_LINES = 17
+
+  const cleaned = cleanText(text)
+  // Separar por punto seguido de mayúscula
+  const sentences = cleaned
+    .split(/(?<=\.)\s+(?=[A-ZÁÉÍÓÚÑ])/)
+    .map((s: string) => s.trim())
+    .filter(Boolean)
+
+  let currentY = headerH + 70 * SCALE
+  let totalLines = 0
+
+  for (const sentence of sentences) {
+    if (totalLines >= MAX_LINES) break
+
+    // Detectar si es un título (termina en ":" o es corto sin punto)
+    const isTitle = sentence.endsWith(':') || (sentence.length < 70 && !sentence.includes('.'))
+
+    if (isTitle) {
+      ctx.font = `bold ${FONT_SIZE}px Arial`
+      ctx.fillStyle = COLORS.darkGray
+    } else {
+      ctx.font = `${FONT_SIZE}px Arial`
+      ctx.fillStyle = COLORS.mediumGray
+    }
+
+    ctx.textAlign = 'left'
+    const words = sentence.split(' ')
+    let line = ''
+
+    for (let i = 0; i < words.length; i++) {
+      if (totalLines >= MAX_LINES) break
+      const testLine = line + words[i] + ' '
+      if (ctx.measureText(testLine).width > MAX_WIDTH && line !== '') {
+        ctx.fillText(line.trim(), LEFT, currentY)
+        line = words[i] + ' '
+        currentY += LINE_HEIGHT
+        totalLines++
+      } else {
+        line = testLine
+      }
+    }
+    if (line.trim() && totalLines < MAX_LINES) {
+      ctx.fillText(line.trim(), LEFT, currentY)
+      currentY += LINE_HEIGHT + 8 * SCALE
+      totalLines++
+    }
+  }
 
   // Número de slide
   ctx.fillStyle = COLORS.green
