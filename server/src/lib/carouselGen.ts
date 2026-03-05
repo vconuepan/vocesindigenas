@@ -102,7 +102,6 @@ async function drawLogo(
     ctx.fillText('IMPACTO INDÍGENA', x, y + height * 0.7)
   }
 }
-
 /** Dibuja barra de colores multicolor en la parte inferior */
 function drawRainbowBar(ctx: any): void {
   const barColors = [COLORS.blue, COLORS.green, COLORS.yellow, COLORS.orange, COLORS.red]
@@ -113,12 +112,8 @@ function drawRainbowBar(ctx: any): void {
     ctx.fillRect(i * barWidth, RENDER_SIZE - barHeight, barWidth, barHeight)
   })
 }
-
 /** Exporta canvas directamente en 2160x2160 para máxima nitidez */
 function exportCanvas(sourceCanvas: any): Buffer {
-  return sourceCanvas.toBuffer('image/jpeg', { quality: 0.92 })
-}
-  // Exportar como JPEG para menor tamaño — Instagram acepta JPEG
   return sourceCanvas.toBuffer('image/jpeg', { quality: 0.92 })
 }
 // ---------------------------------------------------------------------------
