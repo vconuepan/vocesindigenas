@@ -62,7 +62,7 @@
     "zod": "^3.23.8",
     "zod-openapi": "^4.2.4",
     "twitter-api-v2": "^1.18.2",
-    "canvas": "^2.11.2",
+    "canvas": "^3.0.0",
 "@aws-sdk/client-s3": "^3.600.0"
   },
   "devDependencies": {
