@@ -205,5 +205,6 @@ r2: {
     userId: process.env.INSTAGRAM_USER_ID || '',
     autoPost: {
       enabled: process.env.INSTAGRAM_AUTO_POST_ENABLED === 'true',
+    },
   },
 } as const;
