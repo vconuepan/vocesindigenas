@@ -114,12 +114,9 @@ function drawRainbowBar(ctx: any): void {
   })
 }
 
-/** Exporta canvas renderizado 2x a Buffer PNG en tamaño final 1080x1080 */
+/** Exporta canvas directamente en 2160x2160 para máxima nitidez */
 function exportCanvas(sourceCanvas: any): Buffer {
-  const outCanvas = createCanvas(SIZE, SIZE)
-  const outCtx = outCanvas.getContext('2d')
-  outCtx.drawImage(sourceCanvas, 0, 0, SIZE, SIZE)
-  return outCanvas.toBuffer('image/png', { compressionLevel: 1 })
+  return sourceCanvas.toBuffer('image/png', { compressionLevel: 1 })
 }
 
 // ---------------------------------------------------------------------------
@@ -218,16 +215,16 @@ async function generateSlide2(text: string): Promise<Buffer> {
 
   // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = `${33 * SCALE}px Arial`
+  ctx.font = `${52 * SCALE}px Arial`
   ctx.textAlign = 'left'
   drawWrappedText(
     ctx,
     cleanText(text),
     100 * SCALE,
-    headerH + 65 * SCALE,
-    RENDER_SIZE - 160 * SCALE,
-    50 * SCALE,
-    9,
+    headerH + 80 * SCALE,
+    RENDER_SIZE - 180 * SCALE,
+    72 * SCALE,
+    10,
   )
 
   // Número de slide
@@ -272,16 +269,16 @@ async function generateSlide3(text: string): Promise<Buffer> {
 
   // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = `${33 * SCALE}px Arial`
+  ctx.font = `${52 * SCALE}px Arial`
   ctx.textAlign = 'left'
   drawWrappedText(
     ctx,
     cleanText(text),
     100 * SCALE,
-    headerH + 65 * SCALE,
-    RENDER_SIZE - 160 * SCALE,
-    50 * SCALE,
-    9,
+    headerH + 80 * SCALE,
+    RENDER_SIZE - 180 * SCALE,
+    72 * SCALE,
+    10,
   )
 
   // Número de slide
