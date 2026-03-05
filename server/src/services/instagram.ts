@@ -1,9 +1,67 @@
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
-import { createPost, isInstagramConfigured } from '../lib/instagram.js'
+import { createCarouselPost, isInstagramConfigured } from '../lib/instagram.js'
+import { generateCarousel } from '../lib/carouselGen.js'
 import { generateStoryImage } from '../lib/imageGen.js'
+import OpenAI from 'openai'
+import { config } from '../config.js'
 
 const log = createLogger('instagram-service')
+
+// ---------------------------------------------------------------------------
+// Generar textos de slides con IA
+// ---------------------------------------------------------------------------
+
+interface SlideTexts {
+  whyItMatters: string
+  considerations: string
+}
+
+async function generateSlideTexts(
+  title: string,
+  summary: string,
+  relevanceReasons: string,
+  antifactors: string,
+): Promise<SlideTexts> {
+  const openai = new OpenAI()
+
+  const prompt = `Eres editor de Impacto Indígena, medio de noticias sobre pueblos indígenas.
+
+Noticia: "${title}"
+Resumen: "${summary}"
+Por qué importa: "${relevanceReasons}"
+Consideraciones: "${antifactors}"
+
+Genera textos cortos para 2 slides de Instagram (máximo 180 caracteres cada uno):
+
+1. "¿Por qué importa?" - Explica el impacto real de esta noticia para los pueblos indígenas
+2. "¿Qué considerar?" - Da contexto importante o perspectiva crítica
+
+Responde SOLO en JSON sin markdown:
+{"whyItMatters": "...", "considerations": "..."}`
+
+  const response = await openai.chat.completions.create({
+    model: config.llm.models.small.name,
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 300,
+  })
+
+  const text = response.choices[0]?.message?.content || ''
+  const clean = text.replace(/```json|```/g, '').trim()
+
+  try {
+    const parsed = JSON.parse(clean)
+    return {
+      whyItMatters: parsed.whyItMatters?.slice(0, 200) || 'Esta noticia tiene impacto directo en las comunidades indígenas.',
+      considerations: parsed.considerations?.slice(0, 200) || 'Es importante escuchar las voces de las comunidades afectadas.',
+    }
+  } catch {
+    return {
+      whyItMatters: summary?.slice(0, 180) || 'Esta noticia tiene impacto directo en las comunidades indígenas.',
+      considerations: antifactors?.slice(0, 180) || 'Es importante escuchar las voces de las comunidades afectadas.',
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Draft generation
@@ -24,51 +82,71 @@ export async function generateDraft(storyId: string) {
   })
   if (existingPost) throw new Error('Story already has an Instagram post')
 
-  // Reusar texto de Bluesky si existe
+  const storyUrl = `https://impactoindigena.news/stories/${story.slug}`
+
+  // Caption para Instagram
   const blueskyPost = await prisma.blueskyPost.findFirst({
     where: { storyId },
     orderBy: { createdAt: 'desc' },
   })
 
   const baseText = blueskyPost?.postText || story.marketingBlurb || story.summary || story.title || ''
-  const storyUrl = `https://impactoindigena.news/stories/${story.slug}`
-
-  // Instagram permite hasta 2200 caracteres en caption
   const caption = `${baseText}\n\n${storyUrl}\n\n#PueblosIndígenas #DerechosIndígenas #ImpactoIndígena`
-  const trimmed = caption.length > 2200 ? caption.slice(0, 2197) + '…' : caption
+  const trimmedCaption = caption.length > 2200 ? caption.slice(0, 2197) + '…' : caption
 
-  // Reusar imagen de Twitter si existe, si no generar nueva
+  // Reusar imagen de Twitter si existe
   const twitterPost = await prisma.twitterPost.findFirst({
     where: { storyId, imageUrl: { not: null } },
   })
 
-  let imageUrl = twitterPost?.imageUrl ?? null
+  let aiImageUrl = twitterPost?.imageUrl ?? null
 
-  if (!imageUrl) {
+  if (!aiImageUrl) {
     try {
-      imageUrl = await generateStoryImage(
+      aiImageUrl = await generateStoryImage(
         storyId,
         story.title,
         story.summary || story.marketingBlurb || '',
       )
-      log.info({ storyId, imageUrl }, 'image generated for Instagram post')
+      log.info({ storyId, aiImageUrl }, 'AI image generated for Instagram')
     } catch (err) {
-      log.error({ err, storyId }, 'failed to generate image for Instagram post')
-      throw new Error('Instagram requires an image — image generation failed')
+      log.error({ err, storyId }, 'failed to generate AI image')
+      throw new Error('Failed to generate AI image for Instagram carousel')
     }
   }
+
+  // Generar textos de slides con IA
+  const slideTexts = await generateSlideTexts(
+    story.title,
+    story.summary || '',
+    story.relevanceReasons || '',
+    story.antifactors || '',
+  )
+
+  // Generar carrusel de 4 slides
+  const slides = await generateCarousel(
+    storyId,
+    story.title,
+    slideTexts.whyItMatters,
+    slideTexts.considerations,
+    storyUrl,
+    aiImageUrl,
+  )
+
+  const imageUrls = slides.sort((a, b) => a.order - b.order).map((s) => s.imageUrl)
 
   const post = await prisma.instagramPost.create({
     data: {
       storyId,
-      caption: trimmed,
-      imageUrl,
+      caption: trimmedCaption,
+      imageUrl: imageUrls[0], // Primera imagen como referencia
+      slideUrls: imageUrls,
       status: 'draft',
     },
     include: { story: { include: { feed: true, issue: true } } },
   })
 
-  log.info({ postId: post.id, storyId, captionLength: trimmed.length }, 'Instagram draft generated')
+  log.info({ postId: post.id, storyId, slideCount: imageUrls.length }, 'Instagram carousel draft generated')
   return post
 }
 
@@ -88,10 +166,11 @@ export async function publishPost(postId: string) {
 
   if (!post) throw new Error('Post not found')
   if (post.status !== 'draft') throw new Error('Can only publish draft posts')
-  if (!post.imageUrl) throw new Error('Instagram post requires an image')
+
+  const imageUrls = post.slideUrls?.length ? post.slideUrls : [post.imageUrl]
 
   try {
-    const result = await createPost(post.imageUrl, post.caption)
+    const result = await createCarouselPost(imageUrls, post.caption)
 
     const updated = await prisma.instagramPost.update({
       where: { id: postId },
@@ -104,7 +183,7 @@ export async function publishPost(postId: string) {
       include: { story: { include: { feed: true, issue: true } } },
     })
 
-    log.info({ postId, instagramPostId: result.id }, 'Instagram post published')
+    log.info({ postId, instagramPostId: result.id }, 'Instagram carousel published')
     return updated
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
@@ -112,7 +191,7 @@ export async function publishPost(postId: string) {
       where: { id: postId },
       data: { status: 'failed', error: errorMessage },
     })
-    log.error({ err, postId }, 'failed to publish Instagram post')
+    log.error({ err, postId }, 'failed to publish Instagram carousel')
     throw err
   }
 }
