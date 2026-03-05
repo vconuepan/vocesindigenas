@@ -272,10 +272,9 @@ async function generateSlide3(text: string): Promise<Buffer> {
   const LEFT = 100 * SCALE
   const MAX_LINES = 20
 
-  const cleaned = cleanText(text)
-  // Separar bullets por "- **título:**"
-  const bullets = cleaned
-    .split(/(?=- \*\*|^- )/)
+  // Parsear ANTES de limpiar para preservar el formato markdown
+  const bullets = text
+    .split(/\n+/)
     .map((s: string) => s.replace(/^-\s*/, '').trim())
     .filter(Boolean)
 
@@ -286,11 +285,11 @@ async function generateSlide3(text: string): Promise<Buffer> {
     if (totalLines >= MAX_LINES) break
 
     // Separar título del cuerpo: "**Título:** cuerpo"
-    const titleMatch = bullet.match(/^\*\*(.+?)\*\*[:\s]*(.*)/s)
+    const titleMatch = bullet.match(/^\*\*(.+?)\*\*[:\s]*([\s\S]*)/)
 
     if (titleMatch) {
-      const title = titleMatch[1].trim() + ':'
-      const body = titleMatch[2].trim()
+      const title = cleanText(titleMatch[1].trim()) + ':'
+      const body = cleanText(titleMatch[2].trim())
 
       // Dibujar título en negrita
       ctx.font = `bold ${FONT_TITLE}px Arial`
