@@ -32,7 +32,7 @@ Resumen: "${summary}"
 Por qué importa: "${relevanceReasons}"
 Consideraciones: "${antifactors}"
 
-Genera textos cortos para 2 slides de Instagram (máximo 180 caracteres cada uno):
+Genera textos cortos para 2 slides de Instagram (máximo 350 caracteres cada uno):
 
 1. "¿Por qué importa?" - Explica el impacto real de esta noticia para los pueblos indígenas
 2. "¿Qué considerar?" - Da contexto importante o perspectiva crítica
@@ -57,9 +57,8 @@ Responde SOLO en JSON sin markdown:
     }
   } catch {
     return {
-      whyItMatters: summary?.slice(0, 180) || 'Esta noticia tiene impacto directo en las comunidades indígenas.',
-      considerations: antifactors?.slice(0, 180) || 'Es importante escuchar las voces de las comunidades afectadas.',
-    }
+    whyItMatters: parsed.whyItMatters?.slice(0, 400) || '...',
+considerations: parsed.considerations?.slice(0, 400) || '...',    }
   }
 }
 
