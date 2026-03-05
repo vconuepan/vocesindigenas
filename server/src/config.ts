@@ -200,4 +200,10 @@ r2: {
     bucketName: process.env.R2_BUCKET_NAME || 'impacto-indigena-media',
     publicUrl: process.env.R2_PUBLIC_URL || '',
   },
+  instagram: {
+    accessToken: process.env.INSTAGRAM_ACCESS_TOKEN || '',
+    userId: process.env.INSTAGRAM_USER_ID || '',
+    autoPost: {
+      enabled: process.env.INSTAGRAM_AUTO_POST_ENABLED === 'true',
+  },
 } as const;
