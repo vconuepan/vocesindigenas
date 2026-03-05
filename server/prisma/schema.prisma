@@ -90,6 +90,7 @@ model Story {
   blueskyPosts           BlueskyPost[]
   mastodonPosts          MastodonPost[]
   twitterPosts           TwitterPost[]
+  instagramPosts         InstagramPost[]
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -308,7 +309,26 @@ model TwitterPost {
   @@index([publishedAt])
   @@map("twitter_posts")
 }
+// --- Instagram Tables ---
 
+model InstagramPost {
+  id               String    @id @default(uuid())
+  storyId          String    @unique @map("story_id")
+  story            Story     @relation(fields: [storyId], references: [id])
+  instagramPostId  String?   @unique @map("instagram_post_id")
+  permalink        String?
+  status           String    @default("draft")
+  caption          String
+  imageUrl         String    @map("image_url")
+  error            String?
+  publishedAt      DateTime? @map("published_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([publishedAt])
+  @@map("instagram_posts")
+}
 // --- Subscription Tables ---
 
 model PendingSubscription {
