@@ -61,6 +61,7 @@ Responde SOLO en JSON sin markdown:
       considerations: 'Es importante escuchar las voces de las comunidades afectadas.',
     }
   }
+}
 
 // ---------------------------------------------------------------------------
 // Draft generation
