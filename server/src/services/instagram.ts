@@ -58,12 +58,7 @@ export async function generateDraft(storyId: string) {
   }
 
   // Slide 2: resumen directo, Slide 3: por qué importa + consideraciones
-  const slide2Text = story.summary || ''
-  const slide3Text = [
-    story.relevanceReasons || '',
-    story.antifactors ? `Consideraciones: ${story.antifactors}` : '',
-  ].filter(Boolean).join(' — ')
-
+  const slide3Text = story.relevanceReasons || ''
   // Generar carrusel de 4 slides
   const slides = await generateCarousel(
     storyId,
