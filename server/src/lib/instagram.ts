@@ -17,12 +17,13 @@ export interface CreatePostResult {
 }
 
 /**
- * Publica una imagen en Instagram usando la API de Graph de Meta.
- * Paso 1: Crear contenedor de media
- * Paso 2: Publicar el contenedor
+ * Publica un carrusel de imágenes en Instagram.
+ * Paso 1: Crear contenedor para cada imagen
+ * Paso 2: Crear contenedor del carrusel
+ * Paso 3: Publicar el carrusel
  */
-export async function createPost(
-  imageUrl: string,
+export async function createCarouselPost(
+  imageUrls: string[],
   caption: string,
 ): Promise<CreatePostResult> {
   if (!isConfigured()) {
@@ -32,55 +33,81 @@ export async function createPost(
   return withRetry(
     async () => {
       const { accessToken, userId } = config.instagram
+      const baseUrl = `https://graph.instagram.com/v21.0`
 
-      log.info({ captionLength: caption.length, imageUrl }, 'creating Instagram post')
+      log.info({ captionLength: caption.length, slideCount: imageUrls.length }, 'creating Instagram carousel')
 
-      // Paso 1: Crear contenedor de media
-      const containerUrl = `https://graph.instagram.com/v21.0/${userId}/media`
-      const containerParams = new URLSearchParams({
-        image_url: imageUrl,
+      // Paso 1: Crear contenedor para cada imagen
+      const childIds: string[] = []
+
+      for (const imageUrl of imageUrls) {
+        const params = new URLSearchParams({
+          image_url: imageUrl,
+          is_carousel_item: 'true',
+          access_token: accessToken,
+        })
+
+        const res = await fetch(`${baseUrl}/${userId}/media?${params}`, {
+          method: 'POST',
+        })
+
+        const data = await res.json() as any
+
+        if (!res.ok || data.error) {
+          throw new Error(`Failed to create carousel item: ${JSON.stringify(data.error || data)}`)
+        }
+
+        childIds.push(data.id)
+        log.info({ containerId: data.id }, 'carousel item created')
+
+        // Esperar 1 segundo entre cada imagen
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+
+      // Paso 2: Crear contenedor del carrusel
+      const carouselParams = new URLSearchParams({
+        media_type: 'CAROUSEL',
+        children: childIds.join(','),
         caption,
         access_token: accessToken,
       })
 
-      const containerRes = await fetch(`${containerUrl}?${containerParams}`, {
+      const carouselRes = await fetch(`${baseUrl}/${userId}/media?${carouselParams}`, {
         method: 'POST',
       })
 
-      const containerData = await containerRes.json() as any
+      const carouselData = await carouselRes.json() as any
 
-      if (!containerRes.ok || containerData.error) {
-        throw new Error(`Failed to create media container: ${JSON.stringify(containerData.error || containerData)}`)
+      if (!carouselRes.ok || carouselData.error) {
+        throw new Error(`Failed to create carousel container: ${JSON.stringify(carouselData.error || carouselData)}`)
       }
 
-      const containerId = containerData.id
-      log.info({ containerId }, 'media container created')
+      const carouselId = carouselData.id
+      log.info({ carouselId }, 'carousel container created')
 
-      // Esperar 2 segundos antes de publicar (recomendado por Meta)
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Esperar 3 segundos antes de publicar
+      await new Promise((resolve) => setTimeout(resolve, 3000))
 
-      // Paso 2: Publicar el contenedor
-      const publishUrl = `https://graph.instagram.com/v21.0/${userId}/media_publish`
+      // Paso 3: Publicar el carrusel
       const publishParams = new URLSearchParams({
-        creation_id: containerId,
+        creation_id: carouselId,
         access_token: accessToken,
       })
 
-      const publishRes = await fetch(`${publishUrl}?${publishParams}`, {
+      const publishRes = await fetch(`${baseUrl}/${userId}/media_publish?${publishParams}`, {
         method: 'POST',
       })
 
       const publishData = await publishRes.json() as any
 
       if (!publishRes.ok || publishData.error) {
-        throw new Error(`Failed to publish media: ${JSON.stringify(publishData.error || publishData)}`)
+        throw new Error(`Failed to publish carousel: ${JSON.stringify(publishData.error || publishData)}`)
       }
 
       const postId = publishData.id
-      const permalink = `https://www.instagram.com/p/${postId}/`
+      log.info({ postId }, 'Instagram carousel published')
 
-      log.info({ postId, permalink }, 'Instagram post published')
-      return { id: postId, permalink }
+      return { id: postId, permalink: `https://www.instagram.com/p/${postId}/` }
     },
     { retries: 2, baseDelayMs: 3000 },
   )
