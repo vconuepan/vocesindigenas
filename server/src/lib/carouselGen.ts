@@ -269,16 +269,16 @@ async function generateSlide3(text: string): Promise<Buffer> {
 
   // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = `${52 * SCALE}px Arial`
+  ctx.font = `${38 * SCALE}px Arial`
   ctx.textAlign = 'left'
   drawWrappedText(
     ctx,
     cleanText(text),
     100 * SCALE,
-    headerH + 80 * SCALE,
+    headerH + 60 * SCALE,
     RENDER_SIZE - 180 * SCALE,
-    72 * SCALE,
-    10,
+    52 * SCALE,
+    14,
   )
 
   // Número de slide
