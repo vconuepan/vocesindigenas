@@ -1,110 +1,72 @@
 import { Router } from 'express'
 import { createLogger } from '../../lib/logger.js'
-import * as podcastService from '../../services/podcast.js'
-import { validateBody, validateQuery } from '../../middleware/validate.js'
-import { expensiveOpLimiter } from '../../middleware/rateLimit.js'
-import {
-  createPodcastSchema,
-  updatePodcastSchema,
-  podcastQuerySchema,
-} from '../../schemas/podcast.js'
+import prisma from '../../lib/prisma.js'
+import { generateDraft, publishPodcast } from '../../services/podcast.js'
 
-const router = Router()
-const log = createLogger('podcasts')
+const log = createLogger('podcast-route')
+export const podcastRouter = Router()
 
-router.get('/', validateQuery(podcastQuerySchema), async (req, res) => {
+// GET /admin/podcasts — listar todos los podcasts
+podcastRouter.get('/', async (req, res) => {
   try {
-    const filters = req.parsedQuery || {}
-    const result = await podcastService.getPodcasts(filters)
-    res.json(result)
+    const podcasts = await prisma.podcast.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    })
+    res.json({ podcasts })
   } catch (err) {
-    log.error({ err }, 'failed to fetch podcasts')
-    res.status(500).json({ error: 'Failed to fetch podcasts' })
+    log.error({ err }, 'failed to list podcasts')
+    res.status(500).json({ error: 'Failed to list podcasts' })
   }
 })
 
-router.get('/:id', async (req, res) => {
+// GET /admin/podcasts/:id — obtener un podcast
+podcastRouter.get('/:id', async (req, res) => {
   try {
-    const podcast = await podcastService.getPodcastById(req.params.id)
-    if (!podcast) {
-      res.status(404).json({ error: 'Podcast not found' })
-      return
-    }
-    res.json(podcast)
+    const podcast = await prisma.podcast.findUnique({
+      where: { id: req.params.id },
+    })
+    if (!podcast) return res.status(404).json({ error: 'Podcast not found' })
+    res.json({ podcast })
   } catch (err) {
-    log.error({ err }, 'failed to fetch podcast')
-    res.status(500).json({ error: 'Failed to fetch podcast' })
+    log.error({ err }, 'failed to get podcast')
+    res.status(500).json({ error: 'Failed to get podcast' })
   }
 })
 
-router.post('/', validateBody(createPodcastSchema), async (req, res) => {
+// POST /admin/podcasts/generate — generar nuevo episodio
+podcastRouter.post('/generate', async (req, res) => {
   try {
-    const podcast = await podcastService.createPodcast(req.body)
-    res.status(201).json(podcast)
+    const { storyIds } = req.body
+    log.info({ storyIds }, 'generating podcast draft')
+    const draft = await generateDraft(storyIds)
+    const podcast = await prisma.podcast.findUnique({ where: { id: draft.id } })
+    res.json({ podcast })
   } catch (err) {
-    log.error({ err }, 'failed to create podcast')
-    res.status(500).json({ error: 'Failed to create podcast' })
+    log.error({ err }, 'failed to generate podcast')
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to generate podcast' })
   }
 })
 
-router.put('/:id', validateBody(updatePodcastSchema), async (req, res) => {
+// POST /admin/podcasts/:id/publish — publicar (generar audio)
+podcastRouter.post('/:id/publish', async (req, res) => {
   try {
-    const podcast = await podcastService.updatePodcast(req.params.id, req.body)
-    res.json(podcast)
-  } catch (err: any) {
-    if (err.code === 'P2025') {
-      res.status(404).json({ error: 'Podcast not found' })
-      return
-    }
-    log.error({ err }, 'failed to update podcast')
-    res.status(500).json({ error: 'Failed to update podcast' })
+    log.info({ podcastId: req.params.id }, 'publishing podcast')
+    const podcast = await publishPodcast(req.params.id)
+    res.json({ podcast })
+  } catch (err) {
+    log.error({ err }, 'failed to publish podcast')
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to publish podcast' })
   }
 })
 
-router.delete('/:id', async (req, res) => {
+// DELETE /admin/podcasts/:id — eliminar podcast
+podcastRouter.delete('/:id', async (req, res) => {
   try {
-    await podcastService.deletePodcast(req.params.id)
-    res.status(204).send()
-  } catch (err: any) {
-    if (err.code === 'P2025') {
-      res.status(404).json({ error: 'Podcast not found' })
-      return
-    }
+    await prisma.podcast.delete({ where: { id: req.params.id } })
+    res.json({ success: true })
+  } catch (err) {
     log.error({ err }, 'failed to delete podcast')
     res.status(500).json({ error: 'Failed to delete podcast' })
   }
 })
-
-router.post('/:id/assign', async (req, res) => {
-  try {
-    const podcast = await podcastService.assignStories(req.params.id)
-    res.json(podcast)
-  } catch (err: any) {
-    if (err.message === 'Podcast not found') {
-      res.status(404).json({ error: err.message })
-      return
-    }
-    log.error({ err }, 'failed to assign stories')
-    res.status(500).json({ error: 'Failed to assign stories' })
-  }
-})
-
-router.post('/:id/generate', expensiveOpLimiter, async (req, res) => {
-  try {
-    const podcast = await podcastService.generateScript(req.params.id)
-    res.json(podcast)
-  } catch (err: any) {
-    if (err.message === 'Podcast not found') {
-      res.status(404).json({ error: err.message })
-      return
-    }
-    if (err.message === 'No stories assigned') {
-      res.status(400).json({ error: err.message })
-      return
-    }
-    log.error({ err }, 'failed to generate podcast script')
-    res.status(500).json({ error: 'Failed to generate podcast script' })
-  }
-})
-
-export default router
