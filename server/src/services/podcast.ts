@@ -10,10 +10,6 @@ const INTRO = `Bienvenidos a Impacto Indígena, el podcast donde cubrimos las no
 
 const OUTRO = `Eso es todo por hoy en Impacto Indígena. Si quieres leer estas noticias completas, visita impactoindigena.news. Gracias por escucharnos y hasta la próxima.`
 
-// ---------------------------------------------------------------------------
-// Generar script del episodio con IA
-// ---------------------------------------------------------------------------
-
 async function generateEpisodeScript(
   stories: Array<{ title: string; summary: string; relevanceReasons: string }>,
   episodeNumber: number,
@@ -71,10 +67,6 @@ Responde SOLO en JSON sin markdown:
   }
 }
 
-// ---------------------------------------------------------------------------
-// Convertir script a audio con OpenAI TTS
-// ---------------------------------------------------------------------------
-
 async function generateAudio(script: string): Promise<Buffer> {
   const openai = new OpenAI()
 
@@ -82,15 +74,12 @@ async function generateAudio(script: string): Promise<Buffer> {
 
   log.info({ scriptLength: fullScript.length }, 'generating TTS audio')
 
-  // OpenAI TTS tiene límite de 4096 caracteres por llamada
-  // Si el script es más largo, dividimos en partes
   const MAX_CHARS = 4000
   const parts: string[] = []
 
   if (fullScript.length <= MAX_CHARS) {
     parts.push(fullScript)
   } else {
-    // Dividir por párrafos respetando el límite
     const paragraphs = fullScript.split('\n\n')
     let current = ''
     for (const para of paragraphs) {
@@ -111,7 +100,7 @@ async function generateAudio(script: string): Promise<Buffer> {
   for (const part of parts) {
     const response = await openai.audio.speech.create({
       model: 'tts-1-hd',
-      voice: 'nova', // voz femenina, clara y natural en español
+      voice: (config.podcast?.voice || 'nova') as 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx' | 'shimmer',
       input: part,
       response_format: 'mp3',
       speed: 0.95,
@@ -121,42 +110,12 @@ async function generateAudio(script: string): Promise<Buffer> {
     audioBuffers.push(Buffer.from(arrayBuffer))
   }
 
-  // Concatenar todos los buffers de audio
   return Buffer.concat(audioBuffers)
 }
-
-// ---------------------------------------------------------------------------
-// Seleccionar noticias para el episodio
-// ---------------------------------------------------------------------------
-
-async function selectStoriesForEpisode(count: number = 4) {
-  const stories = await prisma.story.findMany({
-    where: {
-      status: 'published',
-      summary: { not: null },
-      relevanceReasons: { not: null },
-    },
-    orderBy: [{ relevance: 'desc' }, { datePublished: 'desc' }],
-    take: count,
-    select: {
-      id: true,
-      title: true,
-      summary: true,
-      relevanceReasons: true,
-    },
-  })
-
-  return stories
-}
-
-// ---------------------------------------------------------------------------
-// Generar borrador del podcast
-// ---------------------------------------------------------------------------
 
 export async function generateDraft(storyIds?: string[]): Promise<{ id: string }> {
   log.info({ storyIds }, 'generating podcast draft')
 
-  // Obtener noticias — o las especificadas o las mejores disponibles
   let stories
   if (storyIds && storyIds.length > 0) {
     stories = await prisma.story.findMany({
@@ -171,18 +130,16 @@ export async function generateDraft(storyIds?: string[]): Promise<{ id: string }
         relevanceReasons: { not: null },
       },
       orderBy: [{ relevance: 'desc' }, { datePublished: 'desc' }],
-      take: 4,
+      take: config.podcast?.storiesPerEpisode || 4,
       select: { id: true, title: true, summary: true, relevanceReasons: true },
     })
   }
 
   if (stories.length === 0) throw new Error('No stories available for podcast')
 
-  // Número de episodio
   const episodeCount = await prisma.podcast.count()
   const episodeNumber = episodeCount + 1
 
-  // Generar script con IA
   const { title, description, script } = await generateEpisodeScript(
     stories.map((s) => ({
       title: s.title || '',
@@ -207,10 +164,6 @@ export async function generateDraft(storyIds?: string[]): Promise<{ id: string }
   return { id: podcast.id }
 }
 
-// ---------------------------------------------------------------------------
-// Publicar podcast (generar audio y subir)
-// ---------------------------------------------------------------------------
-
 export async function publishPodcast(podcastId: string): Promise<unknown> {
   const podcast = await prisma.podcast.findUnique({ where: { id: podcastId } })
   if (!podcast) throw new Error('Podcast not found')
@@ -224,7 +177,6 @@ export async function publishPodcast(podcastId: string): Promise<unknown> {
     const filename = `podcast-${podcast.episodeNumber || podcast.id}-${Date.now()}.mp3`
     const audioUrl = await uploadImageToR2(audioBuffer, filename, 'audio/mpeg')
 
-    // Estimar duración (aprox 150 palabras por minuto)
     const wordCount = podcast.script.split(' ').length
     const duration = Math.round((wordCount / 150) * 60)
 
@@ -241,10 +193,6 @@ export async function publishPodcast(podcastId: string): Promise<unknown> {
     log.info({ podcastId, audioUrl, duration }, 'podcast published')
     return updated
   } catch (err) {
-    await prisma.podcast.update({
-      where: { id: podcastId },
-      data: { status: 'draft' },
-    })
     log.error({ err, podcastId }, 'failed to publish podcast')
     throw err
   }
