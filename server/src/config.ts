@@ -206,7 +206,8 @@ r2: {
     autoPost: {
       enabled: process.env.INSTAGRAM_AUTO_POST_ENABLED === 'true',
     },
-   podcast: {
+  },
+  podcast: {
     autoGenerate: {
       enabled: process.env.PODCAST_AUTO_GENERATE_ENABLED === 'true',
     },
