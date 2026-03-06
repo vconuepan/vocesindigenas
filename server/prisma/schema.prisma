@@ -211,13 +211,18 @@ model NewsletterSend {
 }
 
 model Podcast {
-  id        String        @id @default(uuid())
-  title     String
-  script    String        @default("")
-  storyIds  String[]      @map("story_ids")
-  status    ContentStatus @default(draft)
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+  id            String        @id @default(uuid())
+  title         String
+  description   String        @default("")
+  script        String        @default("")
+  audioUrl      String?       @map("audio_url")
+  duration      Int?          // duración en segundos
+  episodeNumber Int?          @map("episode_number")
+  storyIds      String[]      @map("story_ids")
+  status        ContentStatus @default(draft)
+  publishedAt   DateTime?     @map("published_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   @@map("podcasts")
 }
