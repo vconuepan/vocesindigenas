@@ -206,5 +206,11 @@ r2: {
     autoPost: {
       enabled: process.env.INSTAGRAM_AUTO_POST_ENABLED === 'true',
     },
+   podcast: {
+    autoGenerate: {
+      enabled: process.env.PODCAST_AUTO_GENERATE_ENABLED === 'true',
+    },
+    storiesPerEpisode: parseInt(process.env.PODCAST_STORIES_PER_EPISODE || '4', 10),
+    voice: (process.env.PODCAST_VOICE || 'nova') as 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx' | 'shimmer',
   },
 } as const;
