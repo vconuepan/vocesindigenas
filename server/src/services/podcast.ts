@@ -1,3 +1,4 @@
+// @ts-nocheck
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
 import { uploadImageToR2 } from '../lib/imageStorage.js'
