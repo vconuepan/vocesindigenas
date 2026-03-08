@@ -1,11 +1,15 @@
-# Actually Relevant
+# Impacto Indígena News
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Looking for Maintainer](https://img.shields.io/badge/looking%20for-maintainer-orange)](https://actuallyrelevant.news/stewardship)
 
-News that matter to humanity. Curated with care by AI.
+Noticias, iniciativas y tendencias relevantes para los pueblos indígenas, 
+seleccionadas con apoyo de inteligencia artificial.
 
-Crawls news sources, assesses relevance with structured AI analysis, and publishes curated stories.
+Voces Indígenas es una plataforma editorial que rastrea fuentes de noticias, 
+evalúa su relevancia mediante inteligencia artificial y publica historias 
+que impactan a pueblos indígenas, territorios, liderazgo, empresas indígenas 
+y desarrollo sostenible.
 
 ## Tech Stack
 
