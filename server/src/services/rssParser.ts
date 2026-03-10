@@ -16,6 +16,7 @@ export interface RSSItem {
   title: string
   datePublished: string | null
   description: string | null
+  imageUrl: string | null
 }
 
 export interface FeedCacheHeaders {
@@ -70,11 +71,12 @@ export async function parseFeed(feedUrl: string, cacheHeaders?: FeedCacheHeaders
       if (!url) continue
 
       items.push({
-        url: normalizeUrl(url),
-        title: item.title || 'Untitled',
-        datePublished: item.isoDate || item.pubDate || null,
-        description: item.contentSnippet || item.content || null,
-      })
+  url: normalizeUrl(url),
+  title: item.title || 'Untitled',
+  datePublished: item.isoDate || item.pubDate || null,
+  description: item.contentSnippet || item.content || null,
+  imageUrl: item.enclosure?.url || item['media:content']?.['$']?.url || null,
+})
     }
 
     return {
