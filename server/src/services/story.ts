@@ -150,6 +150,7 @@ const ADMIN_LIST_SELECT = {
   relevanceReasons: true,
   antifactors: true,
   relevanceCalculation: true,
+  imageUrl: true,
   issueId: true,
   issue: { select: { id: true, name: true, slug: true } },
   crawlMethod: true,
@@ -248,6 +249,7 @@ export async function getStoryById(id: string) {
   })
 }
 
+// CAMBIO 1: Agregado imageUrl a la interface y al create
 export async function createStory(data: {
   sourceUrl: string
   sourceTitle: string
@@ -255,6 +257,7 @@ export async function createStory(data: {
   feedId: string
   sourceDatePublished?: string
   crawlMethod?: 'selector' | 'readability' | 'diffbot' | 'pipfeed'
+  imageUrl?: string | null
 }): Promise<Story> {
   const feed = await prisma.feed.findUnique({ where: { id: data.feedId } })
   if (!feed) {
@@ -268,6 +271,7 @@ export async function createStory(data: {
       feedId: data.feedId,
       sourceDatePublished: data.sourceDatePublished ? new Date(data.sourceDatePublished) : null,
       crawlMethod: data.crawlMethod || null,
+      imageUrl: data.imageUrl || null,
     },
   })
 }
@@ -539,6 +543,7 @@ export async function getStoryStats() {
 
 // Public endpoints — limited fields, only published stories
 
+// CAMBIO 2: Agregado imageUrl a PUBLIC_STORY_SELECT
 const PUBLIC_STORY_SELECT = {
   id: true,
   slug: true,
@@ -559,6 +564,7 @@ const PUBLIC_STORY_SELECT = {
   relevanceReasons: true,
   relevanceSummary: true,
   antifactors: true,
+  imageUrl: true,
   issue: {
     select: { name: true, slug: true },
   },
@@ -957,10 +963,6 @@ export async function getPublishedStoryBySlug(slug: string) {
   })
 }
 
-/**
- * If a story with this slug is a non-primary cluster member (e.g. rejected after clustering),
- * return the primary story's slug for redirect purposes.
- */
 export async function getClusterRedirectSlug(slug: string): Promise<string | null> {
   const story = await prisma.story.findFirst({
     where: { slug, clusterId: { not: null } },
@@ -976,7 +978,6 @@ export async function getClusterRedirectSlug(slug: string): Promise<string | nul
   })
 
   if (!story?.cluster?.primaryStory) return null
-  // Only redirect if this story is NOT the primary and the primary is published
   if (story.id === story.cluster.primaryStoryId) return null
   if (story.cluster.primaryStory.status !== 'published') return null
   if (!story.cluster.primaryStory.slug) return null
@@ -1019,16 +1020,9 @@ export async function getClusterMembers(slug: string): Promise<{
   }
 }
 
-/**
- * Get all data needed for the homepage.
- * Returns stories grouped by issue slug in three emotion buckets:
- * uplifting, calm, and negative (frustrating + scary).
- * Hero is picked client-side from these buckets — no separate queries needed.
- */
 const NEGATIVE_EMOTIONS: EmotionTag[] = [EmotionTag.frustrating, EmotionTag.scary]
 
 export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 7) {
-  // Build issue slug conditions for stories (includes child issues)
   const buildIssueCondition = (slug: string) => ({
     OR: [
       { issue: { OR: [{ slug }, { parent: { slug } }] } },
@@ -1038,9 +1032,6 @@ export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 7)
 
   const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ datePublished: 'desc' }, { dateCrawled: 'desc' }]
 
-  // Fetch three emotion buckets per issue for client-side mixing.
-  // Three buckets allow the client to show uplifting-only at 100% positivity
-  // while combining uplifting+calm as "positive" for all other settings.
   const storiesPromises = issueSlugs.map(async (slug) => {
     const baseWhere: Prisma.StoryWhereInput = { status: 'published', ...buildIssueCondition(slug) }
 
