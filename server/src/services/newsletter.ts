@@ -17,15 +17,15 @@ const log = createLogger('newsletter')
 
 /** Issue slug → dot color hex for email HTML (mirrors client/src/lib/category-colors.ts) */
 const ISSUE_DOT_COLORS: Record<string, string> = {
-  'human-development': '#fbbf24',
-  'planet-climate': '#2dd4bf',
-  'existential-threats': '#f87171',
-  'science-technology': '#818cf8',
+  'cambio-climatico': '#2dd4bf',
+  'derechos-indigenas': '#f87171',
+  'desarrollo-sostenible-y-autodeterminado': '#fbbf24',
+  'reconciliacion-y-paz': '#818cf8',
 }
 const DEFAULT_DOT_COLOR = '#f472b6'
 
 /** Fixed display order for top-level issues in the newsletter */
-const ISSUE_ORDER = ['human-development', 'planet-climate', 'existential-threats', 'science-technology']
+const ISSUE_ORDER = ['cambio-climatico', 'derechos-indigenas', 'desarrollo-sostenible-y-autodeterminado', 'reconciliacion-y-paz']
 
 function getIssueDotColor(slug: string): string {
   return ISSUE_DOT_COLORS[slug] ?? DEFAULT_DOT_COLOR
