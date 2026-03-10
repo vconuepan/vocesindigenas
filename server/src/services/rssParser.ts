@@ -75,7 +75,7 @@ export async function parseFeed(feedUrl: string, cacheHeaders?: FeedCacheHeaders
   title: item.title || 'Untitled',
   datePublished: item.isoDate || item.pubDate || null,
   description: item.contentSnippet || item.content || null,
-  imageUrl: item.enclosure?.url || item['media:content']?.['$']?.url || null,
+  imageUrl: item.enclosure?.url || item['media:content']?.['$']?.url || item['media:thumbnail']?.['$']?.url || null,
 })
     }
 
