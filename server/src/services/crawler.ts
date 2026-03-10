@@ -121,12 +121,13 @@ export async function crawlFeed(feedId: string): Promise<CrawlResult> {
         if (localFailCount >= config.crawl.localFailThreshold) skipLocal = true
 
         await createStory({
-          sourceUrl: item.url,
-          sourceTitle: extracted.title || item.title,
-          sourceContent: extracted.content,
-          feedId,
-          sourceDatePublished: extracted.datePublished || item.datePublished || undefined,
-          crawlMethod: extracted.method,
+        sourceUrl: item.url,
+        sourceTitle: extracted.title || item.title,
+        sourceContent: extracted.content,
+        feedId,
+        sourceDatePublished: item.datePublished || undefined,
+        crawlMethod: extracted.method,
+        imageUrl: item.imageUrl || null,
         })
 
         result.newStories++
