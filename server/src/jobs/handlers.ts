@@ -7,6 +7,7 @@ import { runBlueskyUpdateMetrics } from './blueskyUpdateMetrics.js'
 import { runGenerateNewsletter } from './generateNewsletter.js'
 import { runSocialAutoPost } from './socialAutoPost.js'
 import { runMastodonUpdateMetrics } from './mastodonUpdateMetrics.js'
+import { runSendNewsletter } from './sendNewsletter.js'
 
 export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   crawl_feeds: runCrawlFeeds,
@@ -18,4 +19,5 @@ export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   bluesky_update_metrics: runBlueskyUpdateMetrics,
   generate_newsletter: runGenerateNewsletter,
   mastodon_update_metrics: runMastodonUpdateMetrics,
+  send_newsletter: runSendNewsletter,
 }
