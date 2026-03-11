@@ -127,9 +127,73 @@ Responde SOLO con un JSON con este formato exacto, sin texto adicional:
     },
   })
 
-  // Generar contenido y HTML
-  const { generateContent } = await import('../services/newsletter.js')
-  await generateContent(newsletter.id)
+  // Generar contenido personalizado según intereses profesionales
+  const selectedStories = await prisma.story.findMany({
+    where: { id: { in: validIds } },
+    select: {
+      id: true, title: true, sourceTitle: true, sourceUrl: true, slug: true,
+      summary: true, relevanceSummary: true, marketingBlurb: true,
+      quote: true, quoteAttribution: true, relevance: true,
+      feed: { select: { title: true, displayTitle: true } },
+    },
+  })
+
+  // Agrupar por interés profesional usando LLM
+  const groupPrompt = `Eres un experto en asuntos indígenas. Clasifica cada noticia según estos intereses profesionales:
+1. Debida Diligencia Indígena
+2. Minería y Pueblos Indígenas
+3. Industria Acuícola
+4. Industria Energética
+5. Consentimiento Libre Previo e Informado (CLPI)
+6. Empresas Indígenas
+7. Política Indígena Chile
+
+Noticias:
+${selectedStories.map(s => `- ID: ${s.id} | Título: ${s.title || s.sourceTitle} | Resumen: ${s.summary}`).join('\n')}
+
+Responde SOLO con JSON sin texto adicional:
+{"groups": {"Debida Diligencia Indígena": ["id1","id2"], "Minería y Pueblos Indígenas": ["id3"], ...}}`
+
+  await rateLimitDelay()
+  const groupResponse = await llm.invoke([new HumanMessage(groupPrompt)])
+  let groups: Record<string, string[]> = {}
+  try {
+    const clean = (groupResponse.content as string).replace(/```json|```/g, '').trim()
+    groups = JSON.parse(clean).groups || {}
+  } catch {
+    groups = { 'Noticias Relevantes': validIds }
+  }
+
+  // Construir contenido markdown agrupado por interés
+  let content = `**Newsletter Privado — ${today.toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}**\n\n---\n\n`
+
+  const storyMap = new Map(selectedStories.map(s => [s.id, s]))
+  for (const [groupName, ids] of Object.entries(groups)) {
+    if (!ids || ids.length === 0) continue
+    content += `# ${groupName}\n\n`
+    for (const id of ids) {
+      const story = storyMap.get(id)
+      if (!story) continue
+      const publisher = story.feed?.displayTitle || story.feed?.title || 'Fuente'
+      const relevanceUrl = story.slug ? `https://impactoindigena.news/stories/${story.slug}` : ''
+      content += `## ${story.title || story.sourceTitle}\n`
+      content += `${publisher} · [artículo original](${story.sourceUrl})`
+      if (relevanceUrl) content += ` · [análisis](${relevanceUrl})`
+      content += `\n\n`
+      const body = story.relevanceSummary || story.marketingBlurb || story.summary || ''
+      if (body) content += `${body}\n\n`
+      if (story.quote && story.quoteAttribution) {
+        content += `> "${story.quote}"\n> — ${story.quoteAttribution}\n\n`
+      }
+    }
+    content += `---\n\n`
+  }
+
+  await prisma.newsletter.update({
+    where: { id: newsletter.id },
+    data: { content: content.trim(), selectedStoryIds: validIds },
+  })
+
   await generateHtmlContent(newsletter.id)
 
   // Obtener el HTML generado
