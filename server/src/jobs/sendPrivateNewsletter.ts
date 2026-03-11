@@ -86,15 +86,22 @@ export async function runSendPrivateNewsletter(): Promise<void> {
     relevance: s.relevance,
   }))
 
-  const selectionPrompt = `Eres un asistente experto en asuntos indígenas. Selecciona las 12 noticias más relevantes para alguien con estos intereses profesionales:
+  const selectionPrompt = `Eres un asistente experto en asuntos indígenas. Tu tarea es seleccionar las 12 noticias MÁS RELEVANTES para alguien con estos intereses profesionales específicos:
 
 ${PRIVATE_INTERESTS}
+
+INSTRUCCIONES ESTRICTAS:
+- Solo incluye noticias que tengan relación DIRECTA con alguno de los 7 intereses listados
+- Si una noticia no tiene relación clara con ningún interés, EXCLÚYELA aunque sea interesante
+- Prioriza noticias sobre Chile, Latinoamérica, Australia, Nueva Zelanda y Canadá cuando sea relevante
+- Para política indígena de Chile: solo incluir si menciona explícitamente pueblo Mapuche, Likanantai, o política pública del Gobierno de Chile
+- Selecciona entre 8 y 12 noticias — si no hay suficientes relevantes, selecciona menos
 
 Noticias disponibles (en JSON):
 ${JSON.stringify(storiesJson, null, 2)}
 
 Responde SOLO con un JSON con este formato exacto, sin texto adicional:
-{"selectedIds": ["id1", "id2", ...], "reasoning": "explicación breve"}`
+{"selectedIds": ["id1", "id2", ...], "reasoning": "explicación breve de por qué seleccionaste cada una"}`
 
   await rateLimitDelay()
   const response = await llm.invoke([new HumanMessage(selectionPrompt)])
