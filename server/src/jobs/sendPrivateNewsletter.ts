@@ -3,7 +3,7 @@ import prisma from '../lib/prisma.js'
 import { getLLMByTier, rateLimitDelay } from '../services/llm.js'
 import { HumanMessage } from '@langchain/core/messages'
 import { generateHtmlContent } from '../services/newsletter.js'
-import * as brevo from '../services/brevo.js'
+import * as brevo from '../services/plunk.js'
 
 const log = createLogger('send_private_newsletter')
 
