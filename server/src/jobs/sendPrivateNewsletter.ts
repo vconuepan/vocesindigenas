@@ -136,8 +136,14 @@ Responde SOLO con un JSON con este formato exacto, sin texto adicional:
   const updated = await prisma.newsletter.findUnique({ where: { id: newsletter.id } })
   if (!updated?.html) throw new Error('No HTML generated')
 
-  // Enviar directo al email privado via Brevo
-  // Por ahora guardamos como publicado para revisión manual
+  // Enviar directo al email privado
+  await plunk.sendTransactional({
+    to: PRIVATE_EMAIL,
+    subject: title,
+    body: updated.html,
+  })
+
+  // Marcar como publicado
   await prisma.newsletter.update({
     where: { id: newsletter.id },
     data: { status: 'published' },
