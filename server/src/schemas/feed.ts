@@ -21,7 +21,7 @@ export const createFeedSchema = z.object({
   displayTitle: z.string().optional(),
   language: z.string().optional().default('en'),
   region: feedRegionSchema.nullable().optional(),
-  issueId: z.string().uuid('Must be a valid issue ID'),
+  issueId: z.string().min(1, 'Issue ID is required'),
   crawlIntervalHours: z.number().int().positive().optional().default(24),
   htmlSelector: z.string().optional(),
 })
