@@ -14,30 +14,27 @@ export function buildNewsletterSelectPrompt(
   issueNames: string[],
 ): string {
   let query = `<ROLE>
-You are a senior editorial curator selecting stories for a weekly newsletter about the most relevant developments for humanity.
+Eres un curador editorial senior especializado en asuntos de pueblos indígenas a nivel global, con énfasis en Latinoamérica, Chile, Australia, Nueva Zelanda y Canadá.
 </ROLE>
-
 <GOAL>
-Select exactly ${storiesPerIssue} stories from each of the following ${issueNames.length} issue categories (${storiesPerIssue * issueNames.length} stories total):
+Selecciona exactamente ${storiesPerIssue} noticias de cada una de las siguientes ${issueNames.length} categorías temáticas (${storiesPerIssue * issueNames.length} noticias en total):
 ${issueNames.map((n, i) => `${i + 1}. ${n}`).join('\n')}
-
-Return only the IDs of the selected stories.
-
-If a category has fewer than ${storiesPerIssue} stories available, select all of them.
+Retorna solo los IDs de las noticias seleccionadas.
+Si una categoría tiene menos de ${storiesPerIssue} noticias disponibles, selecciona todas las que haya.
 </GOAL>
-
 <SELECTION_CRITERIA>
-- Pick stories that complement each other — avoid two stories covering the same event or angle.
-- Prefer stories with concrete, demonstrated real-world impact over announcements or speculation.
-- Prefer stories about systemic shifts (policy changes, new norms, international agreements) over isolated incidents.
-- Prefer stories with broad scale and lasting consequences.
-- Within each category, aim for a mix of tone and subject matter to keep the newsletter engaging.
-- Uplifting stories: Aim for at least one third to one half of the total selected stories to be uplifting (tagged "uplifting" in the Emotion field). When choosing between stories of similar relevance, prefer the uplifting one. This does not mean forcing low-relevance uplifting stories over high-relevance alternatives — relevance still matters.
+- Prioriza noticias con impacto DIRECTO en pueblos indígenas — territorios, derechos, cultura, autodeterminación.
+- Prioriza noticias sobre cambios sistémicos: legislación, políticas públicas, sentencias judiciales, acuerdos internacionales que afecten a pueblos indígenas.
+- Prioriza noticias sobre procesos de consulta indígena, CLPI (Consentimiento Libre, Previo e Informado) y participación indígena.
+- Prioriza noticias sobre empresas e industrias (minería, energía, acuicultura, forestal) con impacto en territorios indígenas.
+- Prioriza noticias sobre emprendimiento y empresas indígenas exitosas.
+- Evita noticias que solo mencionan pueblos indígenas de manera marginal o superficial.
+- Selecciona noticias que se complementen entre sí — evita cubrir el mismo evento desde dos ángulos similares.
+- Incluye al menos una tercera parte de noticias positivas o esperanzadoras cuando estén disponibles.
+- Da preferencia a noticias de Chile, Latinoamérica, Australia, Nueva Zelanda y Canadá cuando sean de calidad similar.
 </SELECTION_CRITERIA>
-
 <ARTICLES>
 `
-
   for (const story of stories) {
     query += `<ARTICLE>\n`
       + `<ID>${story.id}</ID>\n`
@@ -47,8 +44,6 @@ If a category has fewer than ${storiesPerIssue} stories available, select all of
       + `<SUMMARY>${escapeXml(story.summary || '')}</SUMMARY>\n`
       + `</ARTICLE>\n`
   }
-
   query += `</ARTICLES>`
-
   return query
 }
