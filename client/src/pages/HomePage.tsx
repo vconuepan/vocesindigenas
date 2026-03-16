@@ -25,55 +25,73 @@ function HeroSection({ story }: { story: PublicStory }) {
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
+  const heroImage = story.imageUrl || null
+  const fallbackImage = 'https://impactoindigena.news/images/og-image.png'
 
   return (
     <section className="hero-section">
       {Pattern && <Pattern opacity={0.2} />}
       <div className="hero-section-inner">
-        {getTitleLabel(story) && (
-          <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(story)}</span>
-        )}
-        <h1 className="text-3xl md:text-5xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
-          <Link
-            to={`/stories/${story.slug}`}
-            className="hover:text-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-          >
-            {getHeadline(story)}
-          </Link>
-        </h1>
-
-        <div className="text-sm text-neutral-500 mb-6">
-          <a
-            href={story.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-          >
-            {story.feed.displayTitle || story.feed.title}
-            <span className="sr-only"> (opens in new tab)</span>
-          </a>
-          {dateStr && <> · {dateStr}</>}
-        </div>
-
-        {story.relevanceReasons && parsePoints(story.relevanceReasons)[0] ? (
-          <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
-            {limitSentences(stripPrefix(stripMarkdown(parsePoints(story.relevanceReasons)[0])), 2)}
-          </p>
-        ) : story.quote ? (
-          <blockquote className="decorative-quote max-w-2xl">
-            {/* No italic class here — avoids loading Roboto-Italic in critical path */}
-            <p className="text-lg md:text-xl text-neutral-700 leading-relaxed">
-              &ldquo;{story.quote}&rdquo;
-            </p>
-            {story.quoteAttribution && (
-              <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          {/* Imagen del hero */}
+          <div className="w-full md:w-2/5 flex-shrink-0">
+            <Link to={`/stories/${story.slug}`}>
+              <img
+                src={heroImage || fallbackImage}
+                alt={story.title || story.sourceTitle || ''}
+                className="w-full h-48 md:h-64 object-cover rounded-lg shadow-sm"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.src = fallbackImage
+                }}
+              />
+            </Link>
+          </div>
+          {/* Contenido del hero */}
+          <div className="flex-1">
+            {getTitleLabel(story) && (
+              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(story)}</span>
             )}
-          </blockquote>
-        ) : story.summary ? (
-          <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
-            {story.summary}
-          </p>
-        ) : null}
+            <h1 className="text-3xl md:text-4xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
+              <Link
+                to={`/stories/${story.slug}`}
+                className="hover:text-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              >
+                {getHeadline(story)}
+              </Link>
+            </h1>
+            <div className="text-sm text-neutral-500 mb-6">
+              
+                href={story.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              >
+                {story.feed.displayTitle || story.feed.title}
+                <span className="sr-only"> (opens in new tab)</span>
+              </a>
+              {dateStr && <> · {dateStr}</>}
+            </div>
+            {story.relevanceReasons && parsePoints(story.relevanceReasons)[0] ? (
+              <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
+                {limitSentences(stripPrefix(stripMarkdown(parsePoints(story.relevanceReasons)[0])), 2)}
+              </p>
+            ) : story.quote ? (
+              <blockquote className="decorative-quote max-w-2xl">
+                <p className="text-lg md:text-xl text-neutral-700 leading-relaxed">
+                  &ldquo;{story.quote}&rdquo;
+                </p>
+                {story.quoteAttribution && (
+                  <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
+                )}
+              </blockquote>
+            ) : story.summary ? (
+              <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
+                {story.summary}
+              </p>
+            ) : null}
+          </div>
+        </div>
       </div>
     </section>
   )
