@@ -61,16 +61,16 @@ function HeroSection({ story }: { story: PublicStory }) {
               </Link>
             </h1>
             <div className="text-sm text-neutral-500 mb-6">
-              
-                href={story.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-              >
-                {story.feed.displayTitle || story.feed.title}
-                <span className="sr-only"> (opens in new tab)</span>
-              </a>
-              {dateStr && <> · {dateStr}</>}
+  
+            href={story.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+             className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+             >
+            {story.feed.displayTitle || story.feed.title}
+            <span className="sr-only"> (opens in new tab)</span>
+            </a>
+            {dateStr && <> · {dateStr}</>}
             </div>
             {story.relevanceReasons && parsePoints(story.relevanceReasons)[0] ? (
               <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
