@@ -24,7 +24,7 @@ function HeroSection({ story }: { story: PublicStory }) {
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
-  const heroImage = story.imageUrl || null
+  const heroImage = (story as any).imageUrl || null
   const fallbackImage = 'https://impactoindigena.news/images/og-image.png'
 
   return (
