@@ -10,15 +10,15 @@ export default function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>Quienes Somos - {SEO.siteName}</title>
+        <title>Quiénes Somos - {SEO.siteName}</title>
         <meta
           name="description"
-          content="Impacto Indigena es una plataforma de noticias curada por IA que analiza el impacto global en los pueblos indigenas. Parte de Impacto Indigena SpA, empresa social indigena fundada por Venancio Conuepan Mesias."
+          content="Impacto Indígena es una plataforma de noticias curada por IA que analiza el impacto global en los pueblos indígenas. Parte de Impacto Indígena SpA, empresa social indígena fundada por Venancio Conuepan Mesías."
         />
-        <meta property="og:title" content={`Quienes Somos - ${SEO.siteName}`} />
+        <meta property="og:title" content={`Quiénes Somos - ${SEO.siteName}`} />
         <meta
           property="og:description"
-          content="Impacto Indigena es una plataforma de noticias curada por IA que analiza el impacto global en los pueblos indigenas."
+          content="Impacto Indígena es una plataforma de noticias curada por IA que analiza el impacto global en los pueblos indígenas."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/about`} />
@@ -29,9 +29,9 @@ export default function AboutPage() {
           {
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: `Quienes Somos - ${SEO.siteName}`,
+            name: `Quiénes Somos - ${SEO.siteName}`,
             description:
-              "Impacto Indigena es una plataforma de noticias curada por IA que analiza el impacto global en los pueblos indigenas.",
+              "Impacto Indígena es una plataforma de noticias curada por IA que analiza el impacto global en los pueblos indígenas.",
             url: `${SEO.siteUrl}/about`,
             isPartOf: {
               "@type": "WebSite",
@@ -41,15 +41,15 @@ export default function AboutPage() {
           },
           buildBreadcrumbSchema([
             { name: "Inicio", url: SEO.siteUrl },
-            { name: "Quienes Somos" },
+            { name: "Quiénes Somos" },
           ]),
         ]}
       />
 
       <div className="page-section">
-        <h1 className="page-title">Quienes Somos</h1>
+        <h1 className="page-title">Quiénes Somos</h1>
         <p className="page-intro">
-          No solo hablamos sobre pueblos indigenas. Somos pueblos indigenas.
+          No solo hablamos sobre pueblos indígenas. Somos pueblos indígenas.
           Y es tiempo de construir con nosotros, no sin nosotros.
         </p>
 
@@ -57,45 +57,45 @@ export default function AboutPage() {
 
           <h2 className="section-heading mt-8">La Historia</h2>
           <p>
-            Los pueblos indigenas representan menos del 5% de la poblacion mundial, pero protegen
-            mas del 80% de la biodiversidad del planeta. Sin embargo, la narrativa global los
-            presenta casi siempre desde la vulnerabilidad: una vision que, aunque bien
-            intencionada, no les permite alcanzar su maximo potencial ni contribuir con dignidad
-            a transformar los desafios globales que nos afectan a todos por igual.
+            Los pueblos indígenas representan menos del 5% de la población mundial, pero protegen
+            más del 80% de la biodiversidad del planeta. Sin embargo, la narrativa global los
+            presenta casi siempre desde la vulnerabilidad: una visión que, aunque bien
+            intencionada, no les permite alcanzar su máximo potencial ni contribuir con dignidad
+            a transformar los desafíos globales que nos afectan a todos por igual.
           </p>
           <p>
             Lo que hoy llamamos soluciones basadas en la naturaleza es la realidad cotidiana de
-            la mayoria de los pueblos indigenas del mundo. Su conocimiento ancestral, su
-            gobernanza propia y su relacion profunda con el territorio son contribuciones
-            invaluables para enfrentar la crisis climatica, la perdida de biodiversidad y los
+            la mayoría de los pueblos indígenas del mundo. Su conocimiento ancestral, su
+            gobernanza propia y su relación profunda con el territorio son contribuciones
+            invaluables para enfrentar la crisis climática, la pérdida de biodiversidad y los
             retos de la convivencia global.
           </p>
           <p>
-            <strong>Impacto Indigena News</strong> nace para cambiar esa narrativa. Siguiendo
-            los principios de la narrativa publica de Marshall Ganz, creemos que cambiar una
+            <strong>Impacto Indígena News</strong> nace para cambiar esa narrativa. Siguiendo
+            los principios de la narrativa pública de Marshall Ganz, creemos que cambiar una
             historia requiere amplificar historias reales: las de comunidades que resisten,
             innovan, lideran y construyen el futuro desde sus territorios. Usamos inteligencia
             artificial para monitorear fuentes especializadas en todo el mundo, analizar el
-            impacto real de las noticias en los pueblos indigenas y presentar esa informacion
+            impacto real de las noticias en los pueblos indígenas y presentar esa información
             de forma clara, accesible y sin publicidad.
           </p>
 
-          <h2 className="section-heading mt-10">Impacto Indigena SpA</h2>
+          <h2 className="section-heading mt-10">Impacto Indígena SpA</h2>
           <p>
             Esta plataforma es parte de{" "}
             <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-              Impacto Indigena SpA
+              Impacto Indígena SpA
             </a>
-            , una Empresa Social Indigena constituida en Chile en 2023 que promueve un
-            cuadruple impacto positivo — economico, social, ambiental y cultural — para
-            contribuir al fortalecimiento de la autonomia de los pueblos indigenas y visibilizar
+            , una Empresa Social Indígena constituida en Chile en 2023 que promueve un
+            cuádruple impacto positivo — económico, social, ambiental y cultural — para
+            contribuir al fortalecimiento de la autonomía de los pueblos indígenas y visibilizar
             sus saberes para un desarrollo sostenible y autodeterminado.
           </p>
 
-          <h2 className="section-heading mt-10">El Modelo R · E · D Indigena</h2>
+          <h2 className="section-heading mt-10">El Modelo R · E · D Indígena</h2>
           <p>
-            Todo nuestro trabajo se articula en torno al modelo RED Indigena: una forma de
-            impulsar transformacion con identidad.
+            Todo nuestro trabajo se articula en torno al modelo RED Indígena: una forma de
+            impulsar transformación con identidad.
           </p>
         </div>
 
@@ -104,19 +104,19 @@ export default function AboutPage() {
             {
               letra: "R",
               titulo: "Reconocer",
-              texto: "Valoramos la riqueza cultural, espiritual y ecologica de los pueblos indigenas. Visibilizamos sus aportes y combatimos los estereotipos que perpetuan su exclusion.",
+              texto: "Valoramos la riqueza cultural, espiritual y ecológica de los pueblos indígenas. Visibilizamos sus aportes y combatimos los estereotipos que perpetúan su exclusión.",
               color: "#1a5276",
             },
             {
               letra: "E",
               titulo: "Empoderar",
-              texto: "Fortalecemos liderazgos y estructuras de gobernanza indigena. Promovemos su participacion efectiva en decisiones que afectan sus territorios y su futuro.",
+              texto: "Fortalecemos liderazgos y estructuras de gobernanza indígena. Promovemos su participación efectiva en decisiones que afectan sus territorios y su futuro.",
               color: "#1f618d",
             },
             {
               letra: "D",
               titulo: "Desarrollar",
-              texto: "Impulsamos un desarrollo sostenible y autodeterminado. Respetamos sus modelos de vida y construimos soluciones en dialogo y colaboracion.",
+              texto: "Impulsamos un desarrollo sostenible y autodeterminado. Respetamos sus modelos de vida y construimos soluciones en diálogo y colaboración.",
               color: "#2980b9",
             },
           ].map((item) => (
@@ -136,21 +136,21 @@ export default function AboutPage() {
 
         <div className="prose max-w-none">
           <p>
-            El modelo RED es mas que un enfoque: es una forma de regenerar el presente y
-            co-crear un futuro justo con los pueblos indigenas, en beneficio de todas las
+            El modelo RED es más que un enfoque: es una forma de regenerar el presente y
+            co-crear un futuro justo con los pueblos indígenas, en beneficio de todas las
             personas y el planeta.
           </p>
 
-          <h2 className="section-heading mt-10">Red Indigena Colaborativa</h2>
+          <h2 className="section-heading mt-10">Red Indígena Colaborativa</h2>
           <p>
-            Trabajamos en una red indigena colaborativa que articula capacidades, saberes y
+            Trabajamos en una red indígena colaborativa que articula capacidades, saberes y
             recursos junto a:
           </p>
           <ul>
-            <li>Fundacion Konwepang-Millakir por el respeto del mapu</li>
-            <li>Fundacion Empresas Indigenas</li>
+            <li>Fundación Konwepang-Millakir por el respeto del mapu</li>
+            <li>Fundación Empresas Indígenas</li>
             <li>Sociedad de Profesionales Conuepan y Millaquir Limitada</li>
-            <li>Impacto Indigena SpA</li>
+            <li>Impacto Indígena SpA</li>
           </ul>
 
           <h2 className="section-heading mt-10">Nuestros Proyectos</h2>
@@ -160,20 +160,20 @@ export default function AboutPage() {
         <div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
           {[
             {
-              titulo: "Cafe Climatico",
-              texto: "Espacio de encuentro intercultural que promueve el dialogo entre juventudes, lideres indigenas, cientificos y tomadores de decision sobre cambio climatico. Siete ediciones en La Araucania, en parques, colegios y universidades.",
+              titulo: "Café Climático",
+              texto: "Espacio de encuentro intercultural que promueve el diálogo entre juventudes, líderes indígenas, científicos y tomadores de decisión sobre cambio climático. Siete ediciones en La Araucanía, en parques, colegios y universidades.",
             },
             {
-              titulo: "Red Mision Nielol",
-              texto: "Red de voluntariado indigena y no indigena que impulsa acciones de educacion ambiental, restauracion ecologica y cuidado del territorio, con base en el cerro Nielol de Temuco como simbolo de encuentro y resistencia cultural mapuche.",
+              titulo: "Red Misión Nielol",
+              texto: "Red de voluntariado indígena y no indígena que impulsa acciones de educación ambiental, restauración ecológica y cuidado del territorio, con base en el cerro Nielol de Temuco como símbolo de encuentro y resistencia cultural mapuche.",
             },
             {
               titulo: "Programa Liderazgo Escolar",
-              texto: "Iniciativa que fortalece el liderazgo de estudiantes indigenas en contextos escolares, promoviendo el orgullo cultural, la accion climatica y el compromiso con sus comunidades.",
+              texto: "Iniciativa que fortalece el liderazgo de estudiantes indígenas en contextos escolares, promoviendo el orgullo cultural, la acción climática y el compromiso con sus comunidades.",
             },
             {
-              titulo: "Podcast Voces Indigenas",
-              texto: "Serie digital donde personas indigenas comparten en primera voz sus historias, saberes y propuestas de cambio. Amplificamos voces silenciadas y contribuimos a una narrativa mas diversa, digna y conectada con los territorios.",
+              titulo: "Podcast Voces Indígenas",
+              texto: "Serie digital donde personas indígenas comparten en primera voz sus historias, saberes y propuestas de cambio. Amplificamos voces silenciadas y contribuimos a una narrativa más diversa, digna y conectada con los territorios.",
             },
           ].map((p) => (
             <div key={p.titulo} className="border border-neutral-200 rounded-lg p-5">
@@ -187,32 +187,32 @@ export default function AboutPage() {
 
           <h2 className="section-heading mt-10">Servicios para Empresas Responsables</h2>
           <p>
-            Apoyamos a las empresas responsables en el diseno de estrategias efectivas para
-            cumplir sus compromisos de respeto a los derechos humanos de los pueblos indigenas,
-            mediante un enfoque practico, integrado y basado en principios internacionales.{" "}
+            Apoyamos a las empresas responsables en el diseño de estrategias efectivas para
+            cumplir sus compromisos de respeto a los derechos humanos de los pueblos indígenas,
+            mediante un enfoque práctico, integrado y basado en principios internacionales.{" "}
             <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-              Conoce mas en impactoindigena.com
+              Conoce más en impactoindigena.com
             </a>.
           </p>
 
           <h2 className="section-heading mt-10">Fundador</h2>
           <p>
             <a href="https://www.linkedin.com/in/vconuepan/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-              <strong>Venancio Conuepan Mesias</strong>
+              <strong>Venancio Conuepan Mesías</strong>
             </a>{" "}
-            es un abogado mapuche y consultor en sostenibilidad, fundador de Impacto Indigena
-            SpA y Director Ejecutivo de la Fundacion Empresas Indigenas. Con mas de diez anos
-            de trayectoria, ha liderado proyectos en gobernanza territorial, mediacion
-            intercultural, accion climatica y emprendimiento indigena.
+            es un abogado mapuche y consultor en sostenibilidad, fundador de Impacto Indígena
+            SpA y Director Ejecutivo de la Fundación Empresas Indígenas. Con más de diez años
+            de trayectoria, ha liderado proyectos en gobernanza territorial, mediación
+            intercultural, acción climática y emprendimiento indígena.
           </p>
           <p>
-            Ha representado a Chile en espacios globales como el Caucus Indigena Internacional
-            sobre empresas y derechos, propiedad intelectual y cambio climatico. Fue reconocido
-            como uno de los 100 Jovenes Lideres de Chile en 2014, y ha recibido becas y
+            Ha representado a Chile en espacios globales como el Caucus Indígena Internacional
+            sobre empresas y derechos, propiedad intelectual y cambio climático. Fue reconocido
+            como uno de los 100 Jóvenes Líderes de Chile en 2014, y ha recibido becas y
             distinciones del Departamento de Estado de EE.UU., el Alto Comisionado de Naciones
             Unidas, One Young World y The Melton Foundation. Actualmente es becario de la
-            Fundacion Pacto Social y finaliza su Magister en Derecho Regulatorio en la
-            Pontificia Universidad Catolica de Chile.
+            Fundación Pacto Social y finaliza su Máster en Derecho Regulatorio en la
+            Pontificia Universidad Católica de Chile.
           </p>
           <p>
             Contacto:{" "}
@@ -223,33 +223,33 @@ export default function AboutPage() {
 
           <h2 className="section-heading mt-10">Sobre esta plataforma</h2>
           <p>
-            Impacto Indigena News es una plataforma de noticias curada por inteligencia
+            Impacto Indígena News es una plataforma de noticias curada por inteligencia
             artificial que monitorea fuentes especializadas en todo el mundo, analiza el impacto
-            real de las noticias en los pueblos indigenas y presenta esa informacion de forma
+            real de las noticias en los pueblos indígenas y presenta esa información de forma
             clara, accesible y sin publicidad.
           </p>
           <p>
-            Su proposito es concreto: cambiar la narrativa global sobre los pueblos indigenas.
-            No presentarlos como victimas o grupos vulnerables que necesitan ser defendidos, sino
+            Su propósito es concreto: cambiar la narrativa global sobre los pueblos indígenas.
+            No presentarlos como víctimas o grupos vulnerables que necesitan ser defendidos, sino
             como lo que realmente son: innovadores sociales, guardianes del conocimiento
-            ancestral y protagonistas activos en la solucion de los desafios globales que nos
-            afectan a todos. Construimos puentes entre pueblos indigenas, sociedad civil,
+            ancestral y protagonistas activos en la solución de los desafíos globales que nos
+            afectan a todos. Construimos puentes entre pueblos indígenas, sociedad civil,
             empresas responsables y Estados, integrando el conocimiento ancestral con el
-            desarrollo economico, la accion climatica y la consolidacion de la paz.
+            desarrollo económico, la acción climática y la consolidación de la paz.
           </p>
           <p>
-            La plataforma fue desarrollada como una adaptacion con enfoque exclusivo indigena
+            La plataforma fue desarrollada como una adaptación con enfoque exclusivo indígena
             del proyecto{" "}
             <a href="https://github.com/OdinMB/actually-relevant" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
               Actually Relevant
             </a>
             , creado originalmente por{" "}
             <a href="https://www.linkedin.com/in/odinmuehlenbein/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
-              Odin Muhlebein
+              Odin Mühlebein
             </a>
             . Mientras Actually Relevant cura noticias relevantes para la humanidad en general,
-            Impacto Indigena News adapta esa misma tecnologia y pipeline de inteligencia
-            artificial con un foco exclusivo en los pueblos indigenas del mundo: sus territorios,
+            Impacto Indígena News adapta esa misma tecnología y pipeline de inteligencia
+            artificial con un foco exclusivo en los pueblos indígenas del mundo: sus territorios,
             derechos, culturas, conocimientos y contribuciones. Una herramienta pensada para
             amplificar las voces invisibilizadas y demostrar que lo ancestral y lo moderno
             pueden y deben unirse.
@@ -261,7 +261,7 @@ export default function AboutPage() {
               Changemakerxchange.ai
             </a>
             , con el apoyo de Odin como mentor de la cohorte y experto en inteligencia
-            artificial del Ashoka AI Lab. El codigo es abierto y esta disponible en{" "}
+            artificial del Ashoka AI Lab. El código es abierto y está disponible en{" "}
             <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
               GitHub
             </a>.
@@ -276,9 +276,9 @@ export default function AboutPage() {
           <ul className="space-y-2 my-4">
             <li>
               <Link to="/methodology" className="text-brand-700 hover:text-brand-800 font-normal">
-                Metodologia
+                Metodología
               </Link>{" "}
-              &mdash; Como seleccionamos las noticias, desde la fuente hasta la publicacion
+              &mdash; Cómo seleccionamos las noticias, desde la fuente hasta la publicación
             </li>
             <li>
               <Link to="/privacy" className="text-brand-700 hover:text-brand-800 font-normal">
