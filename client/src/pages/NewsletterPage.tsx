@@ -3,17 +3,16 @@ import { SEO, CommonOgTags } from '../lib/seo'
 import { buildBreadcrumbSchema } from '../lib/structured-data'
 import StructuredData from '../components/StructuredData'
 import SubscribeForm from '../components/SubscribeForm'
-import { BRAND } from '../config'
 
 const META = {
-  title: 'Newsletter - Actually Relevant',
+  title: 'Newsletter - Impacto Indígena',
   description:
-    'Subscribe to the Actually Relevant weekly newsletter. The stories that matter to humanity, curated by AI and delivered to your inbox every week.',
+    'Suscríbete al newsletter de Impacto Indígena. Las noticias que importan a los pueblos indígenas, curadas con inteligencia artificial y entregadas en tu correo cada semana.',
   url: `${SEO.siteUrl}/newsletter`,
 }
 
 const breadcrumb = buildBreadcrumbSchema([
-  { name: 'Home', url: SEO.siteUrl },
+  { name: 'Inicio', url: SEO.siteUrl },
   { name: 'Newsletter', url: META.url },
 ])
 
@@ -31,13 +30,11 @@ export default function NewsletterPage() {
         {CommonOgTags({})}
       </Helmet>
       <StructuredData data={breadcrumb} />
-
       <div className="page-section py-16">
         <h1 className="page-title">Newsletter</h1>
         <p className="page-intro">
-          {BRAND.claim} Weekly to your inbox.
+          Noticias de impacto indígena que están transformando el mundo, directamente en tu correo.
         </p>
-
         <div className="max-w-md mx-auto mt-8">
           <SubscribeForm hideHeading idPrefix="newsletter-page" />
         </div>
