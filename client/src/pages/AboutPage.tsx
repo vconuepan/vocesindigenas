@@ -51,6 +51,7 @@ export default function AboutPage() {
         <p className="page-intro">
           No solo hablamos sobre pueblos indígenas. Somos pueblos indígenas.
           Y es tiempo de construir con nosotros, no sin nosotros.
+          Monitoreamos el mundo para encontrar noticias que importan a los pueblos indígenas: los desafíos que enfrentan en sus territorios y derechos, y las soluciones que están liderando para el planeta. Dos caras de la misma historia.
         </p>
 
         <div className="prose max-w-none">
