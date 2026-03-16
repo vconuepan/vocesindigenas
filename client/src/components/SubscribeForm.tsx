@@ -3,13 +3,9 @@ import { publicApi } from '../lib/api'
 import { BRAND } from '../config'
 
 interface SubscribeFormProps {
-  /** Called after successful submission (e.g. to close a modal) */
   onSuccess?: () => void
-  /** Auto-focus the first input on mount */
   autoFocus?: boolean
-  /** ID prefix for form elements (avoids collisions when rendered multiple times) */
   idPrefix?: string
-  /** Hide the heading and tagline (when the parent provides its own) */
   hideHeading?: boolean
 }
 
@@ -44,13 +40,13 @@ export default function SubscribeForm({
       })
       if (!result.success) {
         setStatus('error')
-        setErrorMessage(result.message || 'Something went wrong. Please try again.')
+        setErrorMessage(result.message || 'Algo salió mal. Por favor intenta de nuevo.')
         return
       }
       setStatus('success')
     } catch {
       setStatus('error')
-      setErrorMessage('Something went wrong. Please try again.')
+      setErrorMessage('Algo salió mal. Por favor intenta de nuevo.')
     }
   }
 
@@ -62,16 +58,16 @@ export default function SubscribeForm({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-neutral-900 mb-2">Check your email</h2>
+        <h2 className="text-xl font-bold text-neutral-900 mb-2">Revisa tu correo</h2>
         <p className="text-neutral-600 text-sm mb-6">
-          We sent a confirmation link to <strong>{email}</strong>. Click the link to start receiving our weekly newsletter.
+          Enviamos un enlace de confirmación a <strong>{email}</strong>. Haz clic en el enlace para comenzar a recibir nuestro newsletter semanal.
         </p>
         {onSuccess && (
           <button
             onClick={onSuccess}
             className="px-6 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           >
-            Done
+            Listo
           </button>
         )}
       </div>
@@ -83,36 +79,36 @@ export default function SubscribeForm({
       {!hideHeading && (
         <div className="text-center mb-6">
           <h2 id={`${idPrefix}-title`} className="text-xl font-bold text-neutral-900 mb-1">
-            Stay informed
+            Mantente informado
           </h2>
           <p className="text-neutral-500 text-sm">
-            {BRAND.claim} Weekly to your inbox. {BRAND.claimSupport}
+            {BRAND.claim} Cada semana en tu correo. {BRAND.claimSupport}
           </p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor={`${idPrefix}-first-name`} className="sr-only">First name (optional)</label>
+          <label htmlFor={`${idPrefix}-first-name`} className="sr-only">Nombre (opcional)</label>
           <input
             ref={firstInputRef}
             id={`${idPrefix}-first-name`}
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder="First name (optional)"
+            placeholder="Nombre (opcional)"
             autoComplete="given-name"
             className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
           />
         </div>
         <div>
-          <label htmlFor={`${idPrefix}-email`} className="sr-only">Email address</label>
+          <label htmlFor={`${idPrefix}-email`} className="sr-only">Correo electrónico</label>
           <input
             id={`${idPrefix}-email`}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder="tu@correo.com"
             required
             autoComplete="email"
             className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
@@ -131,7 +127,7 @@ export default function SubscribeForm({
           disabled={status === 'loading'}
           className="w-full py-3 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
+          {status === 'loading' ? 'Suscribiendo...' : 'Suscribirse'}
         </button>
       </form>
     </>
