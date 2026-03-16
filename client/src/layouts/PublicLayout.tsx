@@ -335,7 +335,7 @@ function PublicLayoutInner() {
                 Impacto Indígena
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
-                Analizando el impacto global en los pueblos indígenas del mundo.
+                Noticias sobre los pueblos indígenas que generan impacto sus territorios y derechos,y el impacto de los pueblos indígenas en el mundo
               </p>
               <div className="flex gap-2 mt-4">
                 {/* Instagram */}
