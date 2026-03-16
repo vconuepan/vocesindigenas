@@ -13,7 +13,6 @@ export default function SavedPage() {
     setSavedSlugs(getSavedSlugs());
   }, []);
 
-  // Listen for storage changes from other tabs or bookmark toggles
   const refreshSaved = useCallback(() => {
     setSavedSlugs(getSavedSlugs());
   }, []);
@@ -27,12 +26,10 @@ export default function SavedPage() {
     };
   }, [refreshSaved]);
 
-  // Fetch all saved stories (up to 100)
   const { data: stories, isLoading } = useQuery({
     queryKey: ["saved-stories", savedSlugs],
     queryFn: async () => {
       if (savedSlugs.length === 0) return [];
-      // Fetch each story individually (they're cached by the browser)
       const results = await Promise.allSettled(
         savedSlugs.map((slug) => publicApi.stories.get(slug)),
       );
@@ -42,7 +39,7 @@ export default function SavedPage() {
             r.status === "fulfilled",
         )
         .map((r) => r.value)
-        .reverse(); // most recently saved first
+        .reverse();
     },
     enabled: savedSlugs.length > 0,
   });
@@ -50,47 +47,5 @@ export default function SavedPage() {
   return (
     <>
       <Helmet>
-        <title>Saved Stories - Actually Relevant</title>
-        <meta
-          name="description"
-          content="Your saved stories on Actually Relevant."
-        />
-      </Helmet>
-
-      <div className="page-section py-12">
-        <h1 className="page-title mb-2">Saved Stories</h1>
-
-        {savedSlugs.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-neutral-500 mb-4">
-              You haven't saved any stories yet.
-            </p>
-            <p className="text-sm text-neutral-400 mb-6">
-              Click the bookmark icon on any story to save it here.
-            </p>
-          </div>
-        )}
-
-        {isLoading && savedSlugs.length > 0 && (
-          <div className="text-center py-12 text-neutral-500">
-            Loading saved stories...
-          </div>
-        )}
-
-        {stories && stories.length > 0 && (
-          <div className="space-y-4">
-            {stories.map((story) => (
-              <StoryCard key={story.id} story={story} variant="compact" />
-            ))}
-          </div>
-        )}
-
-        {savedSlugs.length > 0 && (
-          <p className="text-xs text-neutral-400 mt-8 text-center">
-            Saved stories are stored in this browser only.
-          </p>
-        )}
-      </div>
-    </>
-  );
-}
+        <title>Guardados - Impacto Indígena</title>
+        <m
