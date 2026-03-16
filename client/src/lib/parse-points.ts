@@ -16,7 +16,8 @@ export function stripPrefix(text: string): string {
 
 /** Return the first N sentences from a string. */
 export function limitSentences(text: string, max: number): string {
-  const sentences = text.match(/[^.!?]*[.!?]+(?:\s|$)/g)
+  // Regex que evita cortar en puntos de números como 1.000 o 3.5
+  const sentences = text.match(/[^.!?]*(?:\d\.\d+|[^.!?])*[.!?]+(?:\s|$)/g)
   if (!sentences) return text
   return sentences.slice(0, max).join('').trim()
 }
