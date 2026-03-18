@@ -72,7 +72,7 @@ function AnalysisSection({
 // ---------------------------------------------------------------------------
 
 export default function StoryPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { data: story, isLoading, error } = usePublicStory(slug || '')
@@ -115,13 +115,14 @@ export default function StoryPage() {
   const displayTitle = titleLabel ? `${titleLabel}: ${headline}` : headline
   const hasSourceDate = !!story.sourceDatePublished
   const displayDate = story.datePublished || story.dateCrawled
-  const dateStr = new Date(displayDate).toLocaleDateString('en-US', {
+  const dateLocale = i18n.language === 'en' ? 'en-US' : 'es-CL'
+  const dateStr = new Date(displayDate).toLocaleDateString(dateLocale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
   const sourceDateStr = story.sourceDatePublished
-    ? new Date(story.sourceDatePublished).toLocaleDateString('en-US', {
+    ? new Date(story.sourceDatePublished).toLocaleDateString(dateLocale, {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
@@ -138,12 +139,12 @@ export default function StoryPage() {
       <Helmet>
         <title>{displayTitle} - {SEO.siteName}</title>
         <meta name="description" content={description.slice(0, 160)} />
-        <meta name="author" content="RelevanceAI by Actually Relevant" />
+        <meta name="author" content="Impacto Indígena" />
         <meta property="og:title" content={displayTitle} />
         <meta property="og:description" content={description.slice(0, 200)} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`${SEO.siteUrl}/stories/${story.slug}`} />
-        <meta property="article:author" content="RelevanceAI by Actually Relevant" />
+        <meta property="article:author" content="Impacto Indígena" />
         {story.datePublished && (
           <meta property="article:published_time" content={story.datePublished} />
         )}

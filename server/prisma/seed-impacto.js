@@ -27,7 +27,6 @@ d) Iniciativas indígenas de conservación, restauración ecológica o gestión 
         'Cambios en políticas, acuerdos internacionales o marcos legales que afectan a pueblos indígenas en contextos ambientales',
         'Iniciativas o conocimientos indígenas que contribuyen a la conservación o adaptación climática',
       ]),
-      sourceNames: JSON.stringify(['Mongabay', 'Carbon Brief', 'The Guardian Environment', 'Servindi', 'IUCN', 'Climate Home News']),
       makeADifference: JSON.stringify([]),
     },
     {
@@ -53,7 +52,6 @@ d) Mecanismos internacionales de derechos humanos que involucran a pueblos indí
         'Cumplimiento o violación del consentimiento libre, previo e informado (CLPI)',
         'Precedentes legales o mecanismos de rendición de cuentas empresarial en contextos indígenas',
       ]),
-      sourceNames: JSON.stringify(['Business and Human Rights Resource Centre', 'Global Witness', 'Servindi', 'Amazon Watch', 'Cultural Survival']),
       makeADifference: JSON.stringify([]),
     },
     {
@@ -79,7 +77,6 @@ d) Turismo indígena, economía circular y valorización de conocimientos tradic
         'Innovación en modelos de negocio que integran valores culturales y comunitarios',
         'Políticas o marcos legales que facilitan o dificultan el emprendimiento indígena',
       ]),
-      sourceNames: JSON.stringify(['Servindi', 'Cultural Survival', 'IWGIA', 'Mongabay']),
       makeADifference: JSON.stringify([]),
     },
     {
@@ -105,7 +102,6 @@ d) Mecanismos de justicia indígena, justicia transicional o reparación histór
         'Avances o retrocesos en procesos de diálogo, reconciliación o justicia con pueblos indígenas',
         'Precedentes en mecanismos de justicia indígena o reparación histórica',
       ]),
-      sourceNames: JSON.stringify(['Global Witness', 'Front Line Defenders', 'Amnesty International', 'Cultural Survival', 'Servindi']),
       makeADifference: JSON.stringify([]),
     },
     {
@@ -138,7 +134,6 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
         'Cambios en políticas del Estado, legislación, jurisprudencia o reconocimiento constitucional que afectan a pueblos originarios chilenos',
         'Relevancia para la autonomía, el emprendimiento, la cultura o el bienestar de comunidades indígenas en Chile',
       ]),
-      sourceNames: JSON.stringify(['Mapuexpress', 'El Mostrador', 'CIPER Chile', 'Radio Bio Bio', 'La Tercera', 'Austral Temuco']),
       makeADifference: JSON.stringify([
         { label: 'CONADI', url: 'https://www.conadi.gob.cl/' },
         { label: 'Instituto Nacional de Derechos Humanos', url: 'https://www.indh.cl/' },

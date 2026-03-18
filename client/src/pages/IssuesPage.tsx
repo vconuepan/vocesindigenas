@@ -131,10 +131,11 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
 }
 
 const ISSUE_ORDER = [
-  'human-development',
-  'planet-climate',
-  'existential-threats',
-  'science-technology',
+  'cambio-climatico',
+  'derechos-indigenas',
+  'desarrollo-sostenible-y-autodeterminado',
+  'reconciliacion-y-paz',
+  'chile-indigena',
 ]
 
 export default function IssuesPage() {

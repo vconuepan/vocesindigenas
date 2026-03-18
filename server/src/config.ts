@@ -1,6 +1,6 @@
 export const config = {
   /** Canonical public URL for the site — used in social media posts, RSS feeds, sitemaps, etc. */
-  siteUrl: process.env.SITE_URL || 'https://actuallyrelevant.news',
+  siteUrl: process.env.SITE_URL || 'https://impactoindigena.news',
   llm: {
     models: {
       small: {
@@ -111,7 +111,7 @@ export const config = {
     secretKey: process.env.PLUNK_SECRET_KEY || "",
     publicKey: process.env.PLUNK_PUBLIC_KEY || "",
     fromEmail: process.env.PLUNK_FROM_EMAIL || "",
-    fromName: process.env.PLUNK_FROM_NAME || "Actually Relevant",
+    fromName: process.env.PLUNK_FROM_NAME || "Impacto Indígena",
     testSegmentId: process.env.PLUNK_TEST_SEGMENT_ID || "",
 
     baseUrl: "https://next-api.useplunk.com",
