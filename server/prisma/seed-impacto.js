@@ -156,7 +156,6 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
         makeADifference: issue.makeADifference,
       },
       create: {
-        id: issue.id,
         name: issue.name,
         slug: issue.slug,
         description: issue.description,
