@@ -11,6 +11,7 @@ import { runSendNewsletter } from './sendNewsletter.js'
 import { runSendPrivateNewsletter } from './sendPrivateNewsletter.js'
 import { runSendFpicNewsletter } from './sendFpicNewsletter.js'
 import { runSendAcuiculturaNewsletter } from './sendAcuiculturaNewsletter.js'
+import { runSendChileIndigenaNewsletter } from './sendChileIndigenaNewsletter.js'
 import { runScrapeDOCIP } from './scrapeDOCIP.js'
 
 export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
@@ -27,5 +28,6 @@ export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   send_private_newsletter: runSendPrivateNewsletter,
   send_fpic_newsletter: runSendFpicNewsletter,
   send_acuicultura_newsletter: runSendAcuiculturaNewsletter,
+  send_chile_indigena_newsletter: runSendChileIndigenaNewsletter,
   scrape_docip: runScrapeDOCIP,
 }

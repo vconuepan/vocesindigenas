@@ -63,6 +63,12 @@ async function main() {
       update: {},
       create: { jobName: 'send_acuicultura_newsletter', cronExpression: '5 9 * * *', enabled: false },
     }),
+    // 6:10 AM Chile (offset de 10 min respecto al FPIC)
+    prisma.jobRun.upsert({
+      where: { jobName: 'send_chile_indigena_newsletter' },
+      update: {},
+      create: { jobName: 'send_chile_indigena_newsletter', cronExpression: '10 9 * * *', enabled: false },
+    }),
   ])
 
   console.log(`Seeded ${jobs.length} job runs (all disabled)`)
