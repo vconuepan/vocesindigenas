@@ -236,10 +236,11 @@ function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; varia
 // ---------------------------------------------------------------------------
 
 const ISSUE_ORDER = [
-  'cambio-climatico',
-  'derechos-indigenas',
-  'desarrollo-sostenible-y-autodeterminado',
-  'reconciliacion-y-paz',
+  'clima-biodiversidad',
+  'empresas-derechos-humanos',
+  'emprendimiento-indigena',
+  'reconciliacion-paz',
+  'chile-indigena',
 ]
 
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']

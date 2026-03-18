@@ -21,6 +21,51 @@ export interface CategoryColor {
 }
 
 const CATEGORY_COLORS: Record<string, CategoryColor> = {
+  'clima-biodiversidad': {
+    border: 'border-emerald-400',
+    borderThick: 'border-l-[6px] border-emerald-400',
+    dot: 'text-emerald-500',
+    bg: 'bg-emerald-50',
+    dotBg: 'bg-emerald-400',
+    hex: '#34d399',
+    bgTint: 'bg-emerald-50/60',
+  },
+  'empresas-derechos-humanos': {
+    border: 'border-orange-400',
+    borderThick: 'border-l-[6px] border-orange-400',
+    dot: 'text-orange-500',
+    bg: 'bg-orange-50',
+    dotBg: 'bg-orange-400',
+    hex: '#fb923c',
+    bgTint: 'bg-orange-50/60',
+  },
+  'emprendimiento-indigena': {
+    border: 'border-amber-400',
+    borderThick: 'border-l-[6px] border-amber-400',
+    dot: 'text-amber-500',
+    bg: 'bg-amber-50',
+    dotBg: 'bg-amber-400',
+    hex: '#fbbf24',
+    bgTint: 'bg-amber-50/60',
+  },
+  'reconciliacion-paz': {
+    border: 'border-sky-400',
+    borderThick: 'border-l-[6px] border-sky-400',
+    dot: 'text-sky-500',
+    bg: 'bg-sky-50',
+    dotBg: 'bg-sky-400',
+    hex: '#38bdf8',
+    bgTint: 'bg-sky-50/60',
+  },
+  'chile-indigena': {
+    border: 'border-violet-400',
+    borderThick: 'border-l-[6px] border-violet-400',
+    dot: 'text-violet-500',
+    bg: 'bg-violet-50',
+    dotBg: 'bg-violet-400',
+    hex: '#a78bfa',
+    bgTint: 'bg-violet-50/60',
+  },
   'human-development': {
     border: 'border-amber-400',
     borderThick: 'border-l-[6px] border-amber-400',
