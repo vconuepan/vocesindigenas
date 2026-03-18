@@ -85,7 +85,7 @@ d) Turismo indígena, economía circular y valorización de conocimientos tradic
     {
       id: 'issue-paz-004',
       name: 'Pueblos Indígenas, Conflictos, Reconciliación y Paz',
-      slug: 'reconciliacion-paz',
+      slug: 'reconciliacion-y-paz',
       description: 'Conflictos, reconciliación y construcción de paz con pueblos indígenas',
       promptFactors: `a) Conflictos armados, violencia o represión estatal que afectan a comunidades indígenas.
 b) Procesos de paz, diálogo intercultural o acuerdos de reconciliación que involucran a pueblos indígenas.
@@ -200,8 +200,8 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
     { title: 'Google News — Emprendimiento Indígena', rssUrl: 'https://news.google.com/rss/search?q=emprendimiento+ind%C3%ADgena&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'emprendimiento-indigena', language: 'es', region: 'latin_america' },
 
     // RECONCILIACIÓN Y PAZ
-    { title: 'Front Line Defenders', rssUrl: 'https://www.frontlinedefenders.org/en/rss', slug: 'reconciliacion-paz', language: 'en', region: 'global' },
-    { title: 'Google News — Conflicto Mapuche', rssUrl: 'https://news.google.com/rss/search?q=conflicto+mapuche&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'reconciliacion-paz', language: 'es', region: 'latin_america' },
+    { title: 'Front Line Defenders', rssUrl: 'https://www.frontlinedefenders.org/en/rss', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Google News — Conflicto Mapuche', rssUrl: 'https://news.google.com/rss/search?q=conflicto+mapuche&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
 
     // PUEBLOS INDÍGENAS DE CHILE
     { title: 'Mapuexpress', rssUrl: 'https://www.mapuexpress.org/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
