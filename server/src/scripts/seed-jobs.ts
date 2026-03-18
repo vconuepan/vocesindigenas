@@ -50,6 +50,13 @@ async function main() {
       update: {},
       create: { jobName: 'generate_newsletter', cronExpression: '0 4 * * 6', enabled: false },
     }),
+    // 6 AM Chile (CLST = UTC-3, verano oct-mar): 9 AM UTC
+    // Ajustar a 0 10 * * * en invierno (abr-sep, CLT = UTC-4)
+    prisma.jobRun.upsert({
+      where: { jobName: 'send_fpic_newsletter' },
+      update: {},
+      create: { jobName: 'send_fpic_newsletter', cronExpression: '0 9 * * *', enabled: false },
+    }),
   ])
 
   console.log(`Seeded ${jobs.length} job runs (all disabled)`)

@@ -9,6 +9,7 @@ import { runSocialAutoPost } from './socialAutoPost.js'
 import { runMastodonUpdateMetrics } from './mastodonUpdateMetrics.js'
 import { runSendNewsletter } from './sendNewsletter.js'
 import { runSendPrivateNewsletter } from './sendPrivateNewsletter.js'
+import { runSendFpicNewsletter } from './sendFpicNewsletter.js'
 import { runScrapeDOCIP } from './scrapeDOCIP.js'
 
 export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
@@ -23,5 +24,6 @@ export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   mastodon_update_metrics: runMastodonUpdateMetrics,
   send_newsletter: runSendNewsletter,
   send_private_newsletter: runSendPrivateNewsletter,
+  send_fpic_newsletter: runSendFpicNewsletter,
   scrape_docip: runScrapeDOCIP,
 }
