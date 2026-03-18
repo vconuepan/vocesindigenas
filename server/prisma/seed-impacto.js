@@ -7,7 +7,7 @@ async function main() {
     {
       id: 'issue-clima-001',
       name: 'Pueblos Indígenas, Cambio Climático y Biodiversidad',
-      slug: 'clima-biodiversidad',
+      slug: 'cambio-climatico',
       description: 'Cambio climático y protección de la biodiversidad en territorios indígenas',
       promptFactors: `a) Impacto del cambio climático en territorios, formas de vida y conocimientos tradicionales de pueblos indígenas.
 b) Pérdida de biodiversidad, deforestación o degradación de ecosistemas en territorios indígenas.
@@ -31,8 +31,8 @@ d) Iniciativas indígenas de conservación, restauración ecológica o gestión 
     },
     {
       id: 'issue-ddhh-002',
-      name: 'Empresas, Derechos Humanos y Pueblos Indígenas',
-      slug: 'empresas-derechos-humanos',
+      name: 'Derechos Indígenas',
+      slug: 'derechos-indigenas',
       description: 'Responsabilidad empresarial y derechos humanos de pueblos indígenas',
       promptFactors: `a) Violaciones de derechos humanos de pueblos indígenas por parte de empresas o proyectos de inversión.
 b) Consentimiento libre, previo e informado (CLPI) y consulta indígena en proyectos extractivos o de infraestructura.
@@ -56,8 +56,8 @@ d) Mecanismos internacionales de derechos humanos que involucran a pueblos indí
     },
     {
       id: 'issue-emp-003',
-      name: 'Emprendimiento y Empresas Indígenas',
-      slug: 'emprendimiento-indigena',
+      name: 'Desarrollo Sostenible y Autodeterminado',
+      slug: 'desarrollo-sostenible-y-autodeterminado',
       description: 'Emprendimiento, economía y empresas de pueblos indígenas',
       promptFactors: `a) Iniciativas de emprendimiento, cooperativas o empresas creadas y lideradas por comunidades indígenas.
 b) Políticas públicas de fomento al emprendimiento indígena o economía comunitaria.
@@ -176,11 +176,22 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
   const feeds = [
     // CAMBIO CLIMÁTICO Y BIODIVERSIDAD
     { title: 'Mongabay', rssUrl: 'https://news.mongabay.com/feed/', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Mongabay – Indigenous Peoples', rssUrl: 'https://news.mongabay.com/list/indigenous-peoples/feed/', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Mongabay – Biodiversity', rssUrl: 'https://news.mongabay.com/list/biodiversity/feed/', slug: 'cambio-climatico', language: 'en', region: 'global' },
     { title: 'Carbon Brief', rssUrl: 'https://www.carbonbrief.org/feed', slug: 'cambio-climatico', language: 'en', region: 'global' },
-    { title: 'The Guardian Environment', rssUrl: 'https://www.theguardian.com/environment/rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'The Guardian – Environment', rssUrl: 'https://www.theguardian.com/environment/rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'The Guardian – Climate', rssUrl: 'https://www.theguardian.com/environment/climate-change/rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
     { title: 'Climate Home News', rssUrl: 'https://www.climatechangenews.com/feed/', slug: 'cambio-climatico', language: 'en', region: 'global' },
     { title: 'IUCN News', rssUrl: 'https://www.iucn.org/news/rss.xml', slug: 'cambio-climatico', language: 'en', region: 'global' },
     { title: 'WWF News', rssUrl: 'https://www.worldwildlife.org/stories.rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Indigenous Climate Hub', rssUrl: 'https://indigenousclimatehub.ca/feed', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'UN News – Pueblos Indígenas', rssUrl: 'https://news.un.org/feed/subscribe/es/news/topic/indigenous-peoples/feed/rss.xml', slug: 'cambio-climatico', language: 'es', region: 'global' },
+    { title: 'UN News – Cambio Climático', rssUrl: 'https://news.un.org/feed/subscribe/es/news/topic/climate-change/feed/rss.xml', slug: 'cambio-climatico', language: 'es', region: 'global' },
+    { title: 'UNEP', rssUrl: 'https://www.unep.org/rss.xml', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'UNFCCC', rssUrl: 'https://unfccc.int/rss.xml', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Survival International', rssUrl: 'https://www.survivalinternational.org/news/rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'CBD – Biodiversidad', rssUrl: 'https://www.cbd.int/rss/news.xml', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'IPBES', rssUrl: 'https://ipbes.net/rss.xml', slug: 'cambio-climatico', language: 'en', region: 'global' },
     { title: 'Servindi', rssUrl: 'https://www.servindi.org/rss.xml', slug: 'cambio-climatico', language: 'es', region: 'latin_america' },
 
     // EMPRESAS, DERECHOS HUMANOS Y PUEBLOS INDÍGENAS
@@ -188,28 +199,52 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
     { title: 'Global Witness', rssUrl: 'https://www.globalwitness.org/en/feed/', slug: 'derechos-indigenas', language: 'en', region: 'global' },
     { title: 'Amazon Watch', rssUrl: 'https://amazonwatch.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'latin_america' },
     { title: 'IWGIA News', rssUrl: 'https://www.iwgia.org/en/news.feed', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'Servindi – Derechos', rssUrl: 'https://www.servindi.org/feed', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
+    { title: 'Debates Indígenas', rssUrl: 'https://debatesindigenas.org/feed', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
+    { title: 'IPRI', rssUrl: 'https://iprights.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'OHCHR', rssUrl: 'https://www.ohchr.org/en/rss/latest-news', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'UN DESA – Indigenous', rssUrl: 'https://social.desa.un.org/rss.xml', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'UN News – Derechos Humanos', rssUrl: 'https://news.un.org/feed/subscribe/es/news/topic/human-rights/feed/rss.xml', slug: 'derechos-indigenas', language: 'es', region: 'global' },
+    { title: 'NACLA', rssUrl: 'https://nacla.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'latin_america' },
+    { title: 'Al Jazeera – Indigenous', rssUrl: 'https://www.aljazeera.com/xml/rss/all.xml', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'Indian Country Today', rssUrl: 'https://ictnews.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'Cultural Survival', rssUrl: 'https://www.culturalsurvival.org/rss.xml', slug: 'derechos-indigenas', language: 'en', region: 'global' },
 
     // EMPRENDIMIENTO Y EMPRESAS INDÍGENAS
-    { title: 'Cultural Survival', rssUrl: 'https://www.culturalsurvival.org/rss.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
     { title: 'CAMSC', rssUrl: 'https://camsc.ca/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
     { title: 'CCIB', rssUrl: 'https://www.ccib.ca/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'Indigenous Services Canada', rssUrl: 'https://www.isc-sac.gc.ca/eng/rss/news-releases.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'UNDP', rssUrl: 'https://www.undp.org/rss.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'First Peoples Worldwide', rssUrl: 'https://firstpeoples.org/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'UNCTAD', rssUrl: 'https://unctad.org/rss.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'ProChile – Pueblos Originarios', rssUrl: 'https://www.prochile.gob.cl/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'es', region: 'latin_america' },
+    { title: 'World Bank – LAC', rssUrl: 'https://blogs.worldbank.org/latinamerica/rss.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'latin_america' },
+    { title: 'ILO – Indigenous Peoples', rssUrl: 'https://www.ilo.org/rss/topic/indigenous.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
 
     // RECONCILIACIÓN Y PAZ
-    // Fuentes directas con contenido en RSS (no Google News que redirige a sitios con anti-scraping)
     { title: 'Front Line Defenders', rssUrl: 'https://www.frontlinedefenders.org/en/rss', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
     { title: 'Amnesty International', rssUrl: 'https://www.amnesty.org/en/latest/news/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
-    { title: 'Global Witness — Defenders', rssUrl: 'https://www.globalwitness.org/en/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
-    { title: 'Cultural Survival — Peace', rssUrl: 'https://www.culturalsurvival.org/rss.xml', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
-    { title: 'Servindi — Conflictos', rssUrl: 'https://www.servindi.org/rss.xml', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
-    { title: 'Mapuexpress — Paz', rssUrl: 'https://www.mapuexpress.org/feed/', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
+    { title: 'Assembly of First Nations', rssUrl: 'https://afn.ca/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'BC Gov – Reconciliation', rssUrl: 'https://news.gov.bc.ca/ministries/indigenous-relations-and-reconciliation/feed', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Yellowhead Institute', rssUrl: 'https://yellowheadinstitute.org/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'NCTR', rssUrl: 'https://nctr.ca/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'IWGIA – News & Alerts', rssUrl: 'https://iwgia.org/en/news-alerts?format=feed', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Reconciliation Australia', rssUrl: 'https://www.reconciliation.org.au/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Mapuexpress', rssUrl: 'https://www.mapuexpress.org/feed/', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
 
     // PUEBLOS INDÍGENAS DE CHILE
     { title: 'Mapuexpress', rssUrl: 'https://www.mapuexpress.org/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Mapuche Diario', rssUrl: 'https://www.mapuchediario.cl/feed', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'El Mostrador', rssUrl: 'https://www.elmostrador.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'CIPER Chile', rssUrl: 'https://ciperchile.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Radio Bio Bio', rssUrl: 'https://www.biobiochile.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'La Tercera', rssUrl: 'https://www.latercera.com/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Austral Temuco', rssUrl: 'https://www.australtemuco.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'El Desconcierto', rssUrl: 'https://www.eldesconcierto.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'IWGIA – Chile', rssUrl: 'https://iwgia.org/es/chile?format=feed', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Pueblos Originarios – Gob. Chile', rssUrl: 'https://www.pueblosoriginarios.gob.cl/feed', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Ministerio Culturas – Pueblos Originarios', rssUrl: 'https://www.cultura.gob.cl/pueblosoriginarios/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'CONADI', rssUrl: 'https://www.conadi.gob.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Google News — CONADI', rssUrl: 'https://news.google.com/rss/search?q=CONADI&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Google News — Pueblos Indígenas Chile', rssUrl: 'https://news.google.com/rss/search?q=pueblos+ind%C3%ADgenas+Chile&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Google News — Mapuche', rssUrl: 'https://news.google.com/rss/search?q=mapuche&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
