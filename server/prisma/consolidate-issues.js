@@ -15,7 +15,7 @@
  *   node server/prisma/consolidate-issues.js
  */
 
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 const SLUG_MAPPINGS = [
