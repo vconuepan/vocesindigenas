@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './lib/query'
 import { AuthProvider } from './lib/auth'
 import App from './App'
+import './i18n'
 import './index.css'
 
 // Accessibility: log a11y violations to console during development

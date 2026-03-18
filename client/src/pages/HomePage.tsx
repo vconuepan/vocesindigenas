@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useHomepageData } from '../hooks/useHomepageData'
 import StoryCard from '../components/StoryCard'
 import PullQuote, { getQuoteVariant } from '../components/PullQuote'
@@ -246,6 +247,7 @@ const ISSUE_ORDER = [
 const LAYOUTS: LayoutVariant[] = ['A', 'B', 'C']
 
 export default function HomePage() {
+  const { t } = useTranslation()
   const { positivity } = usePositivity()
   // Single API call — both emotion buckets per issue, mixed client-side
   const { data, isLoading } = useHomepageData()
@@ -333,7 +335,7 @@ export default function HomePage() {
           }, [])
         ) : (
           <p className="text-center text-neutral-500 py-12">
-            No stories published yet. Check back soon.
+            {t('home.noStories')}
           </p>
         )}
       </div>

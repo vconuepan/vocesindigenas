@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSubscribe } from './SubscribeProvider'
 
 interface LandingCtaProps {
@@ -7,6 +8,7 @@ interface LandingCtaProps {
 }
 
 export default function LandingCta({ heading, description }: LandingCtaProps) {
+  const { t } = useTranslation()
   const { openSubscribe } = useSubscribe()
 
   return (
@@ -18,13 +20,13 @@ export default function LandingCta({ heading, description }: LandingCtaProps) {
           to="/"
           className="inline-flex items-center gap-2 px-6 py-3 bg-brand-700 text-white font-medium rounded-lg hover:bg-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
         >
-          Read today's stories
+          {t('landing.readStories')}
         </Link>
         <button
           onClick={() => openSubscribe()}
           className="inline-flex items-center gap-2 px-6 py-3 border border-brand-700 text-brand-700 font-medium rounded-lg hover:bg-brand-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
         >
-          Subscribe to the newsletter
+          {t('landing.subscribeNewsletter')}
         </button>
       </div>
     </section>

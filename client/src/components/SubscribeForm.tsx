@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { publicApi } from '../lib/api'
 import { BRAND } from '../config'
 
@@ -15,6 +16,7 @@ export default function SubscribeForm({
   idPrefix = 'subscribe',
   hideHeading = false,
 }: SubscribeFormProps) {
+  const { t } = useTranslation()
   const [firstName, setFirstName] = useState('')
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -40,13 +42,13 @@ export default function SubscribeForm({
       })
       if (!result.success) {
         setStatus('error')
-        setErrorMessage(result.message || 'Algo salió mal. Por favor intenta de nuevo.')
+        setErrorMessage(result.message || t('subscribe.error'))
         return
       }
       setStatus('success')
     } catch {
       setStatus('error')
-      setErrorMessage('Algo salió mal. Por favor intenta de nuevo.')
+      setErrorMessage(t('subscribe.error'))
     }
   }
 
@@ -58,16 +60,16 @@ export default function SubscribeForm({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-neutral-900 mb-2">Revisa tu correo</h2>
+        <h2 className="text-xl font-bold text-neutral-900 mb-2">{t('subscribe.successTitle')}</h2>
         <p className="text-neutral-600 text-sm mb-6">
-          Enviamos un enlace de confirmación a <strong>{email}</strong>. Haz clic en el enlace para comenzar a recibir nuestro newsletter semanal.
+          {t('subscribe.successMessage', { email })}
         </p>
         {onSuccess && (
           <button
             onClick={onSuccess}
             className="px-6 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           >
-            Listo
+            {t('subscribe.done')}
           </button>
         )}
       </div>
@@ -79,36 +81,36 @@ export default function SubscribeForm({
       {!hideHeading && (
         <div className="text-center mb-6">
           <h2 id={`${idPrefix}-title`} className="text-xl font-bold text-neutral-900 mb-1">
-            Mantente informado
+            {t('subscribe.heading')}
           </h2>
           <p className="text-neutral-500 text-sm">
-            {BRAND.claim} Cada semana en tu correo. {BRAND.claimSupport}
+            {BRAND.claim} {BRAND.claimSupport}
           </p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor={`${idPrefix}-first-name`} className="sr-only">Nombre (opcional)</label>
+          <label htmlFor={`${idPrefix}-first-name`} className="sr-only">{t('subscribe.nameLabel')}</label>
           <input
             ref={firstInputRef}
             id={`${idPrefix}-first-name`}
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder="Nombre (opcional)"
+            placeholder={t('subscribe.namePlaceholder')}
             autoComplete="given-name"
             className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
           />
         </div>
         <div>
-          <label htmlFor={`${idPrefix}-email`} className="sr-only">Correo electrónico</label>
+          <label htmlFor={`${idPrefix}-email`} className="sr-only">{t('subscribe.emailLabel')}</label>
           <input
             id={`${idPrefix}-email`}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@correo.com"
+            placeholder={t('subscribe.emailPlaceholder')}
             required
             autoComplete="email"
             className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
@@ -127,7 +129,7 @@ export default function SubscribeForm({
           disabled={status === 'loading'}
           className="w-full py-3 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {status === 'loading' ? 'Suscribiendo...' : 'Suscribirse'}
+          {status === 'loading' ? t('subscribe.submitting') : t('subscribe.submit')}
         </button>
       </form>
     </>

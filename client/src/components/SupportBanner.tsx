@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 function HeartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -9,6 +11,8 @@ function HeartIcon({ className }: { className?: string }) {
 const KOFI_URL = "https://ko-fi.com/impactoindigena"
 
 export default function SupportBanner() {
+  const { t } = useTranslation()
+
   return (
     <div className="py-8 md:py-10 text-center max-w-2xl mx-auto">
       <div className="flex items-center justify-center gap-4 mb-5">
@@ -16,19 +20,18 @@ export default function SupportBanner() {
         <HeartIcon className="w-5 h-5 text-brand-300" />
         <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
       </div>
-      <p className="text-lg text-neutral-600 leading-relaxed mb-4">
-        Gratuito. Independiente. Sin publicidad.
-        <br /> Ayudanos a mantenerlo asi.
+      <p className="text-lg text-neutral-600 leading-relaxed mb-4" style={{ whiteSpace: 'pre-line' }}>
+        {t('support.message')}
       </p>
-      
-        <a href={KOFI_URL}
+      <a
+        href={KOFI_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
       >
         <HeartIcon className="w-4 h-4" />
-        Apoyanos
-        <span className="sr-only">(abre en nueva pestana)</span>
+        {t('support.button')}
+        <span className="sr-only">{t('support.opensInNewTab')}</span>
       </a>
     </div>
   )

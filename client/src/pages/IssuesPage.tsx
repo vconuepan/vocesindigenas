@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { usePublicIssues } from '../hooks/usePublicIssues'
 import { getCategoryColor } from '../lib/category-colors'
 import { IssueAccordionSkeleton } from '../components/skeletons'
@@ -7,6 +8,7 @@ import { SEO, CommonOgTags } from '../lib/seo'
 import type { PublicIssue } from '../lib/api'
 
 function IssueAccordion({ issue }: { issue: PublicIssue }) {
+  const { t } = useTranslation()
   const colors = getCategoryColor(issue.slug)
 
   const hasDetails =
@@ -62,7 +64,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
           <div className="grid gap-4 md:grid-cols-3 text-sm">
             {issue.evaluationCriteria?.length > 0 && (
               <div>
-                <h3 className="font-bold text-neutral-700 mb-1.5">How We Evaluate</h3>
+                <h3 className="font-bold text-neutral-700 mb-1.5">{t('issuePage.howWeEvaluate')}</h3>
                 {issue.evaluationIntro && (
                   <p className="text-neutral-500 mb-1.5">{issue.evaluationIntro}</p>
                 )}
@@ -76,7 +78,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
 
             {issue.sourceNames?.length > 0 && (
               <div>
-                <h3 className="font-bold text-neutral-700 mb-1.5">Our Sources</h3>
+                <h3 className="font-bold text-neutral-700 mb-1.5">{t('issuePage.ourSources')}</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {issue.sourceNames.map((source) => (
                     <span
@@ -92,7 +94,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
 
             {issue.makeADifference?.length > 0 && (
               <div>
-                <h3 className="font-bold text-neutral-700 mb-1.5">Make a Difference</h3>
+                <h3 className="font-bold text-neutral-700 mb-1.5">{t('issuePage.makeADifference')}</h3>
                 <ul className="space-y-1">
                   {issue.makeADifference.map((link) => (
                     <li key={link.url}>
@@ -103,7 +105,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
                         className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                       >
                         {link.label}
-                        <span className="sr-only"> (opens in new tab)</span>
+                        <span className="sr-only"> {t('issuePage.opensInNewTab')}</span>
                         {' '}&rarr;
                       </a>
                     </li>
@@ -120,7 +122,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
             to={`/issues/${issue.slug}`}
             className={`inline-flex items-center gap-2 text-sm font-normal ${colors.dot} hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5`}
           >
-            View stories &rarr;
+            {t('issuePage.viewStories')}
           </Link>
         </div>
       </div>
@@ -136,6 +138,7 @@ const ISSUE_ORDER = [
 ]
 
 export default function IssuesPage() {
+  const { t } = useTranslation()
   const { data: issues, isLoading } = usePublicIssues()
   const sorted = [...(issues ?? [])].sort(
     (a, b) => ISSUE_ORDER.indexOf(a.slug) - ISSUE_ORDER.indexOf(b.slug),
@@ -144,13 +147,13 @@ export default function IssuesPage() {
   return (
     <>
       <Helmet>
-        <title>All Issues - {SEO.siteName}</title>
+        <title>{t('issuesPage.title')} - {SEO.siteName}</title>
         <meta
           name="description"
-          content="We cover issue areas critical to humanity, each evaluated with a rigorous framework."
+          content={t('issuesPage.subtitle')}
         />
-        <meta property="og:title" content={`All Issues - ${SEO.siteName}`} />
-        <meta property="og:description" content="We cover issue areas critical to humanity." />
+        <meta property="og:title" content={`${t('issuesPage.title')} - ${SEO.siteName}`} />
+        <meta property="og:description" content={t('issuesPage.subtitle')} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/issues`} />
         {CommonOgTags({})}
@@ -158,9 +161,9 @@ export default function IssuesPage() {
 
       <div className="page-section-wide">
         <header className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">All Issues</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('issuesPage.title')}</h1>
           <p className="text-sm text-neutral-500">
-            We cover the topics most relevant to humanity. Click an issue to explore.
+            {t('issuesPage.subtitle')}
           </p>
         </header>
 

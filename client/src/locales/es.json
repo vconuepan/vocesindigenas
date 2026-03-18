@@ -1,0 +1,121 @@
+{
+  "nav": {
+    "skipToContent": "Ir al contenido",
+    "saved": "Guardados",
+    "subscribe": "Suscribirse",
+    "openSearch": "Abrir búsqueda",
+    "closeSearch": "Cerrar búsqueda",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "savedNews": "Noticias guardadas",
+    "thematicCategories": "Categorías temáticas",
+    "mobileNav": "Navegación móvil",
+    "searchPlaceholder": "Buscar noticias...",
+    "searchHint": "Búsqueda por significado, no solo por palabras clave.",
+    "searchLabel": "Buscar noticias"
+  },
+  "issues": {
+    "climaBiodiversidad": "Cambio Climático y Biodiversidad",
+    "derechosIndigenas": "Derechos Indígenas",
+    "desarrolloSostenible": "Desarrollo Sostenible",
+    "reconciliacionPaz": "Reconciliación y Paz",
+    "chileIndigena": "Pueblos Indígenas de Chile"
+  },
+  "footer": {
+    "description": "Noticias sobre los pueblos indígenas que generan impacto en sus territorios y derechos, y el impacto de los pueblos indígenas en el mundo.",
+    "followInstagram": "Síguenos en Instagram (abre en nueva pestaña)",
+    "followTwitter": "Síguenos en X/Twitter (abre en nueva pestaña)",
+    "followYoutube": "Síguenos en YouTube (abre en nueva pestaña)",
+    "viewGithub": "Ver código en GitHub (abre en nueva pestaña)",
+    "navigate": "Navegar",
+    "connect": "Conectar",
+    "topics": "Temas",
+    "about": "Acerca de",
+    "methodology": "Metodología",
+    "newsletter": "Boletín",
+    "contact": "Contacto",
+    "rssFeed": "RSS Feed",
+    "support": "Apóyanos",
+    "imprint": "Aviso legal",
+    "privacy": "Privacidad",
+    "noTracking": "Sin rastreo",
+    "copyright": "© {{year}} Impacto Indígena. Todos los derechos reservados."
+  },
+  "home": {
+    "noStories": "Aún no hay noticias publicadas. Vuelve pronto."
+  },
+  "issuePage": {
+    "notFound": "Categoría no encontrada",
+    "notFoundDesc": "Esta categoría no existe.",
+    "viewAllIssues": "← Ver todas las categorías",
+    "noStories": "Aún no hay noticias publicadas en esta categoría.",
+    "about": "Acerca de {{name}}",
+    "howWeEvaluate": "Cómo evaluamos",
+    "ourSources": "Nuestras fuentes",
+    "makeADifference": "Cómo actuar",
+    "opensInNewTab": "(abre en nueva pestaña)",
+    "viewStories": "Ver noticias →"
+  },
+  "issuesPage": {
+    "title": "Todas las categorías",
+    "subtitle": "Cubrimos los temas más relevantes para los pueblos indígenas. Haz clic en una categoría para explorar."
+  },
+  "storyPage": {
+    "notFound": "Noticia no encontrada",
+    "notFoundDesc": "Esta noticia puede haber sido eliminada o aún no está publicada.",
+    "backToHome": "← Volver al inicio",
+    "originalArticle": "Artículo original",
+    "generatedByAI": "Generado por IA",
+    "whyItMatters": "Por qué importa",
+    "caveats": "Advertencias",
+    "searchSimilar": "Buscar noticias similares →",
+    "moreIn": "Más en {{issue}} →",
+    "opensInNewTab": "(abre en nueva pestaña)"
+  },
+  "storyCard": {
+    "opensInNewTab": "(abre en nueva pestaña)"
+  },
+  "search": {
+    "title": "Buscar: {{q}}",
+    "pageTitle": "Resultados de búsqueda para \"{{q}}\" en Impacto Indígena",
+    "defaultTitle": "Buscar historias en Impacto Indígena",
+    "results_one": "1 resultado",
+    "results_other": "{{count}} resultados",
+    "resultsFor": "Resultados para \"{{q}}\"",
+    "empty": "Ingresa un término para buscar noticias.",
+    "noResults": "No se encontraron resultados para \"{{q}}\".",
+    "backToHome": "← Volver al inicio",
+    "label": "Buscar"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Página no encontrada.",
+    "goHome": "Volver al inicio"
+  },
+  "subscribe": {
+    "heading": "Mantente informado",
+    "namePlaceholder": "Nombre (opcional)",
+    "nameLabel": "Nombre (opcional)",
+    "emailPlaceholder": "tu@correo.com",
+    "emailLabel": "Correo electrónico",
+    "submit": "Suscribirse",
+    "submitting": "Suscribiendo...",
+    "successTitle": "Revisa tu correo",
+    "successMessage": "Enviamos un enlace de confirmación a {{email}}. Haz clic en el enlace para comenzar a recibir nuestro boletín semanal.",
+    "done": "Listo",
+    "error": "Algo salió mal. Por favor intenta de nuevo."
+  },
+  "support": {
+    "message": "Gratuito. Independiente. Sin publicidad.\nAyúdanos a mantenerlo así.",
+    "button": "Apóyanos",
+    "opensInNewTab": "(abre en nueva pestaña)"
+  },
+  "landing": {
+    "readStories": "Leer las noticias de hoy",
+    "subscribeNewsletter": "Suscribirse al boletín"
+  },
+  "language": {
+    "toggle": "EN",
+    "current": "Idioma actual: Español"
+  }
+}

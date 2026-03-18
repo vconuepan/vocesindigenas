@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
 import { API_BASE } from '../lib/api'
 import { usePublicIssue } from '../hooks/usePublicIssues'
 import { usePublicStories } from '../hooks/usePublicStories'
@@ -113,6 +114,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 const PAGE_SIZE = 12
 
 export default function IssuePage() {
+  const { t } = useTranslation()
   const { slug } = useParams<{ slug: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const page = parseInt(searchParams.get('page') ?? '1', 10) || 1
@@ -144,13 +146,13 @@ export default function IssuePage() {
   if (isError || !issue) {
     return (
       <div className="page-section text-center">
-        <h1 className="page-title">Issue Not Found</h1>
-        <p className="text-neutral-500 mb-6">This issue category does not exist.</p>
+        <h1 className="page-title">{t('issuePage.notFound')}</h1>
+        <p className="text-neutral-500 mb-6">{t('issuePage.notFoundDesc')}</p>
         <Link
           to="/issues"
           className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
-          &larr; View all issues
+          {t('issuePage.viewAllIssues')}
         </Link>
       </div>
     )
@@ -281,7 +283,7 @@ export default function IssuePage() {
           </>
         ) : (
           <p className="text-neutral-500 py-8 text-center">
-            No stories published yet in this category.
+            {t('issuePage.noStories')}
           </p>
         )}
 
@@ -302,14 +304,14 @@ export default function IssuePage() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                About {issue.name}
+                {t('issuePage.about', { name: issue.name })}
               </summary>
 
               <div className="pt-4 pb-2 grid gap-8">
                 {/* Evaluation criteria */}
                 {issue.evaluationCriteria?.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-neutral-700 mb-2">How We Evaluate</h3>
+                    <h3 className="text-sm font-bold text-neutral-700 mb-2">{t('issuePage.howWeEvaluate')}</h3>
                     {issue.evaluationIntro && (
                       <p className="text-sm text-neutral-500 mb-2">{issue.evaluationIntro}</p>
                     )}
@@ -324,7 +326,7 @@ export default function IssuePage() {
                 {/* Sources */}
                 {issue.sourceNames?.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-neutral-700 mb-2">Our Sources</h3>
+                    <h3 className="text-sm font-bold text-neutral-700 mb-2">{t('issuePage.ourSources')}</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {issue.sourceNames.map((source) => (
                         <span
@@ -341,7 +343,7 @@ export default function IssuePage() {
                 {/* Make a difference */}
                 {issue.makeADifference?.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-neutral-700 mb-2">Make a Difference</h3>
+                    <h3 className="text-sm font-bold text-neutral-700 mb-2">{t('issuePage.makeADifference')}</h3>
                     <ul className="space-y-1">
                       {issue.makeADifference.map((link) => (
                         <li key={link.url}>
@@ -352,7 +354,7 @@ export default function IssuePage() {
                             className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                           >
                             {link.label}
-                            <span className="sr-only"> (opens in new tab)</span>
+                            <span className="sr-only"> {t('issuePage.opensInNewTab')}</span>
                             {' '}
                             <svg className="inline w-3.5 h-3.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -369,14 +371,14 @@ export default function IssuePage() {
             {/* Desktop: always visible, no collapse */}
             <div className="hidden md:block mb-8">
               <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide py-3">
-                About {issue.name}
+                {t('issuePage.about', { name: issue.name })}
               </h2>
 
               <div className="pt-4 pb-2 grid gap-8" style={{ gridTemplateColumns: '3fr 2fr' }}>
                 {/* Evaluation criteria — left column (~60%) */}
                 {issue.evaluationCriteria?.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-neutral-700 mb-2">How We Evaluate</h3>
+                    <h3 className="text-sm font-bold text-neutral-700 mb-2">{t('issuePage.howWeEvaluate')}</h3>
                     {issue.evaluationIntro && (
                       <p className="text-sm text-neutral-500 mb-2">{issue.evaluationIntro}</p>
                     )}
@@ -393,7 +395,7 @@ export default function IssuePage() {
                   {/* Sources */}
                   {issue.sourceNames?.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-bold text-neutral-700 mb-2">Our Sources</h3>
+                      <h3 className="text-sm font-bold text-neutral-700 mb-2">{t('issuePage.ourSources')}</h3>
                       <div className="flex flex-wrap gap-1.5">
                         {issue.sourceNames.map((source) => (
                           <span
@@ -410,7 +412,7 @@ export default function IssuePage() {
                   {/* Make a difference */}
                   {issue.makeADifference?.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-bold text-neutral-700 mb-2">Make a Difference</h3>
+                      <h3 className="text-sm font-bold text-neutral-700 mb-2">{t('issuePage.makeADifference')}</h3>
                       <ul className="space-y-1">
                         {issue.makeADifference.map((link) => (
                           <li key={link.url}>
@@ -421,7 +423,7 @@ export default function IssuePage() {
                               className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                             >
                               {link.label}
-                              <span className="sr-only"> (opens in new tab)</span>
+                              <span className="sr-only"> {t('issuePage.opensInNewTab')}</span>
                               {' '}
                               <svg className="inline w-3.5 h-3.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

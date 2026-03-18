@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
 import Markdown from 'react-markdown'
 import { usePublicStory } from '../hooks/usePublicStories'
 import { getCategoryColor, shiftHex } from '../lib/category-colors'
@@ -71,6 +72,7 @@ function AnalysisSection({
 // ---------------------------------------------------------------------------
 
 export default function StoryPage() {
+  const { t } = useTranslation()
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { data: story, isLoading, error } = usePublicStory(slug || '')
@@ -94,15 +96,15 @@ export default function StoryPage() {
   if (error || !story) {
     return (
       <div className="page-section text-center">
-        <h1 className="page-title">Story Not Found</h1>
+        <h1 className="page-title">{t('storyPage.notFound')}</h1>
         <p className="text-neutral-500 mb-6">
-          This story may have been removed or is not yet published.
+          {t('storyPage.notFoundDesc')}
         </p>
         <Link
           to="/"
           className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
-          &larr; Back to home
+          {t('storyPage.backToHome')}
         </Link>
       </div>
     )
@@ -205,15 +207,15 @@ export default function StoryPage() {
                 rel="noopener noreferrer"
                 className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
-                Artículo original
-                <span className="sr-only"> (opens in new tab)</span>
+                {t('storyPage.originalArticle')}
+                <span className="sr-only"> {t('storyPage.opensInNewTab')}</span>
               </a>
               <span className="text-neutral-300">|</span>
               <Link
                 to="/methodology"
                 className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
-                Generado por IA
+                {t('storyPage.generatedByAI')}
               </Link>
               {story.slug && (
                 <>
@@ -276,7 +278,7 @@ export default function StoryPage() {
           {/* Why This Matters */}
           {story.relevanceReasons && (
             <AnalysisSection
-              title="Por qué importa"
+              title={t('storyPage.whyItMatters')}
               text={story.relevanceReasons}
               accentColor={colors.hex}
             />
@@ -285,7 +287,7 @@ export default function StoryPage() {
           {/* Caveats */}
           {story.antifactors && (
             <AnalysisSection
-              title="Advertencias"
+              title={t('storyPage.caveats')}
               text={story.antifactors}
               accentColor={shiftHex(colors.hex, -0.25)}
             />
@@ -300,7 +302,7 @@ export default function StoryPage() {
               to={`/search?q=${encodeURIComponent(headline)}`}
               className="text-sm text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              Buscar noticias similares &rarr;
+              {t('storyPage.searchSimilar')}
             </Link>
           </div>
 
@@ -310,13 +312,13 @@ export default function StoryPage() {
               to="/"
               className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              &larr; Volver al inicio
+              {t('storyPage.backToHome')}
             </Link>
             <Link
               to={`/issues/${issueSlug}`}
               className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              Más en {issueName} &rarr;
+              {t('storyPage.moreIn', { issue: issueName })}
             </Link>
           </div>
 

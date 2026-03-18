@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
 import { usePublicStories } from '../hooks/usePublicStories'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
 import { SearchResultsSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
 export default function SearchPage() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const q = searchParams.get('q') || ''
   const [page, setPage] = useState(1)
@@ -23,9 +25,9 @@ export default function SearchPage() {
   return (
     <>
       <Helmet>
-        <title>{q ? `Buscar: ${q}` : 'Buscar'} - {SEO.siteName}</title>
-        <meta name="description" content={q ? `Resultados de busqueda para "${q}" en Impacto Indigena` : 'Buscar historias en Impacto Indigena'} />
-        <meta property="og:title" content={q ? `Buscar: ${q} - ${SEO.siteName}` : `Buscar - ${SEO.siteName}`} />
+        <title>{q ? t('search.title', { q }) : t('search.label')} - {SEO.siteName}</title>
+        <meta name="description" content={q ? t('search.pageTitle', { q }) : t('search.defaultTitle')} />
+        <meta property="og:title" content={q ? `${t('search.title', { q })} - ${SEO.siteName}` : `${t('search.label')} - ${SEO.siteName}`} />
         <meta property="og:type" content="website" />
         {CommonOgTags({})}
       </Helmet>
@@ -33,29 +35,29 @@ export default function SearchPage() {
         <header className="mb-6">
           <h1 className="text-xl md:text-2xl font-bold">
             {q ? (
-              <>Resultados para &ldquo;{q}&rdquo;</>
+              <>{t('search.resultsFor', { q })}</>
             ) : (
-              'Buscar'
+              t('search.label')
             )}
           </h1>
           {q && !isLoading && (
             <p className="text-sm text-neutral-500 mt-1">
-              {data?.total === 1 ? '1 resultado' : `${data?.total ?? 0} resultados`}
+              {t('search.results_other', { count: data?.total ?? 0 })}
             </p>
           )}
         </header>
         {!q ? (
-          <p className="text-neutral-500 text-center py-8">Ingresa un termino para buscar historias.</p>
+          <p className="text-neutral-500 text-center py-8">{t('search.empty')}</p>
         ) : isLoading ? (
           <SearchResultsSkeleton />
         ) : stories.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-neutral-500 mb-4">No se encontraron resultados para &ldquo;{q}&rdquo;.</p>
+            <p className="text-neutral-500 mb-4">{t('search.noResults', { q })}</p>
             <Link
               to="/"
               className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
-              &larr; Volver al inicio
+              {t('search.backToHome')}
             </Link>
           </div>
         ) : (

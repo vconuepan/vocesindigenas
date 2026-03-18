@@ -22,9 +22,12 @@
     "@scalar/api-reference-react": "^0.8.52",
     "@tanstack/react-query": "^5.90.20",
     "date-fns": "^4.1.0",
+    "i18next": "^25.8.18",
+    "i18next-browser-languagedetector": "^8.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
+    "react-i18next": "^16.5.8",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.28.0"
   },
