@@ -173,30 +173,36 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
   }
 
   // Feeds: { title, rssUrl, slug (issue slug), language, region }
+  // NOTE: slugs must match the actual DB issue slugs exactly.
   const feeds = [
-    // CLIMA Y BIODIVERSIDAD
-    { title: 'Mongabay', rssUrl: 'https://news.mongabay.com/feed/', slug: 'clima-biodiversidad', language: 'en', region: 'global' },
-    { title: 'Carbon Brief', rssUrl: 'https://www.carbonbrief.org/feed', slug: 'clima-biodiversidad', language: 'en', region: 'global' },
-    { title: 'The Guardian Environment', rssUrl: 'https://www.theguardian.com/environment/rss', slug: 'clima-biodiversidad', language: 'en', region: 'global' },
-    { title: 'Climate Home News', rssUrl: 'https://www.climatechangenews.com/feed/', slug: 'clima-biodiversidad', language: 'en', region: 'global' },
-    { title: 'IUCN News', rssUrl: 'https://www.iucn.org/news/rss.xml', slug: 'clima-biodiversidad', language: 'en', region: 'global' },
-    { title: 'WWF News', rssUrl: 'https://www.worldwildlife.org/stories.rss', slug: 'clima-biodiversidad', language: 'en', region: 'global' },
-    { title: 'Servindi', rssUrl: 'https://www.servindi.org/rss.xml', slug: 'clima-biodiversidad', language: 'es', region: 'latin_america' },
+    // CAMBIO CLIMÁTICO Y BIODIVERSIDAD
+    { title: 'Mongabay', rssUrl: 'https://news.mongabay.com/feed/', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Carbon Brief', rssUrl: 'https://www.carbonbrief.org/feed', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'The Guardian Environment', rssUrl: 'https://www.theguardian.com/environment/rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Climate Home News', rssUrl: 'https://www.climatechangenews.com/feed/', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'IUCN News', rssUrl: 'https://www.iucn.org/news/rss.xml', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'WWF News', rssUrl: 'https://www.worldwildlife.org/stories.rss', slug: 'cambio-climatico', language: 'en', region: 'global' },
+    { title: 'Servindi', rssUrl: 'https://www.servindi.org/rss.xml', slug: 'cambio-climatico', language: 'es', region: 'latin_america' },
 
-    // EMPRESAS Y DERECHOS HUMANOS
-    { title: 'Business and Human Rights Resource Centre', rssUrl: 'https://www.business-humanrights.org/en/rss/', slug: 'empresas-derechos-humanos', language: 'en', region: 'global' },
-    { title: 'Global Witness', rssUrl: 'https://www.globalwitness.org/en/feed/', slug: 'empresas-derechos-humanos', language: 'en', region: 'global' },
-    { title: 'Amazon Watch', rssUrl: 'https://amazonwatch.org/feed', slug: 'empresas-derechos-humanos', language: 'en', region: 'latin_america' },
+    // EMPRESAS, DERECHOS HUMANOS Y PUEBLOS INDÍGENAS
+    { title: 'Business and Human Rights Resource Centre', rssUrl: 'https://www.business-humanrights.org/en/rss/', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'Global Witness', rssUrl: 'https://www.globalwitness.org/en/feed/', slug: 'derechos-indigenas', language: 'en', region: 'global' },
+    { title: 'Amazon Watch', rssUrl: 'https://amazonwatch.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'latin_america' },
+    { title: 'IWGIA News', rssUrl: 'https://www.iwgia.org/en/news.feed', slug: 'derechos-indigenas', language: 'en', region: 'global' },
 
-    // EMPRENDIMIENTO INDÍGENA
-    { title: 'Cultural Survival', rssUrl: 'https://www.culturalsurvival.org/rss.xml', slug: 'emprendimiento-indigena', language: 'en', region: 'global' },
-    { title: 'CAMSC', rssUrl: 'https://camsc.ca/feed/', slug: 'emprendimiento-indigena', language: 'en', region: 'global' },
-    { title: 'CCIB', rssUrl: 'https://www.ccib.ca/feed/', slug: 'emprendimiento-indigena', language: 'en', region: 'global' },
-    { title: 'Google News — Emprendimiento Indígena', rssUrl: 'https://news.google.com/rss/search?q=emprendimiento+ind%C3%ADgena&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'emprendimiento-indigena', language: 'es', region: 'latin_america' },
+    // EMPRENDIMIENTO Y EMPRESAS INDÍGENAS
+    { title: 'Cultural Survival', rssUrl: 'https://www.culturalsurvival.org/rss.xml', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'CAMSC', rssUrl: 'https://camsc.ca/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
+    { title: 'CCIB', rssUrl: 'https://www.ccib.ca/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'en', region: 'global' },
 
     // RECONCILIACIÓN Y PAZ
+    // Fuentes directas con contenido en RSS (no Google News que redirige a sitios con anti-scraping)
     { title: 'Front Line Defenders', rssUrl: 'https://www.frontlinedefenders.org/en/rss', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
-    { title: 'Google News — Conflicto Mapuche', rssUrl: 'https://news.google.com/rss/search?q=conflicto+mapuche&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
+    { title: 'Amnesty International', rssUrl: 'https://www.amnesty.org/en/latest/news/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Global Witness — Defenders', rssUrl: 'https://www.globalwitness.org/en/feed/', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Cultural Survival — Peace', rssUrl: 'https://www.culturalsurvival.org/rss.xml', slug: 'reconciliacion-y-paz', language: 'en', region: 'global' },
+    { title: 'Servindi — Conflictos', rssUrl: 'https://www.servindi.org/rss.xml', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
+    { title: 'Mapuexpress — Paz', rssUrl: 'https://www.mapuexpress.org/feed/', slug: 'reconciliacion-y-paz', language: 'es', region: 'latin_america' },
 
     // PUEBLOS INDÍGENAS DE CHILE
     { title: 'Mapuexpress', rssUrl: 'https://www.mapuexpress.org/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
