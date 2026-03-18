@@ -21,7 +21,7 @@ export interface CategoryColor {
 }
 
 const CATEGORY_COLORS: Record<string, CategoryColor> = {
-  'clima-biodiversidad': {
+  'cambio-climatico': {
     border: 'border-emerald-400',
     borderThick: 'border-l-[6px] border-emerald-400',
     dot: 'text-emerald-500',
@@ -30,7 +30,7 @@ const CATEGORY_COLORS: Record<string, CategoryColor> = {
     hex: '#34d399',
     bgTint: 'bg-emerald-50/60',
   },
-  'empresas-derechos-humanos': {
+  'derechos-indigenas': {
     border: 'border-orange-400',
     borderThick: 'border-l-[6px] border-orange-400',
     dot: 'text-orange-500',
@@ -39,7 +39,7 @@ const CATEGORY_COLORS: Record<string, CategoryColor> = {
     hex: '#fb923c',
     bgTint: 'bg-orange-50/60',
   },
-  'emprendimiento-indigena': {
+  'desarrollo-sostenible-y-autodeterminado': {
     border: 'border-amber-400',
     borderThick: 'border-l-[6px] border-amber-400',
     dot: 'text-amber-500',
@@ -48,7 +48,7 @@ const CATEGORY_COLORS: Record<string, CategoryColor> = {
     hex: '#fbbf24',
     bgTint: 'bg-amber-50/60',
   },
-  'reconciliacion-paz': {
+  'reconciliacion-y-paz': {
     border: 'border-sky-400',
     borderThick: 'border-l-[6px] border-sky-400',
     dot: 'text-sky-500',

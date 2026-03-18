@@ -236,10 +236,10 @@ function QuoteDivider({ stories, variantIndex }: { stories: PublicStory[]; varia
 // ---------------------------------------------------------------------------
 
 const ISSUE_ORDER = [
-  'clima-biodiversidad',
-  'empresas-derechos-humanos',
-  'emprendimiento-indigena',
-  'reconciliacion-paz',
+  'cambio-climatico',
+  'derechos-indigenas',
+  'desarrollo-sostenible-y-autodeterminado',
+  'reconciliacion-y-paz',
   'chile-indigena',
 ]
 
