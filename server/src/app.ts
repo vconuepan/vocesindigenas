@@ -48,7 +48,7 @@ const allowedOrigins = [
 ].filter(Boolean) as string[]
 
 // Open CORS for public read-only endpoints (widget/embed API calls from any origin)
-const publicReadPaths = ['/api/stories', '/api/issues', '/api/homepage', '/api/feed', '/api/docs']
+const publicReadPaths = ['/api/stories', '/api/issues', '/api/homepage', '/api/feed', '/api/docs', '/api/podcast']
 app.use((req, res, next) => {
   if (publicReadPaths.some(p => req.path.startsWith(p))) {
     res.set('Access-Control-Allow-Origin', '*')
