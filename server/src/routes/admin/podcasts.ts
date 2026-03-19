@@ -34,6 +34,20 @@ podcastRouter.get('/:id', async (req, res) => {
   }
 })
 
+// POST /admin/podcasts — crear episodio (alias de /generate, acepta title + storyIds opcionales)
+podcastRouter.post('/', async (req, res) => {
+  try {
+    const { storyIds } = req.body
+    log.info({ storyIds }, 'creating podcast draft')
+    const draft = await generateDraft(storyIds)
+    const podcast = await prisma.podcast.findUnique({ where: { id: draft.id } })
+    res.status(201).json(podcast)
+  } catch (err) {
+    log.error({ err }, 'failed to create podcast')
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to create podcast' })
+  }
+})
+
 // POST /admin/podcasts/generate — generar nuevo episodio
 podcastRouter.post('/generate', async (req, res) => {
   try {
