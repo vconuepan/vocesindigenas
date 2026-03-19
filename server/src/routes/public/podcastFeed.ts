@@ -28,7 +28,7 @@ router.get('/feed.xml', async (_req, res) => {
       })
 
       const siteUrl = config.siteUrl
-      const feedUrl = `${siteUrl}/api/podcast/feed.xml`
+      const feedUrl = `${siteUrl}/podcast/feed.xml`
       const now = new Date().toUTCString()
 
       const items = episodes.map(ep => {

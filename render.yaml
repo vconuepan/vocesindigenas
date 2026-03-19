@@ -37,7 +37,7 @@ services:
         source: /sitemap.xml
         destination: https://vocesindigenas-backend.onrender.com/api/sitemap.xml
       - type: rewrite
-        source: /api/podcast/feed.xml
+        source: /podcast/feed.xml
         destination: https://vocesindigenas-backend.onrender.com/api/podcast/feed.xml
       - type: rewrite
         source: /*
