@@ -317,6 +317,7 @@ export const adminApi = {
     delete: (id: string) => request<void>(`/podcasts/${id}`, { method: 'DELETE' }),
     assign: (id: string) => request<Podcast>(`/podcasts/${id}/assign`, { method: 'POST' }),
     generate: (id: string) => request<Podcast>(`/podcasts/${id}/generate`, { method: 'POST' }),
+    publish: (id: string) => request<Podcast>(`/podcasts/${id}/publish`, { method: 'POST' }),
   },
 
   // Jobs

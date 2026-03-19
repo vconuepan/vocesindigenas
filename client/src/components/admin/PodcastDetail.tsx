@@ -4,7 +4,7 @@ import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
-import { useUpdatePodcast, useAssignPodcastStories, useGeneratePodcast } from '../../hooks/usePodcasts'
+import { useUpdatePodcast, useAssignPodcastStories, useGeneratePodcast, usePublishPodcast } from '../../hooks/usePodcasts'
 import { useToast } from '../ui/Toast'
 import { AssignedStoriesList } from './AssignedStoriesList'
 
@@ -22,6 +22,7 @@ export function PodcastDetail({ podcast }: PodcastDetailProps) {
   const update = useUpdatePodcast()
   const assign = useAssignPodcastStories()
   const generate = useGeneratePodcast()
+  const publish = usePublishPodcast()
 
   const handleSaveTitle = async () => {
     try {
@@ -40,11 +41,17 @@ export function PodcastDetail({ podcast }: PodcastDetailProps) {
   }
 
   const handlePublishToggle = async () => {
-    const newStatus = podcast.status === 'published' ? 'draft' : 'published'
-    try {
-      await update.mutateAsync({ id: podcast.id, data: { status: newStatus } })
-      toast('success', newStatus === 'published' ? 'Podcast published' : 'Podcast unpublished')
-    } catch { toast('error', 'Failed to update status') }
+    if (podcast.status === 'published') {
+      try {
+        await update.mutateAsync({ id: podcast.id, data: { status: 'draft' } })
+        toast('success', 'Podcast unpublished')
+      } catch { toast('error', 'Failed to unpublish') }
+    } else {
+      try {
+        await publish.mutateAsync(podcast.id)
+        toast('success', 'Audio generated and published!')
+      } catch { toast('error', 'Failed to generate audio') }
+    }
   }
 
   return (
@@ -81,13 +88,31 @@ export function PodcastDetail({ podcast }: PodcastDetailProps) {
         })} loading={generate.isPending}>
           {generate.isPending ? 'Generating... (this may take a minute)' : 'Generate Script'}
         </Button>
-        <Button variant={podcast.status === 'published' ? 'ghost' : 'primary'} size="sm" onClick={handlePublishToggle} loading={update.isPending}>
-          {podcast.status === 'published' ? 'Unpublish' : 'Publish'}
+        <Button variant={podcast.status === 'published' ? 'ghost' : 'primary'} size="sm" onClick={handlePublishToggle} loading={update.isPending || publish.isPending}>
+          {publish.isPending ? 'Generating audio...' : podcast.status === 'published' ? 'Unpublish' : 'Publish & Generate Audio'}
         </Button>
       </div>
 
       {/* Assigned stories */}
       <AssignedStoriesList label="Assigned stories" storyIds={podcast.storyIds} />
+
+      {/* Audio player */}
+      {podcast.audioUrl && (
+        <div className="bg-white rounded-lg border border-neutral-200 p-4">
+          <h3 className="text-sm font-semibold text-neutral-900 mb-3">Audio</h3>
+          <audio controls className="w-full" src={podcast.audioUrl}>
+            Your browser does not support the audio element.
+          </audio>
+          <a
+            href={podcast.audioUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-brand-700 hover:text-brand-800 mt-2 inline-block"
+          >
+            Download MP3
+          </a>
+        </div>
+      )}
 
       {/* Script */}
       <div className="bg-white rounded-lg border border-neutral-200 p-4">

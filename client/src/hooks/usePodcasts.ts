@@ -70,3 +70,14 @@ export function useGeneratePodcast() {
     },
   })
 }
+
+export function usePublishPodcast() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => adminApi.podcasts.publish(id),
+    onSuccess: (podcast) => {
+      queryClient.setQueryData(['podcast', podcast.id], podcast)
+      queryClient.invalidateQueries({ queryKey: ['podcasts'] })
+    },
+  })
+}
