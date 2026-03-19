@@ -19,7 +19,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        value: https://vocesindigenas-frontend.onrender.com
+        value: https://impactoindigena.news
       - key: LOG_LEVEL
         value: info
 
