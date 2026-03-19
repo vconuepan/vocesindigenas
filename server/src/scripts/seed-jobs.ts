@@ -69,6 +69,12 @@ async function main() {
       update: {},
       create: { jobName: 'send_chile_indigena_newsletter', cronExpression: '10 9 * * *', enabled: false },
     }),
+    // 11 AM UTC = 8 AM Chile (después de que publish_stories corra a las 11 AM UTC)
+    prisma.jobRun.upsert({
+      where: { jobName: 'generate_chile_indigena_podcast' },
+      update: {},
+      create: { jobName: 'generate_chile_indigena_podcast', cronExpression: '30 14 * * *', enabled: false },
+    }),
   ])
 
   console.log(`Seeded ${jobs.length} job runs (all disabled)`)
