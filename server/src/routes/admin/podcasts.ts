@@ -48,6 +48,71 @@ podcastRouter.post('/', async (req, res) => {
   }
 })
 
+// PUT /admin/podcasts/:id — actualizar campos (title, script, status)
+podcastRouter.put('/:id', async (req, res) => {
+  try {
+    const { title, script, status, storyIds, selectedStoryIds } = req.body
+    const podcast = await prisma.podcast.update({
+      where: { id: req.params.id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(script !== undefined && { script }),
+        ...(status !== undefined && { status }),
+        ...(storyIds !== undefined && { storyIds }),
+        ...(selectedStoryIds !== undefined && { selectedStoryIds }),
+      },
+    })
+    res.json(podcast)
+  } catch (err) {
+    log.error({ err }, 'failed to update podcast')
+    res.status(500).json({ error: 'Failed to update podcast' })
+  }
+})
+
+// POST /admin/podcasts/:id/assign — asignar noticias recientes al episodio
+podcastRouter.post('/:id/assign', async (req, res) => {
+  try {
+    const stories = await prisma.story.findMany({
+      where: { status: 'published', summary: { not: null }, relevanceReasons: { not: null } },
+      orderBy: [{ relevance: 'desc' }, { datePublished: 'desc' }],
+      take: 20,
+      select: { id: true },
+    })
+    const storyIds = stories.map(s => s.id)
+    const podcast = await prisma.podcast.update({
+      where: { id: req.params.id },
+      data: { storyIds },
+    })
+    res.json(podcast)
+  } catch (err) {
+    log.error({ err }, 'failed to assign stories')
+    res.status(500).json({ error: 'Failed to assign stories' })
+  }
+})
+
+// POST /admin/podcasts/:id/generate — regenerar script para episodio existente
+podcastRouter.post('/:id/generate', async (req, res) => {
+  try {
+    const existing = await prisma.podcast.findUnique({ where: { id: req.params.id } })
+    if (!existing) return res.status(404).json({ error: 'Podcast not found' })
+    const draft = await generateDraft(existing.storyIds.length > 0 ? existing.storyIds : undefined)
+    // Copy script/title to existing podcast instead of creating a new one
+    const updated = await prisma.podcast.update({
+      where: { id: req.params.id },
+      data: {
+        title: (await prisma.podcast.findUnique({ where: { id: draft.id }, select: { title: true } }))?.title || existing.title,
+        script: (await prisma.podcast.findUnique({ where: { id: draft.id }, select: { script: true } }))?.script || existing.script,
+      },
+    })
+    // Remove the temporary draft
+    await prisma.podcast.delete({ where: { id: draft.id } })
+    res.json(updated)
+  } catch (err) {
+    log.error({ err }, 'failed to generate podcast script')
+    res.status(500).json({ error: 'Failed to generate script' })
+  }
+})
+
 // POST /admin/podcasts/generate — generar nuevo episodio
 podcastRouter.post('/generate', async (req, res) => {
   try {
