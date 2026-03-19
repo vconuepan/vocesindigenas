@@ -44,7 +44,7 @@ Responde SOLO en JSON sin markdown:
 }`
 
   const response = await openai.chat.completions.create({
-    model: config.llm.models.main.name,
+    model: config.llm.models.large.name,
     messages: [{ role: 'user', content: prompt }],
     max_completion_tokens: 2000,
   })
