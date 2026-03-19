@@ -13,7 +13,7 @@ podcastRouter.get('/', async (req, res) => {
       orderBy: { createdAt: 'desc' },
       take: 20,
     })
-    res.json({ podcasts })
+    res.json({ data: podcasts, total: podcasts.length, page: 1, pageSize: 20 })
   } catch (err) {
     log.error({ err }, 'failed to list podcasts')
     res.status(500).json({ error: 'Failed to list podcasts' })
