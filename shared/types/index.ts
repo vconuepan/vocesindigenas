@@ -213,9 +213,14 @@ export interface PendingSubscription {
 export interface Podcast {
   id: string
   title: string
+  description: string | null
   script: string
+  audioUrl: string | null
+  duration: number | null
+  episodeNumber: number | null
   storyIds: string[]
   status: 'draft' | 'published'
+  publishedAt: string | null
   createdAt: string
   updatedAt: string
 }
