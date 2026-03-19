@@ -27,7 +27,7 @@ podcastRouter.get('/:id', async (req, res) => {
       where: { id: req.params.id },
     })
     if (!podcast) return res.status(404).json({ error: 'Podcast not found' })
-    res.json({ podcast })
+    res.json(podcast)
   } catch (err) {
     log.error({ err }, 'failed to get podcast')
     res.status(500).json({ error: 'Failed to get podcast' })
@@ -55,7 +55,7 @@ podcastRouter.post('/generate', async (req, res) => {
     log.info({ storyIds }, 'generating podcast draft')
     const draft = await generateDraft(storyIds)
     const podcast = await prisma.podcast.findUnique({ where: { id: draft.id } })
-    res.json({ podcast })
+    res.json(podcast)
   } catch (err) {
     log.error({ err }, 'failed to generate podcast')
     res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to generate podcast' })
@@ -67,7 +67,7 @@ podcastRouter.post('/:id/publish', async (req, res) => {
   try {
     log.info({ podcastId: req.params.id }, 'publishing podcast')
     const podcast = await publishPodcast(req.params.id)
-    res.json({ podcast })
+    res.json(podcast)
   } catch (err) {
     log.error({ err }, 'failed to publish podcast')
     res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to publish podcast' })
