@@ -41,8 +41,19 @@ const transports = pino.transport({
  * Custom error serializer that strips bulky axios internals (request, response,
  * config) to prevent OOM from serializing full HTML responses and socket objects.
  */
+function redactSecrets(str: string): string {
+  return str
+    .replace(/sk-[a-zA-Z0-9\-_]{20,}/g, '[REDACTED_SK_KEY]')
+    .replace(/Bearer [^\s"]+/g, 'Bearer [REDACTED]')
+    .replace(/password["\s:=]+[^\s,"'}]+/gi, 'password=[REDACTED]')
+}
+
 export function serializeError(err: any) {
   const serialized = pino.stdSerializers.err(err)
+  if (serialized) {
+    if (serialized.message) serialized.message = redactSecrets(serialized.message)
+    if (serialized.stack) serialized.stack = redactSecrets(serialized.stack)
+  }
   if (serialized && err?.isAxiosError) {
     return {
       type: serialized.type,

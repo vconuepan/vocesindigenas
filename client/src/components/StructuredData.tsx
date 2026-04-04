@@ -10,7 +10,7 @@ export default function StructuredData({ data }: { data: Record<string, unknown>
         <script
           key={i}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(item).replace(/<\/script>/gi, '<\\/script>') }}
         />
       ))}
     </>
