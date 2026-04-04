@@ -50,7 +50,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), async (req, res) =
     const { email, password } = req.body
 
     const user = await getUserByEmail(email)
-    if (!user) {
+    if (!user || !user.passwordHash) {
       res.status(401).json({ error: 'Invalid email or password' })
       return
     }
