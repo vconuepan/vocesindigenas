@@ -38,9 +38,10 @@ function tryApiKeyAuth(token: string): boolean {
   const apiKey = process.env.PUBLIC_API_KEY
   if (!apiKey) return false
 
-  const tokenBuf = Buffer.from(token)
   const keyBuf = Buffer.from(apiKey)
-  if (tokenBuf.length !== keyBuf.length) return false
+  // Pad/truncate to same length to avoid timing leak on length comparison
+  const tokenBuf = Buffer.alloc(keyBuf.length)
+  tokenBuf.write(token, 'utf8')
   return timingSafeEqual(tokenBuf, keyBuf)
 }
 
