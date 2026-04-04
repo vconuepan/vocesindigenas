@@ -27,11 +27,11 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
   return bcrypt.compare(plain, hash)
 }
 
-export function generateAccessToken(user: { id: string; email: string; role: string }): string {
+export function generateAccessToken(user: { id: string; email: string; userType?: string; role?: string }): string {
   const payload: AccessTokenPayload = {
     userId: user.id,
     email: user.email,
-    role: (user.userType ?? 'viewer').toLowerCase(),
+    role: (user.userType ?? user.role ?? 'viewer').toLowerCase(),
   }
   return jwt.sign(payload, getJwtSecret(), { expiresIn: ACCESS_TOKEN_EXPIRY })
 }

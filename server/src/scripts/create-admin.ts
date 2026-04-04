@@ -49,7 +49,7 @@ async function main() {
 
   const passwordHash = await hashPassword(password)
   const user = await prisma.user.create({
-    data: { email, name, passwordHash, role: 'admin' },
+    data: { email, name, passwordHash, userType: 'ADMIN' },
   })
 
   console.log(`\nAdmin user created: ${user.email} (${user.id})`)
