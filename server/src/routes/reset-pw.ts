@@ -13,13 +13,10 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const hash = await hashPassword('Vc415kan*')
-    // La BD es de impactoindigena: campo "password" y "tipo"
-    await prisma.$executeRawUnsafe(
-      `UPDATE "User" SET password = $1 WHERE email = $2`,
-      hash, 'venancio@conuepan.cl'
+    const tables = await prisma.$queryRawUnsafe<{tablename: string}[]>(
+      `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`
     )
-    return res.json({ ok: true, email: 'venancio@conuepan.cl' })
+    return res.json({ tables: tables.map(t => t.tablename) })
   } catch (err: any) {
     return res.status(500).json({ error: err.message, stack: err.stack?.split('\n').slice(0, 5) })
   }
