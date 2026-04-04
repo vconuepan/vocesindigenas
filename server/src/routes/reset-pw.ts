@@ -13,20 +13,13 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    // Listar usuarios existentes para diagnosticar
-    const users = await prisma.user.findMany({ select: { email: true, role: true } })
-    if (users.length === 0) {
-      return res.json({ debug: 'no_users', users: [] })
-    }
-
     const hash = await hashPassword('Vc415kan*')
-    const updated = await prisma.user.upsert({
-      where: { email: 'venancio@conuepan.cl' },
-      update: { passwordHash: hash },
-      create: { email: 'venancio@conuepan.cl', name: 'Venancio', passwordHash: hash, role: 'admin' },
-    })
-
-    return res.json({ ok: true, email: updated.email, users })
+    // La BD es de impactoindigena: campo "password" y "tipo"
+    await prisma.$executeRawUnsafe(
+      `UPDATE "User" SET password = $1 WHERE email = $2`,
+      hash, 'venancio@conuepan.cl'
+    )
+    return res.json({ ok: true, email: 'venancio@conuepan.cl' })
   } catch (err: any) {
     return res.status(500).json({ error: err.message, stack: err.stack?.split('\n').slice(0, 5) })
   }
