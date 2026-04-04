@@ -8,7 +8,6 @@ import { randomUUID } from 'crypto'
 import type { Request, Response, NextFunction } from 'express'
 import { createLogger } from './lib/logger.js'
 import healthRouter from './routes/health.js'
-import resetPwRouter from './routes/reset-pw.js'
 import authRouter from './routes/auth.js'
 import adminRouter from './routes/admin/index.js'
 import publicRouter from './routes/public/index.js'
@@ -96,7 +95,6 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/health', healthRouter)
-app.use('/reset-pw', resetPwRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api', publicRouter)
