@@ -60,7 +60,8 @@ app.use((req, res, next) => {
   // Restricted CORS for everything else (auth, admin, subscribe)
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true)
+      // Require origin header for write operations — rejects curl/server-side requests
+      if (!origin) return callback(new Error('Not allowed by CORS'))
       if (allowedOrigins.includes(origin)) {
         return callback(null, true)
       }

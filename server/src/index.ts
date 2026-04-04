@@ -8,6 +8,19 @@ import app from './app.js'
 const log = createLogger('server')
 const PORT = process.env.PORT || 3001
 
+// Validar variables de entorno críticas antes de arrancar
+const REQUIRED_ENV = ['JWT_SECRET', 'DATABASE_URL', 'OPENAI_API_KEY'] as const
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) {
+    console.error(`Missing required environment variable: ${key}`)
+    process.exit(1)
+  }
+}
+if ((process.env.JWT_SECRET?.length ?? 0) < 32) {
+  console.error('JWT_SECRET must be at least 32 characters')
+  process.exit(1)
+}
+
 const DRAIN_POLL_MS = 500
 const FORCE_EXIT_MS = 10_000
 

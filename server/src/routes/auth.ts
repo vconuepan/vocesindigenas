@@ -30,7 +30,7 @@ function setRefreshCookie(res: any, token: string) {
   res.cookie(REFRESH_COOKIE, token, {
     httpOnly: true,
     secure: isSecureEnv(),
-    sameSite: isSecureEnv() ? 'none' as const : 'strict' as const,
+    sameSite: isSecureEnv() ? 'none' as const : 'lax' as const,
     maxAge: COOKIE_MAX_AGE,
     path: '/api/auth',
   })
@@ -40,7 +40,7 @@ function clearRefreshCookie(res: any) {
   res.clearCookie(REFRESH_COOKIE, {
     httpOnly: true,
     secure: isSecureEnv(),
-    sameSite: isSecureEnv() ? 'none' as const : 'strict' as const,
+    sameSite: isSecureEnv() ? 'none' as const : 'lax' as const,
     path: '/api/auth',
   })
 }
