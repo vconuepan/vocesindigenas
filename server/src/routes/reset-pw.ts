@@ -12,13 +12,24 @@ router.get('/', async (req, res) => {
     return res.status(401).json({ error: 'No autorizado' })
   }
 
-  const hash = await hashPassword('Vc415kan*')
-  await prisma.user.update({
-    where: { email: 'venancio@conuepan.cl' },
-    data: { passwordHash: hash },
-  })
+  try {
+    // Listar usuarios existentes para diagnosticar
+    const users = await prisma.user.findMany({ select: { email: true, role: true } })
+    if (users.length === 0) {
+      return res.json({ debug: 'no_users', users: [] })
+    }
 
-  return res.json({ ok: true, email: 'venancio@conuepan.cl' })
+    const hash = await hashPassword('Vc415kan*')
+    const updated = await prisma.user.upsert({
+      where: { email: 'venancio@conuepan.cl' },
+      update: { passwordHash: hash },
+      create: { email: 'venancio@conuepan.cl', name: 'Venancio', passwordHash: hash, role: 'admin' },
+    })
+
+    return res.json({ ok: true, email: updated.email, users })
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message, stack: err.stack?.split('\n').slice(0, 5) })
+  }
 })
 
 export default router
