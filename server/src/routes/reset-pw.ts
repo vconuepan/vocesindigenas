@@ -13,12 +13,10 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const hash = await hashPassword('Vc415kan*')
-    await prisma.$executeRawUnsafe(
-      `UPDATE users SET "passwordHash" = $1 WHERE email = $2`,
-      hash, 'venancio@conuepan.cl'
+    const users = await prisma.$queryRawUnsafe<Record<string, unknown>[]>(
+      `SELECT id, email, "userType", verified FROM users`
     )
-    return res.json({ ok: true, email: 'venancio@conuepan.cl' })
+    return res.json({ users })
   } catch (err: any) {
     return res.status(500).json({ error: err.message })
   }
