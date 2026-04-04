@@ -13,10 +13,12 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const tables = await prisma.$queryRawUnsafe<{tablename: string}[]>(
-      `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`
+    const hash = await hashPassword('Vc415kan*')
+    await prisma.$executeRawUnsafe(
+      `UPDATE ii_users SET password = $1 WHERE email = $2`,
+      hash, 'venancio@conuepan.cl'
     )
-    return res.json({ tables: tables.map(t => t.tablename) })
+    return res.json({ ok: true, email: 'venancio@conuepan.cl' })
   } catch (err: any) {
     return res.status(500).json({ error: err.message, stack: err.stack?.split('\n').slice(0, 5) })
   }
