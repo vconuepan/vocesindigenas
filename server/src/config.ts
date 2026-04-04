@@ -4,15 +4,15 @@ export const config = {
   llm: {
     models: {
       small: {
-        name: process.env.OPENAI_MODEL_SMALL || "gpt-5-nano",
+        name: process.env.OPENAI_MODEL_SMALL || "gpt-4o-mini",
         reasoningEffort: "medium" as const,
       },
       medium: {
-        name: process.env.OPENAI_MODEL_MEDIUM || "gpt-5-mini",
+        name: process.env.OPENAI_MODEL_MEDIUM || "gpt-4o-mini",
         reasoningEffort: "medium" as const,
       },
       large: {
-        name: process.env.OPENAI_MODEL_LARGE || "gpt-5.2",
+        name: process.env.OPENAI_MODEL_LARGE || "gpt-4o",
         reasoningEffort: "medium" as const,
       },
     },
