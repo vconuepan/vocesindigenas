@@ -83,7 +83,10 @@ export async function subscribe({ email, firstName }: SubscribeParams) {
 
   // Send confirmation email
   const confirmUrl = `${API_URL}/api/subscribe/confirm?token=${token}&email=${encodeURIComponent(email)}`
-  const greeting = firstName ? `Hi ${firstName},` : 'Hi,'
+  const safeFirstName = firstName
+    ? firstName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    : undefined
+  const greeting = safeFirstName ? `Hi ${safeFirstName},` : 'Hi,'
 
   const html = `<!DOCTYPE html>
 <html lang="en">

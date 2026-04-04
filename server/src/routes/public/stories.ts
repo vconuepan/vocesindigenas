@@ -47,7 +47,7 @@ router.get('/:slug/cluster', async (req, res) => {
 
 router.get('/:slug/related', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 4, 10)
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit as string, 10) || 4, 10))
     const stories = await storyService.getRelatedStories(req.params.slug, limit)
     res.set('Cache-Control', `public, max-age=${config.relatedStories.httpCacheSeconds}`)
     res.json(stories)
