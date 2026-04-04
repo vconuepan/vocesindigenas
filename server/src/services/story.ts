@@ -336,17 +336,21 @@ export async function updateStory(id: string, data: Record<string, any>): Promis
 
       const embeddingData = await generateEmbeddingForContent(merged)
 
-      return prisma.$transaction(async (tx) => {
-        const story = await tx.story.update({ where: { id }, data: updateData })
+      const story = await prisma.$transaction(async (tx) => {
+        const s = await tx.story.update({ where: { id }, data: updateData })
         if (embeddingData) {
           await saveEmbeddingTx(tx, id, embeddingData.embedding, embeddingData.hash)
         }
-        return story
+        return s
       })
+      relatedCache.clear()
+      return story
     }
   }
 
-  return prisma.story.update({ where: { id }, data: updateData })
+  const result = await prisma.story.update({ where: { id }, data: updateData })
+  relatedCache.clear()
+  return result
 }
 
 export async function updateStoryStatus(id: string, status: string): Promise<Story> {
@@ -355,7 +359,9 @@ export async function updateStoryStatus(id: string, status: string): Promise<Sto
     Object.assign(data, await preparePublishData(id))
     await ensureEmbedding(id)
   }
-  return prisma.story.update({ where: { id }, data })
+  const result = await prisma.story.update({ where: { id }, data })
+  relatedCache.clear()
+  return result
 }
 
 export async function generateUniqueSlugs(
