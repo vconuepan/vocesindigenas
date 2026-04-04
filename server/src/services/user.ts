@@ -13,7 +13,7 @@ export async function createUser(data: {
   email: string
   name: string
   password: string
-  userType?: string
+  userType?: import('@prisma/client').UserType
 }) {
   const passwordHash = await hashPassword(data.password)
   return prisma.user.create({
@@ -21,7 +21,7 @@ export async function createUser(data: {
       email: data.email,
       name: data.name,
       passwordHash,
-      userType: data.userType || 'viewer',
+      userType: data.userType || 'VEEDOR',
     },
     select: userSelect,
   })
@@ -47,7 +47,7 @@ export async function listUsers() {
   })
 }
 
-export async function updateUser(id: string, data: { email?: string; name?: string; userType?: string }) {
+export async function updateUser(id: string, data: { email?: string; name?: string; userType?: import('@prisma/client').UserType }) {
   return prisma.user.update({
     where: { id },
     data,

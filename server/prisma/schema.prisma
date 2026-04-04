@@ -380,12 +380,19 @@ model Feedback {
 
 // --- Auth Tables ---
 
+enum UserType {
+  ADMIN
+  EMPRESA
+  COMUNIDAD_LIDER
+  VEEDOR
+}
+
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
   name          String
   passwordHash  String
-  userType      String         @default("viewer")
+  userType      UserType       @default(VEEDOR)
   verified      Boolean        @default(false)
   freeLicense   Boolean        @default(false)
   comunidadId   String?
