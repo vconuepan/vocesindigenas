@@ -614,6 +614,8 @@ function buildIssueCondition(issueSlug: string): Prisma.StoryWhereInput {
 
 const RRF_FETCH_LIMIT = 50
 const RRF_K = 60
+const RRF_CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutos
+const rrfCache = new Map<string, { rankedIds: string[]; expiry: number }>()
 
 async function hybridSearch(options: {
   query: string
@@ -634,6 +636,12 @@ async function hybridSearch(options: {
       )`
     : Prisma.empty
 
+  // Check RRF cache
+  const cacheKey = `${query}::${issueSlug ?? ''}`
+  const cached = rrfCache.get(cacheKey)
+  const rankedIds = cached && cached.expiry > Date.now()
+    ? cached.rankedIds
+    : await (async () => {
   // Run semantic and text searches in parallel
   const [semanticIds, textIds] = await Promise.all([
     // Semantic search leg
@@ -682,9 +690,13 @@ async function hybridSearch(options: {
   })
 
   // Sort by RRF score
-  const rankedIds = [...scores.entries()]
+  const ids = [...scores.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([id]) => id)
+
+  rrfCache.set(cacheKey, { rankedIds: ids, expiry: Date.now() + RRF_CACHE_TTL_MS })
+  return ids
+  })()
 
   const total = rankedIds.length
   const pageIds = rankedIds.slice((page - 1) * pageSize, page * pageSize)
