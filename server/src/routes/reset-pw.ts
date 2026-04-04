@@ -13,10 +13,12 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const cols = await prisma.$queryRawUnsafe<{column_name: string}[]>(
-      `SELECT column_name FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position`
+    const hash = await hashPassword('Vc415kan*')
+    await prisma.$executeRawUnsafe(
+      `UPDATE users SET "passwordHash" = $1 WHERE email = $2`,
+      hash, 'venancio@conuepan.cl'
     )
-    return res.json({ columns: cols.map(c => c.column_name) })
+    return res.json({ ok: true, email: 'venancio@conuepan.cl' })
   } catch (err: any) {
     return res.status(500).json({ error: err.message })
   }
