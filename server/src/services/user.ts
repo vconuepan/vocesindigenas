@@ -1,12 +1,10 @@
 import prisma from '../lib/prisma.js'
 import { hashPassword, verifyPassword, revokeAllUserTokens } from './auth.js'
-import type { UserRole } from '@prisma/client'
-
 const userSelect = {
   id: true,
   email: true,
   name: true,
-  role: true,
+  userType: true,
   createdAt: true,
   updatedAt: true,
 }
@@ -15,7 +13,7 @@ export async function createUser(data: {
   email: string
   name: string
   password: string
-  role?: UserRole
+  userType?: string
 }) {
   const passwordHash = await hashPassword(data.password)
   return prisma.user.create({
@@ -23,7 +21,7 @@ export async function createUser(data: {
       email: data.email,
       name: data.name,
       passwordHash,
-      role: data.role || 'viewer',
+      userType: data.userType || 'viewer',
     },
     select: userSelect,
   })
@@ -49,7 +47,7 @@ export async function listUsers() {
   })
 }
 
-export async function updateUser(id: string, data: { email?: string; name?: string; role?: UserRole }) {
+export async function updateUser(id: string, data: { email?: string; name?: string; userType?: string }) {
   return prisma.user.update({
     where: { id },
     data,

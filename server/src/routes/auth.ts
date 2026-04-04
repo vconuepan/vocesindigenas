@@ -67,7 +67,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), async (req, res) =
     setRefreshCookie(res, refreshToken)
     res.json({
       accessToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: (user.userType ?? 'viewer').toLowerCase() },
     })
   } catch (err) {
     log.error({ err }, 'login failed')

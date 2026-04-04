@@ -45,11 +45,6 @@ enum ContentStatus {
   published
 }
 
-enum UserRole {
-  admin
-  editor
-  viewer
-}
 
 // --- Core Tables ---
 
@@ -389,11 +384,14 @@ model User {
   id            String         @id @default(uuid())
   email         String         @unique
   name          String
-  passwordHash  String         @map("password_hash")
-  role          UserRole       @default(viewer)
+  passwordHash  String
+  userType      String         @default("viewer")
+  verified      Boolean        @default(false)
+  freeLicense   Boolean        @default(false)
+  comunidadId   String?
   refreshTokens RefreshToken[]
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@map("users")
 }

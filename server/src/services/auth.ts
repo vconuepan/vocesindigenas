@@ -31,7 +31,7 @@ export function generateAccessToken(user: { id: string; email: string; role: str
   const payload: AccessTokenPayload = {
     userId: user.id,
     email: user.email,
-    role: user.role,
+    role: (user.userType ?? 'viewer').toLowerCase(),
   }
   return jwt.sign(payload, getJwtSecret(), { expiresIn: ACCESS_TOKEN_EXPIRY })
 }
