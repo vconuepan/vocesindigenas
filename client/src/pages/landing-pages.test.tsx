@@ -4,7 +4,6 @@ import { MemoryRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import MethodologyPage from './MethodologyPage'
-import StewardshipPage from './StewardshipPage'
 import ThankYouPage from './ThankYouPage'
 
 vi.mock('../components/SubscribeProvider', () => ({
@@ -37,14 +36,6 @@ describe('MethodologyPage', () => {
   it('renders dynamic source count from useSources hook', () => {
     renderPage(<MethodologyPage />)
     expect(screen.getByText(/82 curated news sources/)).toBeInTheDocument()
-  })
-})
-
-describe('StewardshipPage', () => {
-  it('renders heading and dynamic source count', () => {
-    renderPage(<StewardshipPage />)
-    expect(screen.getByRole('heading', { level: 1, name: /long-term home/i })).toBeInTheDocument()
-    expect(screen.getByText(/82\+/)).toBeInTheDocument()
   })
 })
 
