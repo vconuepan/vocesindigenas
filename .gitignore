@@ -6,6 +6,7 @@ dist
 # Environment files with secrets
 server/.env
 client/.env
+.env.docker
 
 # Prisma
 server/prisma/*.db

@@ -1,14 +1,12 @@
 services:
   db:
     image: pgvector/pgvector:pg17
-    container_name: actually-relevant-db
+    container_name: vocesindigenas-db
     restart: unless-stopped
     ports:
       - "5433:5432"
-    environment:
-      POSTGRES_DB: actually_relevant_dev
-      POSTGRES_USER: ardev
-      POSTGRES_PASSWORD: ardev_local
+    env_file:
+      - .env.docker
     volumes:
       - pgdata:/var/lib/postgresql/data
 

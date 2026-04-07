@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-server:
+    name: Server tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --prefix server
+
+      - name: Generate Prisma client
+        run: npm run db:generate --prefix server
+        env:
+          DATABASE_URL: 'postgresql://user:password@localhost:5432/db?schema=public'
+
+      - name: Run tests
+        run: npm test --prefix server
+
+  test-client:
+    name: Client tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --prefix client
+
+      - name: Run tests
+        run: npm test --prefix client
+
+  typecheck-client:
+    name: Client typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --prefix client
+
+      - name: Typecheck
+        run: npx tsc -b --noEmit
+        working-directory: client
