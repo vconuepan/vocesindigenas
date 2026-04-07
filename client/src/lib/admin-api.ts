@@ -212,7 +212,7 @@ export const authApi = {
     accessToken = null
   },
 
-  me: () => request<User>('/auth/me'),
+  me: () => request<{ id: string; email: string; name: string; role: string }>('/auth/me'),
 }
 
 export const adminApi = {

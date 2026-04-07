@@ -19,7 +19,7 @@ export function useUser(id: string) {
 export function useCreateUser() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: { email: string; name: string; password: string; role?: string }) =>
+    mutationFn: (data: { email: string; name: string; password: string; userType?: string }) =>
       adminApi.users.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
@@ -30,7 +30,7 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { email?: string; name?: string; role?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { email?: string; name?: string; userType?: string } }) =>
       adminApi.users.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
