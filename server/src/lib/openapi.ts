@@ -95,18 +95,18 @@ export function getOpenAPIDocument(): any {
   return createDocument({
     openapi: '3.1.0',
     info: {
-      title: 'Actually Relevant API',
+      title: 'Impacto Indígena API',
       version: '0.1.0',
       description:
-        'Public API for Actually Relevant — an AI-curated news platform that evaluates article relevance to humanity. ' +
+        'Public API for Impacto Indígena — an AI-curated news platform covering stories that matter to indigenous peoples. ' +
         'Access published stories, issues, homepage data, and RSS feeds. No authentication required.',
       contact: {
-        name: 'Actually Relevant',
-        url: 'https://actuallyrelevant.news',
+        name: 'Impacto Indígena',
+        url: 'https://impactoindigena.news',
       },
     },
     servers: [
-      { url: process.env.API_URL || 'https://actually-relevant-api.onrender.com', description: 'Production' },
+      { url: process.env.API_URL || 'https://vocesindigenas-backend.onrender.com', description: 'Production' },
     ],
     paths: {
       '/api/homepage': {

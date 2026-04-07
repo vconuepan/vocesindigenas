@@ -16,7 +16,7 @@ export default function PodcastDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{podcast?.title || 'Podcast'} — Admin — Actually Relevant</title>
+        <title>{podcast?.title || 'Podcast'} — Admin — Impacto Indígena</title>
       </Helmet>
 
       <div className="mb-4">

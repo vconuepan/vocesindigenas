@@ -4,15 +4,16 @@ import { Link } from "react-router-dom";
 import { SEO, CommonOgTags } from "../lib/seo";
 
 const ISSUES = [
-  { label: "All issues", value: "" },
-  { label: "Human Development", value: "human-development" },
-  { label: "Planet & Climate", value: "planet-climate" },
-  { label: "Existential Threats", value: "existential-threats" },
-  { label: "Science & Technology", value: "science-technology" },
+  { label: "Todas las categorías", value: "" },
+  { label: "Cambio Climático", value: "cambio-climatico" },
+  { label: "Derechos Indígenas", value: "derechos-indigenas" },
+  { label: "Desarrollo Sostenible y Autodeterminado", value: "desarrollo-sostenible-y-autodeterminado" },
+  { label: "Reconciliación y Paz", value: "reconciliacion-y-paz" },
+  { label: "Chile Indígena", value: "chile-indigena" },
 ];
 
-const WIDGET_URL = "https://actuallyrelevant.news/widget.js";
-const EMBED_URL = "https://actuallyrelevant.news/embed";
+const WIDGET_URL = "https://impactoindigena.news/widget.js";
+const EMBED_URL = "https://impactoindigena.news/embed";
 
 export default function WidgetGeneratorPage() {
   const [issue, setIssue] = useState("");
@@ -42,7 +43,7 @@ export default function WidgetGeneratorPage() {
   if (showSummary) iframeParams.set("summary", "true");
   if (upliftingOnly) iframeParams.set("mood", "uplifting");
   const qs = iframeParams.toString();
-  const iframeCode = `<iframe src="${EMBED_URL}${qs ? "?" + qs : ""}" width="100%" height="${showSummary ? 600 : 400}" frameborder="0" title="Actually Relevant stories"></iframe>`;
+  const iframeCode = `<iframe src="${EMBED_URL}${qs ? "?" + qs : ""}" width="100%" height="${showSummary ? 600 : 400}" frameborder="0" title="Impacto Indígena stories"></iframe>`;
 
   function copyToClipboard(text: string, type: "script" | "iframe") {
     navigator.clipboard.writeText(text).then(() => {
@@ -54,12 +55,12 @@ export default function WidgetGeneratorPage() {
   return (
     <>
       <Helmet>
-        <title>For Your Website - Actually Relevant</title>
+        <title>For Your Website - Impacto Indígena</title>
         <meta
           name="description"
           content="Add AI-curated relevant news to your website with embeddable widgets. Easy to set up, customizable, and always up to date."
         />
-        <meta property="og:title" content="For Your Website - Actually Relevant" />
+        <meta property="og:title" content="For Your Website - Impacto Indígena" />
         <meta property="og:description" content="Add AI-curated relevant news to your website with embeddable widgets. Easy to set up, customizable, and always up to date." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/widgets`} />

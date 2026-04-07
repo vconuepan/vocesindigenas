@@ -21,12 +21,13 @@ const subscribeLimiter = rateLimit({
 const subscribeSchema = z.object({
   email: z.string().email('Invalid email address').max(255),
   firstName: z.string().max(100).optional(),
+  language: z.enum(['es', 'en']).optional(),
 })
 
 router.post('/', subscribeLimiter, validateBody(subscribeSchema), async (req, res) => {
   try {
-    const { email, firstName } = req.body
-    await subscribeService.subscribe({ email, firstName })
+    const { email, firstName, language } = req.body
+    await subscribeService.subscribe({ email, firstName, language })
     // Always return success to avoid information leaks
     res.json({ success: true, message: 'Check your email to confirm your subscription.' })
   } catch (err) {
@@ -42,7 +43,7 @@ router.post('/', subscribeLimiter, validateBody(subscribeSchema), async (req, re
 
 router.get('/confirm', async (req, res) => {
   const { token, email } = req.query as { token?: string; email?: string }
-  const clientUrl = process.env.CLIENT_URL || 'https://actuallyrelevant.news'
+  const clientUrl = process.env.CLIENT_URL || 'https://impactoindigena.news'
 
   if (!token || !email) {
     res.redirect(`${clientUrl}/subscribed?error=invalid`)

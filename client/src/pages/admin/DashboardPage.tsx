@@ -42,7 +42,7 @@ export default function DashboardPage() {
   return (
     <>
       <Helmet>
-        <title>Dashboard — Admin — Actually Relevant</title>
+        <title>Dashboard — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader title="Dashboard" description="Overview of stories and jobs" />

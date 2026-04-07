@@ -42,7 +42,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
       <Helmet>
-        <title>Admin Login — Actually Relevant</title>
+        <title>Admin Login — Impacto Indígena</title>
       </Helmet>
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-bold text-center text-neutral-900 mb-8">Admin Login</h1>

@@ -54,7 +54,7 @@ export default function NewslettersPage() {
   return (
     <>
       <Helmet>
-        <title>Newsletters — Admin — Actually Relevant</title>
+        <title>Newsletters — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

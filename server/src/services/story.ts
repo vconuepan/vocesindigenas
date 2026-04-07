@@ -422,9 +422,11 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
 
     const now = new Date()
     await prisma.$transaction(async (tx) => {
-      for (const [storyId, slug] of slugMap.entries()) {
-        await tx.story.update({ where: { id: storyId }, data: { slug } })
-      }
+      await Promise.all(
+        Array.from(slugMap.entries()).map(([storyId, slug]) =>
+          tx.story.update({ where: { id: storyId }, data: { slug } })
+        )
+      )
       await tx.story.updateMany({
         where: { id: { in: ids }, datePublished: { not: null } },
         data: { status: status as StoryStatus },

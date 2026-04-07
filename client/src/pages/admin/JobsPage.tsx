@@ -12,7 +12,7 @@ export default function JobsPage() {
   return (
     <>
       <Helmet>
-        <title>Jobs — Admin — Actually Relevant</title>
+        <title>Jobs — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

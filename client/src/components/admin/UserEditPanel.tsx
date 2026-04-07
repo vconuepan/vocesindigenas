@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, type FormEvent } from 'react'
-import type { UserRole } from '@shared/types'
+import type { UserType } from '@shared/types'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { useUser, useUpdateUser, useResetPassword } from '../../hooks/useUsers'
@@ -9,9 +9,10 @@ import { EditPanel, PANEL_BODY } from './EditPanel'
 import { PanelFooter } from './PanelFooter'
 
 const ROLE_OPTIONS = [
-  { value: 'viewer', label: 'Viewer' },
-  { value: 'editor', label: 'Editor' },
-  { value: 'admin', label: 'Admin' },
+  { value: 'VEEDOR', label: 'Veedor' },
+  { value: 'COMUNIDAD_LIDER', label: 'Comunidad Líder' },
+  { value: 'EMPRESA', label: 'Empresa' },
+  { value: 'ADMIN', label: 'Admin' },
 ]
 
 function PasswordResetSection({ userId }: { userId: string }) {
@@ -117,7 +118,7 @@ function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void
   const updateUser = useUpdateUser()
 
   const initialState = useMemo(
-    () => ({ email: user!.email, name: user!.name, role: user!.role }),
+    () => ({ email: user!.email, name: user!.name, userType: user!.userType }),
     [user],
   )
 
@@ -125,7 +126,7 @@ function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void
     entityId: userId,
     initialState,
     mutation: updateUser,
-    toPayload: (f) => ({ email: f.email, name: f.name, role: f.role }),
+    toPayload: (f) => ({ email: f.email, name: f.name, userType: f.userType }),
     successMessage: 'User updated',
     entityName: 'user',
     onSuccess: onClose,
@@ -151,10 +152,10 @@ function UserEditForm({ userId, onClose }: { userId: string; onClose: () => void
         />
         <Select
           id="edit-role"
-          label="Role"
+          label="Tipo de usuario"
           options={ROLE_OPTIONS}
-          value={form.role}
-          onChange={e => set('role', e.target.value as UserRole)}
+          value={form.userType}
+          onChange={e => set('userType', e.target.value as UserType)}
         />
         <PasswordResetSection userId={userId} />
       </div>

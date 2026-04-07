@@ -1,15 +1,21 @@
 import { Router } from 'express'
+import { z } from 'zod'
 import { createLogger } from '../../lib/logger.js'
 import * as feedService from '../../services/feed.js'
 import { fetchFavicon, fetchAllFavicons } from '../../services/favicon.js'
 import { crawlFeed, crawlAllDueFeeds } from '../../services/crawler.js'
-import { validateBody } from '../../middleware/validate.js'
+import { validateBody, validateQuery } from '../../middleware/validate.js'
 import { createFeedSchema, updateFeedSchema } from '../../schemas/feed.js'
+
+const feedsQuerySchema = z.object({
+  issueId: z.string().optional(),
+  active: z.enum(['true', 'false']).optional(),
+})
 
 const router = Router()
 const log = createLogger('feeds')
 
-router.get('/', async (req, res) => {
+router.get('/', validateQuery(feedsQuerySchema), async (req, res) => {
   try {
     const filters: { issueId?: string; active?: boolean } = {}
     if (req.query.issueId) filters.issueId = req.query.issueId as string

@@ -17,9 +17,10 @@ import { UserEditPanel } from '../../components/admin/UserEditPanel'
 import { UserTable } from '../../components/admin/UserTable'
 
 const ROLE_OPTIONS = [
-  { value: 'viewer', label: 'Viewer' },
-  { value: 'editor', label: 'Editor' },
-  { value: 'admin', label: 'Admin' },
+  { value: 'VEEDOR', label: 'Veedor' },
+  { value: 'COMUNIDAD_LIDER', label: 'Comunidad Líder' },
+  { value: 'EMPRESA', label: 'Empresa' },
+  { value: 'ADMIN', label: 'Admin' },
 ]
 
 function CreateUserDialog({
@@ -34,14 +35,14 @@ function CreateUserDialog({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('editor')
+  const [userType, setUserType] = useState('VEEDOR')
   const [error, setError] = useState('')
 
   const reset = () => {
     setName('')
     setEmail('')
     setPassword('')
-    setRole('editor')
+    setUserType('VEEDOR')
     setError('')
   }
 
@@ -54,7 +55,7 @@ function CreateUserDialog({
     e.preventDefault()
     setError('')
     try {
-      await createUser.mutateAsync({ name, email, password, role })
+      await createUser.mutateAsync({ name, email, password, userType })
       toast('success', 'User created')
       handleClose()
     } catch (err) {
@@ -74,7 +75,7 @@ function CreateUserDialog({
             <Input id="create-name" label="Name" value={name} onChange={e => setName(e.target.value)} required autoFocus />
             <Input id="create-email" label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
             <Input id="create-password" label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} autoComplete="new-password" />
-            <Select id="create-role" label="Role" options={ROLE_OPTIONS} value={role} onChange={e => setRole(e.target.value)} />
+            <Select id="create-role" label="Tipo de usuario" options={ROLE_OPTIONS} value={userType} onChange={e => setUserType(e.target.value)} />
             {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="secondary" type="button" onClick={handleClose}>Cancel</Button>
@@ -112,7 +113,7 @@ export default function UsersPage() {
   return (
     <>
       <Helmet>
-        <title>Users — Admin — Actually Relevant</title>
+        <title>Users — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

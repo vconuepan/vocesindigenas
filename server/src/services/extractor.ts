@@ -10,7 +10,7 @@ import { withRetry, isRetryableError } from '../lib/retry.js'
 import { crawlLimiter } from '../lib/crawlLimiter.js'
 
 const log = createLogger('extractor')
-const USER_AGENT = 'ActuallyRelevant/1.0 (news curation bot; +https://actuallyrelevant.news)'
+const USER_AGENT = 'ImpactoIndigena/1.0 (news curation bot; +https://impactoindigena.news)'
 
 function isQuotaError(err: unknown): boolean {
   if (err instanceof Error && 'isAxiosError' in err) {

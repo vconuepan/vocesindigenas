@@ -386,7 +386,7 @@ export default function StoriesPage() {
   return (
     <>
       <Helmet>
-        <title>Stories — Admin — Actually Relevant</title>
+        <title>Stories — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

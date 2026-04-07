@@ -25,8 +25,8 @@ export function buildPodcastPrompt(stories: StoryForPodcast[]): string {
 Please write a script with the following elements:
 
 - Intro
--- Welcome the listeners to the 'Actually Relevant Podcast'.
--- Explain that Actually Relevant evaluated hundreds of stories this week on how important they are for humanity. The podcast highlights the most relevant ones.
+-- Welcome the listeners to the 'Impacto Indígena Podcast'.
+-- Explain that Impacto Indígena evaluated hundreds of stories this week on how relevant they are for indigenous peoples. The podcast highlights the most relevant ones.
 -- Introduce yourself in a light-hearted way as an AI-generated voice.
 
 - Sections (one for each category). In each section:
@@ -35,14 +35,8 @@ Please write a script with the following elements:
 --- Adjust the summary of the original story to this podcast format. Mention who published the original article.
 --- Adjust the relevance analysis for the story to this podcast format.
 
-Group the following categories under their parent category 'Existential Risks'. Only announce the section 'Existential Risks' and not the subcategories.
-- Pandemics
-- Nuclear War
-- Artificial Intelligence
-- Natural catastrophes
-
 - Outro
--- Mention that Actually Relevant is still in a prototype phase and that we're eager to receive feedback.
+-- Mention that Impacto Indígena is still in a prototype phase and that we're eager to receive feedback.
 -- Thank the listeners for listening.
 
 Make sure to include all the <STORIES> mentioned above.

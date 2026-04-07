@@ -6,8 +6,8 @@ import { createLogger } from '../lib/logger.js'
 
 const log = createLogger('subscribe')
 
-const CLIENT_URL = process.env.CLIENT_URL || 'https://actuallyrelevant.news'
-const API_URL = process.env.API_URL || 'https://actually-relevant-api.onrender.com'
+const CLIENT_URL = process.env.CLIENT_URL || 'https://impactoindigena.news'
+const API_URL = process.env.API_URL || 'https://vocesindigenas-backend.onrender.com'
 
 export class EmailValidationError extends Error {
   constructor(message: string) {
@@ -19,9 +19,10 @@ export class EmailValidationError extends Error {
 interface SubscribeParams {
   email: string
   firstName?: string
+  language?: 'es' | 'en'
 }
 
-export async function subscribe({ email, firstName }: SubscribeParams) {
+export async function subscribe({ email, firstName, language = 'es' }: SubscribeParams) {
   const token = randomUUID()
   const expiresAt = new Date(Date.now() + config.subscribe.confirmTokenExpiryHours * 60 * 60 * 1000)
 
@@ -86,10 +87,28 @@ export async function subscribe({ email, firstName }: SubscribeParams) {
   const safeFirstName = firstName
     ? firstName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     : undefined
-  const greeting = safeFirstName ? `Hi ${safeFirstName},` : 'Hi,'
+
+  const isEn = language === 'en'
+  const subject = isEn
+    ? 'Confirm your subscription to Impacto Indígena'
+    : 'Confirma tu suscripción a Impacto Indígena'
+  const greeting = isEn
+    ? (safeFirstName ? `Hi ${safeFirstName},` : 'Hi,')
+    : (safeFirstName ? `Hola ${safeFirstName},` : 'Hola,')
+  const headingText = isEn ? 'Confirm your subscription' : 'Confirma tu suscripción'
+  const bodyText = isEn
+    ? `${greeting} Click the button below to confirm your subscription.`
+    : `${greeting} Haz clic en el botón para confirmar tu suscripción.`
+  const tagline = isEn
+    ? 'News that matters to indigenous peoples. Weekly to your inbox. Curated with care by AI.'
+    : 'Noticias que importan a los pueblos indígenas. Semanal en tu correo. Curado con cuidado por IA.'
+  const buttonText = isEn ? 'Confirm Subscription' : 'Confirmar suscripción'
+  const expiryText = isEn
+    ? `This link expires in ${config.subscribe.confirmTokenExpiryHours} hours. If you didn't request this, you can safely ignore this email.`
+    : `Este enlace expira en ${config.subscribe.confirmTokenExpiryHours} horas. Si no solicitaste esto, puedes ignorar este correo.`
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${language ?? 'es'}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background-color:#fdf2f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f8;">
@@ -98,22 +117,22 @@ export async function subscribe({ email, firstName }: SubscribeParams) {
         <table role="presentation" width="500" cellpadding="0" cellspacing="0" style="max-width:500px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;">
           <tr>
             <td style="padding:32px 32px 24px;text-align:center;border-bottom:3px solid #ec268f;">
-              <h1 style="margin:0;font-size:22px;font-weight:800;color:#171717;">Actually Relevant</h1>
+              <h1 style="margin:0;font-size:22px;font-weight:800;color:#171717;">Impacto Indígena</h1>
             </td>
           </tr>
           <tr>
             <td style="padding:32px;">
-              <h2 style="margin:0 0 16px;font-size:20px;color:#171717;">Confirm your subscription</h2>
-              <p style="margin:0 0 8px;font-size:15px;color:#525252;line-height:1.6;">${greeting} Click the button below to confirm your subscription.</p>
-              <p style="margin:0 0 24px;font-size:14px;color:#737373;line-height:1.5;font-style:italic;">News that matters to humanity. Weekly to your inbox. Curated with care by AI.</p>
+              <h2 style="margin:0 0 16px;font-size:20px;color:#171717;">${headingText}</h2>
+              <p style="margin:0 0 8px;font-size:15px;color:#525252;line-height:1.6;">${bodyText}</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#737373;line-height:1.5;font-style:italic;">${tagline}</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
                 <tr>
                   <td style="border-radius:6px;background-color:#d41f7f;">
-                    <a href="${confirmUrl}" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;">Confirm Subscription</a>
+                    <a href="${confirmUrl}" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;">${buttonText}</a>
                   </td>
                 </tr>
               </table>
-              <p style="margin:24px 0 0;font-size:13px;color:#a3a3a3;">This link expires in ${config.subscribe.confirmTokenExpiryHours} hours. If you didn't request this, you can safely ignore this email.</p>
+              <p style="margin:24px 0 0;font-size:13px;color:#a3a3a3;">${expiryText}</p>
             </td>
           </tr>
         </table>
@@ -126,7 +145,7 @@ export async function subscribe({ email, firstName }: SubscribeParams) {
   try {
     await plunk.sendTransactional({
       to: email,
-      subject: 'Confirm your subscription to Actually Relevant',
+      subject,
       body: html,
     })
     log.info({ email }, 'confirmation email sent')

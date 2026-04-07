@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 import { publicApi } from '../lib/api'
 import { BRAND } from '../config'
 
@@ -39,6 +40,7 @@ export default function SubscribeForm({
       const result = await publicApi.subscribe({
         email: email.trim(),
         ...(firstName.trim() ? { firstName: firstName.trim() } : {}),
+        language: i18n.language,
       })
       if (!result.success) {
         setStatus('error')

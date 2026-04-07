@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { uploadImageToR2 } from './imageStorage.js'
 import { createLogger } from './logger.js'
 
@@ -114,7 +114,7 @@ function drawRainbowBar(ctx: any): void {
 }
 /** Exporta canvas directamente en 2160x2160 para máxima nitidez */
 function exportCanvas(sourceCanvas: any): Buffer {
-  return sourceCanvas.toBuffer('image/jpeg', { quality: 0.92 })
+  return sourceCanvas.toBuffer('image/jpeg', { quality: 92 })
 }
 // ---------------------------------------------------------------------------
 // Slide 1: Portada — Imagen IA + Título

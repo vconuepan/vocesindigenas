@@ -50,9 +50,9 @@ describe('GET /api/sitemap.xml', () => {
 
     const res = await request(app).get('/api/sitemap.xml')
 
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/stories/ai-breakthrough-2024</loc>')
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/stories/climate-summit-results</loc>')
-    expect(res.text).toContain('<loc>https://actuallyrelevant.news/stories/space-mission-launch</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/stories/ai-breakthrough-2024</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/stories/climate-summit-results</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/stories/space-mission-launch</loc>')
     expect(res.text).toContain('<lastmod>2024-06-15</lastmod>')
   })
 

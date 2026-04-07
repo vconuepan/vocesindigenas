@@ -12,7 +12,7 @@ export default function NewsletterDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{newsletter?.title || 'Newsletter'} — Admin — Actually Relevant</title>
+        <title>{newsletter?.title || 'Newsletter'} — Admin — Impacto Indígena</title>
       </Helmet>
 
       {isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}

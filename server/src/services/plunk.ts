@@ -1,7 +1,20 @@
 import axios from 'axios'
+import { resolveMx } from 'dns/promises'
 import { config } from '../config.js'
 import { withRetry, isRetryableError } from '../lib/retry.js'
 import { createLogger } from '../lib/logger.js'
+
+// Common disposable email domains
+const DISPOSABLE_DOMAINS = new Set([
+  'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwam.com',
+  'sharklasers.com', 'guerrillamailblock.com', 'grr.la', 'guerrillamail.info',
+  'guerrillamail.biz', 'guerrillamail.de', 'guerrillamail.net', 'guerrillamail.org',
+  'spam4.me', 'trashmail.com', 'trashmail.me', 'trashmail.net', 'trashmail.org',
+  'dispostable.com', 'yopmail.com', 'yopmail.fr', 'cool.fr.nf', 'jetable.fr.nf',
+  'maildrop.cc', 'fakeinbox.com', 'mailnull.com', 'spamgourmet.com',
+  'spamgourmet.net', 'spamgourmet.org', 'spamex.com', 'spamfree24.org',
+  'throwam.com', 'discard.email', 'mailnesia.com', 'spamthisplease.com',
+])
 
 const log = createLogger('plunk')
 
@@ -313,9 +326,21 @@ export interface EmailVerifyResult {
 }
 
 export async function verifyEmail(email: string): Promise<EmailVerifyResult> {
-  // Brevo no tiene endpoint de verificación directa — retornamos válido por defecto
-  log.info({ email }, 'email verification skipped (not supported by Brevo)')
-  return { valid: true, domainExists: true, isDisposable: false }
+  const domain = email.split('@')[1]?.toLowerCase()
+  if (!domain) return { valid: false, domainExists: false, isDisposable: false }
+
+  const isDisposable = DISPOSABLE_DOMAINS.has(domain)
+
+  try {
+    const records = await resolveMx(domain)
+    const domainExists = records.length > 0
+    log.info({ email, domain, domainExists, isDisposable }, 'email verified via MX lookup')
+    return { valid: domainExists && !isDisposable, domainExists, isDisposable }
+  } catch {
+    // DNS lookup failed — domain likely doesn't exist
+    log.info({ email, domain }, 'email MX lookup failed — domain not found')
+    return { valid: false, domainExists: false, isDisposable }
+  }
 }
 
 // --- Event tracking ---

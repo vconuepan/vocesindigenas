@@ -22,8 +22,8 @@ function buildFeed(options: { title: string; description: string; feedPath: stri
     description: options.description,
     id: siteUrl,
     link: siteUrl,
-    language: 'en',
-    copyright: `© ${new Date().getFullYear()} Actually Relevant`,
+    language: 'es',
+    copyright: `© ${new Date().getFullYear()} Impacto Indígena`,
     feedLinks: {
       rss: `${siteUrl}${options.feedPath}`,
     },
@@ -43,8 +43,8 @@ router.get('/', async (_req, res) => {
       const siteUrl = getSiteUrl()
 
       const feed = buildFeed({
-        title: 'Actually Relevant',
-        description: 'AI-curated news that matters. Stories most relevant to humanity\u2019s future.',
+        title: 'Impacto Indígena',
+        description: 'Noticias que importan a los pueblos indígenas. Curadas con cuidado por IA.',
         feedPath: '/api/feed',
       })
 
@@ -89,8 +89,8 @@ router.get('/:issueSlug', async (req, res) => {
       const siteUrl = getSiteUrl()
 
       const feed = buildFeed({
-        title: `Actually Relevant — ${issue.name}`,
-        description: issue.description || `Stories about ${issue.name} curated by Actually Relevant.`,
+        title: `Impacto Indígena — ${issue.name}`,
+        description: issue.description || `Noticias sobre ${issue.name} curadas por Impacto Indígena.`,
         feedPath: `/api/feed/${issueSlug}`,
       })
 

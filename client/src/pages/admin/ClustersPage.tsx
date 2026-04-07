@@ -68,7 +68,7 @@ export default function ClustersPage() {
   return (
     <>
       <Helmet>
-        <title>Clusters — Admin — Actually Relevant</title>
+        <title>Clusters — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

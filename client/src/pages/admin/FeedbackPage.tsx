@@ -154,7 +154,7 @@ export default function FeedbackPage() {
   return (
     <>
       <Helmet>
-        <title>Feedback — Admin — Actually Relevant</title>
+        <title>Feedback — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

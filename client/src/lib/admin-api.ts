@@ -407,9 +407,9 @@ export const adminApi = {
   users: {
     list: () => request<User[]>('/users'),
     get: (id: string) => request<User>(`/users/${id}`),
-    create: (data: { email: string; name: string; password: string; role?: string }) =>
+    create: (data: { email: string; name: string; password: string; userType?: string }) =>
       request<User>('/users', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: { email?: string; name?: string; role?: string }) =>
+    update: (id: string, data: { email?: string; name?: string; userType?: string }) =>
       request<User>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/users/${id}`, { method: 'DELETE' }),
     resetPassword: (id: string, password: string) =>

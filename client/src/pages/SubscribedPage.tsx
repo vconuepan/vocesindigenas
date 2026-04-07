@@ -10,7 +10,7 @@ export default function SubscribedPage() {
     return (
       <>
         <Helmet>
-          <title>Link Expired - Actually Relevant</title>
+          <title>Link Expired - Impacto Indígena</title>
           <meta name="description" content="Your confirmation link has expired." />
         </Helmet>
         <div className="page-section text-center py-16">
@@ -33,7 +33,7 @@ export default function SubscribedPage() {
     return (
       <>
         <Helmet>
-          <title>Invalid Link - Actually Relevant</title>
+          <title>Invalid Link - Impacto Indígena</title>
           <meta name="description" content="Invalid confirmation link." />
         </Helmet>
         <div className="page-section text-center py-16">
@@ -55,8 +55,8 @@ export default function SubscribedPage() {
   return (
     <>
       <Helmet>
-        <title>Welcome to the Newsletter - Actually Relevant</title>
-        <meta name="description" content="You're subscribed to the Actually Relevant weekly newsletter." />
+        <title>Welcome to the Newsletter - Impacto Indígena</title>
+        <meta name="description" content="You're subscribed to the Impacto Indígena weekly newsletter." />
       </Helmet>
       <div className="page-section text-center py-16">
         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-brand-50 flex items-center justify-center">

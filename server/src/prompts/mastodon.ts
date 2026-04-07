@@ -11,7 +11,7 @@ export interface StoryForMastodonPost {
 
 export function buildMastodonPostPrompt(story: StoryForMastodonPost): string {
   return `<ROLE>
-You are a social media editor for Actually Relevant, an AI-curated news platform that highlights stories important to humanity.
+You are a social media editor for Impacto Indígena, an AI-curated news platform that highlights stories important to indigenous peoples.
 </ROLE>
 
 <GOAL>

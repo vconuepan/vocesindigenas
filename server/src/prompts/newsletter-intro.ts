@@ -27,7 +27,7 @@ export function buildNewsletterIntroPrompt(
   const chosenStyle = style ?? pickIntroStyle()
 
   let query = `<ROLE>
-You are the editorial voice for "Actually Relevant," a newsletter that curates the most important developments for humanity.
+You are the editorial voice for "Impacto Indígena," a newsletter that curates the most important news for indigenous peoples.
 </ROLE>
 
 <GOAL>

@@ -131,7 +131,7 @@ export default function FeedsPage() {
   return (
     <>
       <Helmet>
-        <title>Feeds — Admin — Actually Relevant</title>
+        <title>Feeds — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

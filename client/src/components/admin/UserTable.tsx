@@ -4,16 +4,17 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline'
-import type { User, UserRole } from '@shared/types'
+import type { User, UserType } from '@shared/types'
 import { Badge } from '../ui/Badge'
 import { ActionIconButton } from '../ui/ActionIconButton'
 import type { BadgeVariant } from '../../lib/constants'
 import { formatShortDate } from '../../lib/constants'
 
-const ROLE_BADGE: Record<UserRole, BadgeVariant> = {
-  admin: 'purple',
-  editor: 'blue',
-  viewer: 'gray',
+const ROLE_BADGE: Record<UserType, BadgeVariant> = {
+  ADMIN: 'purple',
+  EMPRESA: 'blue',
+  COMUNIDAD_LIDER: 'green',
+  VEEDOR: 'gray',
 }
 
 interface UserTableProps {
@@ -54,8 +55,8 @@ export function UserTable({ users, currentUserId, onEdit, onDelete }: UserTableP
                   {/* Mobile metadata */}
                   <div className="flex flex-wrap items-center gap-1.5 mt-1 md:hidden">
                     <span className="text-neutral-500 text-xs">{user.email}</span>
-                    <Badge variant={ROLE_BADGE[user.role as UserRole]}>
-                      {user.role}
+                    <Badge variant={ROLE_BADGE[user.userType as UserType]}>
+                      {user.userType}
                     </Badge>
                   </div>
                 </td>
@@ -63,8 +64,8 @@ export function UserTable({ users, currentUserId, onEdit, onDelete }: UserTableP
                   {user.email}
                 </td>
                 <td className="hidden md:table-cell whitespace-nowrap px-4 py-3 text-sm">
-                  <Badge variant={ROLE_BADGE[user.role as UserRole]}>
-                    {user.role}
+                  <Badge variant={ROLE_BADGE[user.userType as UserType]}>
+                    {user.userType}
                   </Badge>
                 </td>
                 <td className="hidden lg:table-cell whitespace-nowrap px-4 py-3 text-sm text-neutral-500">

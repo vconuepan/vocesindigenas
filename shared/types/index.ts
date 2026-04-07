@@ -27,11 +27,13 @@ export type FeedRegion =
 
 export type UserRole = 'admin' | 'editor' | 'viewer'
 
+export type UserType = 'ADMIN' | 'EMPRESA' | 'COMUNIDAD_LIDER' | 'VEEDOR'
+
 export interface User {
   id: string
   email: string
   name: string
-  role: UserRole
+  userType: UserType
   createdAt: string
   updatedAt: string
 }

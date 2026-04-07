@@ -12,16 +12,90 @@ services:
         fromDatabase:
           name: vocesindigenas-db
           property: connectionString
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: JWT_SECRET
-        generateValue: true
       - key: NODE_ENV
         value: production
-      - key: FRONTEND_URL
-        value: https://impactoindigena.news
       - key: LOG_LEVEL
         value: info
+
+      # URLs
+      - key: SITE_URL
+        value: https://impactoindigena.news
+      - key: FRONTEND_URL
+        value: https://impactoindigena.news
+      - key: CLIENT_URL
+        value: https://impactoindigena.news
+      - key: API_URL
+        value: https://vocesindigenas-backend.onrender.com
+
+      # Auth
+      - key: JWT_SECRET
+        generateValue: true
+
+      # OpenAI
+      - key: OPENAI_API_KEY
+        sync: false
+
+      # Newsletter (Plunk)
+      - key: PLUNK_SECRET_KEY
+        sync: false
+      - key: PLUNK_PUBLIC_KEY
+        sync: false
+      - key: PLUNK_FROM_EMAIL
+        sync: false
+
+      # Article extraction
+      - key: DIFFBOT_TOKEN
+        sync: false
+
+      # Bluesky
+      - key: BLUESKY_HANDLE
+        sync: false
+      - key: BLUESKY_APP_PASSWORD
+        sync: false
+      - key: BLUESKY_AUTO_POST_ENABLED
+        value: "false"
+
+      # Mastodon
+      - key: MASTODON_URL
+        sync: false
+      - key: MASTODON_TOKEN
+        sync: false
+      - key: MASTODON_AUTO_POST_ENABLED
+        value: "false"
+
+      # Cloudflare R2 (podcast audio + carousel images)
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_PUBLIC_URL
+        sync: false
+
+      # Twitter (opcional)
+      - key: TWITTER_API_KEY
+        sync: false
+      - key: TWITTER_API_SECRET
+        sync: false
+      - key: TWITTER_ACCESS_TOKEN
+        sync: false
+      - key: TWITTER_ACCESS_TOKEN_SECRET
+        sync: false
+      - key: TWITTER_AUTO_POST_ENABLED
+        value: "false"
+
+      # Instagram (opcional)
+      - key: INSTAGRAM_ACCESS_TOKEN
+        sync: false
+      - key: INSTAGRAM_USER_ID
+        sync: false
+      - key: INSTAGRAM_AUTO_POST_ENABLED
+        value: "false"
+
+      # Podcast
+      - key: PODCAST_AUTO_GENERATE_ENABLED
+        value: "false"
 
   - type: web
     name: vocesindigenas-frontend

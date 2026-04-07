@@ -34,7 +34,7 @@ export default function IssuesPage() {
   return (
     <>
       <Helmet>
-        <title>Issues — Admin — Actually Relevant</title>
+        <title>Issues — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader

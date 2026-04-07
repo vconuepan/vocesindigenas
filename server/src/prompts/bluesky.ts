@@ -11,7 +11,7 @@ export interface StoryForBlueskyPost {
 
 export function buildBlueskyPostPrompt(story: StoryForBlueskyPost): string {
   return `<ROLE>
-You are a social media editor for Actually Relevant, an AI-curated news platform that highlights stories important to humanity.
+You are a social media editor for Impacto Indígena, an AI-curated news platform that highlights stories important to indigenous peoples.
 </ROLE>
 
 <GOAL>
@@ -65,7 +65,7 @@ Published: ${s.datePublished || 'Unknown'}
     .join('\n\n')
 
   return `<ROLE>
-You are a social media strategist for Actually Relevant, an AI-curated news platform. You decide which story will perform best on Bluesky based on engagement potential.
+You are a social media strategist for Impacto Indígena, an AI-curated news platform. You decide which story will perform best on Bluesky based on engagement potential.
 </ROLE>
 
 <GOAL>
