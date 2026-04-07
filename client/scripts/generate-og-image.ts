@@ -64,7 +64,7 @@ async function generateOgImage() {
       </style>
       <text x="${WIDTH / 2}" y="${taglineY}" text-anchor="middle" class="tagline">${claim}</text>
       <text x="${WIDTH / 2}" y="${subtitleY}" text-anchor="middle" class="subtitle">${claimSupport}</text>
-      <text x="${WIDTH / 2}" y="${urlY}" text-anchor="middle" class="url">actuallyrelevant.news</text>
+      <text x="${WIDTH / 2}" y="${urlY}" text-anchor="middle" class="url">impactoindigena.news</text>
     </svg>
   `;
 

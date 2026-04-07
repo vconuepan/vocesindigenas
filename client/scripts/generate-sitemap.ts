@@ -12,7 +12,7 @@ import { routes, type RouteConfig } from '../src/routes.js'
 import { generateSitemapXml } from '../src/lib/sitemap.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const BASE_URL = 'https://actuallyrelevant.news'
+const BASE_URL = 'https://impactoindigena.news'
 const API_URL = process.env.VITE_API_URL || 'http://localhost:3001'
 
 interface PaginatedResponse {

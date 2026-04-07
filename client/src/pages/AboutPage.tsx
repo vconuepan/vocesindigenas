@@ -4,8 +4,6 @@ import { GITHUB_REPO_URL } from "../config";
 import { SEO, CommonOgTags } from "../lib/seo";
 import StructuredData from "../components/StructuredData";
 import { buildBreadcrumbSchema } from "../lib/structured-data";
-import SupportButton from "../components/SupportButton";
-
 export default function AboutPage() {
   return (
     <>
@@ -269,8 +267,6 @@ export default function AboutPage() {
           </p>
 
         </div>
-
-        <SupportButton className="mt-2 pt-8" />
 
         <div className="prose max-w-none mt-12 pt-8 border-t border-neutral-200">
           <h2 className="section-heading">Explorar</h2>
