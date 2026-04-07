@@ -7,7 +7,7 @@ import StructuredData from '../components/StructuredData'
 import LandingCta from '../components/LandingCta'
 
 const META = {
-  title: 'Google News Alternatives Compared — Actually Relevant',
+  title: 'Google News Alternatives Compared \u2014 Impacto Ind\u00edgena',
   description:
     'Side-by-side comparison of Google News, Flipboard, Ground News, News Minimalist, and more. See how AI curation, privacy, source transparency, and cost stack up.',
   url: `${SEO.siteUrl}/compare`,
@@ -49,7 +49,7 @@ function CellContent({ cell }: { cell: CellValue }) {
   )
 }
 
-// Each row: us = Actually Relevant cell, them = one cell per competitor (same order as COMPETITORS)
+// Each row: us = Impacto Indígena cell, them = one cell per competitor (same order as COMPETITORS)
 // Sources: pm/references/marketing/competitors/*.md
 const ROWS: { us: CellValue; them: CellValue[] }[] = [
   {
@@ -277,10 +277,10 @@ export default function ComparePage() {
       <StructuredData data={[pageSchema, breadcrumb]} />
 
       <div className="page-section">
-        <h1 className="page-title">How Does Actually Relevant Compare?</h1>
+        <h1 className="page-title">How Does Impacto Indígena Compare?</h1>
         <p className="text-lg text-neutral-600 leading-relaxed">
           Most news aggregators optimize for engagement. More clicks, more time on site, more ad
-          impressions. Actually Relevant does something different: it uses AI to find the stories
+          impressions. Impacto Indígena does something different: it uses AI to find the stories
           that matter most to humanity, with no ads, no tracking, and full source transparency.
         </p>
 
@@ -305,7 +305,7 @@ export default function ComparePage() {
           <thead>
             <tr>
               <th className="w-1/2 text-left py-3 px-4 font-bold bg-brand-50 text-brand-800 border-b border-brand-200 rounded-tl-lg">
-                Actually Relevant
+                Impacto Indígena
               </th>
               <th className="w-1/2 text-left py-3 px-4 font-bold bg-neutral-50 text-neutral-700 border-b border-neutral-300 rounded-tr-lg">
                 <select
@@ -357,7 +357,7 @@ export default function ComparePage() {
 
         <LandingCta
           heading="Ready to try news that's actually relevant?"
-          description="Visit actuallyrelevant.news or subscribe to the newsletter for a curated digest in your inbox."
+          description="Visit impactoindigena.news or subscribe to the newsletter for a curated digest in your inbox."
         />
       </div>
     </>

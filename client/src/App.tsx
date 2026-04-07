@@ -25,7 +25,6 @@ const ComparePage = lazy(() => import('./pages/ComparePage'))
 const NoAdsNoTrackingPage = lazy(() => import('./pages/NoAdsNoTrackingPage'))
 const NewsFatiguePage = lazy(() => import('./pages/NewsFatiguePage'))
 const FreeApiPage = lazy(() => import('./pages/FreeApiPage'))
-const StewardshipPage = lazy(() => import('./pages/StewardshipPage'))
 const NewsletterPage = lazy(() => import('./pages/NewsletterPage'))
 const FeedbackPagePublic = lazy(() => import('./pages/FeedbackPage'))
 const ThankYouPage = lazy(() => import('./pages/ThankYouPage'))
@@ -105,7 +104,6 @@ export default function App() {
         <Route path="/no-ads-no-tracking" element={<LazyPage><NoAdsNoTrackingPage /></LazyPage>} />
         <Route path="/news-fatigue" element={<LazyPage><NewsFatiguePage /></LazyPage>} />
         <Route path="/free-api" element={<LazyPage><FreeApiPage /></LazyPage>} />
-        <Route path="/stewardship" element={<LazyPage><StewardshipPage /></LazyPage>} />
         <Route path="/newsletter" element={<LazyPage><NewsletterPage /></LazyPage>} />
         <Route path="/feedback" element={<LazyPage><FeedbackPagePublic /></LazyPage>} />
         <Route path="/thank-you" element={<LazyPage><ThankYouPage /></LazyPage>} />

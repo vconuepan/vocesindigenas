@@ -1,8 +1,5 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import ObfuscatedAddress from "../components/ObfuscatedAddress";
-import ObfuscatedEmail from "../components/ObfuscatedEmail";
-import ProfileCard from "../components/ProfileCard";
 import { GITHUB_REPO_URL, GITHUB_LICENSE_URL } from "../config";
 import { SEO, CommonOgTags } from "../lib/seo";
 
@@ -13,12 +10,12 @@ export default function ImprintPage() {
         <title>Legal Notice - {SEO.siteName}</title>
         <meta
           name="description"
-          content="Legal notice and contact information for Actually Relevant."
+          content="Legal notice and contact information for Impacto Indígena."
         />
         <meta property="og:title" content={`Legal Notice - ${SEO.siteName}`} />
         <meta
           property="og:description"
-          content="Legal notice and contact information for Actually Relevant."
+          content="Legal notice and contact information for Impacto Indígena."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/imprint`} />
@@ -29,21 +26,16 @@ export default function ImprintPage() {
         <h1 className="page-title">Legal Notice</h1>
 
         <div className="prose max-w-none">
-          <ProfileCard className="float-right ml-6 mb-4" />
-
-          <h2 className="section-heading mt-8">
-            Information (German &sect; 5 DDG)
-          </h2>
-          <ObfuscatedAddress className="not-italic text-neutral-600 leading-relaxed" />
-          <p className="mt-2">
-            Email:{" "}
-            <ObfuscatedEmail className="text-brand-700 hover:text-brand-800" />
+          <h2 className="section-heading mt-8">Contact</h2>
+          <p className="text-neutral-600 leading-relaxed">
+            Impacto Indígena<br />
+            <a
+              href="mailto:contacto@impactoindigena.news"
+              className="text-brand-700 hover:text-brand-800"
+            >
+              contacto@impactoindigena.news
+            </a>
           </p>
-
-          <h2 className="section-heading mt-8">
-            Editorially Responsible (German § 18 Abs. 2 MStV)
-          </h2>
-          <ObfuscatedAddress className="not-italic text-neutral-600 leading-relaxed" />
 
           <hr className="my-10 border-neutral-200" />
 
@@ -52,11 +44,21 @@ export default function ImprintPage() {
             <Link to="/privacy" className="text-brand-700 hover:text-brand-800">
               Privacy Policy
             </Link>
-            . (You will be pleasantly surprised.)
+            .
           </p>
 
           <p>
-            Actually Relevant is open source under the{" "}
+            Impacto Indígena is a fork of{" "}
+            <a
+              href="https://actuallyrelevant.news"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-700 hover:text-brand-800"
+            >
+              Actually Relevant
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
+            , open source under the{" "}
             <a
               href={GITHUB_LICENSE_URL}
               target="_blank"

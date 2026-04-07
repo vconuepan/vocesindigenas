@@ -6,7 +6,7 @@ import StructuredData from '../components/StructuredData'
 import LandingCta from '../components/LandingCta'
 
 const META = {
-  title: 'News Without Ads or Tracking \u2014 Actually Relevant',
+  title: 'News Without Ads or Tracking \u2014 Impacto Indígena',
   description:
     'A daily news digest with zero ads, zero tracking, and zero clickbait. No cookies, no analytics profiles, no engagement optimization. Just the stories that matter.',
   url: `${SEO.siteUrl}/no-ads-no-tracking`,
@@ -20,7 +20,7 @@ const pageSchema = {
   url: META.url,
   publisher: {
     '@type': 'Organization',
-    name: 'Actually Relevant',
+    name: 'Impacto Indígena',
     url: SEO.siteUrl,
     nonprofitStatus: 'NonprofitType',
   },
@@ -38,8 +38,6 @@ const COMPARISON = [
   { us: 'Funded by donations', them: 'Funded by advertising' },
   { us: 'Never sells data', them: 'Data often sold or shared' },
 ]
-
-const KOFI_URL = 'https://ko-fi.com/odinmb'
 
 function HeartIcon({ className }: { className?: string }) {
   return (
@@ -67,7 +65,7 @@ export default function NoAdsNoTrackingPage() {
         <h1 className="page-title">News Without Ads, Tracking, or Clickbait</h1>
         <div className="prose max-w-none">
           <p className="text-lg text-neutral-600 leading-relaxed">
-            Most free news services make money from your data. Here's how Actually Relevant is
+            Most free news services make money from your data. Here's how Impacto Indígena is
             different.
           </p>
 
@@ -76,7 +74,7 @@ export default function NoAdsNoTrackingPage() {
             <thead>
               <tr>
                 <th className="text-left py-3 px-4 font-bold bg-brand-50 text-brand-800 border-b border-brand-200 rounded-tl-lg">
-                  Actually Relevant
+                  Impacto Indígena
                 </th>
                 <th className="text-left py-3 px-4 font-bold bg-neutral-50 text-neutral-700 border-b border-neutral-300 rounded-tr-lg">
                   Typical news aggregator
@@ -190,23 +188,12 @@ export default function NoAdsNoTrackingPage() {
           <h2 className="text-2xl font-bold mb-3">How We Stay Free</h2>
           <p className="text-lg text-neutral-600 leading-relaxed mb-4 max-w-xl mx-auto">
             Free. Independent. Without ads.
-            <br /> Help us keep it that way.
           </p>
-          <a
-            href={KOFI_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-          >
-            <HeartIcon className="w-4 h-4" />
-            Support Us
-            <span className="sr-only">(opens in new tab)</span>
-          </a>
         </div>
 
         <LandingCta
           heading="Read the news without being the product."
-          description="Visit actuallyrelevant.news — or subscribe to the newsletter for a clean, ad-free digest."
+          description="Visit impactoindigena.news — or subscribe to the newsletter for a clean, ad-free digest."
         />
       </div>
     </>

@@ -9,9 +9,9 @@ import { API_BASE } from '../lib/api'
 import { useSources } from '../hooks/useSources'
 
 const META = {
-  title: 'Free Curated News API \u2014 No Key Required | Actually Relevant',
+  title: 'Free Curated News API \u2014 No Key Required | Impacto Ind\u00edgena',
   description:
-    'A free API serving AI-curated global news. No API key, no ads in the data. Get pre-selected stories on human development, climate, security, and science.',
+    'A free API serving AI-curated indigenous and global news. No API key, no ads in the data. Get pre-selected stories on indigenous rights, environment, and more.',
   url: `${SEO.siteUrl}/free-api`,
 }
 
@@ -23,14 +23,14 @@ const pageSchema = {
   url: META.url,
   mainEntity: {
     '@type': 'WebAPI',
-    name: 'Actually Relevant News API',
+    name: 'Impacto Ind\u00edgena News API',
     description:
-      'Free, curated global news API covering human development, climate, existential threats, and science. No authentication required.',
+      'Free, curated news API covering indigenous rights, environment, and global issues. No authentication required.',
     url: `${SEO.siteUrl}/developers`,
     documentation: `${SEO.siteUrl}/developers`,
     provider: {
       '@type': 'Organization',
-      name: 'Actually Relevant',
+      name: 'Impacto Ind\u00edgena',
       url: SEO.siteUrl,
     },
   },
@@ -41,7 +41,7 @@ const breadcrumb = buildBreadcrumbSchema([
   { name: 'Free API', url: META.url },
 ])
 
-const COMPARISON_HEADERS = ['', 'Actually Relevant', 'Typical news API (NewsAPI, GNews, etc.)']
+const COMPARISON_HEADERS = ['', 'Impacto Ind\u00edgena', 'Typical news API (NewsAPI, GNews, etc.)']
 
 const COMPARISON_ROWS = [
   {
@@ -165,7 +165,7 @@ export default function FreeApiPage() {
         <div className="prose max-w-none">
           <p className="text-lg text-neutral-600 leading-relaxed">
             Most news APIs give you a firehose — millions of raw articles you have to filter
-            yourself. Actually Relevant gives you the signal: a curated selection of stories per
+            yourself. Impacto Ind\u00edgena gives you the signal: a curated selection of stories per
             day, selected by AI for real-world significance
             from{sources ? ` ${sources.totalCount}` : ''} curated sources across multiple
             languages.

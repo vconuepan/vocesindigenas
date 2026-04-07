@@ -35,7 +35,6 @@ export const routes: RouteConfig[] = [
   { path: '/no-ads-no-tracking', priority: 0.7, changefreq: 'monthly' },
   { path: '/news-fatigue', priority: 0.7, changefreq: 'monthly' },
   { path: '/free-api', priority: 0.7, changefreq: 'monthly' },
-  { path: '/stewardship', priority: 0.6, changefreq: 'monthly' },
   { path: '/newsletter', priority: 0.7, changefreq: 'monthly' },
   { path: '/feedback', priority: 0.5, changefreq: 'yearly' },
   { path: '/thank-you', priority: 0.3, changefreq: 'yearly' },

@@ -7,7 +7,7 @@ import LandingCta from '../components/LandingCta'
 import { getCategoryColor } from '../lib/category-colors'
 
 const META = {
-  title: 'News Fatigue Is a Design Problem \u2014 Here\u2019s a Better Way | Actually Relevant',
+  title: 'News Fatigue Is a Design Problem \u2014 Here\u2019s a Better Way | Impacto Indígena',
   description:
     'Nearly 40% of people actively avoid the news. The problem isn\u2019t you \u2014 it\u2019s how news is delivered. A curated digest of 10-20 stories that matter, with no noise.',
   url: `${SEO.siteUrl}/news-fatigue`,
@@ -21,7 +21,7 @@ const pageSchema = {
   url: META.url,
   author: {
     '@type': 'Organization',
-    name: 'Actually Relevant',
+    name: 'Impacto Indígena',
     url: SEO.siteUrl,
   },
   about: [
@@ -204,7 +204,7 @@ export default function NewsFatiguePage() {
         {/* A Different Approach — feature cards */}
         <h2 className="section-heading mt-12">A Different Approach</h2>
         <p className="text-neutral-600 mt-2 leading-relaxed">
-          Actually Relevant is built around a simple idea: what if you could stay informed about
+          Impacto Indígena is built around a simple idea: what if you could stay informed about
           the things that matter without the noise?
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
@@ -225,7 +225,7 @@ export default function NewsFatiguePage() {
         {/* What Staying Informed Looks Like */}
         <h2 className="section-heading mt-12">Stay Informed in 5 Minutes</h2>
         <p className="text-neutral-600 mt-3 leading-relaxed">
-          Open Actually Relevant or the newsletter. Scan 10–20 curated stories organized by
+          Open Impacto Indígena or the newsletter. Scan 10–20 curated stories organized by
           issue area. Read the ones that interest you — each links to the original source. Done.
           Five minutes, and you're genuinely informed about what happened in the world today.
         </p>
@@ -283,7 +283,7 @@ export default function NewsFatiguePage() {
 
         <LandingCta
           heading="Stay informed without the burnout."
-          description="Visit actuallyrelevant.news for today's stories — or get the digest delivered to your inbox."
+          description="Visit impactoindigena.news for today's stories — or get the digest delivered to your inbox."
         />
       </div>
     </>
