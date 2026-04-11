@@ -89,6 +89,57 @@ export async function generateDraft(storyId: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Draft management
+// ---------------------------------------------------------------------------
+
+export async function updateDraft(postId: string, caption: string) {
+  const post = await prisma.instagramPost.findUnique({ where: { id: postId } })
+  if (!post) throw new Error('Post not found')
+  if (post.status !== 'draft') throw new Error('Can only edit draft posts')
+
+  return prisma.instagramPost.update({
+    where: { id: postId },
+    data: { caption },
+    include: { story: { include: { feed: true, issue: true } } },
+  })
+}
+
+export async function deletePostRecord(postId: string) {
+  const post = await prisma.instagramPost.findUnique({ where: { id: postId } })
+  if (!post) throw new Error('Post not found')
+
+  await prisma.instagramPost.delete({ where: { id: postId } })
+  log.info({ postId, status: post.status }, 'deleted Instagram post record')
+}
+
+export async function listPosts(options: { status?: string; page?: number; limit?: number }) {
+  const { status, page = 1, limit = 20 } = options
+  const skip = (page - 1) * limit
+
+  const where = status ? { status } : {}
+
+  const [posts, total] = await Promise.all([
+    prisma.instagramPost.findMany({
+      where,
+      include: { story: { include: { issue: true, feed: true } } },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.instagramPost.count({ where }),
+  ])
+
+  return { posts, total, page, limit }
+}
+
+export async function getPostById(postId: string) {
+  return prisma.instagramPost.findUnique({
+    where: { id: postId },
+    include: { story: { include: { issue: true, feed: true } } },
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Publishing
 // ---------------------------------------------------------------------------
 

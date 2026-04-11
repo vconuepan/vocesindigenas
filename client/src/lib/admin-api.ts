@@ -18,6 +18,7 @@ import type {
   BlueskyFeedResponse,
   MastodonPost,
   MastodonFeedResponse,
+  InstagramPost,
 } from '@shared/types'
 
 export interface FeedbackItem {
@@ -387,6 +388,21 @@ export const adminApi = {
       request<{ success: boolean }>('/mastodon/metrics/refresh', { method: 'POST' }),
     getFeed: (params?: { maxId?: string; limit?: number }) =>
       request<MastodonFeedResponse>(`/mastodon/feed${toQueryString((params || {}) as Record<string, unknown>)}`),
+  },
+
+  // Instagram
+  instagram: {
+    listPosts: (params?: { status?: string; page?: number; limit?: number }) =>
+      request<{ posts: InstagramPost[]; total: number; page: number; limit: number }>(`/instagram/posts${toQueryString((params || {}) as Record<string, unknown>)}`),
+    getPost: (id: string) => request<InstagramPost>(`/instagram/posts/${id}`),
+    generateDraft: (storyId: string) =>
+      request<InstagramPost>('/instagram/posts/generate', { method: 'POST', body: JSON.stringify({ storyId }) }),
+    updateDraft: (id: string, caption: string) =>
+      request<InstagramPost>(`/instagram/posts/${id}`, { method: 'PUT', body: JSON.stringify({ caption }) }),
+    publishPost: (id: string) =>
+      request<InstagramPost>(`/instagram/posts/${id}/publish`, { method: 'POST' }),
+    deletePost: (id: string) =>
+      request<void>(`/instagram/posts/${id}`, { method: 'DELETE' }),
   },
 
   // Feedback

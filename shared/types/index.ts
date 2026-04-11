@@ -100,9 +100,10 @@ export interface Story {
     _count: { stories: number }
     stories: { id: string; title: string | null; sourceTitle: string; status: StoryStatus }[]
   } | null
-  _count?: { blueskyPosts: number; mastodonPosts: number }
+  _count?: { blueskyPosts: number; mastodonPosts: number; instagramPosts: number }
   blueskyPosts?: { postUri: string | null }[]
   mastodonPosts?: { statusUrl: string | null }[]
+  instagramPosts?: { permalink: string | null }[]
 }
 
 export interface PublicStory extends Story {
@@ -348,6 +349,34 @@ export interface MastodonFeedResponse {
   feed: MastodonFeedItem[]
   nextMaxId?: string
   dbOnlyPosts: MastodonDbOnlyPost[]
+}
+
+// --- Instagram Types ---
+
+export type InstagramPostStatus = 'draft' | 'published' | 'failed'
+
+export interface InstagramPost {
+  id: string
+  storyId: string
+  instagramPostId: string | null
+  permalink: string | null
+  status: InstagramPostStatus
+  caption: string
+  imageUrl: string
+  slideUrls: string[]
+  error: string | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+  story?: {
+    title: string | null
+    titleLabel: string | null
+    sourceUrl: string
+    slug: string | null
+    issue?: { name: string } | null
+    relevance?: number | null
+    feed: { title: string; displayTitle: string | null }
+  }
 }
 
 export interface StoryCluster {

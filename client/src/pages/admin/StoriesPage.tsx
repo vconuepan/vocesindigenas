@@ -25,6 +25,8 @@ import { BlueskyDraftPanel } from '../../components/admin/BlueskyDraftPanel'
 import type { BlueskyDraft } from '../../components/admin/BlueskyDraftPanel'
 import { MastodonDraftPanel } from '../../components/admin/MastodonDraftPanel'
 import type { MastodonDraft } from '../../components/admin/MastodonDraftPanel'
+import { InstagramDraftPanel } from '../../components/admin/InstagramDraftPanel'
+import type { InstagramPost } from '@shared/types'
 import { useToast } from '../../components/ui/Toast'
 
 const DEFAULT_PAGE_SIZE = 25
@@ -76,6 +78,9 @@ export default function StoriesPage() {
   const [mastodonDraft, setMastodonDraft] = useState<MastodonDraft | null>(null)
   const [mastodonPanelOpen, setMastodonPanelOpen] = useState(false)
   const [mastodonPublishing, setMastodonPublishing] = useState(false)
+  const [instagramDraft, setInstagramDraft] = useState<InstagramPost | null>(null)
+  const [instagramPanelOpen, setInstagramPanelOpen] = useState(false)
+  const [instagramPublishing, setInstagramPublishing] = useState(false)
 
   const bulkUpdate = useBulkUpdateStatus()
   const deleteStory = useDeleteStory()
@@ -381,6 +386,17 @@ export default function StoriesPage() {
     }
   }
 
+  const handleInstagramGenerate = useCallback(async (storyId: string) => {
+    setInstagramPanelOpen(true)
+    setInstagramDraft(null)
+    adminApi.instagram.generateDraft(storyId)
+      .then((draft) => setInstagramDraft(draft as InstagramPost))
+      .catch((err) => {
+        toast('error', err instanceof Error ? err.message : 'Failed to generate Instagram draft')
+        setInstagramPanelOpen(false)
+      })
+  }, [toast])
+
   const confirmLoading = bulkUpdate.isPending || deleteStory.isPending
 
   return (
@@ -477,6 +493,7 @@ export default function StoriesPage() {
               setMastodonPanelOpen(false)
             })
         }}
+        onInstagramGenerate={handleInstagramGenerate}
       />
 
       <CrawlUrlForm open={crawlOpen} onClose={() => setCrawlOpen(false)} />
@@ -512,6 +529,33 @@ export default function StoriesPage() {
         onUpdate={handleMastodonUpdate}
         onDelete={handleMastodonDelete}
         publishing={mastodonPublishing}
+      />
+
+      <InstagramDraftPanel
+        open={instagramPanelOpen}
+        onClose={() => { setInstagramPanelOpen(false); setInstagramDraft(null) }}
+        draft={instagramDraft}
+        publishing={instagramPublishing}
+        onPublish={async (postId) => {
+          setInstagramPublishing(true)
+          try {
+            await adminApi.instagram.publishPost(postId)
+            toast('success', 'Posted to Instagram')
+            setInstagramPanelOpen(false)
+            setInstagramDraft(null)
+            invalidateStories()
+          } catch (err) {
+            toast('error', err instanceof Error ? err.message : 'Failed to publish')
+          } finally {
+            setInstagramPublishing(false)
+          }
+        }}
+        onUpdate={async (postId, caption) => {
+          await adminApi.instagram.updateDraft(postId, caption)
+        }}
+        onDelete={async (postId) => {
+          await adminApi.instagram.deletePost(postId)
+        }}
       />
 
       <ConfirmDialog
