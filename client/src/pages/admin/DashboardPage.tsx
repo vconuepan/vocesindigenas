@@ -1,8 +1,10 @@
 import { Helmet } from 'react-helmet-async'
 import { PlayIcon } from '@heroicons/react/24/outline'
+import { useQuery } from '@tanstack/react-query'
 import { STORY_STATUSES } from '@shared/constants'
 import { useStoryStats } from '../../hooks/useStoryStats'
 import { useJobs, useRunJob } from '../../hooks/useJobs'
+import { adminApi } from '../../lib/admin-api'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -34,6 +36,46 @@ function StatsGrid({ stats }: { stats: Record<string, number> }) {
   )
 }
 
+function CommunityStats() {
+  const summaryQuery = useQuery({
+    queryKey: ['admin', 'members', 'summary'],
+    queryFn: () => adminApi.members.summary(),
+  })
+  const communitiesQuery = useQuery({
+    queryKey: ['admin', 'communities'],
+    queryFn: () => adminApi.communities.list(),
+  })
+
+  if (summaryQuery.isLoading || communitiesQuery.isLoading) {
+    return <div className="flex justify-center py-4"><LoadingSpinner /></div>
+  }
+
+  const summary = summaryQuery.data
+  const activeCommunities = (communitiesQuery.data ?? []).filter((c) => c.active).length
+  const totalCommunities = (communitiesQuery.data ?? []).length
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4">
+        <p className="text-xs font-medium text-neutral-500 mb-1">Usuarios</p>
+        <p className="text-2xl font-bold text-neutral-900">{summary?.totalUsers ?? 0}</p>
+      </div>
+      <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4">
+        <p className="text-xs font-medium text-neutral-500 mb-1">Membresías</p>
+        <p className="text-2xl font-bold text-neutral-900">{summary?.totalMemberships ?? 0}</p>
+      </div>
+      <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4">
+        <p className="text-xs font-medium text-neutral-500 mb-1">Comunidades activas</p>
+        <p className="text-2xl font-bold text-green-700">{activeCommunities}</p>
+      </div>
+      <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4">
+        <p className="text-xs font-medium text-neutral-500 mb-1">Comunidades totales</p>
+        <p className="text-2xl font-bold text-neutral-900">{totalCommunities}</p>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const statsQuery = useStoryStats()
   const jobsQuery = useJobs()
@@ -46,6 +88,12 @@ export default function DashboardPage() {
       </Helmet>
 
       <PageHeader title="Dashboard" description="Overview of stories and jobs" />
+
+      {/* Community Stats */}
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold text-neutral-900 mb-3">Comunidades y miembros</h2>
+        <CommunityStats />
+      </section>
 
       {/* Story Stats */}
       <section className="mb-8">

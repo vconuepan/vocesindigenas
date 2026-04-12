@@ -491,6 +491,7 @@ export interface Community {
   imageUrl: string | null
   issueIds: string[]
   keywords: string[]
+  memberCount?: number
   createdAt: string
   updatedAt: string
 }

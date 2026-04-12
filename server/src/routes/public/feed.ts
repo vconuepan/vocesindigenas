@@ -3,8 +3,10 @@ import { config } from '../../config.js'
 import { createLogger } from '../../lib/logger.js'
 import { TTLCache, cached } from '../../lib/cache.js'
 import { Feed } from 'feed'
+import { StoryStatus } from '@prisma/client'
 import * as storyService from '../../services/story.js'
 import * as issueService from '../../services/issue.js'
+import prisma from '../../lib/prisma.js'
 
 const router = Router()
 const log = createLogger('feed')
@@ -66,6 +68,80 @@ router.get('/', async (_req, res) => {
     res.send(xml)
   } catch (err) {
     log.error({ err }, 'failed to generate global RSS feed')
+    res.status(500).json({ error: 'Failed to generate feed' })
+  }
+})
+
+// Per-community feed — must come before /:issueSlug to avoid slug conflict
+router.get('/comunidad/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params
+    const rows = await prisma.$queryRaw<Array<{ id: string; name: string; description: string | null; issue_ids: string[]; keywords: string[] }>>`
+      SELECT id, name, description, issue_ids, keywords FROM communities WHERE slug = ${slug} AND active = true LIMIT 1
+    `
+    if (!rows.length) {
+      res.status(404).json({ error: 'Community not found' })
+      return
+    }
+    const community = rows[0]
+
+    const xml = await cached(feedCache, `feed:community:${slug}`, async () => {
+      const keywords: string[] = community.keywords ?? []
+      const keywordFilter = keywords.length > 0
+        ? {
+            OR: keywords.flatMap((kw: string) => [
+              { title: { contains: kw, mode: 'insensitive' as const } },
+              { summary: { contains: kw, mode: 'insensitive' as const } },
+            ]),
+          }
+        : {}
+
+      const stories = await prisma.story.findMany({
+        where: {
+          status: StoryStatus.published,
+          issueId: { in: community.issue_ids },
+          relevance: { gte: 3 },
+          ...keywordFilter,
+        },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          sourceTitle: true,
+          summary: true,
+          datePublished: true,
+          dateCrawled: true,
+          issue: { select: { name: true } },
+        },
+        orderBy: { datePublished: 'desc' },
+        take: config.feed.size,
+      })
+
+      const siteUrl = getSiteUrl()
+      const feed = buildFeed({
+        title: `Impacto Indígena — ${community.name}`,
+        description: community.description || `Noticias de ${community.name} curadas por Impacto Indígena.`,
+        feedPath: `/api/feed/comunidad/${slug}`,
+      })
+
+      for (const story of stories) {
+        feed.addItem({
+          title: story.title || story.sourceTitle,
+          id: story.id,
+          link: `${siteUrl}/stories/${story.slug || story.id}`,
+          description: story.summary || undefined,
+          date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
+          category: [{ name: story.issue?.name || 'General' }],
+        })
+      }
+
+      return feed.rss2()
+    })
+
+    setRssHeaders(res)
+    res.send(xml)
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to generate community RSS feed')
     res.status(500).json({ error: 'Failed to generate feed' })
   }
 })

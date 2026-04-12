@@ -1,11 +1,14 @@
 # Backlog
 
-## Code
+## Comunidades y usuarios
 
-- Add link to /feedback to newsletter
-- Fix admin logout issue
+- Map for PUEBLO/TERRITORIO communities (requires lat/lng migration + react-leaflet)
+- Email digest preferences — opt-out per community from /perfil
 
-- Library of static "always true" snippets in the four issue areas that are included randomly (per day) on the frontpage and issue pages
-- Compare: relevance stats against SPIEGEL, BBC, etc.
+## Admin
 
-- Public user accounts — Allow users to create accounts, save preferences, follow topics
+- Admin dashboard community stats (members count, memberships, active communities)
+
+## Public site
+
+- Compare: relevance stats against international media (SPIEGEL, BBC, etc.)

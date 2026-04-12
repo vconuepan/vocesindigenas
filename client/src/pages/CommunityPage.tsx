@@ -237,9 +237,16 @@ export default function CommunityPage() {
               />
               <h1 className="text-2xl md:text-3xl font-bold">{community.name}</h1>
             </div>
-            {community.region && (
-              <p className="text-xs text-neutral-400 ml-5">{community.region}</p>
-            )}
+            <div className="flex items-center gap-3 ml-5">
+              {community.region && (
+                <p className="text-xs text-neutral-400">{community.region}</p>
+              )}
+              {community.memberCount !== undefined && community.memberCount > 0 && (
+                <p className="text-xs text-neutral-400">
+                  {community.memberCount} {community.memberCount === 1 ? 'miembro' : 'miembros'}
+                </p>
+              )}
+            </div>
             <p className="text-sm text-neutral-600 mt-2 ml-5 max-w-2xl">{community.description}</p>
             <ShareBar communityName={community.name} />
           </header>

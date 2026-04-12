@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { getCategoryColor } from "../lib/category-colors";
-import { API_BASE } from "../lib/api";
+import { API_BASE, memberAuth } from "../lib/api";
 import { BRAND, GITHUB_REPO_URL } from "../config";
 import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
@@ -261,6 +261,17 @@ function PublicLayoutInner() {
                 Comunidades
               </Link>
             </li>
+            {memberAuth.isAuthenticated() && (
+              <li>
+                <Link
+                  to="/perfil"
+                  className="issue-nav-link"
+                  data-active={location.pathname === '/perfil'}
+                >
+                  Mi perfil
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
 
@@ -305,6 +316,18 @@ function PublicLayoutInner() {
                     Comunidades
                   </Link>
                 </li>
+                {memberAuth.isAuthenticated() && (
+                  <li>
+                    <Link
+                      to="/perfil"
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${location.pathname === '/perfil' ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"}`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-brand-400" aria-hidden="true" />
+                      Mi perfil
+                    </Link>
+                  </li>
+                )}
               </ul>
               <div className="border-t border-neutral-100 pt-3 px-2 flex flex-col">
                 <Link to="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">

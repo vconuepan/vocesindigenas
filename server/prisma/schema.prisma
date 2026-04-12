@@ -424,9 +424,10 @@ model User {
   verified      Boolean            @default(false)
   freeLicense   Boolean            @default(false)
   comunidadId   String?
-  memberships   CommunityMember[]
-  posts         CommunityPost[]
-  refreshTokens RefreshToken[]
+  memberships       CommunityMember[]
+  digestExclusions  DigestExclusion[]
+  posts             CommunityPost[]
+  refreshTokens     RefreshToken[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -454,8 +455,9 @@ model Community {
   active      Boolean           @default(true)
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
-  members     CommunityMember[]
-  posts       CommunityPost[]
+  members          CommunityMember[]
+  digestExclusions DigestExclusion[]
+  posts            CommunityPost[]
 
   @@index([slug])
   @@map("communities")
@@ -472,6 +474,19 @@ model CommunityMember {
   @@unique([userId, communityId])
   @@index([communityId])
   @@map("community_members")
+}
+
+model DigestExclusion {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  communityId String    @map("community_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@unique([userId, communityId])
+  @@index([communityId])
+  @@map("digest_exclusions")
 }
 
 model CommunityPost {

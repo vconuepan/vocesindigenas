@@ -127,7 +127,7 @@ function buildDigestHtml(userName: string, sections: DigestSection[]): string {
               <p style="margin:0 0 8px;font-size:12px;color:#8c7e6a;font-family:sans-serif;line-height:1.6;">
                 Recibes este correo porque te uniste a una o más comunidades en
                 <a href="${SITE_URL}" style="color:#2d6a4f;">impactoindigena.news</a>.
-                Para dejar de recibir estos resúmenes, visita la página de tu comunidad y selecciona "Salir".
+                Para gestionar tus preferencias de digest, visita <a href="${SITE_URL}/perfil" style="color:#2d6a4f;">tu perfil</a>.
               </p>
               <p style="margin:0;font-size:12px;color:#8c7e6a;font-family:sans-serif;">
                 ¿Algo que mejorar? <a href="${SITE_URL}/feedback" style="color:#2d6a4f;">Envíanos tu feedback</a>
@@ -207,9 +207,17 @@ export async function runSendCommunityDigest(): Promise<void> {
   let failed = 0
 
   for (const { user, communities } of byUser.values()) {
+    // Load digest exclusions for this user (communities they opted out of)
+    const exclusions = await prisma.digestExclusion.findMany({
+      where: { userId: user.id },
+      select: { communityId: true },
+    })
+    const excludedIds = new Set(exclusions.map((e) => e.communityId))
+
     const sections: DigestSection[] = []
 
     for (const community of communities) {
+      if (excludedIds.has(community.id)) continue
       const keywords = community.keywords
 
       const keywordFilter =

@@ -44,6 +44,31 @@ export default function ProfilePage() {
     retry: false,
   })
 
+  const exclusionsQuery = useQuery({
+    queryKey: ['profile-digest-exclusions'],
+    queryFn: () => publicApi.profile.digestExclusions(),
+    enabled: isAuthenticated,
+    retry: false,
+  })
+
+  const excludeMutation = useMutation({
+    mutationFn: (communityId: string) => publicApi.profile.excludeDigest(communityId),
+    onSuccess: (_data, communityId) => {
+      queryClient.setQueryData<{ excludedCommunityIds: string[] }>(['profile-digest-exclusions'], (prev) =>
+        prev ? { excludedCommunityIds: [...prev.excludedCommunityIds, communityId] } : prev
+      )
+    },
+  })
+
+  const includeMutation = useMutation({
+    mutationFn: (communityId: string) => publicApi.profile.includeDigest(communityId),
+    onSuccess: (_data, communityId) => {
+      queryClient.setQueryData<{ excludedCommunityIds: string[] }>(['profile-digest-exclusions'], (prev) =>
+        prev ? { excludedCommunityIds: prev.excludedCommunityIds.filter((id) => id !== communityId) } : prev
+      )
+    },
+  })
+
   // Sync name input when profile loads
   useEffect(() => {
     if (profileQuery.data?.name && !nameInput) {
@@ -183,27 +208,52 @@ export default function ProfilePage() {
               <Link to="/comunidades" className="text-brand-700 underline">Explorar comunidades</Link>
             </p>
           ) : (
-            <ul className="divide-y divide-neutral-100">
-              {communities.map((c) => {
-                const colors = getCategoryColor(c.slug)
-                return (
-                  <li key={c.id} className="flex items-center justify-between py-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
-                      <Link
-                        to={`/comunidad/${c.slug}`}
-                        className="text-sm font-medium text-neutral-800 hover:text-brand-700 transition-colors"
-                      >
-                        {c.name}
-                      </Link>
-                    </div>
-                    <span className="text-xs text-neutral-400">
-                      {COMMUNITY_TYPE_LABEL[c.type] ?? c.type}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
+            <>
+              <ul className="divide-y divide-neutral-100">
+                {communities.map((c) => {
+                  const colors = getCategoryColor(c.slug)
+                  const excluded = exclusionsQuery.data?.excludedCommunityIds.includes(c.id) ?? false
+                  const isPending = excludeMutation.isPending || includeMutation.isPending
+                  return (
+                    <li key={c.id} className="py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
+                          <Link
+                            to={`/comunidad/${c.slug}`}
+                            className="text-sm font-medium text-neutral-800 hover:text-brand-700 transition-colors"
+                          >
+                            {c.name}
+                          </Link>
+                        </div>
+                        <span className="text-xs text-neutral-400">
+                          {COMMUNITY_TYPE_LABEL[c.type] ?? c.type}
+                        </span>
+                      </div>
+                      {!exclusionsQuery.isLoading && (
+                        <div className="mt-1.5 ml-4 flex items-center gap-2">
+                          <button
+                            role="switch"
+                            aria-checked={!excluded}
+                            disabled={isPending}
+                            onClick={() => excluded
+                              ? includeMutation.mutate(c.id)
+                              : excludeMutation.mutate(c.id)
+                            }
+                            className={`relative inline-flex h-4 w-7 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-50 ${!excluded ? 'bg-brand-600' : 'bg-neutral-300'}`}
+                          >
+                            <span aria-hidden="true" className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow transition duration-200 ${!excluded ? 'translate-x-3' : 'translate-x-0'}`} />
+                          </button>
+                          <span className="text-xs text-neutral-500">
+                            {excluded ? 'Digest desactivado' : 'Recibir digest semanal'}
+                          </span>
+                        </div>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
           )}
         </section>
 

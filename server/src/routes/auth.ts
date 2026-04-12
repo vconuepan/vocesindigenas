@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { validateBody } from '../middleware/validate.js'
-import { requireAuth } from '../middleware/auth.js'
+import { requireAuth, requireMember } from '../middleware/auth.js'
 import { authLimiter, refreshLimiter } from '../middleware/rateLimit.js'
 import { loginSchema, changePasswordSchema } from '../schemas/auth.js'
 import { getUserByEmail, changePassword } from '../services/user.js'
@@ -173,6 +173,59 @@ router.put('/me', requireAuth, async (req, res) => {
   } catch (err) {
     log.error({ err }, 'failed to update user profile')
     res.status(500).json({ error: 'Failed to update profile' })
+  }
+})
+
+/**
+ * GET /api/auth/digest-exclusions
+ * Returns the list of community IDs the user has opted out of for digests.
+ */
+router.get('/digest-exclusions', requireMember, async (req, res) => {
+  try {
+    const exclusions = await prisma.digestExclusion.findMany({
+      where: { userId: req.user!.userId },
+      select: { communityId: true },
+    })
+    res.json({ excludedCommunityIds: exclusions.map((e) => e.communityId) })
+  } catch (err) {
+    log.error({ err }, 'failed to fetch digest exclusions')
+    res.status(500).json({ error: 'Failed to fetch preferences' })
+  }
+})
+
+/**
+ * POST /api/auth/digest-exclusions/:communityId
+ * Opt out of digest emails for a community.
+ */
+router.post('/digest-exclusions/:communityId', requireMember, async (req, res) => {
+  try {
+    const { communityId } = req.params
+    await prisma.digestExclusion.upsert({
+      where: { userId_communityId: { userId: req.user!.userId, communityId } },
+      create: { userId: req.user!.userId, communityId },
+      update: {},
+    })
+    res.json({ success: true })
+  } catch (err) {
+    log.error({ err }, 'failed to add digest exclusion')
+    res.status(500).json({ error: 'Failed to update preferences' })
+  }
+})
+
+/**
+ * DELETE /api/auth/digest-exclusions/:communityId
+ * Opt back in to digest emails for a community.
+ */
+router.delete('/digest-exclusions/:communityId', requireMember, async (req, res) => {
+  try {
+    const { communityId } = req.params
+    await prisma.digestExclusion.deleteMany({
+      where: { userId: req.user!.userId, communityId },
+    })
+    res.json({ success: true })
+  } catch (err) {
+    log.error({ err }, 'failed to remove digest exclusion')
+    res.status(500).json({ error: 'Failed to update preferences' })
   }
 })
 

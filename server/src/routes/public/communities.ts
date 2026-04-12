@@ -63,13 +63,15 @@ router.get('/:slug', async (req, res) => {
   try {
     const community = await prisma.community.findFirst({
       where: { slug: req.params.slug, active: true },
+      include: { _count: { select: { members: true } } },
     })
     if (!community) {
       res.status(404).json({ error: 'Community not found' })
       return
     }
     res.set('Cache-Control', 'public, max-age=300')
-    res.json(community)
+    const { _count, ...rest } = community
+    res.json({ ...rest, memberCount: _count.members })
   } catch (err) {
     log.error({ err, slug: req.params.slug }, 'failed to fetch community')
     res.status(500).json({ error: 'Failed to fetch community' })

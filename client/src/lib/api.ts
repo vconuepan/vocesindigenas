@@ -144,6 +144,12 @@ export const publicApi = {
       }),
     memberships: () =>
       memberRequest<{ communities: Array<{ id: string; slug: string; name: string; type: string }> }>('/auth/memberships'),
+    digestExclusions: () =>
+      memberRequest<{ excludedCommunityIds: string[] }>('/auth/digest-exclusions'),
+    excludeDigest: (communityId: string) =>
+      memberRequest<{ success: boolean }>(`/auth/digest-exclusions/${communityId}`, { method: 'POST' }),
+    includeDigest: (communityId: string) =>
+      memberRequest<{ success: boolean }>(`/auth/digest-exclusions/${communityId}`, { method: 'DELETE' }),
   },
 
   auth: {
