@@ -458,6 +458,7 @@ export interface StoryFilters {
   sort?: StorySort
   page?: number
   pageSize?: number
+  search?: string
 }
 
 export type StorySort =

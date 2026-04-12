@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FunnelIcon } from '@heroicons/react/24/outline'
 import { STORY_STATUSES, EMOTION_TAGS } from '@shared/constants'
@@ -38,6 +38,28 @@ interface StoryFiltersBarProps {
 export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [expanded, setExpanded] = useState(false)
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '')
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sync input if URL param changes externally
+  useEffect(() => {
+    setSearchInput(searchParams.get('search') || '')
+  }, [searchParams.get('search')])
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value)
+    if (searchTimeout.current) clearTimeout(searchTimeout.current)
+    searchTimeout.current = setTimeout(() => {
+      const next = new URLSearchParams(searchParams)
+      if (value.trim()) {
+        next.set('search', value.trim())
+      } else {
+        next.delete('search')
+      }
+      next.delete('page')
+      setSearchParams(next)
+    }, 400)
+  }
 
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -58,10 +80,22 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
     searchParams.get('feedId'),
     searchParams.get('emotionTag'),
     searchParams.get('rating'),
+    searchParams.get('search'),
   ].filter(Boolean).length
 
   return (
     <div className="mb-4">
+      {/* Search box — always visible */}
+      <div className="mb-3">
+        <input
+          type="search"
+          placeholder="Search by title..."
+          value={searchInput}
+          onChange={e => handleSearchChange(e.target.value)}
+          className="w-full max-w-sm rounded-md border border-neutral-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+      </div>
+
       {/* Mobile toggle */}
       <button
         onClick={() => setExpanded(!expanded)}

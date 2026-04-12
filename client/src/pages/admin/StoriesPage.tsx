@@ -43,6 +43,7 @@ function useFiltersFromParams(): StoryFilters {
     sort: (searchParams.get('sort') as StorySort) || 'date_desc',
     page: Number(searchParams.get('page')) || 1,
     pageSize: Number(searchParams.get('pageSize')) || DEFAULT_PAGE_SIZE,
+    search: searchParams.get('search') || undefined,
   }
 }
 
