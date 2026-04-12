@@ -45,8 +45,11 @@ router.get('/stories/:slug', async (req, res) => {
 
     // Regular browsers get a fast HTTP redirect to the React app.
     // Only serve OG HTML to crawlers (LinkedIn, Twitter, etc.).
+    // If _r=1 is already present the Render route still hits this proxy —
+    // break the loop by falling through and serving the shell (React loads fine).
     const storyUrl = `${SITE_URL}/stories/${story.slug}`
-    if (!isBotRequest(req)) {
+    const isRetry = req.query._r === '1'
+    if (!isBotRequest(req) && !isRetry) {
       res.redirect(302, `${storyUrl}?_r=1`)
       return
     }

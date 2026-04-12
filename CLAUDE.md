@@ -2,7 +2,7 @@
 
 AI-curated news platform that evaluates article relevance to humanity using LLM analysis. Crawls news sources, assesses relevance, and publishes curated content.
 
-**Live site:** https://actuallyrelevant.news
+**Live site:** https://impactoindigena.news
 
 ## Implementation Workflow
 
