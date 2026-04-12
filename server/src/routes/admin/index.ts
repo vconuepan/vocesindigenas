@@ -13,6 +13,7 @@ import mastodonRouter from './mastodon.js'
 import instagramRouter from './instagram.js'
 import linkedinRouter from './linkedin.js'
 import feedbackRouter from './feedback.js'
+import maintenanceRouter from './maintenance.js'
 
 const router = Router()
 
@@ -32,5 +33,6 @@ router.use('/mastodon', mastodonRouter)
 router.use('/instagram', instagramRouter)
 router.use('/linkedin', linkedinRouter)
 router.use('/feedback', feedbackRouter)
+router.use('/maintenance', maintenanceRouter)
 
 export default router

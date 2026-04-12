@@ -1,5 +1,11 @@
-import prisma from '../lib/prisma.js'
+import 'dotenv/config'
+import { PrismaClient } from '@prisma/client'
 import { fetchOgImage } from '../lib/extract-og-image.js'
+
+const DB_URL = (process.env.DATABASE_URL ?? '').trim()
+console.log('FULL URL (escaped):', JSON.stringify(DB_URL))
+
+const prisma = new PrismaClient({ datasourceUrl: DB_URL })
 
 async function main() {
   const stories = await prisma.story.findMany({
