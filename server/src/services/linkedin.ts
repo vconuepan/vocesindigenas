@@ -1,8 +1,16 @@
+import { z } from 'zod'
+import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
 import { createUgcPost, isLinkedInConfigured } from '../lib/linkedin.js'
+import { getMediumLLM, rateLimitDelay } from './llm.js'
+import { buildLinkedInPostPrompt } from '../prompts/linkedin.js'
 
 const log = createLogger('linkedin-service')
+
+const linkedInDraftSchema = z.object({
+  postText: z.string().describe('The complete LinkedIn post text, ready to publish. Includes body and hashtags.'),
+})
 
 // ---------------------------------------------------------------------------
 // Draft generation
@@ -23,22 +31,37 @@ export async function generateDraft(storyId: string) {
   })
   if (existingPost) throw new Error('Story already has a LinkedIn post')
 
-  const storyUrl = `https://impactoindigena.news/stories/${story.slug}`
+  await rateLimitDelay()
+  const llm = getMediumLLM()
+  const structuredLlm = llm.withStructuredOutput(linkedInDraftSchema)
 
-  const baseText = story.marketingBlurb || story.summary || story.title || ''
-  const rawPostText = `${baseText}\n\n#PueblosIndígenas #DerechosIndígenas #ImpactoIndígena`
-  const postText = rawPostText.length > 2900 ? rawPostText.slice(0, 2897) + '…' : rawPostText
+  const prompt = buildLinkedInPostPrompt({
+    title: story.title,
+    titleLabel: story.titleLabel,
+    summary: story.summary,
+    relevanceSummary: story.relevanceSummary,
+    relevanceReasons: story.relevanceReasons,
+    marketingBlurb: story.marketingBlurb,
+    issueName: story.issue?.name ?? null,
+    sourceCountry: story.feed?.url ?? null,
+  })
+
+  const result = await structuredLlm.invoke([new HumanMessage(prompt)])
+
+  const rawPostText = result.postText.length > 2900
+    ? result.postText.slice(0, 2897) + '…'
+    : result.postText
 
   const post = await prisma.linkedInPost.create({
     data: {
       storyId,
-      postText,
+      postText: rawPostText,
       status: 'draft',
     },
     include: { story: { include: { feed: true, issue: true } } },
   })
 
-  log.info({ postId: post.id, storyId }, 'LinkedIn draft generated')
+  log.info({ postId: post.id, storyId }, 'LinkedIn draft generated via LLM')
   return post
 }
 

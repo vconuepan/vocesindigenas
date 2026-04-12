@@ -1,9 +1,17 @@
+import { z } from 'zod'
+import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
 import { createCarouselPost, isInstagramConfigured } from '../lib/instagram.js'
 import { generateCarousel } from '../lib/carouselGen.js'
 import { generateStoryImage } from '../lib/imageGen.js'
+import { getMediumLLM, rateLimitDelay } from './llm.js'
+import { buildInstagramCaptionPrompt } from '../prompts/instagram.js'
 const log = createLogger('instagram-service')
+
+const instagramCaptionSchema = z.object({
+  caption: z.string().describe('The complete Instagram caption, including body and hashtags.'),
+})
 
 // ---------------------------------------------------------------------------
 // Draft generation
@@ -26,20 +34,25 @@ export async function generateDraft(storyId: string) {
 
   const storyUrl = `https://impactoindigena.news/stories/${story.slug}`
 
-  // Caption para Instagram
-  const blueskyPost = await prisma.blueskyPost.findFirst({
-    where: { storyId },
-    orderBy: { createdAt: 'desc' },
+  // Caption para Instagram generada con LLM
+  await rateLimitDelay()
+  const llm = getMediumLLM()
+  const structuredLlm = llm.withStructuredOutput(instagramCaptionSchema)
+
+  const prompt = buildInstagramCaptionPrompt({
+    title: story.title,
+    titleLabel: story.titleLabel,
+    summary: story.summary,
+    relevanceSummary: story.relevanceSummary,
+    relevanceReasons: story.relevanceReasons,
+    marketingBlurb: story.marketingBlurb,
+    issueName: story.issue?.name ?? null,
+    sourceCountry: story.feed?.url ?? null,
   })
 
-  const hook = story.titleLabel
-    ? `${story.titleLabel}: ${story.title || ''}`
-    : (story.title || '')
-  const body = story.marketingBlurb || story.summary || blueskyPost?.postText || ''
-  const caption = [hook, body, storyUrl, '#PueblosIndígenas #DerechosIndígenas #ImpactoIndígena']
-    .filter(Boolean)
-    .join('\n\n')
-  const trimmedCaption = caption.length > 2200 ? caption.slice(0, 2197) + '…' : caption
+  const captionResult = await structuredLlm.invoke([new HumanMessage(prompt)])
+  const captionWithUrl = `${captionResult.caption}\n\n${storyUrl}`
+  const trimmedCaption = captionWithUrl.length > 2200 ? captionWithUrl.slice(0, 2197) + '…' : captionWithUrl
 
   // Reusar imagen de Twitter si existe
   const twitterPost = await prisma.twitterPost.findFirst({
