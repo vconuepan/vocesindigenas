@@ -555,6 +555,9 @@ ${introSection}
               <p style="margin: 0 0 10px; font-size: 12px; color: #a3a3a3;">
                 <a href="https://bsky.app/profile/impactoindigena.bsky.social" style="color: #737373; text-decoration: none; vertical-align: middle;"><img src="https://impactoindigena.news/images/social/bluesky.png" alt="Bluesky" width="14" height="14" style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;">Bluesky</a>
               </p>
+              <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
+                ¿Algo que mejorar? <a href="https://impactoindigena.news/feedback" style="color: #2563eb; text-decoration: none;">Envíanos tu feedback</a>
+              </p>
             </td>
           </tr>
         </table>

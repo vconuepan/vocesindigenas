@@ -124,10 +124,13 @@ function buildDigestHtml(userName: string, sections: DigestSection[]): string {
 
           <tr>
             <td style="background:#f0ede8;padding:20px 32px;border-top:1px solid #e5e0d8;">
-              <p style="margin:0;font-size:12px;color:#8c7e6a;font-family:sans-serif;line-height:1.6;">
+              <p style="margin:0 0 8px;font-size:12px;color:#8c7e6a;font-family:sans-serif;line-height:1.6;">
                 Recibes este correo porque te uniste a una o más comunidades en
                 <a href="${SITE_URL}" style="color:#2d6a4f;">impactoindigena.news</a>.
                 Para dejar de recibir estos resúmenes, visita la página de tu comunidad y selecciona "Salir".
+              </p>
+              <p style="margin:0;font-size:12px;color:#8c7e6a;font-family:sans-serif;">
+                ¿Algo que mejorar? <a href="${SITE_URL}/feedback" style="color:#2d6a4f;">Envíanos tu feedback</a>
               </p>
             </td>
           </tr>
