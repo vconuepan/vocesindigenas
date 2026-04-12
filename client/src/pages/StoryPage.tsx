@@ -255,6 +255,18 @@ export default function StoryPage() {
         </header>
 
         <div className="page-section !pt-0">
+          {/* Hero image */}
+          {story.imageUrl && (
+            <div className="mb-8 -mx-4 md:mx-0 rounded-none md:rounded-xl overflow-hidden">
+              <img
+                src={story.imageUrl}
+                alt={headline}
+                className="w-full max-h-[420px] object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
+            </div>
+          )}
+
           {/* Summary */}
           {loc.summary && (
             <section className="mb-10">

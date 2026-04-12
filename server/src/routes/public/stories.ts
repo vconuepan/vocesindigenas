@@ -5,6 +5,8 @@ import { searchLimiter } from '../../middleware/rateLimit.js'
 import { publicStoryQuerySchema } from '../../schemas/story.js'
 import { createLogger } from '../../lib/logger.js'
 import { config } from '../../config.js'
+import { fetchOgImage } from '../../lib/extract-og-image.js'
+import prisma from '../../lib/prisma.js'
 
 const router = Router()
 const log = createLogger('public:stories')
@@ -73,6 +75,21 @@ router.get('/:slug', async (req, res) => {
     }
     res.set('Cache-Control', 'public, max-age=60')
     res.json(story)
+
+    // Lazy-fill imageUrl in background if missing
+    if (!story.imageUrl && story.sourceUrl) {
+      setImmediate(async () => {
+        try {
+          const imageUrl = await fetchOgImage(story.sourceUrl)
+          if (imageUrl) {
+            await prisma.story.update({ where: { id: story.id }, data: { imageUrl } })
+            log.info({ slug: req.params.slug, imageUrl }, 'lazy-filled imageUrl')
+          }
+        } catch (err) {
+          log.warn({ err, slug: req.params.slug }, 'lazy-fill imageUrl failed')
+        }
+      })
+    }
   } catch (err) {
     log.error({ err, slug: req.params.slug }, 'failed to fetch story')
     res.status(500).json({ error: 'Failed to fetch story' })
