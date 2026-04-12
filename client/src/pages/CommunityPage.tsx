@@ -1,13 +1,138 @@
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { useCommunity, useCommunityStories } from '../hooks/useCommunities'
+import { useCommunity, useCommunityStories, useMembership, useJoinCommunity, useLeaveCommunity } from '../hooks/useCommunities'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { communityDotColor } from '../lib/category-colors'
+import { publicApi, memberAuth } from '../lib/api'
 import type { PublicStory } from '@shared/types'
 
 const PAGE_SIZE = 20
+
+function ShareBar({ communityName }: { communityName: string }) {
+  const [copied, setCopied] = useState(false)
+  const url = window.location.href.split('?')[0]
+  const waText = encodeURIComponent(`${communityName} — noticias curadas por IA: ${url}`)
+
+  function handleCopy() {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div className="flex items-center gap-3 mt-4 ml-5">
+      <span className="text-xs text-neutral-400">Compartir:</span>
+      <button
+        onClick={handleCopy}
+        className="text-xs px-3 py-1 rounded-full border border-neutral-200 text-neutral-600 hover:border-brand-300 hover:text-brand-700 transition-colors"
+      >
+        {copied ? 'Copiado' : 'Copiar URL'}
+      </button>
+      <a
+        href={`https://wa.me/?text=${waText}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs px-3 py-1 rounded-full border border-neutral-200 text-neutral-600 hover:border-green-400 hover:text-green-700 transition-colors"
+      >
+        WhatsApp
+      </a>
+    </div>
+  )
+}
+
+type JoinState = 'anon' | 'email-sent' | 'member'
+
+function JoinBlock({ slug, communityName }: { slug: string; communityName: string }) {
+  const navigate = useNavigate()
+  const [joinState, setJoinState] = useState<JoinState>(
+    memberAuth.isAuthenticated() ? 'member' : 'anon'
+  )
+  const [email, setEmail] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const { data: membership } = useMembership(slug)
+  const joinMutation = useJoinCommunity(slug)
+  const leaveMutation = useLeaveCommunity(slug)
+
+  // If authenticated and membership loaded, join automatically (first visit after magic link)
+  useEffect(() => {
+    if (memberAuth.isAuthenticated() && membership !== undefined && !membership.isMember) {
+      joinMutation.mutate()
+    }
+    if (membership?.isMember) {
+      setJoinState('member')
+    }
+  }, [membership])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim()) return
+    setSubmitting(true)
+    setError('')
+    try {
+      const redirectTo = `/comunidad/${slug}`
+      await publicApi.auth.requestMagicLink(email.trim(), redirectTo)
+      navigate(`/magic-sent?email=${encodeURIComponent(email.trim())}&redirect_to=${encodeURIComponent(redirectTo)}`)
+    } catch (err: any) {
+      setError(err.message || 'Error al enviar el enlace. Intenta de nuevo.')
+      setSubmitting(false)
+    }
+  }
+
+  async function handleLeave() {
+    await leaveMutation.mutateAsync()
+    setJoinState('anon')
+  }
+
+  if (joinState === 'member') {
+    return (
+      <div className="mt-10 border-t border-neutral-100 pt-8 flex flex-col items-center text-center gap-3">
+        <p className="text-sm font-medium text-neutral-700">Eres miembro de esta comunidad</p>
+        <button
+          onClick={handleLeave}
+          disabled={leaveMutation.isPending}
+          className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
+        >
+          {leaveMutation.isPending ? 'Saliendo...' : 'Abandonar comunidad'}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-10 border-t border-neutral-100 pt-8">
+      <div className="max-w-md mx-auto text-center">
+        <h2 className="text-lg font-semibold mb-1">Únete a {communityName}</h2>
+        <p className="text-sm text-neutral-500 mb-5">
+          Recibe las noticias más relevantes de esta comunidad directo en tu correo.
+        </p>
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@correo.com"
+            required
+            className="flex-1 px-4 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="px-5 py-2 text-sm font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
+          >
+            {submitting ? '...' : 'Unirme'}
+          </button>
+        </form>
+        {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+      </div>
+    </div>
+  )
+}
 
 function StoryGrid({ stories }: { stories: PublicStory[] }) {
   if (stories.length === 0) return null
@@ -41,6 +166,15 @@ export default function CommunityPage() {
   const { slug } = useParams<{ slug: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const page = parseInt(searchParams.get('page') ?? '1', 10) || 1
+
+  // Capture member_token from URL (set by magic link verify redirect) and store in localStorage
+  useEffect(() => {
+    const token = searchParams.get('member_token')
+    if (token) {
+      memberAuth.setToken(token)
+      setSearchParams((prev) => { prev.delete('member_token'); return prev }, { replace: true })
+    }
+  }, [])
 
   const { data: community, isLoading: communityLoading, isError: communityError } = useCommunity(slug ?? '')
   const { data: storiesData, isLoading: storiesLoading } = useCommunityStories(slug ?? '', { page, pageSize: PAGE_SIZE })
@@ -107,6 +241,7 @@ export default function CommunityPage() {
               <p className="text-xs text-neutral-400 ml-5">{community.region}</p>
             )}
             <p className="text-sm text-neutral-600 mt-2 ml-5 max-w-2xl">{community.description}</p>
+            <ShareBar communityName={community.name} />
           </header>
         )}
 
@@ -141,6 +276,10 @@ export default function CommunityPage() {
           <p className="text-neutral-500 py-8 text-center">
             Aún no hay noticias publicadas para esta comunidad.
           </p>
+        )}
+
+        {community && slug && (
+          <JoinBlock slug={slug} communityName={community.name} />
         )}
       </div>
     </>

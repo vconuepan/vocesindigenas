@@ -104,6 +104,33 @@ export function requireApiKey(req: Request, res: Response, next: NextFunction): 
 }
 
 /**
+ * Member authentication middleware.
+ * Reads a JWT from the Authorization: Bearer header.
+ * Used for community join/leave/membership endpoints accessible to VEEDOR users.
+ */
+export function requireMember(req: Request, res: Response, next: NextFunction): void {
+  const token = extractBearerToken(req)
+
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' })
+    return
+  }
+
+  const payload = tryJwtAuth(token)
+  if (payload) {
+    req.user = {
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role,
+    }
+    next()
+    return
+  }
+
+  res.status(401).json({ error: 'Invalid or expired token' })
+}
+
+/**
  * Role check middleware. Use after requireAuth.
  */
 export function requireRole(...roles: string[]) {

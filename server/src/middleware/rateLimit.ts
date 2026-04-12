@@ -61,6 +61,20 @@ export const authLimiter = rateLimit({
 })
 
 /**
+ * Rate limiter for magic link requests.
+ * 5 requests per 15 minutes per IP to prevent email spam.
+ */
+export const magicLinkLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many magic link requests. Please try again later.'
+  }
+})
+
+/**
  * Rate limiter for token refresh endpoint.
  * More lenient than login since refresh is called automatically by the client.
  */

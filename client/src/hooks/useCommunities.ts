@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { publicApi } from '../lib/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { publicApi, memberAuth } from '../lib/api'
 
 export function useCommunities() {
   return useQuery({
@@ -23,5 +23,34 @@ export function useCommunityStories(slug: string, params?: { page?: number; page
     queryKey: ['community-stories', slug, params],
     queryFn: () => publicApi.communities.stories(slug, params),
     enabled: !!slug,
+  })
+}
+
+export function useMembership(slug: string) {
+  return useQuery({
+    queryKey: ['community-membership', slug],
+    queryFn: () => publicApi.communities.membership(slug),
+    enabled: !!slug && memberAuth.isAuthenticated(),
+    retry: false,
+  })
+}
+
+export function useJoinCommunity(slug: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => publicApi.communities.join(slug),
+    onSuccess: () => {
+      queryClient.setQueryData(['community-membership', slug], { isMember: true })
+    },
+  })
+}
+
+export function useLeaveCommunity(slug: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => publicApi.communities.leave(slug),
+    onSuccess: () => {
+      queryClient.setQueryData(['community-membership', slug], { isMember: false })
+    },
   })
 }

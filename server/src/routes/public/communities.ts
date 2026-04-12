@@ -3,6 +3,7 @@ import { createLogger } from '../../lib/logger.js'
 import prisma from '../../lib/prisma.js'
 import { StoryStatus } from '@prisma/client'
 import { config } from '../../config.js'
+import { requireMember } from '../../middleware/auth.js'
 
 const router = Router()
 const log = createLogger('public:communities')
@@ -130,6 +131,78 @@ router.get('/:slug/stories', async (req, res) => {
   } catch (err) {
     log.error({ err, slug: req.params.slug }, 'failed to fetch community stories')
     res.status(500).json({ error: 'Failed to fetch community stories' })
+  }
+})
+
+// GET /api/communities/:slug/membership — check if current user is a member
+router.get('/:slug/membership', requireMember, async (req, res) => {
+  try {
+    const community = await prisma.community.findUnique({
+      where: { slug: req.params.slug },
+      select: { id: true },
+    })
+    if (!community) {
+      res.status(404).json({ error: 'Community not found' })
+      return
+    }
+
+    const membership = await prisma.communityMember.findUnique({
+      where: { userId_communityId: { userId: req.user!.userId, communityId: community.id } },
+    })
+    res.json({ isMember: !!membership })
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to check membership')
+    res.status(500).json({ error: 'Failed to check membership' })
+  }
+})
+
+// POST /api/communities/:slug/join — join a community
+router.post('/:slug/join', requireMember, async (req, res) => {
+  try {
+    const community = await prisma.community.findUnique({
+      where: { slug: req.params.slug },
+      select: { id: true },
+    })
+    if (!community) {
+      res.status(404).json({ error: 'Community not found' })
+      return
+    }
+
+    await prisma.communityMember.upsert({
+      where: { userId_communityId: { userId: req.user!.userId, communityId: community.id } },
+      update: {},
+      create: { userId: req.user!.userId, communityId: community.id },
+    })
+
+    log.info({ userId: req.user!.userId, slug: req.params.slug }, 'user joined community')
+    res.json({ isMember: true })
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to join community')
+    res.status(500).json({ error: 'Failed to join community' })
+  }
+})
+
+// DELETE /api/communities/:slug/leave — leave a community
+router.delete('/:slug/leave', requireMember, async (req, res) => {
+  try {
+    const community = await prisma.community.findUnique({
+      where: { slug: req.params.slug },
+      select: { id: true },
+    })
+    if (!community) {
+      res.status(404).json({ error: 'Community not found' })
+      return
+    }
+
+    await prisma.communityMember.deleteMany({
+      where: { userId: req.user!.userId, communityId: community.id },
+    })
+
+    log.info({ userId: req.user!.userId, slug: req.params.slug }, 'user left community')
+    res.json({ isMember: false })
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to leave community')
+    res.status(500).json({ error: 'Failed to leave community' })
   }
 })
 

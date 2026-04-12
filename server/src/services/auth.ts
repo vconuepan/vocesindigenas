@@ -5,6 +5,7 @@ import prisma from '../lib/prisma.js'
 
 const BCRYPT_ROUNDS = 12
 const ACCESS_TOKEN_EXPIRY = '15m'
+const MEMBER_TOKEN_EXPIRY = '30d'
 const REFRESH_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export interface AccessTokenPayload {
@@ -34,6 +35,16 @@ export function generateAccessToken(user: { id: string; email: string; userType?
     role: (user.userType ?? user.role ?? 'viewer').toLowerCase(),
   }
   return jwt.sign(payload, getJwtSecret(), { expiresIn: ACCESS_TOKEN_EXPIRY })
+}
+
+/** Long-lived token (30 days) for public members authenticated via magic link. */
+export function generateMemberToken(user: { id: string; email: string }): string {
+  const payload: AccessTokenPayload = {
+    userId: user.id,
+    email: user.email,
+    role: 'veedor',
+  }
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: MEMBER_TOKEN_EXPIRY })
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {

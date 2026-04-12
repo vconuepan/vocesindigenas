@@ -504,3 +504,17 @@ model RefreshToken {
   @@index([familyId])
   @@map("refresh_tokens")
 }
+
+model MagicLink {
+  id         String    @id @default(uuid())
+  email      String
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  usedAt     DateTime? @map("used_at")
+  redirectTo String?   @map("redirect_to")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([expiresAt])
+  @@map("magic_links")
+}

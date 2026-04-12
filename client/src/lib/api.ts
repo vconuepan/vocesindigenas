@@ -55,6 +55,37 @@ export interface HomepageData {
   storiesByIssue: Record<string, { uplifting: PublicStory[]; calm: PublicStory[]; negative: PublicStory[] }>
 }
 
+// --- Member auth helpers ---
+
+const MEMBER_TOKEN_KEY = 'member_token'
+
+export const memberAuth = {
+  getToken(): string | null {
+    return localStorage.getItem(MEMBER_TOKEN_KEY)
+  },
+  setToken(token: string): void {
+    localStorage.setItem(MEMBER_TOKEN_KEY, token)
+  },
+  clearToken(): void {
+    localStorage.removeItem(MEMBER_TOKEN_KEY)
+  },
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem(MEMBER_TOKEN_KEY)
+  },
+}
+
+function memberRequest<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = memberAuth.getToken()
+  return request<T>(path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers ?? {}),
+    },
+  })
+}
+
 export const publicApi = {
   homepage: () => request<HomepageData>('/homepage'),
 
@@ -80,6 +111,27 @@ export const publicApi = {
       request<PaginatedResponse<PublicStory>>(
         `/communities/${slug}/stories${toQueryString((params || {}) as Record<string, unknown>)}`
       ),
+    membership: (slug: string) =>
+      memberRequest<{ isMember: boolean }>(`/communities/${slug}/membership`),
+    join: (slug: string) =>
+      memberRequest<{ isMember: boolean }>(`/communities/${slug}/join`, { method: 'POST' }),
+    leave: (slug: string) =>
+      memberRequest<{ isMember: boolean }>(`/communities/${slug}/leave`, { method: 'DELETE' }),
+  },
+
+  auth: {
+    requestMagicLink: (email: string, redirectTo?: string) =>
+      request<void>(`/auth/magic`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, redirectTo }),
+      }),
+    resendMagicLink: (email: string, redirectTo?: string) =>
+      request<void>(`/auth/magic/resend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, redirectTo }),
+      }),
   },
 
   sources: () =>
