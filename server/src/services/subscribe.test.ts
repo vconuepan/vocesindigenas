@@ -9,14 +9,14 @@ const mockPrisma = {
   },
 }
 
-const mockPlunk = {
+const mockBrevo = {
   createContact: vi.fn(),
   sendTransactional: vi.fn(),
   verifyEmail: vi.fn(),
 }
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
-vi.mock('./plunk.js', () => mockPlunk)
+vi.mock('./brevo.js', () => mockBrevo)
 
 const { subscribe, EmailValidationError } = await import('./subscribe.js')
 
@@ -26,19 +26,19 @@ describe('subscribe service', () => {
     mockPrisma.pendingSubscription.findFirst.mockResolvedValue(null)
     mockPrisma.pendingSubscription.create.mockResolvedValue({ id: '1' })
     mockPrisma.pendingSubscription.deleteMany.mockResolvedValue({ count: 0 })
-    mockPlunk.createContact.mockResolvedValue({ id: 'contact-1' })
-    mockPlunk.sendTransactional.mockResolvedValue(undefined)
-    mockPlunk.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: false })
+    mockBrevo.createContact.mockResolvedValue({ id: 'contact-1' })
+    mockBrevo.sendTransactional.mockResolvedValue(undefined)
+    mockBrevo.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: false })
   })
 
   describe('email verification', () => {
     it('calls verifyEmail before creating contact', async () => {
       const callOrder: string[] = []
-      mockPlunk.verifyEmail.mockImplementation(async () => {
+      mockBrevo.verifyEmail.mockImplementation(async () => {
         callOrder.push('verify')
         return { valid: true, domainExists: true, isDisposable: false }
       })
-      mockPlunk.createContact.mockImplementation(async () => {
+      mockBrevo.createContact.mockImplementation(async () => {
         callOrder.push('createContact')
         return { id: 'contact-1' }
       })
@@ -49,25 +49,25 @@ describe('subscribe service', () => {
     })
 
     it('throws EmailValidationError when email is invalid', async () => {
-      mockPlunk.verifyEmail.mockResolvedValue({ valid: false, domainExists: true, isDisposable: false })
+      mockBrevo.verifyEmail.mockResolvedValue({ valid: false, domainExists: true, isDisposable: false })
 
       await expect(subscribe({ email: 'bad@example.com' })).rejects.toThrow(EmailValidationError)
     })
 
     it('throws EmailValidationError when domain does not exist', async () => {
-      mockPlunk.verifyEmail.mockResolvedValue({ valid: true, domainExists: false, isDisposable: false })
+      mockBrevo.verifyEmail.mockResolvedValue({ valid: true, domainExists: false, isDisposable: false })
 
       await expect(subscribe({ email: 'user@nodomain.fake' })).rejects.toThrow(EmailValidationError)
     })
 
     it('throws EmailValidationError for disposable emails', async () => {
-      mockPlunk.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: true })
+      mockBrevo.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: true })
 
       await expect(subscribe({ email: 'temp@mailinator.com' })).rejects.toThrow(EmailValidationError)
     })
 
     it('includes user-facing message in EmailValidationError', async () => {
-      mockPlunk.verifyEmail.mockResolvedValue({ valid: false, domainExists: true, isDisposable: false })
+      mockBrevo.verifyEmail.mockResolvedValue({ valid: false, domainExists: true, isDisposable: false })
 
       try {
         await subscribe({ email: 'bad@example.com' })
@@ -78,13 +78,13 @@ describe('subscribe service', () => {
       }
     })
 
-    it('skips verification gracefully if Plunk verify API fails', async () => {
-      mockPlunk.verifyEmail.mockRejectedValue(new Error('Plunk API down'))
+    it('skips verification gracefully if Brevo verify API fails', async () => {
+      mockBrevo.verifyEmail.mockRejectedValue(new Error('Brevo API down'))
 
       // Should not throw — graceful degradation
       await subscribe({ email: 'test@example.com' })
 
-      expect(mockPlunk.createContact).toHaveBeenCalled()
+      expect(mockBrevo.createContact).toHaveBeenCalled()
     })
   })
 
@@ -92,7 +92,7 @@ describe('subscribe service', () => {
     it('passes firstName to createContact data', async () => {
       await subscribe({ email: 'test@example.com', firstName: 'John' })
 
-      expect(mockPlunk.createContact).toHaveBeenCalledWith(
+      expect(mockBrevo.createContact).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ firstName: 'John' }),
         }),
@@ -102,7 +102,7 @@ describe('subscribe service', () => {
     it('works without firstName', async () => {
       await subscribe({ email: 'test@example.com' })
 
-      expect(mockPlunk.createContact).toHaveBeenCalledWith(
+      expect(mockBrevo.createContact).toHaveBeenCalledWith(
         expect.objectContaining({
           email: 'test@example.com',
           subscribed: false,
@@ -113,14 +113,14 @@ describe('subscribe service', () => {
     it('personalizes confirmation email when firstName provided', async () => {
       await subscribe({ email: 'test@example.com', firstName: 'Jane' })
 
-      const emailBody = mockPlunk.sendTransactional.mock.calls[0][0].body
+      const emailBody = mockBrevo.sendTransactional.mock.calls[0][0].body
       expect(emailBody).toContain('Jane')
     })
 
     it('does not include a name in greeting when firstName not provided', async () => {
       await subscribe({ email: 'test@example.com' })
 
-      const emailBody = mockPlunk.sendTransactional.mock.calls[0][0].body
+      const emailBody = mockBrevo.sendTransactional.mock.calls[0][0].body
       expect(emailBody).not.toContain('Jane')
     })
   })
@@ -131,8 +131,8 @@ describe('subscribe service', () => {
 
       await subscribe({ email: 'existing@example.com' })
 
-      expect(mockPlunk.verifyEmail).not.toHaveBeenCalled()
-      expect(mockPlunk.createContact).not.toHaveBeenCalled()
+      expect(mockBrevo.verifyEmail).not.toHaveBeenCalled()
+      expect(mockBrevo.createContact).not.toHaveBeenCalled()
     })
   })
 
@@ -150,7 +150,7 @@ describe('subscribe service', () => {
 
     it('deletes unconfirmed entries after email verification', async () => {
       const callOrder: string[] = []
-      mockPlunk.verifyEmail.mockImplementation(async () => {
+      mockBrevo.verifyEmail.mockImplementation(async () => {
         callOrder.push('verify')
         return { valid: true, domainExists: true, isDisposable: false }
       })

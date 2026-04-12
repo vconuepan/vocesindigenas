@@ -219,7 +219,7 @@ router.post('/:id/sends/:sendId/refresh-stats', async (req, res) => {
     const send = await newsletterService.refreshSendStats(req.params.sendId)
     res.json(send)
   } catch (err: any) {
-    if (err.message === 'No Plunk campaign ID') {
+    if (err.message === 'No Brevo campaign ID') {
       res.status(400).json({ error: err.message })
       return
     }

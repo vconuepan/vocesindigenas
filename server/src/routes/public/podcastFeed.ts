@@ -82,7 +82,7 @@ router.get('/feed.xml', async (_req, res) => {
     </itunes:category>
     <itunes:owner>
       <itunes:name>Impacto Indígena</itunes:name>
-      <itunes:email>${process.env.PLUNK_FROM_EMAIL || ''}</itunes:email>
+      <itunes:email>${process.env.BREVO_FROM_EMAIL || ''}</itunes:email>
     </itunes:owner>
 ${items}
   </channel>

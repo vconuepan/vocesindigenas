@@ -26,9 +26,9 @@ const {
   updateContact,
   sendTransactional,
   verifyEmail,
-} = await import('./plunk.js')
+} = await import('./brevo.js')
 
-describe('Plunk API client', () => {
+describe('Brevo API client', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

@@ -3,7 +3,7 @@ import prisma from '../lib/prisma.js'
 import { getLLMByTier, rateLimitDelay } from '../services/llm.js'
 import { HumanMessage } from '@langchain/core/messages'
 import { generateHtmlContent } from '../services/newsletter.js'
-import * as plunk from '../services/plunk.js'
+import * as brevo from '../services/brevo.js'
 
 const log = createLogger('send_private_newsletter')
 
@@ -208,7 +208,7 @@ Responde SOLO con JSON sin texto adicional:
   if (!updated?.html) throw new Error('No HTML generated')
 
   // Enviar directo al email privado
-  await plunk.sendTransactional({
+  await brevo.sendTransactional({
     to: PRIVATE_EMAIL,
     subject: title,
     body: updated.html,

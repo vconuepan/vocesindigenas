@@ -6,7 +6,7 @@ import { config } from '../config.js'
 import { type Prisma, ContentStatus, StoryStatus, NewsletterSendStatus } from '@prisma/client'
 import { paginate } from '../lib/paginate.js'
 import { generateCarouselZip, type CarouselStory } from './carousel.js'
-import * as plunk from './plunk.js'
+import * as brevo from './brevo.js'
 import { createLogger } from '../lib/logger.js'
 import { getLLMByTier, rateLimitDelay } from './llm.js'
 import { withRetry } from '../lib/retry.js'
@@ -586,16 +586,16 @@ export async function sendTest(newsletterId: string) {
   if (!newsletter.html) throw new Error('No HTML content — generate HTML first')
   const html = newsletter.html
 
-  log.info({ newsletterId }, 'creating test campaign in Plunk')
-  const campaign = await plunk.createCampaign({
+  log.info({ newsletterId }, 'creating test campaign in Brevo')
+  const campaign = await brevo.createCampaign({
     name: `[TEST] ${newsletter.title}`,
     subject: `[TEST] ${newsletter.title}`,
     body: html,
-    audienceType: config.plunk.testSegmentId ? 'SEGMENT' : 'ALL',
-    segmentId: config.plunk.testSegmentId || undefined,
+    audienceType: config.brevo.testSegmentId ? 'SEGMENT' : 'ALL',
+    segmentId: config.brevo.testSegmentId || undefined,
   })
 
-  await plunk.sendCampaign(campaign.id)
+  await brevo.sendCampaign(campaign.id)
 
   return prisma.newsletterSend.create({
     data: {
@@ -614,15 +614,15 @@ export async function sendLive(newsletterId: string, scheduledFor?: string) {
   if (!newsletter.html) throw new Error('No HTML content — generate HTML first')
   const html = newsletter.html
 
-  log.info({ newsletterId, scheduledFor }, 'creating live campaign in Plunk')
-  const campaign = await plunk.createCampaign({
+  log.info({ newsletterId, scheduledFor }, 'creating live campaign in Brevo')
+  const campaign = await brevo.createCampaign({
     name: newsletter.title,
     subject: newsletter.title,
     body: html,
     audienceType: 'ALL',
   })
 
-  await plunk.sendCampaign(campaign.id, scheduledFor)
+  await brevo.sendCampaign(campaign.id, scheduledFor)
 
   const status: NewsletterSendStatus = scheduledFor ? 'scheduled' : 'sending'
 
@@ -640,9 +640,9 @@ export async function sendLive(newsletterId: string, scheduledFor?: string) {
 
 export async function refreshSendStats(sendId: string) {
   const send = await prisma.newsletterSend.findUniqueOrThrow({ where: { id: sendId } })
-  if (!send.plunkCampaignId) throw new Error('No Plunk campaign ID')
+  if (!send.plunkCampaignId) throw new Error('No Brevo campaign ID')
 
-  const stats = await plunk.getCampaignStats(send.plunkCampaignId)
+  const stats = await brevo.getCampaignStats(send.plunkCampaignId)
 
   return prisma.newsletterSend.update({
     where: { id: sendId },

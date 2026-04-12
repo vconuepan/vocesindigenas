@@ -16,7 +16,7 @@ const DISPOSABLE_DOMAINS = new Set([
   'throwam.com', 'discard.email', 'mailnesia.com', 'spamthisplease.com',
 ])
 
-const log = createLogger('plunk')
+const log = createLogger('brevo')
 
 const client = axios.create({
   baseURL: 'https://api.brevo.com/v3',
@@ -26,7 +26,7 @@ const client = axios.create({
 })
 
 client.interceptors.request.use((cfg) => {
-  cfg.headers['api-key'] = config.plunk.secretKey
+  cfg.headers['api-key'] = config.brevo.apiKey
   return cfg
 })
 
@@ -88,8 +88,8 @@ export async function createCampaign(opts: CreateCampaignOpts): Promise<Campaign
         subject: opts.subject,
         htmlContent: opts.body,
         sender: {
-          email: opts.from || config.plunk.fromEmail,
-          name: opts.fromName || config.plunk.fromName,
+          email: opts.from || config.brevo.fromEmail,
+          name: opts.fromName || config.brevo.fromName,
         },
         recipients: opts.audienceType === 'SEGMENT' && opts.segmentId
           ? { listIds: [parseInt(opts.segmentId)] }
@@ -121,8 +121,8 @@ export async function updateCampaign(id: string, opts: Partial<CreateCampaignOpt
       if (opts.body) payload.htmlContent = opts.body
       if (opts.from || opts.fromName) {
         payload.sender = {
-          email: opts.from || config.plunk.fromEmail,
-          name: opts.fromName || config.plunk.fromName,
+          email: opts.from || config.brevo.fromEmail,
+          name: opts.fromName || config.brevo.fromName,
         }
       }
       await client.put(`/emailCampaigns/${id}`, payload)
@@ -307,8 +307,8 @@ export async function sendTransactional(opts: SendTransactionalOpts): Promise<vo
         subject: opts.subject,
         htmlContent: opts.body,
         sender: {
-          email: opts.from || config.plunk.fromEmail,
-          name: opts.name || config.plunk.fromName,
+          email: opts.from || config.brevo.fromEmail,
+          name: opts.name || config.brevo.fromName,
         },
       })
       log.info({ to: opts.to }, 'transactional email sent')

@@ -107,14 +107,11 @@ export const config = {
     crawlFeeds: parseInt(process.env.CONCURRENCY_CRAWL_FEEDS || "3", 10),
     crawlArticles: parseInt(process.env.CONCURRENCY_CRAWL_ARTICLES || "3", 10),
   },
-  plunk: {
-    secretKey: process.env.PLUNK_SECRET_KEY || "",
-    publicKey: process.env.PLUNK_PUBLIC_KEY || "",
-    fromEmail: process.env.PLUNK_FROM_EMAIL || "",
-    fromName: process.env.PLUNK_FROM_NAME || "Impacto Indígena",
-    testSegmentId: process.env.PLUNK_TEST_SEGMENT_ID || "",
-
-    baseUrl: "https://next-api.useplunk.com",
+  brevo: {
+    apiKey: process.env.BREVO_API_KEY || "",
+    fromEmail: process.env.BREVO_FROM_EMAIL || "",
+    fromName: process.env.BREVO_FROM_NAME || "Impacto Indígena",
+    testSegmentId: process.env.BREVO_TEST_SEGMENT_ID || "",
   },
   subscribe: {
     confirmTokenExpiryHours: parseInt(

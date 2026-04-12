@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import prisma from '../lib/prisma.js'
 import { config } from '../config.js'
-import * as plunk from './plunk.js'
+import * as brevo from './brevo.js'
 import { createLogger } from '../lib/logger.js'
 
 const log = createLogger('subscribe')
@@ -35,9 +35,9 @@ export async function subscribe({ email, firstName, language = 'es' }: Subscribe
     return
   }
 
-  // Verify email via Plunk (graceful degradation — skip if API fails)
+  // Verify email via Brevo (graceful degradation — skip if API fails)
   try {
-    const result = await plunk.verifyEmail(email)
+    const result = await brevo.verifyEmail(email)
     if (!result.valid) {
       throw new EmailValidationError('Please enter a valid email address.')
     }
@@ -59,17 +59,17 @@ export async function subscribe({ email, firstName, language = 'es' }: Subscribe
     where: { email, confirmedAt: null },
   })
 
-  // Create contact in Plunk (subscribed: false until confirmed)
+  // Create contact in Brevo (subscribed: false until confirmed)
   let plunkContactId: string | null = null
   try {
-    const contact = await plunk.createContact({
+    const contact = await brevo.createContact({
       email,
       subscribed: false,
       data: { ...(firstName ? { firstName } : {}), pendingConfirmation: true },
     })
     plunkContactId = contact.id
   } catch (err) {
-    log.warn({ err, email }, 'failed to create Plunk contact, proceeding with subscription')
+    log.warn({ err, email }, 'failed to create Brevo contact, proceeding with subscription')
   }
 
   // Store pending subscription
@@ -143,7 +143,7 @@ export async function subscribe({ email, firstName, language = 'es' }: Subscribe
 </html>`
 
   try {
-    await plunk.sendTransactional({
+    await brevo.sendTransactional({
       to: email,
       subject,
       body: html,
@@ -172,15 +172,15 @@ export async function confirmSubscription(token: string, email: string) {
     throw new Error('Confirmation link has expired')
   }
 
-  // Update Plunk contact to subscribed
+  // Update Brevo contact to subscribed
   if (pending.plunkContactId) {
     try {
-      await plunk.updateContact(pending.plunkContactId, {
+      await brevo.updateContact(pending.plunkContactId, {
         subscribed: true,
         data: { pendingConfirmation: false },
       })
     } catch (err) {
-      log.warn({ err, email }, 'failed to update Plunk contact, marking as confirmed anyway')
+      log.warn({ err, email }, 'failed to update Brevo contact, marking as confirmed anyway')
     }
   }
 
