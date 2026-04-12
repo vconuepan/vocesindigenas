@@ -3,6 +3,15 @@
  * Used as thin borders, dots, and small accents — not backgrounds.
  */
 
+import type { CommunityType } from '@shared/types'
+
+/** Returns a Tailwind bg class for the community-type indicator dot. */
+export function communityDotColor(type: CommunityType): string {
+  if (type === 'PUEBLO') return 'bg-brand-600'
+  if (type === 'TERRITORIO') return 'bg-amber-500'
+  return 'bg-emerald-600'
+}
+
 export interface CategoryColor {
   /** Tailwind border class, e.g. "border-amber-500" */
   border: string

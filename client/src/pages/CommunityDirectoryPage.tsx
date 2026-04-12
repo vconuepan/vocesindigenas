@@ -2,13 +2,8 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useCommunities } from '../hooks/useCommunities'
 import { SEO, CommonOgTags } from '../lib/seo'
+import { communityDotColor } from '../lib/category-colors'
 import type { Community } from '@shared/types'
-
-function dotColor(type: Community['type']) {
-  if (type === 'PUEBLO') return 'bg-brand-600'
-  if (type === 'TERRITORIO') return 'bg-amber-500'
-  return 'bg-emerald-600'
-}
 
 function CommunityCard({ community }: { community: Community }) {
   return (
@@ -18,7 +13,7 @@ function CommunityCard({ community }: { community: Community }) {
     >
       <div className="flex items-start gap-3">
         <span
-          className={`mt-0.5 w-3 h-3 rounded-full shrink-0 ${dotColor(community.type)}`}
+          className={`mt-0.5 w-3 h-3 rounded-full shrink-0 ${communityDotColor(community.type)}`}
           aria-hidden="true"
         />
         <div>
@@ -66,11 +61,11 @@ export default function CommunityDirectoryPage() {
       <div className="page-section-wide">
         <header className="mb-8">
           <h1 className="page-title">Comunidades</h1>
-          <p className="text-neutral-500 mt-2 max-w-xl">
+          <p className="text-neutral-500 mt-2 max-w-xl text-center mx-auto">
             Noticias curadas por IA organizadas por pueblo indígena, territorio y causa temática.
             Sin login, sin algoritmo personalizado — solo lo que es relevante para cada comunidad.
           </p>
-          <div className="flex items-center gap-5 mt-4 text-xs text-neutral-400">
+          <div className="flex items-center justify-center gap-5 mt-4 text-xs text-neutral-400">
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-brand-600 inline-block" />Pueblos</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />Territorios</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />Causas</span>

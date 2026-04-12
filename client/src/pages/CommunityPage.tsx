@@ -4,6 +4,7 @@ import { useCommunity, useCommunityStories } from '../hooks/useCommunities'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
 import { SEO, CommonOgTags } from '../lib/seo'
+import { communityDotColor } from '../lib/category-colors'
 import type { PublicStory } from '@shared/types'
 
 const PAGE_SIZE = 20
@@ -97,10 +98,10 @@ export default function CommunityPage() {
           <header className="mb-6">
             <div className="flex items-center gap-2 mb-1">
               <span
-                className={`w-3 h-3 rounded-full shrink-0 ${community.type === 'PUEBLO' ? 'bg-brand-600' : community.type === 'TERRITORIO' ? 'bg-amber-500' : 'bg-emerald-600'}`}
+                className={`w-3 h-3 rounded-full shrink-0 ${communityDotColor(community.type)}`}
                 aria-hidden="true"
               />
-              <h1 className="text-xl md:text-2xl font-bold">{community.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{community.name}</h1>
             </div>
             {community.region && (
               <p className="text-xs text-neutral-400 ml-5">{community.region}</p>

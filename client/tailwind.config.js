@@ -22,7 +22,7 @@ export default {
       },
       fontFamily: {
         nexa: ['Nexa', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        roboto: ['Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        lora: ['Lora', 'ui-serif', 'Georgia', 'serif'],
       },
     },
   },

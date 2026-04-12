@@ -216,7 +216,7 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   return (
     <article className={`group relative flex gap-3 py-3 border-b border-neutral-100 last:border-0 ${readClass}`}>
       {/* Color accent bar */}
-      <div className="w-1 shrink-0 rounded-full mt-1" style={{ backgroundColor: colors.hex, minHeight: '2.5rem' }} aria-hidden="true" />
+      <div className="w-px shrink-0 self-stretch" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <Link
           to={`/stories/${story.slug}`}

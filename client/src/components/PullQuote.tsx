@@ -66,8 +66,7 @@ export default function PullQuote({ story, variant = 'centered' }: PullQuoteProp
             &ldquo;
           </span>
           <blockquote className="-mt-8">
-            {/* No italic — avoids loading Roboto-Italic; decorative quotes provide visual distinction */}
-            <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed px-4">
+            <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed px-4 italic">
               {displayQuote}
             </p>
           </blockquote>
