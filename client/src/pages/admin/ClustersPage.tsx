@@ -57,10 +57,10 @@ export default function ClustersPage() {
     if (!dissolveId) return
     try {
       await dissolveCluster.mutateAsync(dissolveId)
-      toast('success', 'Cluster dissolved')
+      toast('success', 'Grupo disuelto')
       if (openId === dissolveId) setEditingId(null)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to dissolve cluster')
+      toast('error', err instanceof Error ? err.message : 'Error al disolver el grupo')
     }
     setDissolveId(null)
   }
@@ -68,24 +68,24 @@ export default function ClustersPage() {
   return (
     <>
       <Helmet>
-        <title>Clusters — Admin — Impacto Indígena</title>
+        <title>Grupos — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader
-        title="Clusters"
-        description={clustersQuery.data ? `${clustersQuery.data.length} clusters` : undefined}
+        title="Grupos"
+        description={clustersQuery.data ? `${clustersQuery.data.length} grupos` : undefined}
         actions={
           <Button size="sm" onClick={handleOpenCreate}>
             <PlusIcon className="h-4 w-4 mr-1" />
-            New Cluster
+            Nuevo grupo
           </Button>
         }
       />
 
       {clustersQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {clustersQuery.error && <ErrorState message="Failed to load clusters" onRetry={() => clustersQuery.refetch()} />}
+      {clustersQuery.error && <ErrorState message="Error al cargar grupos" onRetry={() => clustersQuery.refetch()} />}
       {clustersQuery.data && clustersQuery.data.length === 0 && (
-        <EmptyState title="No clusters" description="Story clusters are created automatically during deduplication." />
+        <EmptyState title="Sin grupos" description="Los grupos de noticias se crean automáticamente durante la deduplicación." />
       )}
       {clustersQuery.data && clustersQuery.data.length > 0 && (
         <ClusterTable
@@ -111,10 +111,10 @@ export default function ClustersPage() {
         open={!!dissolveId}
         onClose={() => setDissolveId(null)}
         onConfirm={handleDissolve}
-        title="Dissolve cluster?"
-        description="All auto-rejected members will be restored to analyzed status. This cannot be undone."
+        title="¿Disolver grupo?"
+        description="Todos los miembros rechazados automáticamente volverán al estado analizado. Esta acción no se puede deshacer."
         variant="danger"
-        confirmLabel="Dissolve"
+        confirmLabel="Disolver"
         loading={dissolveCluster.isPending}
       />
     </>

@@ -12,11 +12,11 @@ export default function NewsletterDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{newsletter?.title || 'Newsletter'} — Admin — Impacto Indígena</title>
+        <title>{newsletter?.title || 'Boletín'} — Admin — Impacto Indígena</title>
       </Helmet>
 
       {isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {error && <ErrorState message="Failed to load newsletter" onRetry={refetch} />}
+      {error && <ErrorState message="Error al cargar boletín" onRetry={refetch} />}
 
       {newsletter && <NewsletterDetail newsletter={newsletter} />}
     </>

@@ -26,11 +26,11 @@ export default function PodcastsPage() {
   const handleCreate = async (title: string) => {
     try {
       const pod = await createPodcast.mutateAsync({ title })
-      toast('success', 'Podcast created')
+      toast('success', 'Podcast creado')
       setCreateOpen(false)
       navigate(`/admin/podcasts/${pod.id}`)
     } catch {
-      toast('error', 'Failed to create podcast')
+      toast('error', 'Error al crear podcast')
     }
   }
 
@@ -38,17 +38,17 @@ export default function PodcastsPage() {
     if (!deleteId) return
     try {
       await deletePodcast.mutateAsync(deleteId)
-      toast('success', 'Podcast deleted')
+      toast('success', 'Podcast eliminado')
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar')
     }
     setDeleteId(null)
   }
 
   const tabs = [
-    { label: 'All', value: '' },
-    { label: 'Draft', value: 'draft' },
-    { label: 'Published', value: 'published' },
+    { label: 'Todos', value: '' },
+    { label: 'Borrador', value: 'draft' },
+    { label: 'Publicado', value: 'published' },
   ]
 
   return (
@@ -59,7 +59,7 @@ export default function PodcastsPage() {
 
       <PageHeader
         title="Podcasts"
-        actions={<Button onClick={() => setCreateOpen(true)}>New Podcast</Button>}
+        actions={<Button onClick={() => setCreateOpen(true)}>Nuevo podcast</Button>}
       />
 
       <div className="flex gap-1 mb-4">
@@ -79,8 +79,8 @@ export default function PodcastsPage() {
       </div>
 
       {podcastsQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {podcastsQuery.error && <ErrorState message="Failed to load podcasts" onRetry={() => podcastsQuery.refetch()} />}
-      {podcastsQuery.data && podcastsQuery.data.data.length === 0 && <EmptyState title="No podcasts yet" description="Create your first podcast." />}
+      {podcastsQuery.error && <ErrorState message="Error al cargar podcasts" onRetry={() => podcastsQuery.refetch()} />}
+      {podcastsQuery.data && podcastsQuery.data.data.length === 0 && <EmptyState title="Sin podcasts aún" description="Crea tu primer podcast." />}
       {podcastsQuery.data && podcastsQuery.data.data.length > 0 && (
         <PodcastTable
           podcasts={podcastsQuery.data.data}
@@ -101,10 +101,10 @@ export default function PodcastsPage() {
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        title="Delete podcast?"
-        description="This will permanently remove this podcast."
+        title="¿Eliminar podcast?"
+        description="Se eliminará permanentemente este podcast."
         variant="danger"
-        confirmLabel="Delete"
+        confirmLabel="Eliminar"
         loading={deletePodcast.isPending}
       />
     </>

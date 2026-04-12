@@ -123,6 +123,9 @@ services:
         source: /api/*
         destination: https://vocesindigenas-backend.onrender.com/api/*
       - type: rewrite
+        source: /stories/*
+        destination: https://vocesindigenas-backend.onrender.com/og/stories/*
+      - type: rewrite
         source: /*
         destination: /index.html
 

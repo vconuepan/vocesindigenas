@@ -13,18 +13,18 @@ import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'unread', label: 'Unread' },
-  { value: 'read', label: 'Read' },
-  { value: 'archived', label: 'Archived' },
+  { value: '', label: 'Todos los estados' },
+  { value: 'unread', label: 'No leído' },
+  { value: 'read', label: 'Leído' },
+  { value: 'archived', label: 'Archivado' },
 ]
 
 const CATEGORY_OPTIONS = [
-  { value: '', label: 'All categories' },
+  { value: '', label: 'Todas las categorías' },
   { value: 'general', label: 'General' },
-  { value: 'bug', label: 'Bug' },
-  { value: 'suggestion', label: 'Suggestion' },
-  { value: 'other', label: 'Other' },
+  { value: 'bug', label: 'Error' },
+  { value: 'suggestion', label: 'Sugerencia' },
+  { value: 'other', label: 'Otro' },
 ]
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -35,7 +35,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString('es-CL', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -93,7 +93,7 @@ export default function FeedbackPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'feedback'] })
       queryClient.invalidateQueries({ queryKey: ['feedbackCount'] })
-      toast('success', 'Feedback deleted')
+      toast('success', 'Comentario eliminado')
     },
   })
 
@@ -104,7 +104,7 @@ export default function FeedbackPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'feedback'] })
       queryClient.invalidateQueries({ queryKey: ['feedbackCount'] })
       setSelected(new Set())
-      toast('success', `${action === 'delete' ? 'Deleted' : 'Updated'} ${ids.length} item(s)`)
+      toast('success', `${action === 'delete' ? 'Eliminados' : 'Actualizados'} ${ids.length} elemento(s)`)
     },
   })
 
@@ -136,7 +136,7 @@ export default function FeedbackPage() {
       await deleteMutation.mutateAsync(deleteTarget.id)
       setDeleteTarget(null)
     } catch {
-      toast('error', 'Failed to delete')
+      toast('error', 'Error al eliminar')
       setDeleteTarget(null)
     }
   }
@@ -146,7 +146,7 @@ export default function FeedbackPage() {
       await bulkMutation.mutateAsync({ ids: [...selected], action: 'delete' })
       setBulkDeleteOpen(false)
     } catch {
-      toast('error', 'Failed to delete')
+      toast('error', 'Error al eliminar')
       setBulkDeleteOpen(false)
     }
   }
@@ -154,12 +154,12 @@ export default function FeedbackPage() {
   return (
     <>
       <Helmet>
-        <title>Feedback — Admin — Impacto Indígena</title>
+        <title>Comentarios — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader
-        title="Feedback"
-        description={unreadCount > 0 ? `${unreadCount} unread` : 'No unread feedback'}
+        title="Comentarios"
+        description={unreadCount > 0 ? `${unreadCount} sin leer` : 'Sin comentarios sin leer'}
       />
 
       {/* Filters */}
@@ -187,14 +187,14 @@ export default function FeedbackPage() {
 
         {selected.size > 0 && (
           <div className="flex items-center gap-2 ml-auto">
-            <span className="text-sm text-neutral-500">{selected.size} selected</span>
+            <span className="text-sm text-neutral-500">{selected.size} seleccionados</span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => bulkMutation.mutate({ ids: [...selected], action: 'read' })}
               loading={bulkMutation.isPending}
             >
-              Mark read
+              Marcar como leído
             </Button>
             <Button
               variant="ghost"
@@ -202,14 +202,14 @@ export default function FeedbackPage() {
               onClick={() => bulkMutation.mutate({ ids: [...selected], action: 'archived' })}
               loading={bulkMutation.isPending}
             >
-              Archive
+              Archivar
             </Button>
             <Button
               variant="danger"
               size="sm"
               onClick={() => setBulkDeleteOpen(true)}
             >
-              Delete
+              Eliminar
             </Button>
           </div>
         )}
@@ -220,10 +220,10 @@ export default function FeedbackPage() {
         <div className="flex justify-center py-12"><LoadingSpinner /></div>
       )}
       {feedbackQuery.error && (
-        <ErrorState message="Failed to load feedback" onRetry={() => feedbackQuery.refetch()} />
+        <ErrorState message="Error al cargar comentarios" onRetry={() => feedbackQuery.refetch()} />
       )}
       {feedbackQuery.data && items.length === 0 && (
-        <EmptyState title="No feedback yet" />
+        <EmptyState title="Sin comentarios aún" />
       )}
       {feedbackQuery.data && items.length > 0 && (
         <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
@@ -239,11 +239,11 @@ export default function FeedbackPage() {
                     aria-label="Select all"
                   />
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Category</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Message</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Email</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Categoría</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Mensaje</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Correo</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Estado</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Fecha</th>
                 <th className="w-10 px-3 py-3" />
               </tr>
             </thead>
@@ -306,9 +306,9 @@ export default function FeedbackPage() {
                       className="rounded border-neutral-300 text-sm py-1 px-2 focus:ring-brand-500 focus:border-brand-500"
                       aria-label="Change status"
                     >
-                      <option value="unread">Unread</option>
-                      <option value="read">Read</option>
-                      <option value="archived">Archived</option>
+                      <option value="unread">No leído</option>
+                      <option value="read">Leído</option>
+                      <option value="archived">Archivado</option>
                     </select>
                   </td>
                   <td className="px-3 py-3 text-sm text-neutral-500 whitespace-nowrap">
@@ -335,7 +335,7 @@ export default function FeedbackPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3">
               <p className="text-sm text-neutral-500">
-                {total} total
+                {total} en total
               </p>
               <div className="flex gap-2">
                 <Button
@@ -344,10 +344,10 @@ export default function FeedbackPage() {
                   disabled={page <= 1}
                   onClick={() => setFilter('page', String(page - 1))}
                 >
-                  Previous
+                  Anterior
                 </Button>
                 <span className="flex items-center text-sm text-neutral-600 px-2">
-                  Page {page} of {totalPages}
+                  Página {page} de {totalPages}
                 </span>
                 <Button
                   variant="secondary"
@@ -355,7 +355,7 @@ export default function FeedbackPage() {
                   disabled={page >= totalPages}
                   onClick={() => setFilter('page', String(page + 1))}
                 >
-                  Next
+                  Siguiente
                 </Button>
               </div>
             </div>
@@ -368,9 +368,9 @@ export default function FeedbackPage() {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete feedback"
-        description="Are you sure you want to delete this feedback? This cannot be undone."
-        confirmLabel="Delete"
+        title="Eliminar comentario"
+        description="¿Estás seguro de que quieres eliminar este comentario? Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
         variant="danger"
         loading={deleteMutation.isPending}
       />
@@ -380,9 +380,9 @@ export default function FeedbackPage() {
         open={bulkDeleteOpen}
         onClose={() => setBulkDeleteOpen(false)}
         onConfirm={handleBulkDelete}
-        title="Delete selected feedback"
-        description={`Are you sure you want to delete ${selected.size} item(s)? This cannot be undone.`}
-        confirmLabel="Delete"
+        title="Eliminar comentarios seleccionados"
+        description={`¿Estás seguro de que quieres eliminar ${selected.size} elemento(s)? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
         variant="danger"
         loading={bulkMutation.isPending}
       />

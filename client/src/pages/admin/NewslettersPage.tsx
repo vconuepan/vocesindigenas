@@ -26,11 +26,11 @@ export default function NewslettersPage() {
   const handleCreate = async (title: string) => {
     try {
       const nl = await createNewsletter.mutateAsync({ title })
-      toast('success', 'Newsletter created')
+      toast('success', 'Boletín creado')
       setCreateOpen(false)
       navigate(`/admin/newsletters/${nl.id}`)
     } catch {
-      toast('error', 'Failed to create newsletter')
+      toast('error', 'Error al crear boletín')
     }
   }
 
@@ -38,28 +38,28 @@ export default function NewslettersPage() {
     if (!deleteId) return
     try {
       await deleteNewsletter.mutateAsync(deleteId)
-      toast('success', 'Newsletter deleted')
+      toast('success', 'Boletín eliminado')
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar')
     }
     setDeleteId(null)
   }
 
   const tabs = [
-    { label: 'All', value: '' },
-    { label: 'Draft', value: 'draft' },
-    { label: 'Published', value: 'published' },
+    { label: 'Todos', value: '' },
+    { label: 'Borrador', value: 'draft' },
+    { label: 'Publicado', value: 'published' },
   ]
 
   return (
     <>
       <Helmet>
-        <title>Newsletters — Admin — Impacto Indígena</title>
+        <title>Boletines — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader
-        title="Newsletters"
-        actions={<Button onClick={() => setCreateOpen(true)}>New Newsletter</Button>}
+        title="Boletines"
+        actions={<Button onClick={() => setCreateOpen(true)}>Nuevo boletín</Button>}
       />
 
       <div className="flex gap-1 mb-4">
@@ -79,8 +79,8 @@ export default function NewslettersPage() {
       </div>
 
       {newslettersQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {newslettersQuery.error && <ErrorState message="Failed to load newsletters" onRetry={() => newslettersQuery.refetch()} />}
-      {newslettersQuery.data && newslettersQuery.data.data.length === 0 && <EmptyState title="No newsletters yet" description="Create your first newsletter." />}
+      {newslettersQuery.error && <ErrorState message="Error al cargar boletines" onRetry={() => newslettersQuery.refetch()} />}
+      {newslettersQuery.data && newslettersQuery.data.data.length === 0 && <EmptyState title="Sin boletines aún" description="Crea tu primer boletín." />}
       {newslettersQuery.data && newslettersQuery.data.data.length > 0 && (
         <NewsletterTable
           newsletters={newslettersQuery.data.data}
@@ -101,10 +101,10 @@ export default function NewslettersPage() {
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        title="Delete newsletter?"
-        description="This will permanently remove this newsletter."
+        title="¿Eliminar boletín?"
+        description="Se eliminará permanentemente este boletín."
         variant="danger"
-        confirmLabel="Delete"
+        confirmLabel="Eliminar"
         loading={deleteNewsletter.isPending}
       />
     </>

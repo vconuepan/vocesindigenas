@@ -91,14 +91,14 @@ export default function IssueEditPage() {
     try {
       if (isNew) {
         await createIssue.mutateAsync(form)
-        toast('success', 'Issue created')
+        toast('success', 'Tema creado')
       } else {
         await updateIssue.mutateAsync({ id: id!, data: form })
-        toast('success', 'Issue updated')
+        toast('success', 'Tema actualizado')
       }
       navigate('/admin/issues')
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to save issue')
+      toast('error', err instanceof Error ? err.message : 'Error al guardar tema')
     }
   }
 
@@ -111,21 +111,21 @@ export default function IssueEditPage() {
   return (
     <>
       <Helmet>
-        <title>{isNew ? 'New Issue' : 'Edit Issue'} — Admin — Impacto Indígena</title>
+        <title>{isNew ? 'Nuevo tema' : 'Editar tema'} — Admin — Impacto Indígena</title>
       </Helmet>
 
       <div className="mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/issues')}>
-          <ArrowLeftIcon className="h-4 w-4" /> Back to Issues
+          <ArrowLeftIcon className="h-4 w-4" /> Volver a Temas
         </Button>
       </div>
 
-      <PageHeader title={isNew ? 'New Issue' : 'Edit Issue'} />
+      <PageHeader title={isNew ? 'Nuevo tema' : 'Editar tema'} />
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
         {/* Basic Info */}
         <div className="bg-white rounded-lg border border-neutral-200 p-4 space-y-4">
-          <Input id="issue-name" label="Name" value={form.name} onChange={e => set('name', e.target.value)} required />
+          <Input id="issue-name" label="Nombre" value={form.name} onChange={e => set('name', e.target.value)} required />
           <Input
             id="issue-slug"
             label="Slug"
@@ -133,75 +133,75 @@ export default function IssueEditPage() {
             onChange={e => { setSlugManual(true); set('slug', e.target.value) }}
             required
           />
-          <Textarea id="issue-desc" label="Description" rows={3} value={form.description} onChange={e => set('description', e.target.value)} />
+          <Textarea id="issue-desc" label="Descripción" rows={3} value={form.description} onChange={e => set('description', e.target.value)} />
           <div>
             <Select
               id="issue-parent"
-              label="Parent Issue"
-              placeholder="None (top-level)"
+              label="Tema padre"
+              placeholder="Ninguno (nivel superior)"
               value={form.parentId || ''}
               onChange={e => set('parentId', e.target.value || null)}
               options={parentOptions}
               disabled={!!hasChildren}
             />
             {hasChildren && (
-              <p className="mt-1 text-xs text-neutral-500">This issue has child issues and cannot be made a child itself.</p>
+              <p className="mt-1 text-xs text-neutral-500">Este tema tiene subtemas y no puede convertirse en un subtema.</p>
             )}
           </div>
         </div>
 
         {/* LLM Prompt Configuration */}
         <div className="bg-white rounded-lg border border-neutral-200 p-4 space-y-4">
-          <h3 className="text-sm font-semibold text-neutral-900">LLM Prompt Configuration</h3>
+          <h3 className="text-sm font-semibold text-neutral-900">Configuración de prompt LLM</h3>
           <Textarea
             id="issue-factors"
-            label="Relevance Factors"
+            label="Factores de relevancia"
             rows={8}
             value={form.promptFactors}
             onChange={e => set('promptFactors', e.target.value)}
-            placeholder="What makes a story relevant for this issue?"
+            placeholder="¿Qué hace que una noticia sea relevante para este tema?"
           />
           <Textarea
             id="issue-antifactors"
-            label="Antifactors"
+            label="Antifactores"
             rows={8}
             value={form.promptAntifactors}
             onChange={e => set('promptAntifactors', e.target.value)}
-            placeholder="What makes a story less relevant?"
+            placeholder="¿Qué hace que una noticia sea menos relevante?"
           />
           <Textarea
             id="issue-ratings"
-            label="Rating Guidelines"
+            label="Guía de calificaciones"
             rows={8}
             value={form.promptRatings}
             onChange={e => set('promptRatings', e.target.value)}
-            placeholder="How should ratings be assigned?"
+            placeholder="¿Cómo se deben asignar las calificaciones?"
           />
         </div>
 
         {/* Public Page Content */}
         <div className="bg-white rounded-lg border border-neutral-200 p-4 space-y-4">
-          <h3 className="text-sm font-semibold text-neutral-900">Public Page Content</h3>
+          <h3 className="text-sm font-semibold text-neutral-900">Contenido de la página pública</h3>
           <Textarea
             id="issue-intro"
-            label="Introduction"
+            label="Introducción"
             rows={4}
             value={form.intro}
             onChange={e => set('intro', e.target.value)}
-            placeholder="Public-facing introduction paragraph"
+            placeholder="Párrafo de introducción público"
           />
           <Textarea
             id="issue-eval-intro"
-            label="Evaluation Introduction"
+            label="Introducción de evaluación"
             rows={2}
             value={form.evaluationIntro}
             onChange={e => set('evaluationIntro', e.target.value)}
-            placeholder="How stories in this issue are evaluated"
+            placeholder="Cómo se evalúan las noticias de este tema"
           />
 
           {/* Evaluation Criteria */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Evaluation Criteria</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Criterios de evaluación</label>
             <div className="space-y-2">
               {form.evaluationCriteria.map((criterion, i) => (
                 <div key={i} className="flex gap-2">
@@ -229,7 +229,7 @@ export default function IssueEditPage() {
                 onClick={() => set('evaluationCriteria', [...form.evaluationCriteria, ''])}
                 className="flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
               >
-                <PlusIcon className="h-4 w-4" /> Add criterion
+                <PlusIcon className="h-4 w-4" /> Agregar criterio
               </button>
             </div>
           </div>
@@ -237,8 +237,8 @@ export default function IssueEditPage() {
           {/* Source Names (derived from active feeds) */}
           {!isNew && issueQuery.data?.sourceNames && issueQuery.data.sourceNames.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Sources</label>
-              <p className="text-xs text-neutral-500 mb-2">Derived from active feed titles. Edit feed names to change these.</p>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Fuentes</label>
+              <p className="text-xs text-neutral-500 mb-2">Derivadas de los títulos de fuentes activas. Edita los nombres de las fuentes para cambiarlas.</p>
               <div className="flex flex-wrap gap-1.5">
                 {issueQuery.data.sourceNames.map((source: string) => (
                   <span
@@ -254,14 +254,14 @@ export default function IssueEditPage() {
 
           {/* Make a Difference Links */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Make a Difference Links</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Enlaces de acción</label>
             <div className="space-y-2">
               {form.makeADifference.map((link, i) => (
                 <div key={i} className="flex gap-2">
                   <input
                     type="text"
                     value={link.label}
-                    placeholder="Label"
+                    placeholder="Etiqueta"
                     onChange={e => {
                       const updated = [...form.makeADifference]
                       updated[i] = { ...updated[i], label: e.target.value }
@@ -294,15 +294,15 @@ export default function IssueEditPage() {
                 onClick={() => set('makeADifference', [...form.makeADifference, { label: '', url: '' }])}
                 className="flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
               >
-                <PlusIcon className="h-4 w-4" /> Add link
+                <PlusIcon className="h-4 w-4" /> Agregar enlace
               </button>
             </div>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" loading={isPending}>{isNew ? 'Create Issue' : 'Save Changes'}</Button>
-          <Button type="button" variant="secondary" onClick={() => navigate('/admin/issues')}>Cancel</Button>
+          <Button type="submit" loading={isPending}>{isNew ? 'Crear tema' : 'Guardar cambios'}</Button>
+          <Button type="button" variant="secondary" onClick={() => navigate('/admin/issues')}>Cancelar</Button>
         </div>
       </form>
     </>

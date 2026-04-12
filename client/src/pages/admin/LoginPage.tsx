@@ -33,7 +33,7 @@ export default function LoginPage() {
       await login(email, password)
       navigate('/admin', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
     } finally {
       setSubmitting(false)
     }
@@ -42,14 +42,14 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
       <Helmet>
-        <title>Admin Login — Impacto Indígena</title>
+        <title>Acceso admin — Impacto Indígena</title>
       </Helmet>
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center text-neutral-900 mb-8">Admin Login</h1>
+        <h1 className="text-2xl font-bold text-center text-neutral-900 mb-8">Acceso admin</h1>
         <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-neutral-200 shadow-sm p-6 space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-              Email
+              Correo
             </label>
             <input
               id="email"
@@ -65,14 +65,14 @@ export default function LoginPage() {
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
-              Password
+              Contraseña
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder="Ingresa tu contraseña"
               required
               className="block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               autoComplete="current-password"
@@ -84,7 +84,7 @@ export default function LoginPage() {
             </p>
           )}
           <Button type="submit" loading={submitting} className="w-full">
-            Sign in
+            Iniciar sesión
           </Button>
         </form>
       </div>

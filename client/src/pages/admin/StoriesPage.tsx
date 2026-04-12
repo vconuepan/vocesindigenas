@@ -135,13 +135,13 @@ export default function StoriesPage() {
 
     if (action === 'preassess') {
       setConfirmAction({
-        title: `Pre-assess ${ids.length} stories?`,
-        description: 'This will run AI pre-assessment on the selected stories.',
+        title: `¿Pre-evaluar ${ids.length} noticias?`,
+        description: 'Ejecutará pre-evaluación IA en las noticias seleccionadas.',
         action: async () => {
           setSelectedIds(new Set())
           launchPolledTask({
             id: `preassess-${Date.now()}`,
-            label: `Pre-assessing ${ids.length} stories`,
+            label: `Pre-evaluando ${ids.length} noticias`,
             submitFn: () => adminApi.stories.bulkPreassess(ids),
             onComplete: invalidateStories,
             storyIds: ids,
@@ -150,13 +150,13 @@ export default function StoriesPage() {
       })
     } else if (action === 'reclassify') {
       setConfirmAction({
-        title: `Reclassify ${ids.length} stories?`,
-        description: 'This will re-run issue and emotion classification without changing ratings or status.',
+        title: `¿Reclasificar ${ids.length} noticias?`,
+        description: 'Re-ejecutará la clasificación de tema y emoción sin cambiar puntajes ni estado.',
         action: async () => {
           setSelectedIds(new Set())
           launchPolledTask({
             id: `reclassify-${Date.now()}`,
-            label: `Reclassifying ${ids.length} stories`,
+            label: `Reclasificando ${ids.length} noticias`,
             submitFn: () => adminApi.stories.bulkReclassify(ids),
             onComplete: invalidateStories,
             storyIds: ids,
@@ -165,13 +165,13 @@ export default function StoriesPage() {
       })
     } else if (action === 'assess') {
       setConfirmAction({
-        title: `Assess ${ids.length} stories?`,
-        description: 'This will run full AI assessment on each selected story.',
+        title: `¿Evaluar ${ids.length} noticias?`,
+        description: 'Ejecutará evaluación IA completa en cada noticia seleccionada.',
         action: async () => {
           setSelectedIds(new Set())
           launchPolledTask({
             id: `assess-${Date.now()}`,
-            label: `Assessing ${ids.length} stories`,
+            label: `Evaluando ${ids.length} noticias`,
             submitFn: () => adminApi.stories.bulkAssess(ids),
             onComplete: invalidateStories,
             storyIds: ids,
@@ -180,13 +180,13 @@ export default function StoriesPage() {
       })
     } else if (action === 'select') {
       setConfirmAction({
-        title: `Select ${ids.length} stories for publication?`,
-        description: 'Selected stories will be marked for publishing.',
+        title: `¿Seleccionar ${ids.length} noticias para publicación?`,
+        description: 'Las noticias seleccionadas se marcarán para publicación.',
         action: async () => {
           setSelectedIds(new Set())
           launchPolledTask({
             id: `select-${Date.now()}`,
-            label: `Selecting ${ids.length} stories`,
+            label: `Seleccionando ${ids.length} noticias`,
             submitFn: () => adminApi.stories.bulkSelect(ids),
             onComplete: invalidateStories,
             storyIds: ids,
@@ -202,7 +202,7 @@ export default function StoriesPage() {
           setBlueskyDraft(draft as BlueskyDraft)
         })
         .catch((err) => {
-          toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+          toast('error', err instanceof Error ? err.message : 'Error al generar borrador')
           setBlueskyPanelOpen(false)
         })
       return
@@ -215,7 +215,7 @@ export default function StoriesPage() {
           setBlueskyDraft(result as BlueskyDraft)
         })
         .catch((err) => {
-          toast('error', err instanceof Error ? err.message : 'Failed to pick and draft')
+          toast('error', err instanceof Error ? err.message : 'Error al seleccionar y redactar')
           setBlueskyPanelOpen(false)
         })
       return
@@ -228,7 +228,7 @@ export default function StoriesPage() {
           setMastodonDraft(draft as MastodonDraft)
         })
         .catch((err) => {
-          toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+          toast('error', err instanceof Error ? err.message : 'Error al generar borrador')
           setMastodonPanelOpen(false)
         })
       return
@@ -241,7 +241,7 @@ export default function StoriesPage() {
           setMastodonDraft(result as MastodonDraft)
         })
         .catch((err) => {
-          toast('error', err instanceof Error ? err.message : 'Failed to pick and draft')
+          toast('error', err instanceof Error ? err.message : 'Error al seleccionar y redactar')
           setMastodonPanelOpen(false)
         })
       return
@@ -252,11 +252,11 @@ export default function StoriesPage() {
       // Status change — keep blocking (instant operation)
       const status = action as StoryStatus
       setConfirmAction({
-        title: `Set ${ids.length} stories to "${status}"?`,
-        description: `This will update the status of ${ids.length} stories.`,
+        title: `¿Cambiar ${ids.length} noticias a "${status}"?`,
+        description: `Se actualizará el estado de ${ids.length} noticias.`,
         action: async () => {
           await bulkUpdate.mutateAsync({ ids, status })
-          toast('success', `Updated ${ids.length} stories`)
+          toast('success', `Actualizadas ${ids.length} noticias`)
           setSelectedIds(new Set())
         },
       })
@@ -265,15 +265,15 @@ export default function StoriesPage() {
 
   const handleSingleStatusChange = (id: string, status: StoryStatus) => {
     updateStatus.mutate({ id, status }, {
-      onSuccess: () => toast('success', 'Status updated'),
-      onError: () => toast('error', 'Failed to update status'),
+      onSuccess: () => toast('success', 'Estado actualizado'),
+      onError: () => toast('error', 'Error al actualizar estado'),
     })
   }
 
   const handlePreassess = (id: string) => {
     launchTask({
       id: `preassess-${id}-${Date.now()}`,
-      label: 'Pre-assessing story',
+      label: 'Pre-evaluando noticia',
       executor: async () => {
         await adminApi.stories.preassess([id])
         return { succeeded: 1, failed: 0 }
@@ -286,7 +286,7 @@ export default function StoriesPage() {
   const handleAssess = (id: string) => {
     launchTask({
       id: `assess-${id}-${Date.now()}`,
-      label: 'Assessing story',
+      label: 'Evaluando noticia',
       executor: async () => {
         await adminApi.stories.assess(id)
         return { succeeded: 1, failed: 0 }
@@ -299,7 +299,7 @@ export default function StoriesPage() {
   const handlePublish = (id: string) => {
     launchTask({
       id: `publish-${id}-${Date.now()}`,
-      label: 'Publishing story',
+      label: 'Publicando noticia',
       executor: async () => {
         await adminApi.stories.publish(id)
         return { succeeded: 1, failed: 0 }
@@ -311,11 +311,11 @@ export default function StoriesPage() {
 
   const handleDelete = (id: string) => {
     setConfirmAction({
-      title: 'Delete story?',
-      description: 'This action cannot be undone.',
+      title: '¿Eliminar noticia?',
+      description: 'Esta acción no se puede deshacer.',
       action: async () => {
         await deleteStory.mutateAsync(id)
-        toast('success', 'Story deleted')
+        toast('success', 'Noticia eliminada')
         setDetailId(null)
       },
     })
@@ -325,14 +325,14 @@ export default function StoriesPage() {
     setBlueskyPublishing(true)
     try {
       await adminApi.bluesky.publishPost(postId)
-      toast('success', 'Posted to Bluesky')
+      toast('success', 'Publicado en Bluesky')
       setBlueskyPanelOpen(false)
       setBlueskyDraft(null)
       setSelectedIds(new Set())
       queryClient.invalidateQueries({ queryKey: ['stories'] })
       queryClient.invalidateQueries({ queryKey: ['story'] })
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to publish')
+      toast('error', err instanceof Error ? err.message : 'Error al publicar')
     } finally {
       setBlueskyPublishing(false)
     }
@@ -342,7 +342,7 @@ export default function StoriesPage() {
     try {
       await adminApi.bluesky.updateDraft(postId, text)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to save draft')
+      toast('error', err instanceof Error ? err.message : 'Error al guardar borrador')
       throw err
     }
   }
@@ -351,7 +351,7 @@ export default function StoriesPage() {
     try {
       await adminApi.bluesky.deletePost(postId)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete draft')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar borrador')
       throw err
     }
   }
@@ -360,14 +360,14 @@ export default function StoriesPage() {
     setMastodonPublishing(true)
     try {
       await adminApi.mastodon.publishPost(postId)
-      toast('success', 'Posted to Mastodon')
+      toast('success', 'Publicado en Mastodon')
       setMastodonPanelOpen(false)
       setMastodonDraft(null)
       setSelectedIds(new Set())
       queryClient.invalidateQueries({ queryKey: ['stories'] })
       queryClient.invalidateQueries({ queryKey: ['story'] })
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to publish')
+      toast('error', err instanceof Error ? err.message : 'Error al publicar')
     } finally {
       setMastodonPublishing(false)
     }
@@ -377,7 +377,7 @@ export default function StoriesPage() {
     try {
       await adminApi.mastodon.updateDraft(postId, text)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to save draft')
+      toast('error', err instanceof Error ? err.message : 'Error al guardar borrador')
       throw err
     }
   }
@@ -386,7 +386,7 @@ export default function StoriesPage() {
     try {
       await adminApi.mastodon.deletePost(postId)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete draft')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar borrador')
       throw err
     }
   }
@@ -397,7 +397,7 @@ export default function StoriesPage() {
     adminApi.instagram.generateDraft(storyId)
       .then((draft) => setInstagramDraft(draft as InstagramPost))
       .catch((err) => {
-        toast('error', err instanceof Error ? err.message : 'Failed to generate Instagram draft')
+        toast('error', err instanceof Error ? err.message : 'Error al generar borrador de Instagram')
         setInstagramPanelOpen(false)
       })
   }, [toast])
@@ -408,7 +408,7 @@ export default function StoriesPage() {
     adminApi.linkedin.generateDraft(storyId)
       .then((draft) => setLinkedInDraft(draft as LinkedInPost))
       .catch((err) => {
-        toast('error', err instanceof Error ? err.message : 'Failed to generate LinkedIn draft')
+        toast('error', err instanceof Error ? err.message : 'Error al generar borrador de LinkedIn')
         setLinkedInPanelOpen(false)
       })
   }, [toast])
@@ -422,11 +422,11 @@ export default function StoriesPage() {
       </Helmet>
 
       <PageHeader
-        title="Stories"
-        description={storiesQuery.data ? `${storiesQuery.data.total} stories` : undefined}
+        title="Noticias"
+        description={storiesQuery.data ? `${storiesQuery.data.total} noticias` : undefined}
         actions={
           <Button variant="secondary" onClick={() => setCrawlOpen(true)}>
-            Crawl URL
+            Importar URL
           </Button>
         }
       />
@@ -441,11 +441,11 @@ export default function StoriesPage() {
       )}
 
       {storiesQuery.error && (
-        <ErrorState message="Failed to load stories" onRetry={() => storiesQuery.refetch()} />
+        <ErrorState message="Error al cargar noticias" onRetry={() => storiesQuery.refetch()} />
       )}
 
       {storiesQuery.data && stories.length === 0 && (
-        <EmptyState title="No stories found" description="Try adjusting your filters." />
+        <EmptyState title="Sin noticias" description="Prueba ajustando los filtros." />
       )}
 
       {storiesQuery.data && stories.length > 0 && (
@@ -495,7 +495,7 @@ export default function StoriesPage() {
           adminApi.bluesky.generateDraft(storyId)
             .then((draft) => setBlueskyDraft(draft as BlueskyDraft))
             .catch((err) => {
-              toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+              toast('error', err instanceof Error ? err.message : 'Error al generar borrador')
               setBlueskyPanelOpen(false)
             })
         }}
@@ -505,7 +505,7 @@ export default function StoriesPage() {
           adminApi.mastodon.generateDraft(storyId)
             .then((draft) => setMastodonDraft(draft as MastodonDraft))
             .catch((err) => {
-              toast('error', err instanceof Error ? err.message : 'Failed to generate draft')
+              toast('error', err instanceof Error ? err.message : 'Error al generar borrador')
               setMastodonPanelOpen(false)
             })
         }}
@@ -557,12 +557,12 @@ export default function StoriesPage() {
           setInstagramPublishing(true)
           try {
             await adminApi.instagram.publishPost(postId)
-            toast('success', 'Posted to Instagram')
+            toast('success', 'Publicado en Instagram')
             setInstagramPanelOpen(false)
             setInstagramDraft(null)
             invalidateStories()
           } catch (err) {
-            toast('error', err instanceof Error ? err.message : 'Failed to publish')
+            toast('error', err instanceof Error ? err.message : 'Error al publicar')
           } finally {
             setInstagramPublishing(false)
           }
@@ -584,12 +584,12 @@ export default function StoriesPage() {
           setLinkedInPublishing(true)
           try {
             await adminApi.linkedin.publishPost(postId)
-            toast('success', 'Posted to LinkedIn')
+            toast('success', 'Publicado en LinkedIn')
             setLinkedInPanelOpen(false)
             setLinkedInDraft(null)
             invalidateStories()
           } catch (err) {
-            toast('error', err instanceof Error ? err.message : 'Failed to publish')
+            toast('error', err instanceof Error ? err.message : 'Error al publicar')
           } finally {
             setLinkedInPublishing(false)
           }
@@ -610,7 +610,7 @@ export default function StoriesPage() {
             try {
               await confirmAction.action()
             } catch (err) {
-              toast('error', err instanceof Error ? err.message : 'Operation failed')
+              toast('error', err instanceof Error ? err.message : 'Operación fallida')
             }
           }
           setConfirmAction(null)

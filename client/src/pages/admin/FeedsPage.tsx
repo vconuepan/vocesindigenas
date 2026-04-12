@@ -123,7 +123,7 @@ export default function FeedsPage() {
       const result = await deleteFeed.mutateAsync(deleteId)
       toast('success', result.message)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete feed')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar fuente')
     }
     setDeleteId(null)
   }
@@ -135,25 +135,25 @@ export default function FeedsPage() {
       </Helmet>
 
       <PageHeader
-        title="Feeds"
-        description={feedsQuery.data ? `${feedsQuery.data.length} feeds` : undefined}
+        title="Fuentes"
+        description={feedsQuery.data ? `${feedsQuery.data.length} fuentes` : undefined}
         actions={
           <>
             <Button
               variant={showInactive ? 'secondary' : 'ghost'}
               onClick={() => setShowInactive(!showInactive)}
             >
-              {showInactive ? 'Hide inactive' : 'Show inactive'}
+              {showInactive ? 'Ocultar inactivas' : 'Mostrar inactivas'}
             </Button>
             {import.meta.env.DEV && (
               <Button variant="secondary" onClick={handleFetchAllFavicons}>
-                Fetch All Favicons
+                Obtener todos los favicons
               </Button>
             )}
             <Button variant="secondary" onClick={handleCrawlAll}>
-              Crawl All
+              Rastrear todo
             </Button>
-            <Button onClick={() => setCreateOpen(true)}>Add Feed</Button>
+            <Button onClick={() => setCreateOpen(true)}>Agregar fuente</Button>
           </>
         }
       />
@@ -162,8 +162,8 @@ export default function FeedsPage() {
         <div className="mb-4">
           <Select
             id="filter-issue"
-            label="Issue"
-            placeholder="All issues"
+            label="Tema"
+            placeholder="Todos los temas"
             value={issueFilter}
             onChange={e => setIssueFilter(e.target.value)}
             options={buildIssueOptions(issuesQuery.data)}
@@ -172,8 +172,8 @@ export default function FeedsPage() {
       )}
 
       {feedsQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {feedsQuery.error && <ErrorState message="Failed to load feeds" onRetry={() => feedsQuery.refetch()} />}
-      {feedsQuery.data && feedsQuery.data.length === 0 && <EmptyState title="No feeds yet" description="Add your first RSS feed." />}
+      {feedsQuery.error && <ErrorState message="Error al cargar fuentes" onRetry={() => feedsQuery.refetch()} />}
+      {feedsQuery.data && feedsQuery.data.length === 0 && <EmptyState title="Sin fuentes aún" description="Agrega tu primer feed RSS." />}
       {feedsQuery.data && feedsQuery.data.length > 0 && (
         <FeedTable
           feeds={feedsQuery.data}
@@ -201,10 +201,10 @@ export default function FeedsPage() {
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        title="Delete feed?"
-        description="If the feed has stories it will be deactivated. Otherwise it will be permanently removed."
+        title="¿Eliminar fuente?"
+        description="Si la fuente tiene noticias se desactivará. Si no, se eliminará permanentemente."
         variant="danger"
-        confirmLabel="Delete"
+        confirmLabel="Eliminar"
         loading={deleteFeed.isPending}
       />
     </>

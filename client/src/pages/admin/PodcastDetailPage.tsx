@@ -21,12 +21,12 @@ export default function PodcastDetailPage() {
 
       <div className="mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/podcasts')}>
-          <ArrowLeftIcon className="h-4 w-4" /> Back to Podcasts
+          <ArrowLeftIcon className="h-4 w-4" /> Volver a Podcasts
         </Button>
       </div>
 
       {isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {error && <ErrorState message="Failed to load podcast" onRetry={refetch} />}
+      {error && <ErrorState message="Error al cargar podcast" onRetry={refetch} />}
 
       {podcast && (
         <>

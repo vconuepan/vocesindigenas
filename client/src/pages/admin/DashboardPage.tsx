@@ -87,7 +87,7 @@ export default function DashboardPage() {
         <title>Dashboard — Admin — Impacto Indígena</title>
       </Helmet>
 
-      <PageHeader title="Dashboard" description="Overview of stories and jobs" />
+      <PageHeader title="Dashboard" description="Resumen de noticias y trabajos" />
 
       {/* Community Stats */}
       <section className="mb-8">
@@ -97,33 +97,33 @@ export default function DashboardPage() {
 
       {/* Story Stats */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-neutral-900 mb-3">Stories by Status</h2>
+        <h2 className="text-lg font-semibold text-neutral-900 mb-3">Noticias por estado</h2>
         {statsQuery.isLoading && (
           <div className="flex justify-center py-8"><LoadingSpinner /></div>
         )}
         {statsQuery.error && (
-          <ErrorState message="Failed to load stats" onRetry={() => statsQuery.refetch()} />
+          <ErrorState message="Error al cargar estadísticas" onRetry={() => statsQuery.refetch()} />
         )}
         {statsQuery.data && <StatsGrid stats={statsQuery.data} />}
       </section>
 
       {/* Jobs */}
       <section>
-        <Card title="Jobs">
+        <Card title="Trabajos">
           {jobsQuery.isLoading && (
             <div className="flex justify-center py-4"><LoadingSpinner /></div>
           )}
           {jobsQuery.error && (
-            <ErrorState message="Failed to load jobs" onRetry={() => jobsQuery.refetch()} />
+            <ErrorState message="Error al cargar trabajos" onRetry={() => jobsQuery.refetch()} />
           )}
           {jobsQuery.data && (
             <div className="overflow-x-auto -mx-4 -my-3">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-neutral-200">
-                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Job</th>
-                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Status</th>
-                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Last Run</th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Trabajo</th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Estado</th>
+                    <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500">Última ejecución</th>
                     <th scope="col" className="text-left py-2 px-4 font-medium text-neutral-500 hidden sm:table-cell">Error</th>
                     <th scope="col" className="py-2 px-4"></th>
                   </tr>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
                         ) : (
                           <ActionIconButton
                             icon={PlayIcon}
-                            label={`Run ${JOB_DISPLAY_NAMES[job.jobName] || job.jobName}`}
+                            label={`Ejecutar ${JOB_DISPLAY_NAMES[job.jobName] || job.jobName}`}
                             onClick={() => runJob.mutate(job.jobName)}
                             disabled={runJob.isPending && runJob.variables === job.jobName}
                           />

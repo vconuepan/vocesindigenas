@@ -18,17 +18,17 @@ export default function StoryDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{story?.title || story?.sourceTitle || 'Story'} — Admin — Impacto Indígena</title>
+        <title>{story?.title || story?.sourceTitle || 'Noticia'} — Admin — Impacto Indígena</title>
       </Helmet>
 
       <div className="mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/stories')}>
-          <ArrowLeftIcon className="h-4 w-4" /> Back to Stories
+          <ArrowLeftIcon className="h-4 w-4" /> Volver a Noticias
         </Button>
       </div>
 
       {isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {error && <ErrorState message="Failed to load story" onRetry={refetch} />}
+      {error && <ErrorState message="Error al cargar noticia" onRetry={refetch} />}
 
       {story && (
         <>

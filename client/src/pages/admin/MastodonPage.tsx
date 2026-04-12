@@ -57,21 +57,21 @@ export default function MastodonPage() {
       setFeedItems((prev) => [...prev, ...result.feed])
       setNextMaxId(result.nextMaxId)
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to load more')
+      toast('error', err instanceof Error ? err.message : 'Error al cargar más')
     } finally {
       setLoadingMore(false)
     }
   }, [nextMaxId, loadingMore, toast])
 
   const handleDelete = useCallback(async (postId: string) => {
-    if (!confirm('Delete this post? Published posts will also be removed from Mastodon.')) return
+    if (!confirm('¿Eliminar esta publicación? Las publicadas también se eliminarán de Mastodon.')) return
     setDeletingId(postId)
     try {
       await adminApi.mastodon.deletePost(postId)
-      toast('success', 'Post deleted')
+      toast('success', 'Publicación eliminada')
       queryClient.invalidateQueries({ queryKey: ['mastodonFeed'] })
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete post')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar publicación')
     } finally {
       setDeletingId(null)
     }
@@ -81,10 +81,10 @@ export default function MastodonPage() {
     setRefreshing(true)
     try {
       await adminApi.mastodon.refreshMetrics()
-      toast('success', 'Metrics updated')
+      toast('success', 'Métricas actualizadas')
       queryClient.invalidateQueries({ queryKey: ['mastodonFeed'] })
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to refresh metrics')
+      toast('error', err instanceof Error ? err.message : 'Error al actualizar métricas')
     } finally {
       setRefreshing(false)
     }
@@ -129,10 +129,10 @@ export default function MastodonPage() {
 
       <PageHeader
         title="Mastodon"
-        description={feedItems.length > 0 ? `${feedItems.length} posts loaded` : undefined}
+        description={feedItems.length > 0 ? `${feedItems.length} publicaciones cargadas` : undefined}
         actions={
           <Button variant="secondary" onClick={handleRefreshMetrics} loading={refreshing}>
-            Refresh Metrics
+            Actualizar métricas
           </Button>
         }
       />
@@ -142,19 +142,19 @@ export default function MastodonPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <div className="rounded-md bg-white border border-neutral-200 p-3 text-center">
             <p className="text-2xl font-bold text-neutral-900">{feedItems.length}</p>
-            <p className="text-xs text-neutral-500">Posts Loaded</p>
+            <p className="text-xs text-neutral-500">Publicaciones cargadas</p>
           </div>
           <div className="rounded-md bg-white border border-neutral-200 p-3 text-center">
             <p className="text-2xl font-bold text-neutral-900">{totalTracked}</p>
-            <p className="text-xs text-neutral-500">Tracked</p>
+            <p className="text-xs text-neutral-500">Rastreadas</p>
           </div>
           <div className="rounded-md bg-white border border-neutral-200 p-3 text-center">
             <p className="text-2xl font-bold text-neutral-900">{totalUntracked}</p>
-            <p className="text-xs text-neutral-500">Untracked</p>
+            <p className="text-xs text-neutral-500">No rastreadas</p>
           </div>
           <div className="rounded-md bg-white border border-neutral-200 p-3 text-center">
             <p className="text-2xl font-bold text-neutral-900">{avgFavourites}</p>
-            <p className="text-xs text-neutral-500">Avg Favourites</p>
+            <p className="text-xs text-neutral-500">Favoritos promedio</p>
           </div>
         </div>
       )}
@@ -162,11 +162,11 @@ export default function MastodonPage() {
       {/* Filter buttons */}
       <div className="mb-4 flex gap-2">
         {([
-          { value: 'all', label: 'All' },
-          { value: 'tracked', label: 'Tracked' },
-          { value: 'untracked', label: 'Untracked' },
-          { value: 'draft', label: 'Draft' },
-          { value: 'failed', label: 'Failed' },
+          { value: 'all', label: 'Todos' },
+          { value: 'tracked', label: 'Rastreados' },
+          { value: 'untracked', label: 'No rastreados' },
+          { value: 'draft', label: 'Borrador' },
+          { value: 'failed', label: 'Fallido' },
         ] as const).map(({ value, label }) => (
           <button
             key={value}
@@ -188,24 +188,24 @@ export default function MastodonPage() {
       )}
 
       {feedQuery.error && (
-        <ErrorState message="Failed to load Mastodon feed" onRetry={() => feedQuery.refetch()} />
+        <ErrorState message="Error al cargar el feed de Mastodon" onRetry={() => feedQuery.refetch()} />
       )}
 
       {/* Draft/Failed DB-only posts */}
       {filteredDbOnly.length > 0 && (
         <div className="mb-6">
           <h3 className="text-sm font-medium text-neutral-500 mb-2">
-            {filter === 'draft' ? 'Drafts' : filter === 'failed' ? 'Failed' : 'Drafts & Failed'}
+            {filter === 'draft' ? 'Borradores' : filter === 'failed' ? 'Fallidos' : 'Borradores y fallidos'}
           </h3>
           <div className="overflow-x-auto bg-white rounded-lg border border-neutral-200 shadow-sm">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-200 bg-neutral-50">
-                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Post Text</th>
-                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Story</th>
-                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Status</th>
-                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Created</th>
-                  <th scope="col" className="w-10 px-3 py-2"><span className="sr-only">Actions</span></th>
+                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Texto</th>
+                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Noticia</th>
+                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Estado</th>
+                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Creado</th>
+                  <th scope="col" className="w-10 px-3 py-2"><span className="sr-only">Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -255,13 +255,13 @@ export default function MastodonPage() {
       {/* Main feed table (API-sourced) */}
       {feedQuery.data && showApiFeed && filteredFeed.length === 0 && filteredDbOnly.length === 0 && (
         <EmptyState
-          title="No Mastodon posts"
+          title="Sin publicaciones en Mastodon"
           description={
             filter === 'tracked'
-              ? 'No tracked posts found. Use the Stories page to create a Mastodon post.'
+              ? 'No se encontraron publicaciones rastreadas. Usa la página de Noticias para crear una publicación en Mastodon.'
               : filter === 'untracked'
-              ? 'No untracked posts found.'
-              : 'No posts yet.'
+              ? 'No se encontraron publicaciones no rastreadas.'
+              : 'Sin publicaciones aún.'
           }
         />
       )}
@@ -272,11 +272,11 @@ export default function MastodonPage() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-200 bg-neutral-50">
-                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Post Text</th>
-                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Source</th>
-                  <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Posted</th>
-                  <th scope="col" className="hidden lg:table-cell text-right px-3 py-2 font-medium text-neutral-500">Engagement</th>
-                  <th scope="col" className="w-10 px-3 py-2"><span className="sr-only">Actions</span></th>
+                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Texto</th>
+                  <th scope="col" className="text-left px-3 py-2 font-medium text-neutral-500">Origen</th>
+                  <th scope="col" className="hidden md:table-cell text-left px-3 py-2 font-medium text-neutral-500">Publicado</th>
+                  <th scope="col" className="hidden lg:table-cell text-right px-3 py-2 font-medium text-neutral-500">Interacción</th>
+                  <th scope="col" className="w-10 px-3 py-2"><span className="sr-only">Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -309,10 +309,10 @@ export default function MastodonPage() {
                       <td className="px-3 py-2">
                         {item.trackedPostId ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Tracked
+                            Rastreado
                           </span>
                         ) : (
-                          <span className="text-xs text-neutral-400">Untracked</span>
+                          <span className="text-xs text-neutral-400">No rastreado</span>
                         )}
                       </td>
                       <td className="hidden md:table-cell px-3 py-2 text-neutral-500 whitespace-nowrap">
@@ -328,7 +328,7 @@ export default function MastodonPage() {
                               href={item.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title="View on Mastodon"
+                              title="Ver en Mastodon"
                               aria-label="View on Mastodon"
                               className="rounded p-1 text-neutral-400 hover:text-purple-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                             >
@@ -361,7 +361,7 @@ export default function MastodonPage() {
                 onClick={handleLoadMore}
                 loading={loadingMore}
               >
-                Load More
+                Cargar más
               </Button>
             </div>
           )}

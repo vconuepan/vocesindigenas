@@ -24,9 +24,9 @@ export default function IssuesPage() {
     if (!deleteId) return
     try {
       await deleteIssue.mutateAsync(deleteId)
-      toast('success', 'Issue deleted')
+      toast('success', 'Tema eliminado')
     } catch (err) {
-      toast('error', err instanceof Error ? err.message : 'Failed to delete issue')
+      toast('error', err instanceof Error ? err.message : 'Error al eliminar tema')
     }
     setDeleteId(null)
   }
@@ -34,18 +34,18 @@ export default function IssuesPage() {
   return (
     <>
       <Helmet>
-        <title>Issues — Admin — Impacto Indígena</title>
+        <title>Temas — Admin — Impacto Indígena</title>
       </Helmet>
 
       <PageHeader
-        title="Issues"
-        description={issuesQuery.data ? `${issuesQuery.data.length} issues` : undefined}
-        actions={<Button onClick={() => navigate('/admin/issues/new')}>Add Issue</Button>}
+        title="Temas"
+        description={issuesQuery.data ? `${issuesQuery.data.length} temas` : undefined}
+        actions={<Button onClick={() => navigate('/admin/issues/new')}>Agregar tema</Button>}
       />
 
       {issuesQuery.isLoading && <div className="flex justify-center py-12"><LoadingSpinner /></div>}
-      {issuesQuery.error && <ErrorState message="Failed to load issues" onRetry={() => issuesQuery.refetch()} />}
-      {issuesQuery.data && issuesQuery.data.length === 0 && <EmptyState title="No issues yet" description="Create your first issue." />}
+      {issuesQuery.error && <ErrorState message="Error al cargar temas" onRetry={() => issuesQuery.refetch()} />}
+      {issuesQuery.data && issuesQuery.data.length === 0 && <EmptyState title="Sin temas aún" description="Crea tu primer tema." />}
       {issuesQuery.data && issuesQuery.data.length > 0 && (
         <IssueTable
           issues={issuesQuery.data}
@@ -63,10 +63,10 @@ export default function IssuesPage() {
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        title="Delete issue?"
-        description="This will remove the issue. Feeds must be reassigned first."
+        title="¿Eliminar tema?"
+        description="Se eliminará el tema. Las fuentes deben ser reasignadas primero."
         variant="danger"
-        confirmLabel="Delete"
+        confirmLabel="Eliminar"
         loading={deleteIssue.isPending}
       />
     </>
