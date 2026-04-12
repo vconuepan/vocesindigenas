@@ -11,6 +11,7 @@ import healthRouter from './routes/health.js'
 import authRouter from './routes/auth.js'
 import adminRouter from './routes/admin/index.js'
 import publicRouter from './routes/public/index.js'
+import ogRouter from './routes/og.js'
 
 
 const httpLog = createLogger('http')
@@ -99,6 +100,7 @@ app.use('/health', healthRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api', publicRouter)
+app.use('/og', ogRouter)
 
 
 // 404 handler for unmatched routes

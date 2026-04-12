@@ -1,0 +1,104 @@
+import { Router } from 'express'
+import prisma from '../lib/prisma.js'
+import { createLogger } from '../lib/logger.js'
+
+const router = Router()
+const log = createLogger('og-proxy')
+
+const SITE_URL = 'https://impactoindigena.news'
+const FALLBACK_IMAGE = `${SITE_URL}/images/og-image.png`
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+router.get('/stories/:slug', async (req, res) => {
+  const { slug } = req.params
+
+  try {
+    const story = await prisma.story.findUnique({
+      where: { slug },
+      select: {
+        slug: true,
+        title: true,
+        titleLabel: true,
+        summary: true,
+        imageUrl: true,
+        datePublished: true,
+      },
+    })
+
+    if (!story) {
+      res.redirect(302, `${SITE_URL}/stories/${slug}`)
+      return
+    }
+
+    const title = escapeHtml(story.title || story.slug || '')
+    const titleLabel = story.titleLabel ? escapeHtml(story.titleLabel) : null
+    const fullTitle = titleLabel ? `${titleLabel}: ${title}` : title
+    const description = escapeHtml(story.summary?.slice(0, 200) || fullTitle)
+    const image = story.imageUrl || FALLBACK_IMAGE
+    const url = `${SITE_URL}/stories/${story.slug}`
+
+    // Fetch the frontend shell to preserve React scripts
+    let shell = ''
+    try {
+      const res2 = await fetch(`${SITE_URL}/`)
+      shell = await res2.text()
+    } catch {
+      log.warn({ slug }, 'could not fetch frontend shell, using minimal HTML')
+    }
+
+    let html: string
+
+    if (shell) {
+      // Inject story OG tags right after <head> — LinkedIn uses first occurrence
+      const ogTags = `
+  <title>${fullTitle} - Impacto Indígena</title>
+  <meta property="og:title" content="${fullTitle}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${image}" />
+  <meta property="og:url" content="${url}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Impacto Indígena" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${fullTitle}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${image}" />`
+
+      html = shell.replace('<head>', `<head>${ogTags}`)
+    } else {
+      // Minimal fallback HTML
+      html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>${fullTitle} - Impacto Indígena</title>
+  <meta property="og:title" content="${fullTitle}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${image}" />
+  <meta property="og:url" content="${url}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Impacto Indígena" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="${image}" />
+  <meta http-equiv="refresh" content="0;url=${url}" />
+</head>
+<body><script>window.location.replace('${url}')</script></body>
+</html>`
+    }
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=3600')
+    res.send(html)
+  } catch (err) {
+    log.error({ err, slug }, 'og proxy error')
+    res.redirect(302, `${SITE_URL}/stories/${slug}`)
+  }
+})
+
+export default router
