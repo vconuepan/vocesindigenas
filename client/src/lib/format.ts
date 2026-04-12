@@ -10,6 +10,12 @@ export function formatDate(dateStr: string): string {
   })
 }
 
+/** Returns age in months (0 = less than 1 month old). */
+export function storyAgeMonths(dateStr: string): number {
+  const ms = Date.now() - new Date(dateStr).getTime()
+  return Math.floor(ms / (1000 * 60 * 60 * 24 * 30))
+}
+
 export function formatDateTime(dateStr: string): string {
   const date = new Date(dateStr)
   return date.toLocaleString('es-CL', {

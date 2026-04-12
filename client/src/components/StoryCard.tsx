@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
-import { formatDate } from '../lib/format'
+import { formatDate, storyAgeMonths } from '../lib/format'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { isRead } from '../lib/reading-history'
 import FeedFavicon from './FeedFavicon'
@@ -17,6 +17,8 @@ interface StoryCardProps {
 
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
+  const ageMonths = story.datePublished ? storyAgeMonths(story.datePublished) : 0
+  const isOld = ageMonths >= 3
   return (
     <div className={`flex flex-wrap items-center gap-x-2 text-neutral-500 ${size === 'xs' ? 'text-xs' : 'text-sm'}`}>
       <span className="inline-flex items-center gap-1.5">
@@ -32,6 +34,11 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
         </a>
         {dateStr && <> · {dateStr}</>}
       </span>
+      {isOld && (
+        <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
+          Noticia antigua
+        </span>
+      )}
     </div>
   )
 }
