@@ -55,7 +55,7 @@ router.get('/stories/:slug', async (req, res) => {
     const titleLabel = story.titleLabel ? escapeHtml(story.titleLabel) : null
     const fullTitle = titleLabel ? `${titleLabel}: ${title}` : title
     const description = escapeHtml(story.summary?.slice(0, 200) || fullTitle)
-    const image = story.imageUrl || FALLBACK_IMAGE
+    const image = escapeHtml(story.imageUrl || FALLBACK_IMAGE)
     const url = storyUrl
 
     // Fetch the frontend shell to preserve React scripts
