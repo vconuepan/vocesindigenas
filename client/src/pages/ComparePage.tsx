@@ -1,10 +1,13 @@
 import { type ReactNode, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildBreadcrumbSchema } from '../lib/structured-data'
 import StructuredData from '../components/StructuredData'
 import LandingCta from '../components/LandingCta'
+import { publicApi } from '../lib/api'
+import type { RegionStat } from '../lib/api'
 
 const META = {
   title: 'Google News Alternatives Compared \u2014 Impacto Ind\u00edgena',
@@ -355,11 +358,98 @@ export default function ComparePage() {
           ))}
         </div>
 
+        <CoverageSection />
+
         <LandingCta
           heading="Ready to try news that's actually relevant?"
           description="Visit impactoindigena.news or subscribe to the newsletter for a curated digest in your inbox."
         />
       </div>
     </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Coverage stats section
+// ---------------------------------------------------------------------------
+
+function RelevanceBar({ value, max = 10 }: { value: number; max?: number }) {
+  const pct = Math.round((value / max) * 100)
+  const color = value >= 6.5 ? 'bg-brand-600' : value >= 5 ? 'bg-amber-400' : 'bg-neutral-300'
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-2 bg-neutral-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-sm font-medium text-neutral-700 w-8 text-right">{value.toFixed(1)}</span>
+    </div>
+  )
+}
+
+function CoverageSection() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['coverage-stats'],
+    queryFn: () => publicApi.coverage(),
+    staleTime: 60 * 60 * 1000,
+  })
+
+  const rows = data?.byRegion.filter((r: RegionStat) => r.storyCount > 0) ?? []
+
+  return (
+    <section className="mt-16">
+      <h2 className="section-heading">Coverage by Region</h2>
+      <p className="text-neutral-600 mt-2 mb-6 text-sm leading-relaxed max-w-2xl">
+        Impacto Indígena indexes {data?.totalFeeds ?? '—'} active sources across {rows.length} regions.
+        Average relevance scores reflect how well each region's media covers indigenous and human rights topics
+        — higher scores mean more focused, substantive coverage.
+      </p>
+
+      {isLoading && (
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-14 rounded-lg bg-neutral-100 animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <p className="text-sm text-neutral-400 italic">Coverage data temporarily unavailable.</p>
+      )}
+
+      {!isLoading && !isError && rows.length > 0 && (
+        <>
+          <div className="overflow-x-auto rounded-lg border border-neutral-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-neutral-50 border-b border-neutral-200">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide">Region</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wide w-20">Sources</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wide w-24">Stories (30d)</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide w-48">Avg Relevance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row: RegionStat) => (
+                  <tr key={row.region} className="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td className="px-4 py-3 font-medium text-neutral-800">{row.label}</td>
+                    <td className="px-4 py-3 text-right text-neutral-500">{row.feedCount}</td>
+                    <td className="px-4 py-3 text-right text-neutral-700 font-medium">{row.storyCount}</td>
+                    <td className="px-4 py-3">
+                      {row.avgRelevance != null
+                        ? <RelevanceBar value={row.avgRelevance} />
+                        : <span className="text-neutral-300 text-xs">—</span>
+                      }
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-neutral-400 mt-2">
+            Relevance scored 1–10 by AI against indigenous and human rights topics. Last {data?.periodDays} days.
+          </p>
+        </>
+      )}
+    </section>
   )
 }
