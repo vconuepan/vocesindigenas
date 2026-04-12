@@ -6,6 +6,47 @@ import { createLogger } from '../../lib/logger.js'
 const router = Router()
 const log = createLogger('maintenance')
 
+// GET /api/admin/maintenance/story-status?slug=...
+// Check the actual DB status of a story by slug
+router.get('/story-status', async (req, res) => {
+  const slug = req.query.slug as string
+  if (!slug) {
+    res.status(400).json({ error: 'slug query param required' })
+    return
+  }
+  const story = await prisma.story.findUnique({
+    where: { slug },
+    select: { id: true, slug: true, status: true, title: true, datePublished: true, clusterId: true },
+  })
+  if (!story) {
+    res.json({ found: false, slug })
+    return
+  }
+  res.json({ found: true, ...story })
+})
+
+// POST /api/admin/maintenance/republish-slug
+// Force-republish a story by slug (set status = 'published')
+router.post('/republish-slug', async (req, res) => {
+  const { slug } = req.body as { slug?: string }
+  if (!slug) {
+    res.status(400).json({ error: 'slug required in body' })
+    return
+  }
+  const story = await prisma.story.findUnique({
+    where: { slug },
+    select: { id: true, slug: true, status: true, title: true },
+  })
+  if (!story) {
+    res.status(404).json({ error: 'Story not found', slug })
+    return
+  }
+  const prevStatus = story.status
+  await prisma.story.update({ where: { id: story.id }, data: { status: 'published' } })
+  log.info({ slug, prevStatus }, 'force-republished story')
+  res.json({ ok: true, slug, prevStatus, newStatus: 'published', title: story.title })
+})
+
 // POST /api/admin/maintenance/backfill-images
 // One-time job: extract og:image from source articles for published stories
 router.post('/backfill-images', async (req, res) => {
