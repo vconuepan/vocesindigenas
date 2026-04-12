@@ -33,13 +33,13 @@ services:
       - key: OPENAI_API_KEY
         sync: false
 
-      # Newsletter (Plunk)
-      - key: PLUNK_SECRET_KEY
+      # Newsletter (Brevo)
+      - key: BREVO_API_KEY
         sync: false
-      - key: PLUNK_PUBLIC_KEY
+      - key: BREVO_FROM_EMAIL
         sync: false
-      - key: PLUNK_FROM_EMAIL
-        sync: false
+      - key: BREVO_FROM_NAME
+        value: "Impacto Indígena"
 
       # Article extraction
       - key: DIFFBOT_TOKEN
