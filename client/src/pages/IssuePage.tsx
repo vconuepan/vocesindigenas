@@ -13,6 +13,7 @@ import { IssuePageSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildCollectionPageSchema, buildBreadcrumbSchema } from '../lib/structured-data'
 import { usePositivity } from '../contexts/PositivityContext'
+import DailySnippet from '../components/DailySnippet'
 import { positivityToEmotionTags } from '../lib/mix-stories'
 import type { PublicStory } from '@shared/types'
 
@@ -226,6 +227,9 @@ export default function IssuePage() {
             </a>
           </div>
         </header>
+
+        {/* Daily editorial snippet */}
+        <DailySnippet issueSlug={slug} />
 
         {/* Sub-topics — only those with stories */}
         {activeChildren.length > 0 && (
