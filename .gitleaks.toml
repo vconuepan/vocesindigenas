@@ -1,0 +1,29 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Sample/placeholder values in .env.sample and docs"
+regexes = [
+  'sk-\.\.\.',
+  'sk_\.\.\.',
+  'your_token_here',
+  'changeme',
+  'change_me_locally',
+  'your_',
+  'example\.',
+  '\[at least',
+  'pk_\.\.\.',
+]
+paths = [
+  'server/.env.sample',
+  '\.md$',
+]
+
+[[allowlists]]
+description = "Render placeholder DATABASE_URL in CI"
+regexes = [
+  'postgresql://user:password@localhost',
+]
+paths = [
+  '\.github/workflows/',
+]
