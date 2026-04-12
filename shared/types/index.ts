@@ -479,7 +479,7 @@ export interface PaginatedResponse<T> {
 
 // --- Community types ---
 
-export type CommunityType = 'PUEBLO' | 'CAUSA'
+export type CommunityType = 'PUEBLO' | 'TERRITORIO' | 'CAUSA'
 
 export interface Community {
   id: string
@@ -490,6 +490,7 @@ export interface Community {
   region: string | null
   imageUrl: string | null
   issueIds: string[]
+  keywords: string[]
   createdAt: string
   updatedAt: string
 }

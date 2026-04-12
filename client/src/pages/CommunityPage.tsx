@@ -97,7 +97,7 @@ export default function CommunityPage() {
           <header className="mb-6">
             <div className="flex items-center gap-2 mb-1">
               <span
-                className={`w-3 h-3 rounded-full shrink-0 ${community.type === 'PUEBLO' ? 'bg-brand-600' : 'bg-emerald-600'}`}
+                className={`w-3 h-3 rounded-full shrink-0 ${community.type === 'PUEBLO' ? 'bg-brand-600' : community.type === 'TERRITORIO' ? 'bg-amber-500' : 'bg-emerald-600'}`}
                 aria-hidden="true"
               />
               <h1 className="text-xl md:text-2xl font-bold">{community.name}</h1>

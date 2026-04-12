@@ -4,8 +4,13 @@ import { useCommunities } from '../hooks/useCommunities'
 import { SEO, CommonOgTags } from '../lib/seo'
 import type { Community } from '@shared/types'
 
+function dotColor(type: Community['type']) {
+  if (type === 'PUEBLO') return 'bg-brand-600'
+  if (type === 'TERRITORIO') return 'bg-amber-500'
+  return 'bg-emerald-600'
+}
+
 function CommunityCard({ community }: { community: Community }) {
-  const isPueblo = community.type === 'PUEBLO'
   return (
     <Link
       to={`/comunidad/${community.slug}`}
@@ -13,7 +18,7 @@ function CommunityCard({ community }: { community: Community }) {
     >
       <div className="flex items-start gap-3">
         <span
-          className={`mt-0.5 w-3 h-3 rounded-full shrink-0 ${isPueblo ? 'bg-brand-600' : 'bg-emerald-600'}`}
+          className={`mt-0.5 w-3 h-3 rounded-full shrink-0 ${dotColor(community.type)}`}
           aria-hidden="true"
         />
         <div>
@@ -36,8 +41,9 @@ function CommunityCard({ community }: { community: Community }) {
 export default function CommunityDirectoryPage() {
   const { data: communities, isLoading, isError } = useCommunities()
 
-  const pueblos = communities?.filter((c) => c.type === 'PUEBLO') ?? []
-  const causas = communities?.filter((c) => c.type === 'CAUSA') ?? []
+  const pueblos    = communities?.filter((c) => c.type === 'PUEBLO') ?? []
+  const territorios = communities?.filter((c) => c.type === 'TERRITORIO') ?? []
+  const causas     = communities?.filter((c) => c.type === 'CAUSA') ?? []
 
   return (
     <>
@@ -45,12 +51,12 @@ export default function CommunityDirectoryPage() {
         <title>Comunidades — {SEO.siteName}</title>
         <meta
           name="description"
-          content="Noticias curadas por IA organizadas por pueblo indígena y causa temática."
+          content="Noticias curadas por IA organizadas por pueblo indígena, territorio y causa temática."
         />
         <meta property="og:title" content={`Comunidades — ${SEO.siteName}`} />
         <meta
           property="og:description"
-          content="Noticias relevantes para cada pueblo indígena y causa: clima, derechos, paz, emprendimiento."
+          content="Noticias relevantes para pueblos, territorios y causas: Mapuche, Aymara, Amazonía, Andes, clima, derechos, paz."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/comunidades`} />
@@ -61,14 +67,19 @@ export default function CommunityDirectoryPage() {
         <header className="mb-8">
           <h1 className="page-title">Comunidades</h1>
           <p className="text-neutral-500 mt-2 max-w-xl">
-            Noticias curadas por IA organizadas por pueblo indígena y causa temática.
+            Noticias curadas por IA organizadas por pueblo indígena, territorio y causa temática.
             Sin login, sin algoritmo personalizado — solo lo que es relevante para cada comunidad.
           </p>
+          <div className="flex items-center gap-5 mt-4 text-xs text-neutral-400">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-brand-600 inline-block" />Pueblos</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />Territorios</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />Causas</span>
+          </div>
         </header>
 
         {isLoading && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="h-32 bg-neutral-100 rounded-lg animate-pulse" />
             ))}
           </div>
@@ -84,7 +95,8 @@ export default function CommunityDirectoryPage() {
           <>
             {pueblos.length > 0 && (
               <section className="mb-10">
-                <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4">
+                <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand-600 inline-block" aria-hidden="true" />
                   Pueblos
                 </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -95,9 +107,24 @@ export default function CommunityDirectoryPage() {
               </section>
             )}
 
+            {territorios.length > 0 && (
+              <section className="mb-10">
+                <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" aria-hidden="true" />
+                  Territorios
+                </h2>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {territorios.map((c) => (
+                    <CommunityCard key={c.slug} community={c} />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {causas.length > 0 && (
               <section>
-                <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4">
+                <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" aria-hidden="true" />
                   Causas
                 </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

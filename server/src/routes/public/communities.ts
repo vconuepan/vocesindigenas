@@ -76,23 +76,36 @@ router.get('/:slug', async (req, res) => {
 // GET /api/communities/:slug/stories?page=1&pageSize=20
 router.get('/:slug/stories', async (req, res) => {
   try {
-    const community = await prisma.community.findUnique({
-      where: { slug: req.params.slug },
-      select: { id: true, issueIds: true },
-    })
-    if (!community) {
+    // Use raw query so keywords column works before db:generate is re-run
+    const rows = await prisma.$queryRaw<Array<{ id: string; issue_ids: string[]; keywords: string[] }>>`
+      SELECT id, issue_ids, keywords FROM communities WHERE slug = ${req.params.slug} LIMIT 1
+    `
+    if (!rows.length) {
       res.status(404).json({ error: 'Community not found' })
       return
     }
+    const community = { id: rows[0].id, issueIds: rows[0].issue_ids, keywords: rows[0].keywords ?? [] }
+    const keywords: string[] = community.keywords
 
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1)
     const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize as string, 10) || 20))
     const minRelevance = 3
 
+    const keywordFilter = keywords.length > 0
+      ? {
+          OR: keywords.flatMap((kw: string) => [
+            { title: { contains: kw, mode: 'insensitive' as const } },
+            { summary: { contains: kw, mode: 'insensitive' as const } },
+            { sourceTitle: { contains: kw, mode: 'insensitive' as const } },
+          ]),
+        }
+      : {}
+
     const where = {
       status: StoryStatus.published,
       issueId: { in: community.issueIds },
       relevance: { gte: minRelevance },
+      ...keywordFilter,
     }
 
     const [total, stories] = await Promise.all([
