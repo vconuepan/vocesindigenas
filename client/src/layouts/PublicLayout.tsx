@@ -245,7 +245,7 @@ function PublicLayoutInner() {
               return (
                 <li key={link.href}>
                   <Link to={link.href} className="issue-nav-link" data-active={active} style={{ "--issue-color": colors.hex } as React.CSSProperties}>
-                    <span className={`w-2.5 h-2.5 rounded-full -translate-y-px ${colors.dotBg} ${active ? "opacity-100" : "opacity-60"}`} aria-hidden="true" />
+                    <span className={`w-3 h-3 rounded-full -translate-y-px ${colors.dotBg} ${active ? "opacity-100" : "opacity-50"}`} aria-hidden="true" />
                     {t(link.labelKey)}
                   </Link>
                 </li>

@@ -15,7 +15,6 @@ interface StoryCardProps {
   variant?: 'featured' | 'compact' | 'horizontal' | 'equal'
 }
 
-
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
   return (
@@ -26,7 +25,7 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
           href={story.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          className="text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
         >
           {story.feed.displayTitle || story.feed.title}
           <span className="sr-only"> (opens in new tab)</span>
@@ -37,9 +36,39 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
   )
 }
 
+function CategoryPill({ name, hex }: { name: string; hex: string }) {
+  return (
+    <span
+      className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2"
+      style={{
+        backgroundColor: hexToRgba(hex, 0.12),
+        color: hex,
+        border: `1px solid ${hexToRgba(hex, 0.25)}`,
+      }}
+    >
+      {name}
+    </span>
+  )
+}
+
+function CardImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [error, setError] = useState(false)
+  if (error) return null
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={() => setError(true)}
+    />
+  )
+}
+
 export default function StoryCard({ story, variant = 'featured' }: StoryCardProps) {
   const { i18n } = useTranslation()
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
+  const issueName = story.issue?.name ?? story.feed?.issue?.name ?? ''
   const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
   const [read, setRead] = useState(false)
@@ -48,10 +77,8 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
     if (story.slug) setRead(isRead(story.slug))
   }, [story.slug])
 
-  const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
   const readClass = read ? 'opacity-70' : ''
 
-  // Language-aware field selection
   const isEn = i18n.language === 'en'
   const localizedStory = {
     ...story,
@@ -62,138 +89,151 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
     : (isEn && story.summaryEn) ? story.summaryEn
     : story.relevanceSummary || story.summary
 
-  // === HORIZONTAL variant (Layout B full-width) ===
+  const imageUrl = story.imageUrl ?? null
+  const headlineText = getHeadline(localizedStory)
+
+  // === FEATURED variant — image with dark overlay, title on top ===
+  if (variant === 'featured') {
+    return (
+      <article className={`group relative overflow-hidden rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 ${readClass}`}>
+        <Link to={`/stories/${story.slug}`} className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded-xl">
+          {/* Image area */}
+          <div className="relative aspect-video overflow-hidden bg-neutral-100">
+            {imageUrl ? (
+              <CardImage
+                src={imageUrl}
+                alt={headlineText}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full relative" style={{ background: `linear-gradient(135deg, ${hexToRgba(colors.hex, 0.2)}, ${hexToRgba(colors.hex, 0.45)})` }}>
+                {Pattern && <Pattern opacity={0.25} />}
+              </div>
+            )}
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+            {/* Text on overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-5">
+              {issueName && <CategoryPill name={issueName} hex={colors.hex} />}
+              {getTitleLabel(localizedStory) && (
+                <span className="block text-xs font-bold uppercase tracking-wider text-white/70 mb-1">{getTitleLabel(localizedStory)}</span>
+              )}
+              <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">
+                {headlineText}
+              </h3>
+            </div>
+          </div>
+        </Link>
+        {/* Meta below */}
+        <div className="bg-white px-5 py-3 flex items-center justify-between gap-2 border border-t-0 border-neutral-100 rounded-b-xl">
+          <StoryMeta story={story} size="xs" />
+          {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
+        </div>
+      </article>
+    )
+  }
+
+  // === EQUAL variant — image top, text below (Ladera Sur style) ===
+  if (variant === 'equal') {
+    return (
+      <article className={`group relative overflow-hidden rounded-xl border border-neutral-100 bg-white hover:shadow-lg transition-shadow duration-300 h-full ${readClass}`}>
+        <Link to={`/stories/${story.slug}`} className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded-t-xl overflow-hidden">
+          <div className="aspect-video overflow-hidden bg-neutral-100">
+            {imageUrl ? (
+              <CardImage
+                src={imageUrl}
+                alt={headlineText}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full relative" style={{ background: `linear-gradient(135deg, ${hexToRgba(colors.hex, 0.12)}, ${hexToRgba(colors.hex, 0.28)})` }}>
+                {Pattern && <Pattern opacity={0.2} />}
+              </div>
+            )}
+          </div>
+        </Link>
+        <div className="p-4">
+          {issueName && <CategoryPill name={issueName} hex={colors.hex} />}
+          <div className="flex items-start justify-between gap-1">
+            <Link to={`/stories/${story.slug}`} className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+              <h3 className="text-base font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-snug">
+                {headlineText}
+              </h3>
+            </Link>
+            {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
+          </div>
+          <StoryMeta story={story} size="xs" />
+          {displaySummary && (
+            <p className="text-sm text-neutral-500 leading-relaxed mt-2 line-clamp-2">{displaySummary}</p>
+          )}
+        </div>
+      </article>
+    )
+  }
+
+  // === HORIZONTAL variant — text left, image right ===
   if (variant === 'horizontal') {
     return (
-      <article
-        className={`group story-card-hover relative overflow-hidden ${colors.borderThick} rounded-r-lg bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200`}
-        style={hoverStyle}
-      >
-        {Pattern && <Pattern opacity={0.15} />}
-        <div className="relative z-10 flex flex-col md:flex-row md:items-stretch">
-          {/* Left: title + meta */}
-          <div className="p-6 md:p-8 md:flex-1">
+      <article className={`group relative overflow-hidden rounded-xl border border-neutral-100 bg-white hover:shadow-lg transition-shadow duration-300 ${readClass}`}>
+        <div className="flex flex-col md:flex-row">
+          {/* Text left */}
+          <div className="flex-1 p-6 md:p-7">
+            {issueName && <CategoryPill name={issueName} hex={colors.hex} />}
             <div className="flex items-start justify-between gap-2">
-              <Link
-                to={`/stories/${story.slug}`}
-                className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-              >
+              <Link to={`/stories/${story.slug}`} className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                 {getTitleLabel(localizedStory) && (
                   <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(localizedStory)}</span>
                 )}
-                <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors">
-                  {getHeadline(localizedStory)}
+                <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-3 group-hover:text-brand-800 transition-colors leading-tight">
+                  {headlineText}
                 </h3>
               </Link>
               {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
             </div>
             <StoryMeta story={story} />
-          </div>
-
-          {/* Right: relevance summary or plain summary */}
-          {(displaySummary) && (
-            <div className="px-6 pb-6 md:p-8 md:flex-1 md:border-l md:border-neutral-200/50 flex items-center">
-              <p className="text-neutral-600 leading-relaxed">{displaySummary}</p>
-            </div>
-          )}
-        </div>
-      </article>
-    )
-  }
-
-  // === FEATURED variant ===
-  if (variant === 'featured') {
-    return (
-      <article
-        className={`group story-card-hover relative overflow-hidden rounded-lg border border-neutral-200 bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200`}
-        style={hoverStyle}
-      >
-        <div className={`rounded-t-lg ${colors.dotBg}`} style={{ height: '4px' }} aria-hidden="true" />
-        {Pattern && <Pattern opacity={0.12} />}
-        <div className="relative z-10 p-6 md:p-8">
-          <div className="flex items-start justify-between gap-2">
-            <Link
-              to={`/stories/${story.slug}`}
-              className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-            >
-              {getTitleLabel(localizedStory) && (
-                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(localizedStory)}</span>
-              )}
-              <h3 className={`text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight ${readClass}`}>
-                {getHeadline(localizedStory)}
-              </h3>
-            </Link>
-            {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
-          </div>
-
-          <StoryMeta story={story} />
-
-          {(displaySummary) && (
-            <p className="text-neutral-600 leading-relaxed mt-3">{displaySummary}</p>
-          )}
-        </div>
-      </article>
-    )
-  }
-
-  // === EQUAL variant (Layout C — same-size columns) ===
-  if (variant === 'equal') {
-    return (
-      <article
-        className={`group story-card-hover relative overflow-hidden rounded-r-lg border border-neutral-200 border-l-4 ${colors.border} bg-white hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-200 h-full`}
-        style={hoverStyle}
-      >
-        <div className="relative z-10 p-5">
-          <div className="flex items-start justify-between gap-1">
-            <Link
-              to={`/stories/${story.slug}`}
-              className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-            >
-              {getTitleLabel(localizedStory) && (
-                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(localizedStory)}</span>
-              )}
-              <h3 className="text-lg font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-snug">
-                {getHeadline(localizedStory)}
-              </h3>
-            </Link>
-            {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
-          </div>
-
-          <StoryMeta story={story} size="xs" />
-
-          {(displaySummary) && (
-            <p className="text-sm text-neutral-600 leading-relaxed mt-2">{displaySummary}</p>
-          )}
-        </div>
-      </article>
-    )
-  }
-
-  // === COMPACT variant ===
-  return (
-    <article
-      className={`group story-card-hover relative overflow-hidden border-l-4 ${colors.border} rounded-r-lg bg-white pl-4 pr-4 py-4 hover:shadow-md hover:shadow-brand-100/30 transition-all duration-200`}
-      style={hoverStyle}
-    >
-      <div className="flex items-start gap-2">
-        <div className="flex-1 min-w-0">
-          <Link
-            to={`/stories/${story.slug}`}
-            className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-          >
-            {getTitleLabel(localizedStory) && (
-              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-0.5">{getTitleLabel(localizedStory)}</span>
+            {displaySummary && (
+              <p className="text-neutral-600 leading-relaxed mt-3 line-clamp-3">{displaySummary}</p>
             )}
-            <h3 className={`text-base font-bold text-neutral-900 mb-1.5 group-hover:text-brand-800 transition-colors leading-snug ${readClass}`}>
-              {getHeadline(localizedStory)}
-            </h3>
-          </Link>
-          <StoryMeta story={story} size="xs" />
+          </div>
+          {/* Image right */}
+          {imageUrl && (
+            <Link to={`/stories/${story.slug}`} className="md:w-56 md:shrink-0 overflow-hidden rounded-b-xl md:rounded-b-none md:rounded-r-xl focus-visible:ring-2 focus-visible:ring-brand-500">
+              <div className="h-48 md:h-full min-h-[180px] overflow-hidden bg-neutral-100">
+                <CardImage
+                  src={imageUrl}
+                  alt={headlineText}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            </Link>
+          )}
         </div>
-        {story.slug && (
-          <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />
-        )}
+      </article>
+    )
+  }
+
+  // === COMPACT variant — no image, "en breve" style ===
+  return (
+    <article className={`group relative flex gap-3 py-3 border-b border-neutral-100 last:border-0 ${readClass}`}>
+      {/* Color accent bar */}
+      <div className="w-1 shrink-0 rounded-full mt-1" style={{ backgroundColor: colors.hex, minHeight: '2.5rem' }} aria-hidden="true" />
+      <div className="flex-1 min-w-0">
+        <Link
+          to={`/stories/${story.slug}`}
+          className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+        >
+          {getTitleLabel(localizedStory) && (
+            <span className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-0.5">{getTitleLabel(localizedStory)}</span>
+          )}
+          <h3 className="text-sm font-bold text-neutral-800 mb-1 group-hover:text-brand-800 transition-colors leading-snug">
+            {headlineText}
+          </h3>
+        </Link>
+        <StoryMeta story={story} size="xs" />
       </div>
+      {story.slug && (
+        <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0 self-start mt-0.5" />
+      )}
     </article>
   )
 }

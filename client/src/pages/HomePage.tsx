@@ -24,10 +24,11 @@ import { mixHomepageStories, pickHero } from '../lib/mix-stories'
 function HeroSection({ story }: { story: PublicStory }) {
   const { i18n } = useTranslation()
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
+  const issueName = story.issue?.name ?? story.feed?.issue?.name ?? ''
+  const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
-  const heroImage = (story as any).imageUrl || null
-  const fallbackImage = 'https://impactoindigena.news/images/og-image.png'
+  const heroImage = story.imageUrl || null
 
   const isEn = i18n.language === 'en'
   const localizedStory = {
@@ -35,71 +36,72 @@ function HeroSection({ story }: { story: PublicStory }) {
     title: (isEn && story.titleEn) ? story.titleEn : story.title,
     titleLabel: (isEn && story.titleLabelEn) ? story.titleLabelEn : story.titleLabel,
   }
-  const displayQuote = (isEn && story.quoteEn) ? story.quoteEn : story.quote
   const displaySummary = (isEn && story.summaryEn) ? story.summaryEn : story.summary
+  const displayQuote = (isEn && story.quoteEn) ? story.quoteEn : story.quote
 
   return (
-    <section className="hero-section">
-      {Pattern && <Pattern opacity={0.2} />}
-      <div className="hero-section-inner">
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          {/* Imagen del hero */}
-          <div className="w-full md:w-2/5 flex-shrink-0">
-            <Link to={`/stories/${story.slug}`}>
-              <img
-                src={heroImage || fallbackImage}
-                alt={localizedStory.title || story.sourceTitle || ''}
-                className="w-full h-48 md:h-64 object-cover rounded-lg shadow-sm"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.src = fallbackImage
-                }}
-              />
-            </Link>
+    <section className="relative overflow-hidden">
+      {/* Full-bleed image background */}
+      <div className="relative w-full h-[420px] md:h-[540px] overflow-hidden bg-neutral-900">
+        {heroImage ? (
+          <img
+            src={heroImage}
+            alt=""
+            className="w-full h-full object-cover opacity-70"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        ) : (
+          <div className="w-full h-full relative" style={{ background: `linear-gradient(135deg, ${colors.hex}44, #171717)` }}>
+            {Pattern && <Pattern opacity={0.15} />}
           </div>
-          {/* Contenido del hero */}
-          <div className="flex-1">
-            {getTitleLabel(localizedStory) && (
-              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(localizedStory)}</span>
+        )}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
+
+        {/* Content on overlay */}
+        <div className="absolute inset-0 flex items-end">
+          <div className="max-w-4xl mx-auto px-4 pb-10 md:pb-14 w-full">
+            {/* Issue pill */}
+            {issueName && (
+              <span
+                className="inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3"
+                style={{ backgroundColor: `${colors.hex}33`, color: colors.hex, border: `1px solid ${colors.hex}66` }}
+              >
+                {issueName}
+              </span>
             )}
-            <h1 className="text-3xl md:text-4xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
+            {getTitleLabel(localizedStory) && (
+              <span className="block text-sm font-bold uppercase tracking-wider text-white/60 mb-2">{getTitleLabel(localizedStory)}</span>
+            )}
+            <h1 className="text-3xl md:text-5xl font-bold font-nexa text-white mb-4 leading-tight max-w-3xl">
               <Link
                 to={`/stories/${story.slug}`}
-                className="hover:text-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                className="hover:text-white/90 transition-colors focus-visible:ring-2 focus-visible:ring-white rounded"
               >
                 {getHeadline(localizedStory)}
               </Link>
             </h1>
-            <div className="text-sm text-neutral-500 mb-6">
-              <a
-                href={story.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-neutral-600 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-              >
-                {story.feed.displayTitle || story.feed.title}
-                <span className="sr-only"> (opens in new tab)</span>
-              </a>
-              {dateStr && <> · {dateStr}</>}
-            </div>
+            {/* Summary or quote */}
             {story.relevanceReasons && parsePoints(story.relevanceReasons)[0] ? (
-              <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
+              <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl mb-4">
                 {limitSentences(stripPrefix(stripMarkdown(parsePoints(story.relevanceReasons)[0])), 2)}
               </p>
             ) : displayQuote ? (
-              <blockquote className="decorative-quote max-w-2xl">
-                <p className="text-lg md:text-xl text-neutral-700 leading-relaxed">
-                  &ldquo;{displayQuote}&rdquo;
-                </p>
-                {story.quoteAttribution && (
-                  <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
-                )}
-              </blockquote>
+              <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl mb-4">
+                &ldquo;{displayQuote}&rdquo;
+              </p>
             ) : displaySummary ? (
-              <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
-                {displaySummary}
+              <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl mb-4">
+                {displaySummary.slice(0, 200)}
               </p>
             ) : null}
+            {/* Meta */}
+            <div className="flex items-center gap-2 text-sm text-white/60">
+              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/80 transition-colors">
+                {story.feed.displayTitle || story.feed.title}
+              </a>
+              {dateStr && <><span>·</span><span>{dateStr}</span></>}
+            </div>
           </div>
         </div>
       </div>
