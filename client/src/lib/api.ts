@@ -135,6 +135,17 @@ export const publicApi = {
       memberRequest<{ isMember: boolean }>(`/communities/${slug}/leave`, { method: 'DELETE' }),
   },
 
+  profile: {
+    get: () => memberRequest<{ id: string; email: string; name: string; userType: string }>('/auth/me'),
+    update: (name: string) =>
+      memberRequest<{ name: string }>('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify({ name }),
+      }),
+    memberships: () =>
+      memberRequest<{ communities: Array<{ id: string; slug: string; name: string; type: string }> }>('/auth/memberships'),
+  },
+
   auth: {
     requestMagicLink: (email: string, redirectTo?: string) =>
       request<void>(`/auth/magic`, {

@@ -29,6 +29,18 @@ export interface CommunityRef {
   type: 'PUEBLO' | 'TERRITORIO' | 'CAUSA'
 }
 
+export interface AdminCommunity {
+  id: string
+  slug: string
+  name: string
+  description: string
+  type: 'PUEBLO' | 'TERRITORIO' | 'CAUSA'
+  region: string | null
+  active: boolean
+  createdAt: string
+  _count: { members: number }
+}
+
 export interface MemberMembership {
   joinedAt: string
   community: CommunityRef
@@ -470,6 +482,17 @@ export const adminApi = {
         `/members${toQueryString((params || {}) as Record<string, unknown>)}`
       ),
     summary: () => request<MembersSummary>('/members/summary'),
+    removeMembership: (userId: string, communityId: string) =>
+      request<{ success: boolean }>(`/members/${userId}/community/${communityId}`, { method: 'DELETE' }),
+  },
+
+  communities: {
+    list: () => request<AdminCommunity[]>('/communities'),
+    toggleActive: (id: string, active: boolean) =>
+      request<AdminCommunity>(`/communities/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ active }),
+      }),
   },
 
   // Users

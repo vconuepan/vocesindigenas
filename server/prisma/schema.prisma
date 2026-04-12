@@ -451,6 +451,7 @@ model Community {
   imageUrl    String?           @map("image_url")
   issueIds    String[]          @map("issue_ids")
   keywords    String[]          @default([]) @map("keywords")
+  active      Boolean           @default(true)
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
   members     CommunityMember[]

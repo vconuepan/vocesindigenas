@@ -42,6 +42,7 @@ const navigation = [
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Miembros', href: '/admin/members', icon: UserGroupIcon },
+  { name: 'Comunidades', href: '/admin/communities', icon: GlobeAltIcon },
 ]
 
 function NavItems({ onClick, unreadFeedbackCount }: { onClick?: () => void; unreadFeedbackCount: number }) {

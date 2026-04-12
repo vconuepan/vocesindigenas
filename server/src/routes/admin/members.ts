@@ -136,4 +136,30 @@ router.get('/summary', async (_req, res) => {
   }
 })
 
+/**
+ * DELETE /api/admin/members/:userId/community/:communityId
+ *
+ * Removes a user from a community. Used from the admin members table.
+ */
+router.delete('/:userId/community/:communityId', async (req, res) => {
+  try {
+    const { userId, communityId } = req.params
+
+    await prisma.communityMember.delete({
+      where: { userId_communityId: { userId, communityId } },
+    })
+
+    log.info({ userId, communityId }, 'admin removed user from community')
+    res.json({ success: true })
+  } catch (err: unknown) {
+    const code = (err as { code?: string }).code
+    if (code === 'P2025') {
+      res.status(404).json({ error: 'Membership not found' })
+      return
+    }
+    log.error({ err }, 'failed to remove community membership')
+    res.status(500).json({ error: 'Failed to remove membership' })
+  }
+})
+
 export default router

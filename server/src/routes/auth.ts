@@ -14,6 +14,7 @@ import {
 } from '../services/auth.js'
 import { getUserById } from '../services/user.js'
 import { createLogger } from '../lib/logger.js'
+import prisma from '../lib/prisma.js'
 
 const log = createLogger('auth')
 
@@ -135,6 +136,43 @@ router.get('/me', async (req, res) => {
     res.json(user)
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' })
+  }
+})
+
+router.get('/memberships', requireAuth, async (req, res) => {
+  try {
+    const memberships = await prisma.communityMember.findMany({
+      where: { userId: req.user!.userId },
+      include: {
+        community: { select: { id: true, slug: true, name: true, type: true } },
+      },
+      orderBy: { joinedAt: 'asc' },
+    })
+    res.json({ communities: memberships.map((m) => m.community) })
+  } catch (err) {
+    log.error({ err }, 'failed to fetch memberships')
+    res.status(500).json({ error: 'Failed to fetch memberships' })
+  }
+})
+
+router.put('/me', requireAuth, async (req, res) => {
+  try {
+    const { name } = req.body as { name?: string }
+    const trimmed = name?.trim()
+    if (!trimmed || trimmed.length < 2 || trimmed.length > 100) {
+      res.status(400).json({ error: 'name must be between 2 and 100 characters' })
+      return
+    }
+
+    await prisma.user.update({
+      where: { id: req.user!.userId },
+      data: { name: trimmed },
+    })
+
+    res.json({ name: trimmed })
+  } catch (err) {
+    log.error({ err }, 'failed to update user profile')
+    res.status(500).json({ error: 'Failed to update profile' })
   }
 })
 

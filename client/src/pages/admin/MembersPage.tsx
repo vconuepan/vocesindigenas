@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { adminApi, type MemberUser } from '../../lib/admin-api'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { useToast } from '../../components/ui/Toast'
 
 const USER_TYPE_TABS = [
   { value: '', label: 'Todos' },
@@ -44,9 +46,34 @@ function formatDate(dateStr: string) {
   })
 }
 
-function MemberRow({ member }: { member: MemberUser }) {
+function MemberRow({ member, queryKey }: { member: MemberUser; queryKey: unknown[] }) {
   const badge = TYPE_BADGE[member.userType] ?? 'bg-neutral-100 text-neutral-600'
   const label = TYPE_LABEL[member.userType] ?? member.userType
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  const removeMutation = useMutation({
+    mutationFn: ({ communityId }: { communityId: string }) =>
+      adminApi.members.removeMembership(member.id, communityId),
+    onSuccess: (_data, { communityId }) => {
+      queryClient.setQueryData<{ data: MemberUser[]; total: number; page: number; pageSize: number; totalPages: number }>(
+        queryKey,
+        (prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            data: prev.data.map((m) =>
+              m.id === member.id
+                ? { ...m, memberships: m.memberships.filter((mb) => mb.community.id !== communityId) }
+                : m
+            ),
+          }
+        }
+      )
+      toast('success', 'Membresía eliminada')
+    },
+    onError: () => toast('error', 'Error al eliminar membresía'),
+  })
 
   return (
     <tr className="border-b border-neutral-100 hover:bg-neutral-50">
@@ -67,10 +94,18 @@ function MemberRow({ member }: { member: MemberUser }) {
             {member.memberships.map((m) => (
               <span
                 key={m.community.id}
-                className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700"
+                className="inline-flex items-center gap-1 rounded-full bg-green-50 pl-2 pr-1 py-0.5 text-xs text-green-700"
                 title={`${COMMUNITY_TYPE_LABEL[m.community.type]} · Ingresó ${formatDate(m.joinedAt)}`}
               >
                 {m.community.name}
+                <button
+                  onClick={() => removeMutation.mutate({ communityId: m.community.id })}
+                  disabled={removeMutation.isPending}
+                  aria-label={`Quitar de ${m.community.name}`}
+                  className="rounded-full p-0.5 hover:bg-green-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-500 disabled:opacity-40"
+                >
+                  <XMarkIcon className="h-3 w-3" />
+                </button>
               </span>
             ))}
           </div>
@@ -188,7 +223,7 @@ export default function MembersPage() {
               </thead>
               <tbody>
                 {result.data.map((member) => (
-                  <MemberRow key={member.id} member={member} />
+                  <MemberRow key={member.id} member={member} queryKey={['admin', 'members', { userType, page }]} />
                 ))}
               </tbody>
             </table>

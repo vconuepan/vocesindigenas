@@ -15,6 +15,7 @@ import linkedinRouter from './linkedin.js'
 import feedbackRouter from './feedback.js'
 import maintenanceRouter from './maintenance.js'
 import membersRouter from './members.js'
+import adminCommunitiesRouter from './communities.js'
 
 const router = Router()
 
@@ -36,5 +37,6 @@ router.use('/linkedin', linkedinRouter)
 router.use('/feedback', feedbackRouter)
 router.use('/maintenance', maintenanceRouter)
 router.use('/members', membersRouter)
+router.use('/communities', adminCommunitiesRouter)
 
 export default router
