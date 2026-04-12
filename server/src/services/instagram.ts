@@ -32,8 +32,13 @@ export async function generateDraft(storyId: string) {
     orderBy: { createdAt: 'desc' },
   })
 
-  const baseText = blueskyPost?.postText || story.marketingBlurb || story.summary || story.title || ''
-  const caption = `${baseText}\n\n${storyUrl}\n\n#PueblosIndígenas #DerechosIndígenas #ImpactoIndígena`
+  const hook = story.titleLabel
+    ? `${story.titleLabel}: ${story.title || ''}`
+    : (story.title || '')
+  const body = story.marketingBlurb || story.summary || blueskyPost?.postText || ''
+  const caption = [hook, body, storyUrl, '#PueblosIndígenas #DerechosIndígenas #ImpactoIndígena']
+    .filter(Boolean)
+    .join('\n\n')
   const trimmedCaption = caption.length > 2200 ? caption.slice(0, 2197) + '…' : caption
 
   // Reusar imagen de Twitter si existe
