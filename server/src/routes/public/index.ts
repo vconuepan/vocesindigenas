@@ -10,6 +10,7 @@ import docsRouter from './docs.js'
 import sourcesRouter from './sources.js'
 import feedbackRouter from './feedback.js'
 import podcastFeedRouter from './podcastFeed.js'
+import communitiesRouter from './communities.js'
 
 const router = Router()
 
@@ -26,5 +27,6 @@ router.use('/sitemap.xml', sitemapRouter)
 router.use('/docs', docsRouter)
 router.use('/feedback', feedbackRouter)
 router.use('/podcast', podcastFeedRouter)
+router.use('/communities', communitiesRouter)
 
 export default router

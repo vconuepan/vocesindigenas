@@ -1,4 +1,4 @@
-import type { PublicStory, PaginatedResponse } from '@shared/types'
+import type { PublicStory, PaginatedResponse, Community } from '@shared/types'
 
 export const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
 
@@ -71,6 +71,15 @@ export const publicApi = {
   issues: {
     list: () => request<PublicIssue[]>(`/issues`),
     get: (slug: string) => request<PublicIssue>(`/issues/${slug}`),
+  },
+
+  communities: {
+    list: () => request<Community[]>(`/communities`),
+    get: (slug: string) => request<Community>(`/communities/${slug}`),
+    stories: (slug: string, params?: { page?: number; pageSize?: number }) =>
+      request<PaginatedResponse<PublicStory>>(
+        `/communities/${slug}/stories${toQueryString((params || {}) as Record<string, unknown>)}`
+      ),
   },
 
   sources: () =>

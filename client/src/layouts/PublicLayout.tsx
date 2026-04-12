@@ -51,6 +51,7 @@ const FOOTER_NAV = [
   { labelKey: "footer.about", href: "/about" },
   { labelKey: "footer.methodology", href: "/methodology" },
   { labelKey: "footer.topics", href: "/issues" },
+  { labelKey: "footer.communities", href: "/comunidades" },
   { labelKey: "footer.newsletter", href: "/newsletter" },
   { labelKey: "footer.contact", href: "/feedback" },
 ];
@@ -251,6 +252,15 @@ function PublicLayoutInner() {
                 </li>
               );
             })}
+            <li>
+              <Link
+                to="/comunidades"
+                className="issue-nav-link"
+                data-active={location.pathname.startsWith('/comunidad')}
+              >
+                Comunidades
+              </Link>
+            </li>
           </ul>
         </nav>
 
@@ -285,6 +295,16 @@ function PublicLayoutInner() {
                     </li>
                   );
                 })}
+                <li>
+                  <Link
+                    to="/comunidades"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${location.pathname.startsWith('/comunidad') ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"}`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-brand-500" aria-hidden="true" />
+                    Comunidades
+                  </Link>
+                </li>
               </ul>
               <div className="border-t border-neutral-100 pt-3 px-2 flex flex-col">
                 <Link to="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">

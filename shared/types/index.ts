@@ -477,6 +477,23 @@ export interface PaginatedResponse<T> {
   totalPages: number
 }
 
+// --- Community types ---
+
+export type CommunityType = 'PUEBLO' | 'CAUSA'
+
+export interface Community {
+  id: string
+  slug: string
+  name: string
+  description: string
+  type: CommunityType
+  region: string | null
+  imageUrl: string | null
+  issueIds: string[]
+  createdAt: string
+  updatedAt: string
+}
+
 // --- Background task types ---
 
 export type BulkTaskType = 'preassess' | 'assess' | 'select' | 'reclassify' | 'emotion'

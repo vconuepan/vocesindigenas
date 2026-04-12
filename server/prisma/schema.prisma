@@ -94,6 +94,7 @@ model Story {
   twitterPosts           TwitterPost[]
   instagramPosts         InstagramPost[]
   linkedinPosts          LinkedInPost[]
+  communityPosts         CommunityPost[]
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -415,19 +416,76 @@ enum UserType {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
+  id            String             @id @default(uuid())
+  email         String             @unique
   name          String
   passwordHash  String
-  userType      UserType       @default(VEEDOR)
-  verified      Boolean        @default(false)
-  freeLicense   Boolean        @default(false)
+  userType      UserType           @default(VEEDOR)
+  verified      Boolean            @default(false)
+  freeLicense   Boolean            @default(false)
   comunidadId   String?
+  memberships   CommunityMember[]
+  posts         CommunityPost[]
   refreshTokens RefreshToken[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   @@map("users")
+}
+
+// --- Community Tables ---
+
+enum CommunityType {
+  PUEBLO
+  CAUSA
+}
+
+model Community {
+  id          String            @id @default(uuid())
+  slug        String            @unique
+  name        String
+  description String
+  type        CommunityType
+  region      String?
+  imageUrl    String?           @map("image_url")
+  issueIds    String[]          @map("issue_ids")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  members     CommunityMember[]
+  posts       CommunityPost[]
+
+  @@index([slug])
+  @@map("communities")
+}
+
+model CommunityMember {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  communityId String    @map("community_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  joinedAt    DateTime  @default(now()) @map("joined_at")
+
+  @@unique([userId, communityId])
+  @@index([communityId])
+  @@map("community_members")
+}
+
+model CommunityPost {
+  id          String    @id @default(uuid())
+  storyId     String    @map("story_id")
+  userId      String    @map("user_id")
+  communityId String    @map("community_id")
+  content     String
+  story       Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([communityId, createdAt])
+  @@index([storyId])
+  @@map("community_posts")
 }
 
 model RefreshToken {

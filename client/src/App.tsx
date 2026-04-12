@@ -28,6 +28,8 @@ const FreeApiPage = lazy(() => import('./pages/FreeApiPage'))
 const NewsletterPage = lazy(() => import('./pages/NewsletterPage'))
 const FeedbackPagePublic = lazy(() => import('./pages/FeedbackPage'))
 const ThankYouPage = lazy(() => import('./pages/ThankYouPage'))
+const CommunityDirectoryPage = lazy(() => import('./pages/CommunityDirectoryPage'))
+const CommunityPage = lazy(() => import('./pages/CommunityPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -107,6 +109,8 @@ export default function App() {
         <Route path="/newsletter" element={<LazyPage><NewsletterPage /></LazyPage>} />
         <Route path="/feedback" element={<LazyPage><FeedbackPagePublic /></LazyPage>} />
         <Route path="/thank-you" element={<LazyPage><ThankYouPage /></LazyPage>} />
+        <Route path="/comunidades" element={<LazyPage><CommunityDirectoryPage /></LazyPage>} />
+        <Route path="/comunidad/:slug" element={<LazyPage><CommunityPage /></LazyPage>} />
       </Route>
 
       {/* Embed page — no layout wrapper */}
