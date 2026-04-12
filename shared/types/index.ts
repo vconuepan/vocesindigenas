@@ -79,6 +79,13 @@ export interface Story {
   antifactors: string | null
   relevanceCalculation: string | null
   crawlMethod: string | null
+  imageUrl?: string | null
+  titleEn?: string | null
+  titleLabelEn?: string | null
+  summaryEn?: string | null
+  quoteEn?: string | null
+  marketingBlurbEn?: string | null
+  relevanceSummaryEn?: string | null
   clusterId: string | null
   createdAt: string
   updatedAt: string

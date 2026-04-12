@@ -110,8 +110,23 @@ export default function StoryPage() {
     )
   }
 
-  const titleLabel = getTitleLabel(story)
-  const headline = getHeadline(story)
+  const isEn = i18n.language === 'en'
+
+  // Language-aware field selection — falls back to Spanish when EN translation not available
+  const loc = {
+    title: (isEn && story.titleEn) ? story.titleEn : story.title,
+    titleLabel: (isEn && story.titleLabelEn) ? story.titleLabelEn : story.titleLabel,
+    summary: (isEn && story.summaryEn) ? story.summaryEn : story.summary,
+    quote: (isEn && story.quoteEn) ? story.quoteEn : story.quote,
+    marketingBlurb: (isEn && story.marketingBlurbEn) ? story.marketingBlurbEn : story.marketingBlurb,
+    relevanceSummary: (isEn && story.relevanceSummaryEn) ? story.relevanceSummaryEn : story.relevanceSummary,
+  }
+
+  // Build a localized story-like object for title-label helpers
+  const localizedStory = { ...story, title: loc.title, titleLabel: loc.titleLabel }
+
+  const titleLabel = getTitleLabel(localizedStory)
+  const headline = getHeadline(localizedStory)
   const displayTitle = titleLabel ? `${titleLabel}: ${headline}` : headline
   const hasSourceDate = !!story.sourceDatePublished
   const displayDate = story.datePublished || story.dateCrawled
@@ -129,7 +144,7 @@ export default function StoryPage() {
       })
     : null
 
-  const description = story.summary || displayTitle
+  const description = loc.summary || displayTitle
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const issueName = story.issue?.name ?? story.feed?.issue?.name ?? 'News'
   const colors = getCategoryColor(issueSlug)
@@ -227,7 +242,7 @@ export default function StoryPage() {
                     <ShareButtons
                       url={`${SEO.siteUrl}/stories/${story.slug}`}
                       title={displayTitle}
-                      description={story.marketingBlurb || story.summary || displayTitle}
+                      description={loc.marketingBlurb || loc.summary || displayTitle}
                     />
                   </span>
                 </>
@@ -241,19 +256,19 @@ export default function StoryPage() {
 
         <div className="page-section !pt-0">
           {/* Summary */}
-          {story.summary && (
+          {loc.summary && (
             <section className="mb-10">
               <div
                 className="prose drop-cap"
                 style={{ '--drop-cap-color': colors.hex } as React.CSSProperties}
               >
-                <Markdown>{story.summary}</Markdown>
+                <Markdown>{loc.summary}</Markdown>
               </div>
             </section>
           )}
 
           {/* Key quote — editorial pull-quote style */}
-          {story.quote && (
+          {loc.quote && (
             <div className="py-6 md:py-8 text-center max-w-2xl mx-auto mb-10">
               <div className="relative">
                 <span
@@ -266,7 +281,7 @@ export default function StoryPage() {
                 <blockquote className="-mt-8">
                   {/* No italic — avoids loading Roboto-Italic; decorative quotes provide visual distinction */}
                   <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed px-4">
-                    {story.quote}
+                    {loc.quote}
                   </p>
                 </blockquote>
                 {story.quoteAttribution && (

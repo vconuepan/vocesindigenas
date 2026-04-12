@@ -22,11 +22,21 @@ import { mixHomepageStories, pickHero } from '../lib/mix-stories'
 // Hero
 // ---------------------------------------------------------------------------
 function HeroSection({ story }: { story: PublicStory }) {
+  const { i18n } = useTranslation()
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const Pattern = getCategoryPattern(issueSlug)
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
   const heroImage = (story as any).imageUrl || null
   const fallbackImage = 'https://impactoindigena.news/images/og-image.png'
+
+  const isEn = i18n.language === 'en'
+  const localizedStory = {
+    ...story,
+    title: (isEn && story.titleEn) ? story.titleEn : story.title,
+    titleLabel: (isEn && story.titleLabelEn) ? story.titleLabelEn : story.titleLabel,
+  }
+  const displayQuote = (isEn && story.quoteEn) ? story.quoteEn : story.quote
+  const displaySummary = (isEn && story.summaryEn) ? story.summaryEn : story.summary
 
   return (
     <section className="hero-section">
@@ -38,7 +48,7 @@ function HeroSection({ story }: { story: PublicStory }) {
             <Link to={`/stories/${story.slug}`}>
               <img
                 src={heroImage || fallbackImage}
-                alt={story.title || story.sourceTitle || ''}
+                alt={localizedStory.title || story.sourceTitle || ''}
                 className="w-full h-48 md:h-64 object-cover rounded-lg shadow-sm"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
@@ -49,15 +59,15 @@ function HeroSection({ story }: { story: PublicStory }) {
           </div>
           {/* Contenido del hero */}
           <div className="flex-1">
-            {getTitleLabel(story) && (
-              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(story)}</span>
+            {getTitleLabel(localizedStory) && (
+              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{getTitleLabel(localizedStory)}</span>
             )}
             <h1 className="text-3xl md:text-4xl font-bold font-nexa text-neutral-900 mb-4 leading-tight">
               <Link
                 to={`/stories/${story.slug}`}
                 className="hover:text-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
               >
-                {getHeadline(story)}
+                {getHeadline(localizedStory)}
               </Link>
             </h1>
             <div className="text-sm text-neutral-500 mb-6">
@@ -76,18 +86,18 @@ function HeroSection({ story }: { story: PublicStory }) {
               <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
                 {limitSentences(stripPrefix(stripMarkdown(parsePoints(story.relevanceReasons)[0])), 2)}
               </p>
-            ) : story.quote ? (
+            ) : displayQuote ? (
               <blockquote className="decorative-quote max-w-2xl">
                 <p className="text-lg md:text-xl text-neutral-700 leading-relaxed">
-                  &ldquo;{story.quote}&rdquo;
+                  &ldquo;{displayQuote}&rdquo;
                 </p>
                 {story.quoteAttribution && (
                   <p className="text-xs text-neutral-500 mt-1">&mdash; {story.quoteAttribution}</p>
                 )}
               </blockquote>
-            ) : story.summary ? (
+            ) : displaySummary ? (
               <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl">
-                {story.summary}
+                {displaySummary}
               </p>
             ) : null}
           </div>

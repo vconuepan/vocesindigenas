@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { PublicStory } from '@shared/types'
 import { getCategoryColor, hexToRgba } from '../lib/category-colors'
 import { getCategoryPattern } from '../lib/category-patterns'
@@ -37,6 +38,7 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
 }
 
 export default function StoryCard({ story, variant = 'featured' }: StoryCardProps) {
+  const { i18n } = useTranslation()
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
   const colors = getCategoryColor(issueSlug)
   const Pattern = getCategoryPattern(issueSlug)
@@ -48,6 +50,17 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
   const hoverStyle = { '--card-hover-color': hexToRgba(colors.hex, 0.07) } as React.CSSProperties
   const readClass = read ? 'opacity-70' : ''
+
+  // Language-aware field selection
+  const isEn = i18n.language === 'en'
+  const localizedStory = {
+    ...story,
+    title: (isEn && story.titleEn) ? story.titleEn : story.title,
+    titleLabel: (isEn && story.titleLabelEn) ? story.titleLabelEn : story.titleLabel,
+  }
+  const displaySummary: string | null | undefined = (isEn && story.relevanceSummaryEn) ? story.relevanceSummaryEn
+    : (isEn && story.summaryEn) ? story.summaryEn
+    : story.relevanceSummary || story.summary
 
   // === HORIZONTAL variant (Layout B full-width) ===
   if (variant === 'horizontal') {
@@ -65,11 +78,11 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
                 to={`/stories/${story.slug}`}
                 className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
               >
-                {getTitleLabel(story) && (
-                  <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+                {getTitleLabel(localizedStory) && (
+                  <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(localizedStory)}</span>
                 )}
                 <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors">
-                  {getHeadline(story)}
+                  {getHeadline(localizedStory)}
                 </h3>
               </Link>
               {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
@@ -78,9 +91,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
           </div>
 
           {/* Right: relevance summary or plain summary */}
-          {(story.relevanceSummary || story.summary) && (
+          {(displaySummary) && (
             <div className="px-6 pb-6 md:p-8 md:flex-1 md:border-l md:border-neutral-200/50 flex items-center">
-              <p className="text-neutral-600 leading-relaxed">{story.relevanceSummary || story.summary}</p>
+              <p className="text-neutral-600 leading-relaxed">{displaySummary}</p>
             </div>
           )}
         </div>
@@ -103,11 +116,11 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
               to={`/stories/${story.slug}`}
               className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
-              {getTitleLabel(story) && (
-                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+              {getTitleLabel(localizedStory) && (
+                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(localizedStory)}</span>
               )}
               <h3 className={`text-3xl md:text-4xl font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-tight ${readClass}`}>
-                {getHeadline(story)}
+                {getHeadline(localizedStory)}
               </h3>
             </Link>
             {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
@@ -115,8 +128,8 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
           <StoryMeta story={story} />
 
-          {(story.relevanceSummary || story.summary) && (
-            <p className="text-neutral-600 leading-relaxed mt-3">{story.relevanceSummary || story.summary}</p>
+          {(displaySummary) && (
+            <p className="text-neutral-600 leading-relaxed mt-3">{displaySummary}</p>
           )}
         </div>
       </article>
@@ -136,11 +149,11 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
               to={`/stories/${story.slug}`}
               className="block flex-1 min-w-0 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
-              {getTitleLabel(story) && (
-                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(story)}</span>
+              {getTitleLabel(localizedStory) && (
+                <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">{getTitleLabel(localizedStory)}</span>
               )}
               <h3 className="text-lg font-bold text-neutral-900 mb-2 group-hover:text-brand-800 transition-colors leading-snug">
-                {getHeadline(story)}
+                {getHeadline(localizedStory)}
               </h3>
             </Link>
             {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
@@ -148,8 +161,8 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
           <StoryMeta story={story} size="xs" />
 
-          {(story.relevanceSummary || story.summary) && (
-            <p className="text-sm text-neutral-600 leading-relaxed mt-2">{story.relevanceSummary || story.summary}</p>
+          {(displaySummary) && (
+            <p className="text-sm text-neutral-600 leading-relaxed mt-2">{displaySummary}</p>
           )}
         </div>
       </article>
@@ -168,11 +181,11 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             to={`/stories/${story.slug}`}
             className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           >
-            {getTitleLabel(story) && (
-              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-0.5">{getTitleLabel(story)}</span>
+            {getTitleLabel(localizedStory) && (
+              <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-0.5">{getTitleLabel(localizedStory)}</span>
             )}
             <h3 className={`text-base font-bold text-neutral-900 mb-1.5 group-hover:text-brand-800 transition-colors leading-snug ${readClass}`}>
-              {getHeadline(story)}
+              {getHeadline(localizedStory)}
             </h3>
           </Link>
           <StoryMeta story={story} size="xs" />
