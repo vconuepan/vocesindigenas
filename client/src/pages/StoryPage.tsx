@@ -8,6 +8,7 @@ import { getCategoryColor, shiftHex } from '../lib/category-colors'
 import { parsePoints } from '../lib/parse-points'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { markAsRead } from '../lib/reading-history'
+import { storyAgeMonths } from '../lib/format'
 import FeedFavicon from '../components/FeedFavicon'
 import BookmarkButton from '../components/BookmarkButton'
 import ShareButtons from '../components/ShareButtons'
@@ -128,6 +129,8 @@ export default function StoryPage() {
   const titleLabel = getTitleLabel(localizedStory)
   const headline = getHeadline(localizedStory)
   const displayTitle = titleLabel ? `${titleLabel}: ${headline}` : headline
+  const ageMonths = story.datePublished ? storyAgeMonths(story.datePublished) : 0
+  const isOld = ageMonths >= 3
   const hasSourceDate = !!story.sourceDatePublished
   const displayDate = story.datePublished || story.dateCrawled
   const dateLocale = i18n.language === 'en' ? 'en-US' : 'es-CL'
@@ -201,6 +204,11 @@ export default function StoryPage() {
 
             {/* Metadata + share */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+              {isOld && (
+                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
+                  Noticia antigua
+                </span>
+              )}
               <time dateTime={displayDate}>{dateStr}</time>
               <span className="text-neutral-300">|</span>
               <span className="inline-flex items-center gap-1.5">

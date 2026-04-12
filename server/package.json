@@ -29,6 +29,8 @@
     "migration:backfill-emotion-tag:test": "tsx src/scripts/migrations/backfill-emotion-tag.ts --test",
     "migration:backfill-embeddings": "tsx src/scripts/migrations/backfill-embeddings.ts",
     "migration:backfill-embeddings:test": "tsx src/scripts/migrations/backfill-embeddings.ts --test",
+    "migration:backfill-old-story-titles": "tsx src/scripts/migrations/backfill-old-story-titles.ts",
+    "migration:backfill-old-story-titles:test": "tsx src/scripts/migrations/backfill-old-story-titles.ts --test",
     "translations:backfill": "tsx src/scripts/backfill-translations.ts",
     "images:backfill": "tsx src/scripts/backfill-images.ts"
   },

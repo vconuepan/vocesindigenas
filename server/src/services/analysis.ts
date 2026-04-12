@@ -265,7 +265,7 @@ export async function assessStory(storyId: string): Promise<void> {
 
   const guidelines = getGuidelines(story.issue ?? story.feed.issue)
   const publisher = story.feed.title
-  const prompt = buildAssessPrompt(story.sourceTitle, story.sourceContent, publisher, story.sourceUrl, guidelines)
+  const prompt = buildAssessPrompt(story.sourceTitle, story.sourceContent, publisher, story.sourceUrl, guidelines, story.datePublished?.toISOString())
 
   await rateLimitDelay()
   const llm = getLLMByTier(config.assess.modelTier)

@@ -6,13 +6,21 @@ export function buildAssessPrompt(
   content: string,
   publisher: string,
   url: string,
-  guidelines: Guidelines
+  guidelines: Guidelines,
+  datePublished?: string
 ): string {
   const guidelinesXml = buildGuidelinesXml(guidelines);
   const truncatedContent = content.substring(
     0,
     config.assess.contentMaxLength
   );
+
+  const ageMonths = datePublished
+    ? Math.floor((Date.now() - new Date(datePublished).getTime()) / (1000 * 60 * 60 * 24 * 30))
+    : 0;
+  const temporalNote = ageMonths >= 3
+    ? `\n<TEMPORAL_CONTEXT>\nEsta noticia fue publicada el ${datePublished?.slice(0, 10)} (hace aproximadamente ${ageMonths} meses). Escribe el título y la etiqueta del título en tiempo PASADO (ej. "logró", "aprobó", "firmó"). No uses tiempo presente ni futuro para describir hechos que ya ocurrieron.\n</TEMPORAL_CONTEXT>`
+    : '';
 
   return `<ROLE>
 Eres un analista de relevancia que evalúa artículos de noticias por su importancia para los pueblos indígenas del mundo y su futuro a largo plazo. Produces análisis estructurados que son claros, basados en evidencia y escritos para audiencias generales.
@@ -29,7 +37,7 @@ URL: ${url}
 
 ${truncatedContent}
 </ARTICLE>
-
+${temporalNote}
 ${guidelinesXml}
 
 <GENERIC_LIMITING_FACTORS>
