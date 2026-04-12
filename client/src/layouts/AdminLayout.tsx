@@ -1,5 +1,5 @@
 import { useState, useEffect, Suspense } from 'react'
-import { NavLink, Outlet, Navigate } from 'react-router-dom'
+import { NavLink, Outlet, Navigate, useNavigate } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -89,6 +89,7 @@ function ServerClock() {
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const feedbackCountQuery = useQuery({
     queryKey: ['feedbackCount'],
     queryFn: () => adminApi.feedback.count(),
@@ -124,7 +125,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         )}
         <button
-          onClick={logout}
+          onClick={async () => { await logout(); navigate('/admin/login') }}
           className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         >
           <ArrowRightStartOnRectangleIcon className="h-5 w-5 shrink-0" />

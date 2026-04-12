@@ -15,7 +15,7 @@ interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   /** Call this when entering admin routes to restore session if available */
   tryRestoreSession: () => Promise<void>
 }
