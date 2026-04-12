@@ -18,7 +18,7 @@ The client (`server/src/lib/mastodon.ts`) creates a REST API client using the `m
 ### How to Set Up
 
 1. Go to your Mastodon instance settings > Development > New Application
-2. Name: "Actually Relevant Bot" (or similar)
+2. Name: "Impacto Indígena Bot" (or similar)
 3. Required scopes: `read:statuses`, `write:statuses`
 4. Save, then copy the **access token**
 5. Set `MASTODON_URL` and `MASTODON_TOKEN` in your `.env`
@@ -30,7 +30,7 @@ Each Mastodon post consists of:
 1. **Editorial text** — LLM-generated hook (similar to Bluesky but with different constraints)
 2. **Metadata line** — `Issue | Emotion | found on Publisher`
 3. **Source URL** — Original article URL (appears first so Mastodon generates a link preview card from the original article's og: tags, giving readers context)
-4. **Story URL** — Link to the Actually Relevant story page (secondary link, no card preview)
+4. **Story URL** — Link to the Impacto Indígena story page (secondary link, no card preview)
 
 Mastodon posts are limited to 500 characters (configurable via `MASTODON_CHAR_LIMIT`). The LLM text max chars are calculated dynamically as `charLimit - metaLine.length - sourceUrl.length - storyUrl.length - 3` (three newlines). If the LLM overshoots, the text is trimmed with an ellipsis. Unlike Bluesky, URLs are included in the post text (not as an external embed). The source URL appears first so Mastodon's auto-generated link preview card shows the original article's og:image, title, and description. Posts use `unlisted` visibility by default (configurable via `MASTODON_VISIBILITY`).
 

@@ -1,5 +1,5 @@
 {
-  "name": "actually-relevant",
+  "name": "impactoindigena-news",
   "private": true,
   "version": "0.1.0",
   "description": "News curation platform that evaluates article relevance to humanity using LLM analysis",

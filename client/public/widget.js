@@ -8,7 +8,7 @@
     count: Math.min(5, Math.max(1, parseInt(script.getAttribute('data-count') || '3', 10) || 3)),
     issue: script.getAttribute('data-issue') || '',
     theme: script.getAttribute('data-theme') === 'dark' ? 'dark' : 'light',
-    title: script.getAttribute('data-title') || 'Actually Relevant',
+    title: script.getAttribute('data-title') || 'Impacto Indígena',
   }
 
   var API_BASE = 'https://api.actuallyrelevant.news/api'
@@ -114,7 +114,7 @@
         html += '</a></li>'
       })
       html += '</ul>'
-      html += '<div class="ar-footer"><a href="' + SITE_URL + '" target="_blank" rel="noopener noreferrer">Powered by Actually Relevant</a></div>'
+      html += '<div class="ar-footer"><a href="' + SITE_URL + '" target="_blank" rel="noopener noreferrer">Powered by Impacto Indígena</a></div>'
       widget.innerHTML = html
     } catch (e) {
       widget.innerHTML = '<div class="ar-error">Could not load stories</div>'

@@ -1,8 +1,8 @@
 {
-  "name": "actually-relevant-server",
+  "name": "impactoindigena-news-server",
   "version": "0.1.0",
   "type": "module",
-  "description": "Backend API for Actually Relevant news curation platform",
+  "description": "Backend API for Impacto Indígena news curation platform",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
