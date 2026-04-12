@@ -20,28 +20,19 @@ export interface RouteConfig {
 export const routes: RouteConfig[] = [
   { path: '/', priority: 1.0, changefreq: 'daily' },
   { path: '/issues', priority: 0.8, changefreq: 'monthly' },
-  { path: '/issues/existential-threats', priority: 0.8, changefreq: 'weekly' },
-  { path: '/issues/planet-climate', priority: 0.8, changefreq: 'weekly' },
-  { path: '/issues/human-development', priority: 0.8, changefreq: 'weekly' },
-  { path: '/issues/science-technology', priority: 0.8, changefreq: 'weekly' },
+  { path: '/comunidades', priority: 0.8, changefreq: 'weekly' },
   { path: '/methodology', priority: 0.7, changefreq: 'monthly' },
   { path: '/about', priority: 0.7, changefreq: 'monthly' },
+  { path: '/newsletter', priority: 0.6, changefreq: 'monthly' },
+  { path: '/feedback', priority: 0.5, changefreq: 'monthly' },
   { path: '/imprint', priority: 0.5, changefreq: 'yearly' },
   { path: '/privacy', priority: 0.5, changefreq: 'yearly' },
   { path: '/search', priority: 0.3, changefreq: 'daily' },
-  { path: '/developers', priority: 0.5, changefreq: 'monthly' },
-  { path: '/widgets', priority: 0.5, changefreq: 'monthly' },
-  { path: '/compare', priority: 0.7, changefreq: 'monthly' },
-  { path: '/no-ads-no-tracking', priority: 0.7, changefreq: 'monthly' },
-  { path: '/news-fatigue', priority: 0.7, changefreq: 'monthly' },
-  { path: '/free-api', priority: 0.7, changefreq: 'monthly' },
-  { path: '/newsletter', priority: 0.7, changefreq: 'monthly' },
-  { path: '/feedback', priority: 0.5, changefreq: 'yearly' },
-  { path: '/thank-you', priority: 0.3, changefreq: 'yearly' },
-  { path: '/saved', priority: 0.2, changefreq: 'yearly' },
+  { path: '/saved', priority: 0.3, changefreq: 'daily' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
-  // Dynamic story routes are added at build time by generate-sitemap.ts
-  // which fetches published story slugs from the API
+  { path: '/thank-you', priority: 0.2, changefreq: 'yearly' },
+  // Dynamic routes (issues, communities, stories) added at build time
+  // by vite.config.ts (prerender) and scripts/generate-sitemap.ts
 ]
 
 export const routePaths = routes.map((r) => r.path)

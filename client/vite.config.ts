@@ -56,9 +56,45 @@ async function fetchStorySlugs(): Promise<string[]> {
   return slugs
 }
 
+async function fetchIssueSlugs(): Promise<string[]> {
+  const apiUrl = process.env.VITE_API_URL
+  if (!apiUrl) return []
+
+  try {
+    const res = await fetch(`${apiUrl}/api/issues`)
+    if (!res.ok) return []
+    const issues = await res.json() as { slug: string }[]
+    console.log(`[prerender] fetched ${issues.length} issue slugs`)
+    return issues.map((i) => `/issues/${i.slug}`)
+  } catch (err) {
+    console.warn('[prerender] could not fetch issue slugs, skipping issue prerender:', err)
+    return []
+  }
+}
+
+async function fetchCommunitySlugs(): Promise<string[]> {
+  const apiUrl = process.env.VITE_API_URL
+  if (!apiUrl) return []
+
+  try {
+    const res = await fetch(`${apiUrl}/api/communities`)
+    if (!res.ok) return []
+    const communities = await res.json() as { slug: string }[]
+    console.log(`[prerender] fetched ${communities.length} community slugs`)
+    return communities.map((c) => `/comunidad/${c.slug}`)
+  } catch (err) {
+    console.warn('[prerender] could not fetch community slugs, skipping community prerender:', err)
+    return []
+  }
+}
+
 export default defineConfig(async () => {
-  const storySlugs = await fetchStorySlugs()
-  const allRoutes = [...routePaths, ...storySlugs]
+  const [storySlugs, issueSlugs, communitySlugs] = await Promise.all([
+    fetchStorySlugs(),
+    fetchIssueSlugs(),
+    fetchCommunitySlugs(),
+  ])
+  const allRoutes = [...routePaths, ...issueSlugs, ...communitySlugs, ...storySlugs]
 
   return {
     resolve: {

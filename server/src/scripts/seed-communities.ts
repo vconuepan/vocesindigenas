@@ -9,7 +9,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 const prisma = new PrismaClient()
 
 const ISSUES = {
-  chileIndigena:        'fdf9fd2f-f172-4b73-979a-8b389d506416',
+  chileIndigena:        'issue-chile-005',
   derechosIndigenas:    'issue-ddhh-002',
   cambioClimatico:      'issue-clima-001',
   reconciliacionYPaz:   'issue-paz-004',
