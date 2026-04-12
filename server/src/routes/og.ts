@@ -94,6 +94,11 @@ router.get('/stories/:slug', async (req, res) => {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=3600')
+    // Override helmet's restrictive CSP — this page is served to browsers via
+    // Render rewrite from impactoindigena.news, so the React app needs to
+    // connect to the backend and load assets from impactoindigena.news.
+    res.removeHeader('Content-Security-Policy')
+    res.removeHeader('Cross-Origin-Resource-Policy')
     res.send(html)
   } catch (err) {
     log.error({ err, slug }, 'og proxy error')
