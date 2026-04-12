@@ -8,6 +8,12 @@ const log = createLogger('og-proxy')
 const SITE_URL = 'https://impactoindigena.news'
 const FALLBACK_IMAGE = `${SITE_URL}/images/og-image.png`
 
+const BOT_UA = /bot|crawler|spider|crawling|facebookexternalhit|linkedinbot|twitterbot|slackbot|telegrambot|whatsapp|discordbot|curl|wget|python|java\/|go-http/i
+
+function isBotRequest(req: import('express').Request): boolean {
+  return BOT_UA.test(req.headers['user-agent'] || '')
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -37,12 +43,20 @@ router.get('/stories/:slug', async (req, res) => {
       return
     }
 
+    // Regular browsers get a fast HTTP redirect to the React app.
+    // Only serve OG HTML to crawlers (LinkedIn, Twitter, etc.).
+    const storyUrl = `${SITE_URL}/stories/${story.slug}`
+    if (!isBotRequest(req)) {
+      res.redirect(302, `${storyUrl}?_r=1`)
+      return
+    }
+
     const title = escapeHtml(story.title || story.slug || '')
     const titleLabel = story.titleLabel ? escapeHtml(story.titleLabel) : null
     const fullTitle = titleLabel ? `${titleLabel}: ${title}` : title
     const description = escapeHtml(story.summary?.slice(0, 200) || fullTitle)
     const image = story.imageUrl || FALLBACK_IMAGE
-    const url = `${SITE_URL}/stories/${story.slug}`
+    const url = storyUrl
 
     // Fetch the frontend shell to preserve React scripts
     let shell = ''
@@ -68,8 +82,7 @@ router.get('/stories/:slug', async (req, res) => {
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${fullTitle}" />
   <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${image}" />
-  <script>if(!location.search.includes('_r=1')){location.replace(location.href+(location.search?'&':'?')+'_r=1')}</script>`
+  <meta name="twitter:image" content="${image}" />`
 
       // Inject OG tags and clear prerendered root content (avoids React hydration
       // mismatch when the shell was prerendered as a different page, e.g. homepage)
