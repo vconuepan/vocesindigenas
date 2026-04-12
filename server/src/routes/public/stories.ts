@@ -59,6 +59,15 @@ router.get('/:slug/related', async (req, res) => {
   }
 })
 
+// Temporary diagnostic — remove after debugging
+router.get('/:slug/debug-status', async (req, res) => {
+  const raw = await prisma.story.findUnique({
+    where: { slug: req.params.slug },
+    select: { id: true, slug: true, status: true, title: true, feedId: true },
+  })
+  res.json(raw ?? { notFound: true })
+})
+
 router.get('/:slug', async (req, res) => {
   try {
     const story = await storyService.getPublishedStoryBySlug(req.params.slug)
