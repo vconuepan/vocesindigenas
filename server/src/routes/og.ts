@@ -68,7 +68,8 @@ router.get('/stories/:slug', async (req, res) => {
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${fullTitle}" />
   <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${image}" />`
+  <meta name="twitter:image" content="${image}" />
+  <script>if(!location.search.includes('_r=1')){location.replace(location.href+(location.search?'&':'?')+'_r=1')}</script>`
 
       // Inject OG tags and clear prerendered root content (avoids React hydration
       // mismatch when the shell was prerendered as a different page, e.g. homepage)
