@@ -207,6 +207,13 @@ r2: {
       enabled: process.env.INSTAGRAM_AUTO_POST_ENABLED === 'true',
     },
   },
+  linkedin: {
+    accessToken: process.env.LINKEDIN_ACCESS_TOKEN || '',
+    authorUrn: process.env.LINKEDIN_AUTHOR_URN || '',
+    autoPost: {
+      enabled: process.env.LINKEDIN_AUTO_POST_ENABLED === 'true',
+    },
+  },
   podcast: {
     autoGenerate: {
       enabled: process.env.PODCAST_AUTO_GENERATE_ENABLED === 'true',

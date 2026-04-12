@@ -87,6 +87,7 @@ model Story {
   mastodonPosts          MastodonPost[]
   twitterPosts           TwitterPost[]
   instagramPosts         InstagramPost[]
+  linkedinPosts          LinkedInPost[]
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
 
@@ -331,6 +332,26 @@ model InstagramPost {
   @@index([publishedAt])
   @@map("instagram_posts")
 }
+// --- LinkedIn Tables ---
+
+model LinkedInPost {
+  id             String    @id @default(uuid())
+  storyId        String    @unique @map("story_id")
+  story          Story     @relation(fields: [storyId], references: [id])
+  linkedinPostId String?   @unique @map("linkedin_post_id")
+  postUrl        String?   @map("post_url")
+  status         String    @default("draft")
+  postText       String    @map("post_text")
+  error          String?
+  publishedAt    DateTime? @map("published_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([publishedAt])
+  @@map("linkedin_posts")
+}
+
 // --- Subscription Tables ---
 
 model PendingSubscription {

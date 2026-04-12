@@ -100,10 +100,11 @@ export interface Story {
     _count: { stories: number }
     stories: { id: string; title: string | null; sourceTitle: string; status: StoryStatus }[]
   } | null
-  _count?: { blueskyPosts: number; mastodonPosts: number; instagramPosts: number }
+  _count?: { blueskyPosts: number; mastodonPosts: number; instagramPosts: number; linkedinPosts: number }
   blueskyPosts?: { postUri: string | null }[]
   mastodonPosts?: { statusUrl: string | null }[]
   instagramPosts?: { permalink: string | null }[]
+  linkedinPosts?: { postUrl: string | null }[]
 }
 
 export interface PublicStory extends Story {
@@ -364,6 +365,30 @@ export interface InstagramPost {
   caption: string
   imageUrl: string
   slideUrls: string[]
+  error: string | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+  story?: {
+    title: string | null
+    titleLabel: string | null
+    sourceUrl: string
+    slug: string | null
+    issue?: { name: string } | null
+    relevance?: number | null
+    feed: { title: string; displayTitle: string | null }
+  }
+}
+
+export type LinkedInPostStatus = 'draft' | 'published' | 'failed'
+
+export interface LinkedInPost {
+  id: string
+  storyId: string
+  linkedinPostId: string | null
+  postUrl: string | null
+  status: LinkedInPostStatus
+  postText: string
   error: string | null
   publishedAt: string | null
   createdAt: string

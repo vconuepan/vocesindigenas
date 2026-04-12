@@ -91,6 +91,14 @@ services:
       - key: INSTAGRAM_AUTO_POST_ENABLED
         value: "false"
 
+      # LinkedIn (opcional)
+      - key: LINKEDIN_ACCESS_TOKEN
+        sync: false
+      - key: LINKEDIN_AUTHOR_URN
+        sync: false
+      - key: LINKEDIN_AUTO_POST_ENABLED
+        value: "false"
+
       # Podcast
       - key: PODCAST_AUTO_GENERATE_ENABLED
         value: "false"

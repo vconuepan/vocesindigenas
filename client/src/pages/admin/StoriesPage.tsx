@@ -26,7 +26,8 @@ import type { BlueskyDraft } from '../../components/admin/BlueskyDraftPanel'
 import { MastodonDraftPanel } from '../../components/admin/MastodonDraftPanel'
 import type { MastodonDraft } from '../../components/admin/MastodonDraftPanel'
 import { InstagramDraftPanel } from '../../components/admin/InstagramDraftPanel'
-import type { InstagramPost } from '@shared/types'
+import { LinkedInDraftPanel } from '../../components/admin/LinkedInDraftPanel'
+import type { InstagramPost, LinkedInPost } from '@shared/types'
 import { useToast } from '../../components/ui/Toast'
 
 const DEFAULT_PAGE_SIZE = 25
@@ -81,6 +82,9 @@ export default function StoriesPage() {
   const [instagramDraft, setInstagramDraft] = useState<InstagramPost | null>(null)
   const [instagramPanelOpen, setInstagramPanelOpen] = useState(false)
   const [instagramPublishing, setInstagramPublishing] = useState(false)
+  const [linkedInDraft, setLinkedInDraft] = useState<LinkedInPost | null>(null)
+  const [linkedInPanelOpen, setLinkedInPanelOpen] = useState(false)
+  const [linkedInPublishing, setLinkedInPublishing] = useState(false)
 
   const bulkUpdate = useBulkUpdateStatus()
   const deleteStory = useDeleteStory()
@@ -397,6 +401,17 @@ export default function StoriesPage() {
       })
   }, [toast])
 
+  const handleLinkedInGenerate = useCallback(async (storyId: string) => {
+    setLinkedInPanelOpen(true)
+    setLinkedInDraft(null)
+    adminApi.linkedin.generateDraft(storyId)
+      .then((draft) => setLinkedInDraft(draft as LinkedInPost))
+      .catch((err) => {
+        toast('error', err instanceof Error ? err.message : 'Failed to generate LinkedIn draft')
+        setLinkedInPanelOpen(false)
+      })
+  }, [toast])
+
   const confirmLoading = bulkUpdate.isPending || deleteStory.isPending
 
   return (
@@ -494,6 +509,7 @@ export default function StoriesPage() {
             })
         }}
         onInstagramGenerate={handleInstagramGenerate}
+        onLinkedInGenerate={handleLinkedInGenerate}
       />
 
       <CrawlUrlForm open={crawlOpen} onClose={() => setCrawlOpen(false)} />
@@ -555,6 +571,33 @@ export default function StoriesPage() {
         }}
         onDelete={async (postId) => {
           await adminApi.instagram.deletePost(postId)
+        }}
+      />
+
+      <LinkedInDraftPanel
+        open={linkedInPanelOpen}
+        onClose={() => { setLinkedInPanelOpen(false); setLinkedInDraft(null) }}
+        draft={linkedInDraft}
+        publishing={linkedInPublishing}
+        onPublish={async (postId) => {
+          setLinkedInPublishing(true)
+          try {
+            await adminApi.linkedin.publishPost(postId)
+            toast('success', 'Posted to LinkedIn')
+            setLinkedInPanelOpen(false)
+            setLinkedInDraft(null)
+            invalidateStories()
+          } catch (err) {
+            toast('error', err instanceof Error ? err.message : 'Failed to publish')
+          } finally {
+            setLinkedInPublishing(false)
+          }
+        }}
+        onUpdate={async (postId, postText) => {
+          await adminApi.linkedin.updateDraft(postId, postText)
+        }}
+        onDelete={async (postId) => {
+          await adminApi.linkedin.deletePost(postId)
         }}
       />
 

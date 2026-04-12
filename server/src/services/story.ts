@@ -159,7 +159,7 @@ const ADMIN_LIST_SELECT = {
   createdAt: true,
   updatedAt: true,
   feed: { select: { id: true, title: true, issue: { select: { id: true, name: true, slug: true } } } },
-  _count: { select: { blueskyPosts: true, mastodonPosts: true, instagramPosts: true } },
+  _count: { select: { blueskyPosts: true, mastodonPosts: true, instagramPosts: true, linkedinPosts: true } },
 } as const
 
 export async function getStories(filters: StoryFilters) {
@@ -232,7 +232,7 @@ export async function getStoryById(id: string) {
           },
         },
       },
-      _count: { select: { blueskyPosts: true, mastodonPosts: true, instagramPosts: true } },
+      _count: { select: { blueskyPosts: true, mastodonPosts: true, instagramPosts: true, linkedinPosts: true } },
       blueskyPosts: {
         where: { status: 'published' },
         select: { postUri: true },
@@ -247,6 +247,11 @@ export async function getStoryById(id: string) {
       },
       instagramPosts: {
         select: { permalink: true },
+        take: 1,
+        orderBy: { createdAt: 'desc' },
+      },
+      linkedinPosts: {
+        select: { postUrl: true },
         take: 1,
         orderBy: { createdAt: 'desc' },
       },

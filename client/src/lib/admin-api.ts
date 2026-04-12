@@ -19,6 +19,7 @@ import type {
   MastodonPost,
   MastodonFeedResponse,
   InstagramPost,
+  LinkedInPost,
 } from '@shared/types'
 
 export interface FeedbackItem {
@@ -403,6 +404,21 @@ export const adminApi = {
       request<InstagramPost>(`/instagram/posts/${id}/publish`, { method: 'POST' }),
     deletePost: (id: string) =>
       request<void>(`/instagram/posts/${id}`, { method: 'DELETE' }),
+  },
+
+  // LinkedIn
+  linkedin: {
+    listPosts: (params?: { status?: string; page?: number; limit?: number }) =>
+      request<{ posts: LinkedInPost[]; total: number; page: number; limit: number }>(`/linkedin/posts${toQueryString((params || {}) as Record<string, unknown>)}`),
+    getPost: (id: string) => request<LinkedInPost>(`/linkedin/posts/${id}`),
+    generateDraft: (storyId: string) =>
+      request<LinkedInPost>('/linkedin/posts/generate', { method: 'POST', body: JSON.stringify({ storyId }) }),
+    updateDraft: (id: string, postText: string) =>
+      request<LinkedInPost>(`/linkedin/posts/${id}`, { method: 'PUT', body: JSON.stringify({ postText }) }),
+    publishPost: (id: string) =>
+      request<LinkedInPost>(`/linkedin/posts/${id}/publish`, { method: 'POST' }),
+    deletePost: (id: string) =>
+      request<void>(`/linkedin/posts/${id}`, { method: 'DELETE' }),
   },
 
   // Feedback

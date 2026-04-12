@@ -11,6 +11,7 @@ import clusterRouter from './clusters.js'
 import blueskyRouter from './bluesky.js'
 import mastodonRouter from './mastodon.js'
 import instagramRouter from './instagram.js'
+import linkedinRouter from './linkedin.js'
 import feedbackRouter from './feedback.js'
 
 const router = Router()
@@ -29,6 +30,7 @@ router.use('/clusters', clusterRouter)
 router.use('/bluesky', blueskyRouter)
 router.use('/mastodon', mastodonRouter)
 router.use('/instagram', instagramRouter)
+router.use('/linkedin', linkedinRouter)
 router.use('/feedback', feedbackRouter)
 
 export default router

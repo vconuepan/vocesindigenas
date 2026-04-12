@@ -20,6 +20,7 @@ interface StoryEditFormProps {
   onBlueskyGenerate?: (storyId: string) => void
   onMastodonGenerate?: (storyId: string) => void
   onInstagramGenerate?: (storyId: string) => void
+  onLinkedInGenerate?: (storyId: string) => void
   variant?: 'page' | 'panel'
 }
 
@@ -44,7 +45,7 @@ function buildFormState(story: Story) {
   }
 }
 
-export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMastodonGenerate, onInstagramGenerate, variant = 'page' }: StoryEditFormProps) {
+export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMastodonGenerate, onInstagramGenerate, onLinkedInGenerate, variant = 'page' }: StoryEditFormProps) {
   const [contentExpanded, setContentExpanded] = useState(false)
   const [confirmDissolve, setConfirmDissolve] = useState(false)
   const updateStory = useUpdateStory()
@@ -328,6 +329,34 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
               onClick={() => onInstagramGenerate(story.id)}
             >
               Generate Instagram Post
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* LinkedIn */}
+      {onLinkedInGenerate && story.status === 'published' && (
+        <div className="border-t border-neutral-200 pt-4">
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">LinkedIn</h3>
+          {(story._count?.linkedinPosts ?? 0) > 0 ? (
+            <p className="text-sm text-neutral-500">
+              This story has been posted to LinkedIn.
+              {story.linkedinPosts?.[0]?.postUrl && (
+                <>
+                  {' '}
+                  <a href={story.linkedinPosts[0].postUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                    View post
+                  </a>
+                </>
+              )}
+            </p>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onLinkedInGenerate(story.id)}
+            >
+              Generate LinkedIn Post
             </Button>
           )}
         </div>
