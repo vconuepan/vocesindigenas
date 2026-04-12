@@ -9,6 +9,12 @@ const mockPrisma = vi.hoisted(() => ({
   story: {
     findMany: vi.fn(),
   },
+  issue: {
+    findMany: vi.fn(),
+  },
+  community: {
+    findMany: vi.fn(),
+  },
   $disconnect: vi.fn(),
 }))
 
@@ -32,6 +38,8 @@ describe('GET /api/sitemap.xml', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     sitemapCache.clear()
+    mockPrisma.issue.findMany.mockResolvedValue([])
+    mockPrisma.community.findMany.mockResolvedValue([])
   })
 
   it('returns valid XML with correct content type', async () => {
@@ -89,8 +97,24 @@ describe('GET /api/sitemap.xml', () => {
     expect(res2.status).toBe(200)
     expect(res2.text).toBe(res1.text)
 
-    // DB was only called once
+    // DB was only called once (cache served second request)
     expect(mockPrisma.story.findMany).toHaveBeenCalledTimes(1)
+    expect(mockPrisma.issue.findMany).toHaveBeenCalledTimes(1)
+    expect(mockPrisma.community.findMany).toHaveBeenCalledTimes(1)
+  })
+
+  it('includes issue and community URLs', async () => {
+    mockPrisma.story.findMany.mockResolvedValue([])
+    mockPrisma.issue.findMany.mockResolvedValue([{ slug: 'chile-indigena' }, { slug: 'derechos-indigenas' }])
+    mockPrisma.community.findMany.mockResolvedValue([{ slug: 'mapuche' }, { slug: 'amazonia' }])
+
+    const res = await request(app).get('/api/sitemap.xml')
+
+    expect(res.text).toContain('<loc>https://impactoindigena.news/issues/chile-indigena</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/issues/derechos-indigenas</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/comunidad/mapuche</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/comunidad/amazonia</loc>')
+    expect(res.text).toContain('<loc>https://impactoindigena.news/comunidades</loc>')
   })
 
   it('returns 500 on database error', async () => {

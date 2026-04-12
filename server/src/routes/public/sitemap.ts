@@ -20,31 +20,29 @@ type ChangeFreq = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly
 const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[] = [
   { path: '/', priority: 1.0, changefreq: 'daily' },
   { path: '/issues', priority: 0.8, changefreq: 'monthly' },
-  { path: '/issues/existential-threats', priority: 0.8, changefreq: 'weekly' },
-  { path: '/issues/planet-climate', priority: 0.8, changefreq: 'weekly' },
-  { path: '/issues/human-development', priority: 0.8, changefreq: 'weekly' },
-  { path: '/issues/science-technology', priority: 0.8, changefreq: 'weekly' },
+  { path: '/comunidades', priority: 0.8, changefreq: 'weekly' },
   { path: '/methodology', priority: 0.7, changefreq: 'monthly' },
   { path: '/about', priority: 0.7, changefreq: 'monthly' },
+  { path: '/newsletter', priority: 0.6, changefreq: 'monthly' },
+  { path: '/feedback', priority: 0.5, changefreq: 'monthly' },
   { path: '/imprint', priority: 0.5, changefreq: 'yearly' },
   { path: '/privacy', priority: 0.5, changefreq: 'yearly' },
   { path: '/search', priority: 0.3, changefreq: 'daily' },
-  { path: '/developers', priority: 0.5, changefreq: 'monthly' },
-  { path: '/compare', priority: 0.7, changefreq: 'monthly' },
-  { path: '/no-ads-no-tracking', priority: 0.7, changefreq: 'monthly' },
-  { path: '/news-fatigue', priority: 0.7, changefreq: 'monthly' },
-  { path: '/free-api', priority: 0.7, changefreq: 'monthly' },
-  { path: '/stewardship', priority: 0.6, changefreq: 'monthly' },
-  { path: '/widgets', priority: 0.4, changefreq: 'monthly' },
+  { path: '/saved', priority: 0.3, changefreq: 'daily' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
-  { path: '/thank-you', priority: 0.3, changefreq: 'yearly' },
+  { path: '/thank-you', priority: 0.2, changefreq: 'yearly' },
 ]
 
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0]
 }
 
-function buildSitemapXml(baseUrl: string, stories: { slug: string; datePublished: Date | null }[]): string {
+function buildSitemapXml(
+  baseUrl: string,
+  stories: { slug: string; datePublished: Date | null }[],
+  issues: { slug: string }[],
+  communities: { slug: string }[],
+): string {
   const staticUrls = STATIC_ROUTES.map(
     (route) => `  <url>
     <loc>${baseUrl}${route.path}</loc>
@@ -52,6 +50,18 @@ function buildSitemapXml(baseUrl: string, stories: { slug: string; datePublished
     <priority>${route.priority.toFixed(1)}</priority>
   </url>`
   )
+
+  const issueUrls = issues.map((issue) => `  <url>
+    <loc>${baseUrl}/issues/${issue.slug}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`)
+
+  const communityUrls = communities.map((c) => `  <url>
+    <loc>${baseUrl}/comunidad/${c.slug}</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>`)
 
   const storyUrls = stories.map((story) => {
     const lastmod = story.datePublished ? `\n    <lastmod>${formatDate(story.datePublished)}</lastmod>` : ''
@@ -64,7 +74,7 @@ function buildSitemapXml(baseUrl: string, stories: { slug: string; datePublished
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[...staticUrls, ...storyUrls].join('\n')}
+${[...staticUrls, ...issueUrls, ...communityUrls, ...storyUrls].join('\n')}
 </urlset>
 `
 }
@@ -72,14 +82,29 @@ ${[...staticUrls, ...storyUrls].join('\n')}
 router.get('/', async (_req, res) => {
   try {
     const xml = await cached(sitemapCache, 'sitemap', async () => {
-      const stories = await prisma.story.findMany({
-        where: { status: 'published', slug: { not: null } },
-        select: { slug: true, datePublished: true },
-        orderBy: { datePublished: 'desc' },
-      })
+      const [stories, issues, communities] = await Promise.all([
+        prisma.story.findMany({
+          where: { status: 'published', slug: { not: null } },
+          select: { slug: true, datePublished: true },
+          orderBy: { datePublished: 'desc' },
+        }),
+        prisma.issue.findMany({
+          select: { slug: true },
+          orderBy: { name: 'asc' },
+        }),
+        prisma.community.findMany({
+          select: { slug: true },
+          orderBy: { name: 'asc' },
+        }),
+      ])
 
-      log.info({ storyCount: stories.length }, 'generated sitemap')
-      return buildSitemapXml(getSiteUrl(), stories as { slug: string; datePublished: Date | null }[])
+      log.info({ storyCount: stories.length, issueCount: issues.length, communityCount: communities.length }, 'generated sitemap')
+      return buildSitemapXml(
+        getSiteUrl(),
+        stories as { slug: string; datePublished: Date | null }[],
+        issues,
+        communities,
+      )
     })
 
     res.set('Content-Type', 'application/xml; charset=utf-8')
