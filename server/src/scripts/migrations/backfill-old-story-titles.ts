@@ -18,7 +18,7 @@ const TEST_MODE = process.argv.includes('--test')
 const CONCURRENCY = 8
 const BATCH_SIZE = 100
 
-// Stories published before this date are considered "old"
+// Source articles published before this date are considered "old"
 const THREE_MONTHS_AGO = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000)
 
 const prisma = new PrismaClient()
@@ -40,12 +40,12 @@ async function rewriteTitle(story: {
   id: string
   title: string | null
   titleLabel: string | null
-  datePublished: Date | null
+  sourceDatePublished: Date | null
 }): Promise<{ id: string; titleLabel: string; title: string }> {
-  const ageMonths = story.datePublished
-    ? Math.floor((Date.now() - story.datePublished.getTime()) / (1000 * 60 * 60 * 24 * 30))
+  const ageMonths = story.sourceDatePublished
+    ? Math.floor((Date.now() - story.sourceDatePublished.getTime()) / (1000 * 60 * 60 * 24 * 30))
     : 0
-  const publishedDate = story.datePublished?.toISOString().slice(0, 10) ?? 'unknown'
+  const publishedDate = story.sourceDatePublished?.toISOString().slice(0, 10) ?? 'unknown'
 
   const result = await structuredLlm.invoke([
     new HumanMessage(
@@ -83,9 +83,9 @@ async function main() {
       where: {
         status: 'published',
         title: { not: null },
-        datePublished: { lt: THREE_MONTHS_AGO },
+        sourceDatePublished: { lt: THREE_MONTHS_AGO },
       },
-      select: { id: true, title: true, titleLabel: true, datePublished: true },
+      select: { id: true, title: true, titleLabel: true, sourceDatePublished: true },
       take: TEST_MODE ? 5 : BATCH_SIZE,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { datePublished: 'asc' },
@@ -102,7 +102,7 @@ async function main() {
 
           const labelChanged = result.titleLabel !== story.titleLabel
           const titleChanged = result.title !== story.title
-          const date = story.datePublished?.toISOString().slice(0, 10) ?? '?'
+          const date = story.sourceDatePublished?.toISOString().slice(0, 10) ?? '?'
           console.log(`\n  [${date}] Original:  "${story.title}"`)
           console.log(`           Label:     "${result.titleLabel}"${labelChanged ? ' ← CHANGED' : ''}`)
           console.log(`           Title:     "${result.title}"${titleChanged ? ' ← CHANGED' : ''}`)
@@ -127,7 +127,7 @@ async function main() {
       }
     }
 
-    cursor = stories[stories.length - 1].id
+    cursor = stories[stories.length - 1]?.id
     if (TEST_MODE) break
   }
 

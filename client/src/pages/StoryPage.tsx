@@ -129,7 +129,7 @@ export default function StoryPage() {
   const titleLabel = getTitleLabel(localizedStory)
   const headline = getHeadline(localizedStory)
   const displayTitle = titleLabel ? `${titleLabel}: ${headline}` : headline
-  const ageMonths = story.datePublished ? storyAgeMonths(story.datePublished) : 0
+  const ageMonths = story.sourceDatePublished ? storyAgeMonths(story.sourceDatePublished) : 0
   const isOld = ageMonths >= 3
   const hasSourceDate = !!story.sourceDatePublished
   const displayDate = story.datePublished || story.dateCrawled

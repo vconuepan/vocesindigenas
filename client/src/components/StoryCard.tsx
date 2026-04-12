@@ -17,7 +17,7 @@ interface StoryCardProps {
 
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
   const dateStr = story.datePublished ? formatDate(story.datePublished) : null
-  const ageMonths = story.datePublished ? storyAgeMonths(story.datePublished) : 0
+  const ageMonths = story.sourceDatePublished ? storyAgeMonths(story.sourceDatePublished) : 0
   const isOld = ageMonths >= 3
   return (
     <div className={`flex flex-wrap items-center gap-x-2 text-neutral-500 ${size === 'xs' ? 'text-xs' : 'text-sm'}`}>
