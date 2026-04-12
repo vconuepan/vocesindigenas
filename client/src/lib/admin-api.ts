@@ -22,6 +22,34 @@ import type {
   LinkedInPost,
 } from '@shared/types'
 
+export interface CommunityRef {
+  id: string
+  slug: string
+  name: string
+  type: 'PUEBLO' | 'TERRITORIO' | 'CAUSA'
+}
+
+export interface MemberMembership {
+  joinedAt: string
+  community: CommunityRef
+}
+
+export interface MemberUser {
+  id: string
+  email: string
+  name: string
+  userType: 'ADMIN' | 'EMPRESA' | 'COMUNIDAD_LIDER' | 'VEEDOR'
+  createdAt: string
+  memberships: MemberMembership[]
+}
+
+export interface MembersSummary {
+  byType: Array<{ userType: string; count: number }>
+  byCommunity: Array<{ community: CommunityRef | undefined; count: number }>
+  totalUsers: number
+  totalMemberships: number
+}
+
 export interface FeedbackItem {
   id: string
   category: 'general' | 'bug' | 'suggestion' | 'other'
@@ -433,6 +461,15 @@ export const adminApi = {
     delete: (id: string) => request<void>(`/feedback/${id}`, { method: 'DELETE' }),
     bulk: (ids: string[], action: string) =>
       request<{ affected: number }>('/feedback/bulk', { method: 'POST', body: JSON.stringify({ ids, action }) }),
+  },
+
+  // Members (community memberships + user registry)
+  members: {
+    list: (params?: { userType?: string; communitySlug?: string; page?: number; pageSize?: number }) =>
+      request<{ data: MemberUser[]; total: number; page: number; pageSize: number; totalPages: number }>(
+        `/members${toQueryString((params || {}) as Record<string, unknown>)}`
+      ),
+    summary: () => request<MembersSummary>('/members/summary'),
   },
 
   // Users

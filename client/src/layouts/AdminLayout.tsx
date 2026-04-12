@@ -13,6 +13,7 @@ import {
   MicrophoneIcon,
   ClockIcon,
   UsersIcon,
+  UserGroupIcon,
   ArrowRightStartOnRectangleIcon,
   Square3Stack3DIcon,
   ArrowTopRightOnSquareIcon,
@@ -40,6 +41,7 @@ const navigation = [
   { name: 'Feedback', href: '/admin/feedback', icon: ChatBubbleLeftEllipsisIcon, badge: true },
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
+  { name: 'Miembros', href: '/admin/members', icon: UserGroupIcon },
 ]
 
 function NavItems({ onClick, unreadFeedbackCount }: { onClick?: () => void; unreadFeedbackCount: number }) {
