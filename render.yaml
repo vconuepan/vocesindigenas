@@ -120,6 +120,9 @@ services:
         source: /podcast/feed.xml
         destination: https://vocesindigenas-backend.onrender.com/api/podcast/feed.xml
       - type: rewrite
+        source: /api/*
+        destination: https://vocesindigenas-backend.onrender.com/api/*
+      - type: rewrite
         source: /stories/*
         destination: https://vocesindigenas-backend.onrender.com/og/stories/*
       - type: rewrite
