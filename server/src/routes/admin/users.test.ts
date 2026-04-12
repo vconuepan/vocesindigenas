@@ -112,15 +112,15 @@ describe('Admin Users API', () => {
     })
 
     it('updates a user role', async () => {
-      const updated = { id: 'u1', email: 'a@b.com', name: 'Alice', role: 'viewer', createdAt: new Date(), updatedAt: new Date() }
+      const updated = { id: 'u1', email: 'a@b.com', name: 'Alice', userType: 'VEEDOR', createdAt: new Date(), updatedAt: new Date() }
       mockPrisma.user.update.mockResolvedValue(updated)
 
       const res = await request(app)
         .put('/api/admin/users/u1')
         .set(authHeader())
-        .send({ role: 'viewer' })
+        .send({ userType: 'VEEDOR' })
       expect(res.status).toBe(200)
-      expect(res.body.role).toBe('viewer')
+      expect(res.body.userType).toBe('VEEDOR')
     })
 
     it('returns 400 for empty body', async () => {

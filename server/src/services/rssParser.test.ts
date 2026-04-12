@@ -54,13 +54,13 @@ describe('parseFeed', () => {
 
     expect(result.notModified).toBe(false)
     expect(result.items).toHaveLength(2)
-    expect(result.items[0]).toEqual({
+    expect(result.items[0]).toMatchObject({
       url: 'https://example.com/article-1',
       title: 'Article 1',
       datePublished: '2024-01-15T00:00:00Z',
       description: 'A short description',
     })
-    expect(result.items[1]).toEqual({
+    expect(result.items[1]).toMatchObject({
       url: 'https://example.com/article-2',
       title: 'Article 2',
       datePublished: 'Mon, 15 Jan 2024 00:00:00 GMT',

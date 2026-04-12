@@ -63,8 +63,9 @@ podcastRouter.put('/:id', async (req, res) => {
       },
     })
     res.json(podcast)
-  } catch (err) {
+  } catch (err: any) {
     log.error({ err }, 'failed to update podcast')
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'Podcast not found' })
     res.status(500).json({ error: 'Failed to update podcast' })
   }
 })
@@ -72,6 +73,8 @@ podcastRouter.put('/:id', async (req, res) => {
 // POST /admin/podcasts/:id/assign — asignar noticias recientes al episodio
 podcastRouter.post('/:id/assign', async (req, res) => {
   try {
+    const existing = await prisma.podcast.findUnique({ where: { id: req.params.id } })
+    if (!existing) return res.status(404).json({ error: 'Podcast not found' })
     const stories = await prisma.story.findMany({
       where: { status: 'published', summary: { not: null }, relevanceReasons: { not: null } },
       orderBy: [{ relevance: 'desc' }, { datePublished: 'desc' }],
@@ -95,7 +98,8 @@ podcastRouter.post('/:id/generate', async (req, res) => {
   try {
     const existing = await prisma.podcast.findUnique({ where: { id: req.params.id } })
     if (!existing) return res.status(404).json({ error: 'Podcast not found' })
-    const draft = await generateDraft(existing.storyIds.length > 0 ? existing.storyIds : undefined)
+    if (existing.storyIds.length === 0) return res.status(400).json({ error: 'No stories assigned to podcast' })
+    const draft = await generateDraft(existing.storyIds)
     // Copy script/title to existing podcast instead of creating a new one
     const updated = await prisma.podcast.update({
       where: { id: req.params.id },
@@ -143,9 +147,10 @@ podcastRouter.post('/:id/publish', async (req, res) => {
 podcastRouter.delete('/:id', async (req, res) => {
   try {
     await prisma.podcast.delete({ where: { id: req.params.id } })
-    res.json({ success: true })
-  } catch (err) {
+    res.status(204).send()
+  } catch (err: any) {
     log.error({ err }, 'failed to delete podcast')
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'Podcast not found' })
     res.status(500).json({ error: 'Failed to delete podcast' })
   }
 })

@@ -59,8 +59,8 @@ describe('generateHtmlContent', () => {
       const slug = opts.issueSlug || 'general-news'
       lines.push(`# ${opts.issue} {${slug}}`, '')
     }
-    const linkParts = [opts.publisher, `[original article](${opts.url})`]
-    if (opts.relevanceUrl) linkParts.push(`[relevance analysis](${opts.relevanceUrl})`)
+    const linkParts = [opts.publisher, `[artículo original](${opts.url})`]
+    if (opts.relevanceUrl) linkParts.push(`[análisis de relevancia](${opts.relevanceUrl})`)
     const links = linkParts.join(' · ')
     lines.push(
       `## ${opts.title}`,

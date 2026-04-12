@@ -95,6 +95,7 @@ export function sampleUser(overrides: Record<string, any> = {}) {
     email: 'admin@test.com',
     name: 'Test Admin',
     role: 'admin',
+    userType: 'ADMIN',
     passwordHash: '$2a$12$fakehashfortest',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),

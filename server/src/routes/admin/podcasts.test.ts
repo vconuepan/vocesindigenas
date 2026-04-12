@@ -38,13 +38,19 @@ vi.mock('../../services/llm.js', () => ({
   rateLimitDelay: vi.fn().mockResolvedValue(undefined),
 }))
 
+const mockGenerateDraft = vi.hoisted(() => vi.fn())
+vi.mock('../../services/podcast.js', () => ({
+  generateDraft: mockGenerateDraft,
+  publishPodcast: vi.fn(),
+}))
+
 process.env.PUBLIC_API_KEY = TEST_API_KEY
 
 const { default: app } = await import('../../app.js')
 
 describe('Admin Podcasts API', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   describe('GET /api/admin/podcasts', () => {
@@ -100,7 +106,9 @@ describe('Admin Podcasts API', () => {
 
   describe('POST /api/admin/podcasts', () => {
     it('creates a new podcast', async () => {
-      mockPrisma.podcast.create.mockResolvedValue(samplePodcast())
+      const draft = samplePodcast()
+      mockGenerateDraft.mockResolvedValue({ id: 'podcast-1' })
+      mockPrisma.podcast.findUnique.mockResolvedValue(draft)
 
       const res = await request(app)
         .post('/api/admin/podcasts')
@@ -110,12 +118,14 @@ describe('Admin Podcasts API', () => {
       expect(res.body.title).toBe('Episode #1')
     })
 
-    it('returns 400 for missing title', async () => {
+    it('returns 500 when draft generation fails', async () => {
+      mockGenerateDraft.mockRejectedValue(new Error('No stories available for podcast'))
+
       const res = await request(app)
         .post('/api/admin/podcasts')
         .set(authHeader())
         .send({})
-      expect(res.status).toBe(400)
+      expect(res.status).toBe(500)
     })
   })
 
@@ -193,18 +203,14 @@ describe('Admin Podcasts API', () => {
   describe('POST /api/admin/podcasts/:id/generate', () => {
     it('generates podcast script', async () => {
       const podcast = samplePodcast({ storyIds: ['story-1'] })
-      const story = sampleStory({
-        status: 'published',
-        summary: 'Test summary',
-        relevanceReasons: 'Test reasons',
-        antifactors: 'Test antifactors',
-        feed: { title: 'BBC', issue: { name: 'AI & Technology' } },
-      })
-      mockPrisma.podcast.findUnique.mockResolvedValue(podcast)
-      mockPrisma.story.findMany.mockResolvedValue([story])
-      mockPrisma.podcast.update.mockResolvedValue(
-        samplePodcast({ script: 'Generated script' }),
-      )
+      const draftPodcast = samplePodcast({ id: 'draft-1', title: 'Generated Title', script: 'Generated script' })
+      mockPrisma.podcast.findUnique
+        .mockResolvedValueOnce(podcast)       // initial existence check
+        .mockResolvedValueOnce(draftPodcast)  // title lookup
+        .mockResolvedValueOnce(draftPodcast)  // script lookup
+      mockGenerateDraft.mockResolvedValue({ id: 'draft-1' })
+      mockPrisma.podcast.update.mockResolvedValue(samplePodcast({ script: 'Generated script' }))
+      mockPrisma.podcast.delete.mockResolvedValue(draftPodcast)
 
       const res = await request(app)
         .post('/api/admin/podcasts/podcast-1/generate')

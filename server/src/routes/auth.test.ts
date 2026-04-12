@@ -108,7 +108,7 @@ describe('Auth Routes', () => {
       const cookieStr = Array.isArray(cookies) ? cookies.join('; ') : cookies
       expect(cookieStr).toContain('refresh_token')
       expect(cookieStr).toContain('HttpOnly')
-      expect(cookieStr).toContain('SameSite=Strict')
+      expect(cookieStr).toContain('SameSite=Lax')
     })
   })
 

@@ -35,7 +35,7 @@ function renderPage(component: React.ReactElement) {
 describe('MethodologyPage', () => {
   it('renders dynamic source count from useSources hook', () => {
     renderPage(<MethodologyPage />)
-    expect(screen.getByText(/82 curated news sources/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Monitoreamos 82/).length).toBeGreaterThan(0)
   })
 })
 

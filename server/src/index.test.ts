@@ -45,6 +45,15 @@ vi.mock('./lib/taskRegistry.js', () => ({
   },
 }))
 vi.mock('./app.js', () => ({ default: mockApp }))
+vi.mock('./services/auth.js', () => ({
+  cleanupExpiredTokens: vi.fn().mockResolvedValue(undefined),
+  generateMemberToken: vi.fn().mockReturnValue('mock-member-token'),
+}))
+
+// Set required env vars before importing index.ts (it validates them at startup)
+process.env.JWT_SECRET = 'test-jwt-secret-that-is-at-least-32-chars-long' // gitleaks:allow
+process.env.OPENAI_API_KEY = 'test-openai-api-key-for-unit-tests'
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
 
 // Import after mocks are set up
 const indexModule = await import('./index.js')

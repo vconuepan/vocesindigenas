@@ -5,6 +5,24 @@ import { MemoryRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import SearchPage from './SearchPage'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) => {
+      const map: Record<string, string> = {
+        'search.label': 'Search',
+        'search.empty': 'Enter a term to search for stories.',
+        'search.resultsFor': `Results for "${opts?.q}"`,
+        'search.results_other': `${opts?.count} results`,
+        'search.results_one': '1 result',
+        'search.noResults': `No results found for "${opts?.q}".`,
+        'search.backToHome': '← Back to home',
+      }
+      return map[key] ?? key
+    },
+  }),
+  Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
+}))
+
 vi.mock('../lib/api', () => ({
   publicApi: {
     stories: {
@@ -55,6 +73,6 @@ describe('SearchPage', () => {
 
   it('shows prompt when no query provided', async () => {
     renderSearchPage('/search')
-    expect(await screen.findByText('Enter a search term to find stories.')).toBeTruthy()
+    expect(await screen.findByText('Enter a term to search for stories.')).toBeTruthy()
   })
 })

@@ -36,7 +36,8 @@ describe('buildPreassessPrompt', () => {
   it('includes rating guidelines section', () => {
     const stories = [{ id: 's1', title: 'Test', content: 'Content' }]
     const prompt = buildPreassessPrompt(stories, issues)
-    expect(prompt).toContain('<RATING GUIDELINES>')
+    // Prompt uses Spanish tag name
+    expect(prompt).toContain('<CRITERIOS DE CALIFICACION>')
   })
 
   it('does not include issue-specific guidelines', () => {
@@ -183,14 +184,16 @@ describe('buildSelectPrompt', () => {
 
   it('includes selection count in goal', () => {
     const prompt = buildSelectPrompt(stories, 1)
-    expect(prompt).toContain('1 articles from the 2 candidates')
+    // Prompt uses Spanish
+    expect(prompt).toContain('1 artículos de los 2 candidatos')
   })
 
   it('uses XML scaffolding structure', () => {
     const prompt = buildSelectPrompt(stories, 1)
     expect(prompt).toContain('<ROLE>')
     expect(prompt).toContain('<GOAL>')
-    expect(prompt).toContain('<SELECTION_CRITERIA>')
+    // Spanish tag name
+    expect(prompt).toContain('<CRITERIOS_DE_SELECCION>')
   })
 
   it('escapes XML characters in content', () => {

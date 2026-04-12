@@ -11,6 +11,31 @@ vi.mock('../lib/api', () => ({
   },
 }))
 
+vi.mock('../i18n', () => ({
+  default: { language: 'en' },
+}))
+
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key: string) => {
+      const map: Record<string, string> = {
+        'subscribe.namePlaceholder': 'Name (optional)',
+        'subscribe.nameLabel': 'Name (optional)',
+        'subscribe.emailPlaceholder': 'your@email.com',
+        'subscribe.emailLabel': 'Email address',
+        'subscribe.submit': 'Subscribe',
+        'subscribe.submitting': 'Subscribing...',
+        'subscribe.successTitle': 'Check your email',
+        'subscribe.successMessage': 'We sent a confirmation link to {{email}}. Click the link to start receiving our weekly newsletter.',
+        'subscribe.done': 'Done',
+        'subscribe.error': 'Something went wrong. Please try again.',
+      }
+      return map[key] ?? key
+    },
+  }),
+}))
+
 describe('SubscribeForm', () => {
   beforeEach(() => {
     mockSubscribe.mockReset()
@@ -19,8 +44,8 @@ describe('SubscribeForm', () => {
   it('renders the form with first name and email fields', () => {
     render(<SubscribeForm idPrefix="test" />)
 
-    expect(screen.getByPlaceholderText('First name (optional)')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Name (optional)')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('your@email.com')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /subscribe/i })).toBeInTheDocument()
   })
 
@@ -30,13 +55,13 @@ describe('SubscribeForm', () => {
 
     render(<SubscribeForm idPrefix="test" />)
 
-    await user.type(screen.getByPlaceholderText('you@example.com'), 'hello@example.com')
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'hello@example.com')
     await user.click(screen.getByRole('button', { name: /subscribe/i }))
 
     await waitFor(() => {
       expect(screen.getByText(/check your email/i)).toBeInTheDocument()
     })
-    expect(mockSubscribe).toHaveBeenCalledWith({ email: 'hello@example.com' })
+    expect(mockSubscribe).toHaveBeenCalledWith({ email: 'hello@example.com', language: 'en' })
   })
 
   it('shows error message on failure', async () => {
@@ -45,7 +70,7 @@ describe('SubscribeForm', () => {
 
     render(<SubscribeForm idPrefix="test" />)
 
-    await user.type(screen.getByPlaceholderText('you@example.com'), 'bad@example.com')
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'bad@example.com')
     await user.click(screen.getByRole('button', { name: /subscribe/i }))
 
     await waitFor(() => {
@@ -59,7 +84,7 @@ describe('SubscribeForm', () => {
 
     render(<SubscribeForm idPrefix="test" />)
 
-    await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /subscribe/i }))
 
     await waitFor(() => {
@@ -74,7 +99,7 @@ describe('SubscribeForm', () => {
 
     render(<SubscribeForm idPrefix="test" onSuccess={onSuccess} />)
 
-    await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /subscribe/i }))
 
     await waitFor(() => {
@@ -103,14 +128,15 @@ describe('SubscribeForm', () => {
 
     render(<SubscribeForm idPrefix="test" />)
 
-    await user.type(screen.getByPlaceholderText('First name (optional)'), 'Alice')
-    await user.type(screen.getByPlaceholderText('you@example.com'), 'alice@example.com')
+    await user.type(screen.getByPlaceholderText('Name (optional)'), 'Alice')
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@example.com')
     await user.click(screen.getByRole('button', { name: /subscribe/i }))
 
     await waitFor(() => {
       expect(mockSubscribe).toHaveBeenCalledWith({
         email: 'alice@example.com',
         firstName: 'Alice',
+        language: 'en',
       })
     })
   })
@@ -121,7 +147,7 @@ describe('SubscribeForm', () => {
 
     render(<SubscribeForm idPrefix="test" />)
 
-    await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /subscribe/i }))
 
     await waitFor(() => {
