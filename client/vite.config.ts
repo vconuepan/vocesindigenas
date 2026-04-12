@@ -29,26 +29,25 @@ function htmlTransformPlugin(): Plugin {
   }
 }
 
+// Only prerender the most recent stories. Older stories are served client-side
+// on first visit. 100 is enough for SEO coverage without blowing the build timeout.
+const PRERENDER_STORY_LIMIT = 100
+
 async function fetchStorySlugs(): Promise<string[]> {
   const apiUrl = process.env.VITE_API_URL
   if (!apiUrl) return []
 
   const slugs: string[] = []
-  let page = 1
-  const pageSize = 100
 
   try {
-    while (true) {
-      const res = await fetch(`${apiUrl}/api/stories?page=${page}&pageSize=${pageSize}`)
-      if (!res.ok) break
-      const data = await res.json() as { data: { slug: string | null }[]; totalPages: number }
+    const res = await fetch(`${apiUrl}/api/stories?page=1&pageSize=${PRERENDER_STORY_LIMIT}`)
+    if (res.ok) {
+      const data = await res.json() as { data: { slug: string | null }[] }
       for (const story of data.data) {
         if (story.slug) slugs.push(`/stories/${story.slug}`)
       }
-      if (page >= data.totalPages) break
-      page++
     }
-    console.log(`[prerender] fetched ${slugs.length} story slugs`)
+    console.log(`[prerender] fetched ${slugs.length} story slugs (capped at ${PRERENDER_STORY_LIMIT})`)
   } catch (err) {
     console.warn('[prerender] could not fetch story slugs, skipping story prerender:', err)
   }
@@ -110,6 +109,7 @@ export default defineConfig(async () => {
         renderer: '@prerenderer/renderer-puppeteer',
         rendererOptions: {
           maxConcurrentRoutes: 4,
+          timeout: 60000,
           renderAfterDocumentEvent: 'render-complete',
           launchOptions: {
             args: [
