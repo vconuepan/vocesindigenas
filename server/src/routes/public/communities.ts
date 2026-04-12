@@ -29,7 +29,16 @@ const PUBLIC_STORY_SELECT = {
   quoteEn: true,
   marketingBlurbEn: true,
   relevanceSummaryEn: true,
+  clusterId: true,
   issue: { select: { name: true, slug: true } },
+  feed: {
+    select: {
+      id: true,
+      title: true,
+      displayTitle: true,
+      issue: { select: { name: true, slug: true } },
+    },
+  },
 }
 
 // GET /api/communities — list all communities
