@@ -70,7 +70,11 @@ router.get('/stories/:slug', async (req, res) => {
   <meta name="twitter:description" content="${description}" />
   <meta name="twitter:image" content="${image}" />`
 
-      html = shell.replace('<head>', `<head>${ogTags}`)
+      // Inject OG tags and clear prerendered root content (avoids React hydration
+      // mismatch when the shell was prerendered as a different page, e.g. homepage)
+      html = shell
+        .replace('<head>', `<head>${ogTags}`)
+        .replace(/<div id="root">[\s\S]*?<\/div>(?=\s*<script)/, '<div id="root"></div>')
     } else {
       // Minimal fallback HTML
       html = `<!DOCTYPE html>
