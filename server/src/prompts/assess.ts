@@ -15,14 +15,16 @@ export function buildAssessPrompt(
     config.assess.contentMaxLength
   );
 
-  const ageMonths = datePublished
-    ? Math.floor((Date.now() - new Date(datePublished).getTime()) / (1000 * 60 * 60 * 24 * 30))
+  const pubDate = datePublished ? new Date(datePublished) : null
+  const pubYear = pubDate ? pubDate.getFullYear() : null
+  const isFrom2020OrLater = pubYear !== null && pubYear >= 2020
+  const ageMonths = pubDate
+    ? Math.floor((Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
     : 0;
-  const pubYear = datePublished ? new Date(datePublished).getFullYear() : null
-  const yearNote = ageMonths >= 12 && pubYear
+  const yearNote = isFrom2020OrLater && ageMonths >= 12 && pubYear
     ? ` Incluye el año ${pubYear} en el título o en la primera oración del resumen para que el lector sepa que es una noticia histórica (ej. "En ${pubYear}, jóvenes quechuas..." o "Jóvenes quechuas estrenaron documental en ${pubYear}").`
     : ''
-  const temporalNote = ageMonths >= 3
+  const temporalNote = isFrom2020OrLater && ageMonths >= 3
     ? `\n<TEMPORAL_CONTEXT>\nEsta noticia fue publicada el ${datePublished?.slice(0, 10)} (hace aproximadamente ${ageMonths} meses). Escribe el título, la etiqueta del título y el resumen en tiempo PASADO (ej. "logró", "aprobó", "firmó", "mostró", "lanzó"). No uses tiempo presente ni futuro para describir hechos que ya ocurrieron.${yearNote}\n</TEMPORAL_CONTEXT>`
     : '';
 
@@ -64,6 +66,10 @@ El esquema de salida define todos los campos requeridos y sus formatos. Los sigu
 Fecha de publicación
 - Formato: YYYY-MM-DD 00:00:00. Usa 1970-01-01 00:00:00 si es desconocida.
 - Busca la fecha en el cuerpo del artículo o en la URL.
+- Si el artículo fue publicado entre el 1 de enero de 2020 y hace menos de 3 meses: usa tiempo presente o pasado reciente según corresponda.
+- Si el artículo fue publicado entre el 1 de enero de 2020 y hace más de 3 meses: escribe el título, la etiqueta del título y el resumen en tiempo PASADO (ej. "logró", "aprobó", "firmó", "mostró", "lanzó"). No uses tiempo presente ni futuro para describir hechos que ya ocurrieron.
+- Si el artículo fue publicado entre el 1 de enero de 2020 y hace más de 12 meses: además del tiempo pasado, incluye el año de publicación en el título o en la primera oración del resumen para que el lector sepa que es una noticia histórica (ej. "En 2023, líderes mapuches firmaron..." o "Líderes mapuches firmaron acuerdo en 2023").
+- Si el artículo fue publicado antes del 1 de enero de 2020: no apliques estas reglas temporales.
 
 Cita clave
 - La cita exacta más importante.

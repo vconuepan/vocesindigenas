@@ -74,7 +74,7 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
   }
 
   const currentYear = new Date().getFullYear()
-  const yearOptions = Array.from({ length: currentYear - 2009 }, (_, i) => {
+  const yearOptions = Array.from({ length: currentYear - 2019 }, (_, i) => {
     const y = currentYear - i
     return { value: String(y), label: String(y) }
   })

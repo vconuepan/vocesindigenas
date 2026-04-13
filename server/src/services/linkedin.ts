@@ -142,6 +142,7 @@ export async function publishPost(postId: string) {
       storyUrl,
       story.title ?? story.sourceTitle,
       story.summary || '',
+      story.imageUrl,
     )
 
     const updated = await prisma.linkedInPost.update({
