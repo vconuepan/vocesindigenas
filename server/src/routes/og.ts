@@ -22,6 +22,14 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
 }
 
+// URLs in og:image content= must NOT have & encoded as &amp; —
+// LinkedIn and many OG parsers use the raw attribute value as a URL
+// without HTML-decoding it, so &amp; breaks the request.
+// Only escape " and < > which could break the attribute context.
+function escapeAttrUrl(url: string): string {
+  return url.replace(/"/g, '%22').replace(/</g, '%3C').replace(/>/g, '%3E')
+}
+
 router.get('/stories/:slug', async (req, res) => {
   const { slug } = req.params
 
@@ -58,7 +66,7 @@ router.get('/stories/:slug', async (req, res) => {
     const titleLabel = story.titleLabel ? escapeHtml(story.titleLabel) : null
     const fullTitle = titleLabel ? `${titleLabel}: ${title}` : title
     const description = escapeHtml(story.summary?.slice(0, 200) || fullTitle)
-    const image = escapeHtml(story.imageUrl || FALLBACK_IMAGE)
+    const image = escapeAttrUrl(story.imageUrl || FALLBACK_IMAGE)
     const url = storyUrl
 
     // Fetch the frontend shell to preserve React scripts
@@ -87,9 +95,16 @@ router.get('/stories/:slug', async (req, res) => {
   <meta name="twitter:description" content="${description}" />
   <meta name="twitter:image" content="${image}" />`
 
-      // Inject OG tags and clear prerendered root content (avoids React hydration
-      // mismatch when the shell was prerendered as a different page, e.g. homepage)
-      html = shell
+      // Strip pre-existing title and OG/twitter tags from the shell so we don't
+      // end up with two sets of meta tags. LinkedIn (and other parsers) get confused
+      // by duplicate og:image tags even when the correct one appears first.
+      const cleanShell = shell
+        .replace(/<title>[^<]*<\/title>/gi, '')
+        .replace(/<meta[^>]+(property=["']og:[^"']*["']|name=["']twitter:[^"']*["'])[^>]*\/?>/gi, '')
+
+      // Inject story OG tags right after <head> and clear prerendered root content
+      // (avoids React hydration mismatch when shell was prerendered as homepage)
+      html = cleanShell
         .replace('<head>', `<head>${ogTags}`)
         .replace(/<div id="root">[\s\S]*?<\/div>(?=\s*<script)/, '<div id="root"></div>')
     } else {
