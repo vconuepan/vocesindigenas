@@ -18,8 +18,12 @@ export function buildAssessPrompt(
   const ageMonths = datePublished
     ? Math.floor((Date.now() - new Date(datePublished).getTime()) / (1000 * 60 * 60 * 24 * 30))
     : 0;
+  const pubYear = datePublished ? new Date(datePublished).getFullYear() : null
+  const yearNote = ageMonths >= 12 && pubYear
+    ? ` Incluye el año ${pubYear} en el título o en la primera oración del resumen para que el lector sepa que es una noticia histórica (ej. "En ${pubYear}, jóvenes quechuas..." o "Jóvenes quechuas estrenaron documental en ${pubYear}").`
+    : ''
   const temporalNote = ageMonths >= 3
-    ? `\n<TEMPORAL_CONTEXT>\nEsta noticia fue publicada el ${datePublished?.slice(0, 10)} (hace aproximadamente ${ageMonths} meses). Escribe el título, la etiqueta del título y el resumen en tiempo PASADO (ej. "logró", "aprobó", "firmó", "mostró", "lanzó"). No uses tiempo presente ni futuro para describir hechos que ya ocurrieron.\n</TEMPORAL_CONTEXT>`
+    ? `\n<TEMPORAL_CONTEXT>\nEsta noticia fue publicada el ${datePublished?.slice(0, 10)} (hace aproximadamente ${ageMonths} meses). Escribe el título, la etiqueta del título y el resumen en tiempo PASADO (ej. "logró", "aprobó", "firmó", "mostró", "lanzó"). No uses tiempo presente ni futuro para describir hechos que ya ocurrieron.${yearNote}\n</TEMPORAL_CONTEXT>`
     : '';
 
   return `<ROLE>
