@@ -274,6 +274,14 @@ export async function assessStory(storyId: string): Promise<void> {
 
   log.info({ storyId, rating: parsed.conservativeRating, title: parsed.relevanceTitle?.slice(0, 60) }, 'assessment complete')
 
+  // Parse publication date returned by the LLM. The sentinel "1970-01-01" means
+  // the LLM couldn't find it — treat as unknown and leave the field untouched.
+  const parsedPubDate = parsed.publicationDate ? new Date(parsed.publicationDate) : null
+  const sourceDatePublished =
+    parsedPubDate && !isNaN(parsedPubDate.getTime()) && parsedPubDate.getFullYear() > 1970
+      ? parsedPubDate
+      : undefined
+
   const analysisData = {
     titleLabel: parsed.titleLabel || null,
     title: parsed.relevanceTitle || null,
@@ -287,6 +295,7 @@ export async function assessStory(storyId: string): Promise<void> {
     relevanceCalculation: parsed.relevanceCalculation.join('\n'),
     relevance: parsed.conservativeRating,
     status: 'analyzed' as const,
+    ...(sourceDatePublished !== undefined && { sourceDatePublished }),
   }
 
   // Generate embedding from analysis results BEFORE saving — throws on failure

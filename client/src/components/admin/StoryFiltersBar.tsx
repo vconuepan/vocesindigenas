@@ -73,6 +73,12 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
     setSearchParams(next)
   }
 
+  const currentYear = new Date().getFullYear()
+  const yearOptions = Array.from({ length: currentYear - 2009 }, (_, i) => {
+    const y = currentYear - i
+    return { value: String(y), label: String(y) }
+  })
+
   // Count active filters (excluding default sort)
   const activeCount = [
     searchParams.get('status'),
@@ -80,6 +86,7 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
     searchParams.get('feedId'),
     searchParams.get('emotionTag'),
     searchParams.get('rating'),
+    searchParams.get('publishYear'),
     searchParams.get('search'),
   ].filter(Boolean).length
 
@@ -171,6 +178,14 @@ export function StoryFiltersBar({ issues, feeds }: StoryFiltersBarProps) {
           value={searchParams.get('emotionTag') || ''}
           onChange={e => setFilter('emotionTag', e.target.value)}
           options={EMOTION_TAGS.map(e => ({ value: e, label: e.charAt(0).toUpperCase() + e.slice(1) }))}
+        />
+        <Select
+          id="filter-year"
+          label="Año publicación"
+          placeholder="Todos los años"
+          value={searchParams.get('publishYear') || ''}
+          onChange={e => setFilter('publishYear', e.target.value)}
+          options={yearOptions}
         />
         <Select
           id="filter-sort"

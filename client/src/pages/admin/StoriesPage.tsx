@@ -40,6 +40,7 @@ function useFiltersFromParams(): StoryFilters {
     feedId: searchParams.get('feedId') || undefined,
     emotionTag: searchParams.get('emotionTag') as StoryFilters['emotionTag'] || undefined,
     rating: searchParams.get('rating') || undefined,
+    publishYear: searchParams.get('publishYear') || undefined,
     sort: (searchParams.get('sort') as StorySort) || 'date_desc',
     page: Number(searchParams.get('page')) || 1,
     pageSize: Number(searchParams.get('pageSize')) || DEFAULT_PAGE_SIZE,

@@ -222,7 +222,6 @@ export default function StoryPage() {
                   {story.feed.displayTitle || story.feed.title}
                   <span className="sr-only"> (opens in new tab)</span>
                 </a>
-                {hasSourceDate && <>, {sourceDateStr}</>}
               </span>
               <span className="text-neutral-300">|</span>
               <a
@@ -232,6 +231,9 @@ export default function StoryPage() {
                 className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
                 {t('storyPage.originalArticle')}
+                {hasSourceDate && (
+                  <span className="text-neutral-400 font-normal"> · {sourceDateStr}</span>
+                )}
                 <span className="sr-only"> {t('storyPage.opensInNewTab')}</span>
               </a>
               <span className="text-neutral-300">|</span>

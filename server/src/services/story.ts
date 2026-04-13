@@ -24,6 +24,7 @@ interface StoryFilters {
   ratingMax?: number
   rating?: string
   emotionTag?: string
+  publishYear?: number
   search?: string
   sort?: string
   page?: number
@@ -110,6 +111,12 @@ function buildWhereClause(filters: StoryFilters): Prisma.StoryWhereInput {
   }
   if (filters.emotionTag) {
     where.emotionTag = filters.emotionTag as EmotionTag
+  }
+  if (filters.publishYear) {
+    where.sourceDatePublished = {
+      gte: new Date(`${filters.publishYear}-01-01`),
+      lt: new Date(`${filters.publishYear + 1}-01-01`),
+    }
   }
   if (filters.search) {
     conditions.push({

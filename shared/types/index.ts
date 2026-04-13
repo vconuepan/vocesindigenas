@@ -455,6 +455,7 @@ export interface StoryFilters {
   ratingMax?: number
   rating?: string
   emotionTag?: EmotionTag
+  publishYear?: string
   sort?: StorySort
   page?: number
   pageSize?: number
