@@ -65,7 +65,7 @@ export async function subscribe({ email, firstName, language = 'es' }: Subscribe
     const contact = await brevo.createContact({
       email,
       subscribed: false,
-      data: { ...(firstName ? { firstName } : {}), pendingConfirmation: true },
+      data: { ...(firstName ? { NOMBRE: firstName } : {}) },
     })
     plunkContactId = contact.id
   } catch (err) {
@@ -177,7 +177,6 @@ export async function confirmSubscription(token: string, email: string) {
     try {
       await brevo.updateContact(pending.plunkContactId, {
         subscribed: true,
-        data: { pendingConfirmation: false },
       })
     } catch (err) {
       log.warn({ err, email }, 'failed to update Brevo contact, marking as confirmed anyway')
