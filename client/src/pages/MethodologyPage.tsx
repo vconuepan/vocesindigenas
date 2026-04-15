@@ -62,8 +62,20 @@ export default function MethodologyPage() {
       </Helmet>
       <StructuredData data={[techArticleSchema, breadcrumb]} />
 
+      {/* Hero */}
+      <div className="bg-neutral-900 text-white py-14 px-4 mb-0">
+        <div className="max-w-2xl mx-auto text-center">
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-400 mb-4">Metodología</span>
+          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
+            Cómo la IA cura<br className="hidden md:block" /> las noticias
+          </h1>
+          <p className="text-lg text-white/70 leading-relaxed max-w-xl mx-auto">
+            Fuentes especializadas, un pipeline de IA en múltiples etapas y total transparencia.
+          </p>
+        </div>
+      </div>
+
       <div className="page-section">
-        <h1 className="page-title">Nuestra Metodologia</h1>
         <div className="prose max-w-none">
           <h2 className="section-heading mt-8">Que significa "impacto" para nosotros?</h2>
           <p>

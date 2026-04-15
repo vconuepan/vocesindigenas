@@ -24,9 +24,20 @@ export default function PrivacyPage() {
         {CommonOgTags({})}
       </Helmet>
 
-      <div className="page-section">
-        <h1 className="page-title">Politica de Privacidad</h1>
+      {/* Hero */}
+      <div className="bg-neutral-900 text-white py-14 px-4 mb-0">
+        <div className="max-w-2xl mx-auto text-center">
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-400 mb-4">Privacidad</span>
+          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
+            Sin cookies.<br className="hidden md:block" /> Sin rastreo.
+          </h1>
+          <p className="text-lg text-white/70 leading-relaxed max-w-xl mx-auto">
+            Nada se almacena en tu dispositivo cuando visitas este sitio como lector.
+          </p>
+        </div>
+      </div>
 
+      <div className="page-section">
         <div className="prose max-w-none">
           <p>
             No usamos cookies, pixels de rastreo, Google Analytics, scripts
