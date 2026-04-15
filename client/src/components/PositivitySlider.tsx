@@ -11,6 +11,26 @@ const LABELS: Record<number, string> = {
 
 const TOOLTIP = 'Filtra las noticias según su tono emocional: de más impactantes a más esperanzadoras'
 
+// Storm icon — heavy/urgent news
+function StormIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9" />
+      <polyline points="13 11 9 17 15 17 11 23" />
+    </svg>
+  )
+}
+
+// Sun/horizon icon — hopeful news
+function SunIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </svg>
+  )
+}
+
 export function MoodDialPanel({ className }: { className?: string }) {
   const { positivity, setPositivity } = usePositivity()
   const [showTooltip, setShowTooltip] = useState(false)
@@ -19,8 +39,8 @@ export function MoodDialPanel({ className }: { className?: string }) {
     <div className={`flex flex-col items-center gap-1 ${className ?? ''}`}>
       {/* Label con tooltip */}
       <div className="relative flex items-center gap-1">
-        <span className="text-[10px] text-neutral-500 leading-none select-none">
-          Peso emocional
+        <span className="text-[10px] text-neutral-500 leading-none select-none uppercase tracking-wider font-semibold">
+          Tono
         </span>
         <button
           type="button"
@@ -30,7 +50,7 @@ export function MoodDialPanel({ className }: { className?: string }) {
           onBlur={() => setShowTooltip(false)}
           onClick={() => setShowTooltip(!showTooltip)}
           className="text-[10px] text-neutral-400 hover:text-neutral-600 leading-none focus:outline-none"
-          aria-label="¿Qué es el peso emocional?"
+          aria-label="¿Qué es el filtro de tono?"
         >
           ⓘ
         </button>
@@ -44,9 +64,7 @@ export function MoodDialPanel({ className }: { className?: string }) {
 
       {/* Slider */}
       <div className="flex items-center gap-2">
-        <span className="text-sm select-none shrink-0 leading-none" aria-hidden="true">
-          😰
-        </span>
+        <StormIcon className="w-4 h-4 text-neutral-400 shrink-0" />
         <input
           type="range"
           min={0}
@@ -54,16 +72,14 @@ export function MoodDialPanel({ className }: { className?: string }) {
           step={25}
           value={positivity}
           onChange={(e) => setPositivity(parseInt(e.target.value, 10))}
-          className="positivity-slider w-40 lg:w-32 h-2 appearance-none bg-neutral-200 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+          className="positivity-slider w-40 lg:w-32 h-1.5 appearance-none bg-neutral-200 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           aria-label={`Filtro emocional: ${LABELS[positivity] ?? 'Mezcla equilibrada'}`}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={positivity}
           aria-valuetext={LABELS[positivity] ?? 'Mezcla equilibrada'}
         />
-        <span className="text-sm select-none shrink-0 leading-none" aria-hidden="true">
-          😊
-        </span>
+        <SunIcon className="w-4 h-4 text-neutral-400 shrink-0" />
       </div>
 
       {/* Label del valor actual */}

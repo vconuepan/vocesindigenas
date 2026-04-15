@@ -199,20 +199,24 @@ export default function IssuePage() {
         </script>
       </Helmet>
 
+      {/* Category color bar at top */}
+      <div className="h-1 w-full mb-0" style={{ backgroundColor: colors.hex }} />
+
       <div className="page-section-wide">
         {/* Header — compact inline */}
-        <header className="mb-5">
+        <header className="mb-5 pt-2">
           {issue.parent && (
             <Link
               to={`/issues/${issue.parent.slug}`}
-              className="text-xs text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 mb-1 inline-block"
+              className="text-xs font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 mb-2 inline-flex items-center gap-1 transition-opacity hover:opacity-70"
+              style={{ color: colors.hex }}
             >
               &larr; {issue.parent.name}
             </Link>
           )}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
               <h1 className="text-xl md:text-2xl font-bold">{issue.name}</h1>
             </div>
             <a
@@ -242,7 +246,7 @@ export default function IssuePage() {
                   to={`/issues/${child.slug}`}
                   className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-normal px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${childColors.dotBg}`} aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: childColors.hex }} aria-hidden="true" />
                   {child.name}
                 </Link>
               )

@@ -44,11 +44,21 @@ export default function AboutPage() {
         ]}
       />
 
+      {/* Hero intro */}
+      <div className="bg-neutral-900 text-white py-14 px-4 mb-0">
+        <div className="max-w-2xl mx-auto text-center">
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-400 mb-4">Quiénes Somos</span>
+          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6">
+            No solo hablamos sobre<br className="hidden md:block" /> pueblos indígenas.
+          </h1>
+          <p className="text-lg text-white/70 leading-relaxed">
+            Somos pueblos indígenas. Y es tiempo de construir con nosotros, no sin nosotros.
+          </p>
+        </div>
+      </div>
+
       <div className="page-section">
-        <h1 className="page-title">Quiénes Somos</h1>
-        <p className="page-intro">
-          No solo hablamos sobre pueblos indígenas. Somos pueblos indígenas.
-          Y es tiempo de construir con nosotros, no sin nosotros.
+        <p className="page-intro !mt-8">
           Monitoreamos el mundo para encontrar noticias que importan a los pueblos indígenas: los desafíos que enfrentan en sus territorios y derechos, y las soluciones que están liderando para el planeta. Dos caras de la misma historia.
         </p>
 
@@ -104,27 +114,30 @@ export default function AboutPage() {
               letra: "R",
               titulo: "Reconocer",
               texto: "Valoramos la riqueza cultural, espiritual y ecológica de los pueblos indígenas. Visibilizamos sus aportes y combatimos los estereotipos que perpetúan su exclusión.",
-              color: "#1a5276",
+              color: "#34d399",
             },
             {
               letra: "E",
               titulo: "Empoderar",
               texto: "Fortalecemos liderazgos y estructuras de gobernanza indígena. Promovemos su participación efectiva en decisiones que afectan sus territorios y su futuro.",
-              color: "#1f618d",
+              color: "#38bdf8",
             },
             {
               letra: "D",
               titulo: "Desarrollar",
               texto: "Impulsamos un desarrollo sostenible y autodeterminado. Respetamos sus modelos de vida y construimos soluciones en diálogo y colaboración.",
-              color: "#2980b9",
+              color: "#a78bfa",
             },
           ].map((item) => (
             <div
               key={item.letra}
-              className="border border-neutral-200 border-t-4 rounded-lg p-5"
-              style={{ borderTopColor: item.color }}
+              className="rounded-xl p-6"
+              style={{ backgroundColor: `${item.color}10`, border: `1px solid ${item.color}30` }}
             >
-              <div className="text-4xl font-bold mb-2" style={{ color: item.color, opacity: 0.3 }}>
+              <div
+                className="text-5xl font-bold mb-3 leading-none"
+                style={{ color: item.color }}
+              >
                 {item.letra}
               </div>
               <h3 className="font-bold text-neutral-800 mb-2">{item.titulo}</h3>
@@ -161,21 +174,29 @@ export default function AboutPage() {
             {
               titulo: "Café Climático",
               texto: "Espacio de encuentro intercultural que promueve el diálogo entre juventudes, líderes indígenas, científicos y tomadores de decisión sobre cambio climático. Siete ediciones en La Araucanía, en parques, colegios y universidades.",
+              accent: "#34d399",
             },
             {
               titulo: "Red Misión Nielol",
               texto: "Red de voluntariado indígena y no indígena que impulsa acciones de educación ambiental, restauración ecológica y cuidado del territorio, con base en el cerro Nielol de Temuco como símbolo de encuentro y resistencia cultural mapuche.",
+              accent: "#38bdf8",
             },
             {
               titulo: "Programa Liderazgo Escolar",
               texto: "Iniciativa que fortalece el liderazgo de estudiantes indígenas en contextos escolares, promoviendo el orgullo cultural, la acción climática y el compromiso con sus comunidades.",
+              accent: "#fbbf24",
             },
             {
               titulo: "Podcast Voces Indígenas",
               texto: "Serie digital donde personas indígenas comparten en primera voz sus historias, saberes y propuestas de cambio. Amplificamos voces silenciadas y contribuimos a una narrativa más diversa, digna y conectada con los territorios.",
+              accent: "#a78bfa",
             },
           ].map((p) => (
-            <div key={p.titulo} className="border border-neutral-200 rounded-lg p-5">
+            <div
+              key={p.titulo}
+              className="rounded-xl p-5"
+              style={{ borderLeft: `3px solid ${p.accent}`, backgroundColor: `${p.accent}08` }}
+            >
               <h3 className="font-bold text-neutral-800 mb-2">{p.titulo}</h3>
               <p className="text-sm text-neutral-600 leading-relaxed">{p.texto}</p>
             </div>

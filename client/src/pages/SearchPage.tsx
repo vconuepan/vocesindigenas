@@ -32,12 +32,13 @@ export default function SearchPage() {
         {CommonOgTags({})}
       </Helmet>
       <div className="page-section-wide">
-        <header className="mb-6">
-          <h1 className="text-xl md:text-2xl font-bold">
+        <header className="mb-8 border-b border-neutral-100 pb-6">
+          <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-2">{t('search.label')}</p>
+          <h1 className="text-2xl md:text-3xl font-bold">
             {q ? (
               <>{t('search.resultsFor', { q })}</>
             ) : (
-              t('search.label')
+              t('search.defaultTitle') || 'Buscar noticias'
             )}
           </h1>
           {q && !isLoading && (

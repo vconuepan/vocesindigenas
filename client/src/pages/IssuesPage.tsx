@@ -28,7 +28,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
+        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
         <span className="text-lg font-bold text-neutral-900">{issue.name}</span>
       </summary>
 
@@ -51,7 +51,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
                   to={`/issues/${child.slug}`}
                   className="inline-flex items-center gap-1.5 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-sm font-normal px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${childColors.dotBg}`} aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: childColors.hex }} aria-hidden="true" />
                   {child.name}
                 </Link>
               )
@@ -120,9 +120,10 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
         <div>
           <Link
             to={`/issues/${issue.slug}`}
-            className={`inline-flex items-center gap-2 text-sm font-normal ${colors.dot} hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5`}
+            className="inline-flex items-center gap-2 text-sm font-normal hover:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+            style={{ color: colors.hex }}
           >
-            {t('issuePage.viewStories')}
+            {t('issuePage.viewStories')} →
           </Link>
         </div>
       </div>
@@ -161,7 +162,7 @@ export default function IssuesPage() {
       </Helmet>
 
       <div className="page-section-wide">
-        <header className="mb-6">
+        <header className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('issuesPage.title')}</h1>
           <p className="text-sm text-neutral-500">
             {t('issuesPage.subtitle')}
