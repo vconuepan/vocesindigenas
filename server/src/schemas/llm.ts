@@ -38,53 +38,53 @@ export const assessResultSchema = z.object({
   quote: z
     .string()
     .describe(
-      "Key quote from the article, translated to English if needed. " +
-        "No speaker/publication name — attribution is a separate field. " +
-        "No surrounding quotation marks — the UI adds those. " +
-        "Use single quotes (' ') for any nested quotation within the text."
+      "Cita clave del artículo, traducida al español si es necesario. " +
+        "Sin nombre del hablante ni de la publicación — la atribución es un campo separado. " +
+        "Sin comillas al inicio o al final — la interfaz las agrega. " +
+        "Usa comillas simples (' ') para cualquier cita anidada dentro del texto."
     ),
   quoteAttribution: z
     .string()
     .describe(
-      "Attribution for the key quote. If quoting a person, use their full name and title/role " +
-        "(e.g. 'Maria Helena Semedo, FAO Deputy Director'). If quoting an organization or publication, " +
-        "use the organization name (e.g. 'World Health Organization'). If the quote is a striking " +
-        "sentence from the article rather than a direct quote, use 'Original article'."
+      "Atribución de la cita clave. Si se cita a una persona, usa su nombre completo y cargo/rol " +
+        "(ej. 'María Helena Semedo, Directora General Adjunta de la FAO'). Si se cita a una organización o publicación, " +
+        "usa el nombre de la organización (ej. 'Organización Mundial de la Salud'). Si la cita es una oración " +
+        "llamativa del artículo y no una cita directa de una persona, usa 'Artículo original'."
     ),
   summary: z
     .string()
     .describe(
-      "Plain text summary of the article, 40-70 words. " +
-        "Use plain language a general audience can understand. " +
-        "Avoid redundancy with the title."
+      "Resumen en texto plano del artículo, 40-70 palabras, en español. " +
+        "Usa lenguaje sencillo que una audiencia general pueda entender. " +
+        "Evita redundancia con el título."
     ),
   factors: z
     .array(z.string())
     .describe(
-      "4 Markdown bullet points explaining why the article is relevant for humanity. " +
-        "Use plain, concrete language — explain mechanisms in everyday terms. " +
-        'Each bullet: "- **[Factor name from article context]:** [1 sentence: assessment.] ' +
-        "[for the first two bullets only: 1 additional sentence, e.g. quantification or additional detail.] " +
-        '[for the first bullet only: 1 additional sentence, e.g. on the mechanism or context of the impact.]" ' +
-        "Order by importance, key factor first."
+      "4 viñetas Markdown que explican por qué el artículo es relevante para los pueblos indígenas, en español. " +
+        "Usa lenguaje claro y concreto — explica los mecanismos en términos cotidianos. " +
+        'Cada viñeta: "- **[Nombre del factor según el contexto del artículo]:** [1 oración: evaluación.] ' +
+        "[solo para las dos primeras viñetas: 1 oración adicional, ej. cuantificación o detalle extra.] " +
+        '[solo para la primera viñeta: 1 oración adicional, ej. sobre el mecanismo o contexto del impacto.]" ' +
+        "Ordena por importancia, con el factor clave primero."
     ),
   limitingFactors: z
     .array(z.string())
     .describe(
-      "Markdown bullet points on why the article might not be so relevant. " +
-        "Use plain, specific language anyone can understand. " +
-        'Each bullet: "- **[Limiting factor]:** [1 sentence: assessment.] ' +
-        '[for the first bullet only: 1 additional sentence, e.g. context or further detail.]" ' +
-        "Include applicable generic limiting factors (opinion piece, click-bait, early-stage tech, etc.) " +
-        "and topic-specific limiting factors. Order by importance."
+      "Viñetas Markdown sobre por qué el artículo podría no ser tan relevante, en español. " +
+        "Usa lenguaje claro y específico que cualquiera pueda entender. " +
+        'Cada viñeta: "- **[Factor limitante]:** [1 oración: evaluación.] ' +
+        '[solo para la primera viñeta: 1 oración adicional, ej. contexto o detalle adicional.]" ' +
+        "Incluye factores limitantes genéricos aplicables (artículo de opinión, clickbait, tecnología en etapa temprana, etc.) " +
+        "y factores limitantes específicos del tema. Ordena por importancia."
     ),
   relevanceCalculation: z
     .array(z.string())
     .describe(
-      "Markdown bullet points showing the rating calculation steps. " +
-        'Format: "- **[Key factor]:** [rating 1-10]", ' +
-        '"- **[Generic limiting factor]:** [modifier +0 to -4]", ' +
-        '"- **[Other factors combined]:** [modifier +/- 0-2]".'
+      "Viñetas Markdown que muestran los pasos del cálculo de calificación, en español. " +
+        'Formato: "- **[Factor clave]:** [calificación 1-10]", ' +
+        '"- **[Factor limitante genérico]:** [modificador +0 a -4]", ' +
+        '"- **[Otros factores combinados]:** [modificador +/- 0-2]".'
     ),
   conservativeRating: z
     .number()
@@ -92,41 +92,40 @@ export const assessResultSchema = z.object({
     .min(1)
     .max(10)
     .describe(
-      "Conservative relevance rating 1-10 based on the relevance calculation"
+      "Calificación conservadora de relevancia 1-10 basada en el cálculo de relevancia"
     ),
   relevanceSummary: z
     .string()
     .describe(
-      "20-25 word summary of the relevance analysis. " +
-        'Do not refer to "the article"; focus on the subject matter. ' +
-        "Plain language, no jargon. Include concrete numbers when available. "
+      "Resumen de 20-25 palabras del análisis de relevancia, en español. " +
+        'No menciones "el artículo"; enfócate en el tema en sí. ' +
+        "Lenguaje sencillo, sin jerga. Incluye números concretos cuando estén disponibles."
     ),
   titleLabel: z
     .string()
     .describe(
-      "Ultra-short topic label (1-3 short words, sentence case). " +
-        "A tight noun phrase — no conjunctions, no 'and'. Keep words simple and short. " +
-        "The label and title work as a pair: the label sets the topic, the title tells the story. " +
-        "No word or phrase should appear in both. " +
-        "Good: 'EU AI Act', 'Carbon inequality', 'Deepfake laws'. " +
-        "Bad: 'Carbon inequality and climate policy' (too long). " +
-        "Bad: 'Non-consensual deepfake nudification' (too complex — use 'Deepfake laws')."
+      "Etiqueta de tema ultrabreve (1-3 palabras cortas), en español, en minúsculas excepto nombres propios. " +
+        "Una frase nominal corta — sin conjunciones, sin 'y'. Palabras simples y cortas. " +
+        "La etiqueta y el título funcionan como par: la etiqueta establece el tema, el título cuenta la historia. " +
+        "Ninguna palabra o frase debe aparecer en ambos. " +
+        "Bien: 'derechos territoriales', 'acuerdo CLPI', 'minería mapuche'. " +
+        "Mal: 'derechos territoriales y consulta indígena' (demasiado largo)."
     ),
   relevanceTitle: z
     .string()
     .describe(
-      "Standalone headline, max 10 words, sentence case (capitalize first word and proper nouns only). " +
-        "Write for a smart 16-year-old — no jargon or insider terms. " +
-        "Must make sense to someone with no background. " +
-        "One story per headline. Don't echo the label — use that word budget to say something new. " +
-        "No word or phrase should appear in both the label and the title. " +
-        "Be concrete: name the actor, action, or stakes. Cut hedge words like 'could shape' or 'may impact'. " +
-        "NEVER use the 'Label: headline' colon pattern — the label is a separate field."
+      "Titular independiente en español, máximo 10 palabras, en minúsculas excepto nombres propios. " +
+        "Escribe para un joven de 16 años inteligente — sin jerga ni términos especializados. " +
+        "Debe entenderse sin contexto previo. " +
+        "Una historia por titular. No repitas la etiqueta — usa ese espacio para decir algo nuevo. " +
+        "Ninguna palabra o frase debe aparecer tanto en la etiqueta como en el título. " +
+        "Sé concreto: nombra al actor, la acción o las consecuencias. Elimina frases vagas como 'podría afectar'. " +
+        "NUNCA uses el patrón 'Etiqueta: titular' con dos puntos — la etiqueta es un campo separado."
     ),
   marketingBlurb: z
     .string()
     .describe(
-      "Plain text, up to 230 characters, summarizing the key point of the original article and the relevance analysis."
+      "Texto plano en español, hasta 230 caracteres, que resume el punto clave del artículo original y el análisis de relevancia."
     ),
 });
 
@@ -181,24 +180,23 @@ export const extractTitleLabelSchema = z.object({
   titleLabel: z
     .string()
     .describe(
-      "Ultra-short topic label (1-3 short words, sentence case). Must be a tight noun phrase — no conjunctions, no 'and'. " +
-        "Keep words simple and short. " +
-        "The label and title work as a pair: the label sets the topic, the title tells the story. " +
-        "No word or phrase should appear in both. " +
-        "Good: 'EU AI Act', 'Carbon inequality', 'Deepfake laws', 'Nuclear risk', 'Ocean health'. " +
-        "Bad: 'Carbon inequality and climate policy' (too long). " +
-        "Bad: 'Non-consensual deepfake nudification' (words too long/complex, use 'Deepfake laws')."
+      "Etiqueta de tema ultrabreve en español (1-3 palabras cortas), en minúsculas excepto nombres propios. " +
+        "Una frase nominal corta — sin conjunciones, sin 'y'. Palabras simples y cortas. " +
+        "La etiqueta y el título funcionan como par: la etiqueta establece el tema, el título cuenta la historia. " +
+        "Ninguna palabra o frase debe aparecer en ambos. " +
+        "Bien: 'derechos territoriales', 'acuerdo CLPI', 'minería mapuche', 'riesgo nuclear', 'salud oceánica'. " +
+        "Mal: 'derechos territoriales y consulta indígena' (demasiado largo)."
     ),
   title: z
     .string()
     .describe(
-      "Standalone headline, max 10 words, sentence case (capitalize first word and proper nouns only). " +
-        "Write for a smart 16-year-old — no jargon or insider terms. " +
-        "Must make sense to someone with no background. " +
-        "One story per headline. Don't echo the label — use that word budget to say something new. " +
-        "No word or phrase should appear in both the label and the title. " +
-        "Be concrete: name the actor, action, or stakes. Cut hedge words like 'could shape' or 'may impact'. " +
-        "NEVER use the 'Label: headline' colon pattern — the label is a separate field."
+      "Titular independiente en español, máximo 10 palabras, en minúsculas excepto nombres propios. " +
+        "Escribe para un joven de 16 años inteligente — sin jerga ni términos especializados. " +
+        "Debe entenderse sin contexto previo. " +
+        "Una historia por titular. No repitas la etiqueta — usa ese espacio para decir algo nuevo. " +
+        "Ninguna palabra o frase debe aparecer tanto en la etiqueta como en el título. " +
+        "Sé concreto: nombra al actor, la acción o las consecuencias. Elimina frases vagas como 'podría afectar'. " +
+        "NUNCA uses el patrón 'Etiqueta: titular' con dos puntos — la etiqueta es un campo separado."
     ),
 });
 
@@ -206,15 +204,15 @@ export const extractQuoteAttributionSchema = z.object({
   quote: z
     .string()
     .describe(
-      "The key quote, cleaned up. Strip embedded speaker/publication name, surrounding quotation marks, and leftover punctuation. Replace any inner double quotes with single quotes (' ')."
+      "La cita clave, limpia y en español. Elimina el nombre del hablante o publicación embebido, las comillas circundantes y la puntuación sobrante. Reemplaza cualquier comilla doble interior con comillas simples (' ')."
     ),
   quoteAttribution: z
     .string()
     .describe(
-      "Attribution for the key quote. If quoting a person, use their full name and title/role " +
-        "(e.g. 'Maria Helena Semedo, FAO Deputy Director'). If quoting an organization or publication, " +
-        "use the organization name (e.g. 'World Health Organization'). If the quote is a striking " +
-        "sentence from the article rather than a direct quote, use 'Original article'."
+      "Atribución de la cita clave. Si se cita a una persona, usa su nombre completo y cargo/rol " +
+        "(ej. 'María Helena Semedo, Directora General Adjunta de la FAO'). Si se cita a una organización o publicación, " +
+        "usa el nombre de la organización (ej. 'Organización Mundial de la Salud'). Si la cita es una oración " +
+        "llamativa del artículo y no una cita directa de una persona, usa 'Artículo original'."
     ),
 });
 
@@ -225,9 +223,9 @@ export const extractRelevanceSummarySchema = z.object({
   relevanceSummary: z
     .string()
     .describe(
-      "20-25 word summary of the relevance analysis. " +
-        'Do not refer to "the article"; focus on the subject matter. ' +
-        "Plain language, no jargon. Include concrete numbers when available. "
+      "Resumen de 20-25 palabras del análisis de relevancia, en español. " +
+        'No menciones "el artículo"; enfócate en el tema en sí. ' +
+        "Lenguaje sencillo, sin jerga. Incluye números concretos cuando estén disponibles."
     ),
 });
 export type ExtractRelevanceSummary = z.infer<
