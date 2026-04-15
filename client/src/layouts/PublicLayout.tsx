@@ -68,7 +68,7 @@ function BrandLogo({ onClick }: { onClick?: () => void }) {
       <img
         src="/images/logo-horizontal.png"
         alt="Impacto Indígena"
-        className="h-12 md:h-14 w-auto"
+        className="h-11 md:h-14 w-auto"
       />
     </Link>
   );
@@ -76,11 +76,12 @@ function BrandLogo({ onClick }: { onClick?: () => void }) {
 
 function CategoryColorStrip({ className }: { className?: string }) {
   return (
-    <div className={`flex h-1 ${className ?? ""}`} aria-hidden="true">
-      <div className="flex-1 bg-amber-400" />
-      <div className="flex-1 bg-teal-400" />
-      <div className="flex-1 bg-red-400" />
-      <div className="flex-1 bg-indigo-400" />
+    <div className={`flex h-0.5 ${className ?? ""}`} aria-hidden="true">
+      <div className="flex-1" style={{ backgroundColor: '#34d399' }} />
+      <div className="flex-1" style={{ backgroundColor: '#fb923c' }} />
+      <div className="flex-1" style={{ backgroundColor: '#fbbf24' }} />
+      <div className="flex-1" style={{ backgroundColor: '#38bdf8' }} />
+      <div className="flex-1" style={{ backgroundColor: '#a78bfa' }} />
     </div>
   );
 }
@@ -214,12 +215,15 @@ function PublicLayoutInner() {
                 {t('language.toggle')}
               </button>
             </div>
-            <div className="lg:hidden absolute left-4 top-3 md:top-4 h-14 md:h-16 flex items-center">
+            <div className="lg:hidden absolute left-4 top-0 h-full flex items-center gap-1">
               <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${searchOpen ? "text-brand-700" : "text-neutral-400 hover:text-neutral-600"}`} aria-label={searchOpen ? t('nav.closeSearch') : t('nav.openSearch')} aria-expanded={searchOpen} aria-controls="search-panel">
                 <SearchIcon className="w-5 h-5" />
               </button>
             </div>
-            <div className="lg:hidden absolute right-4 top-3 md:top-4 h-14 md:h-16 flex items-center">
+            <div className="lg:hidden absolute right-4 top-0 h-full flex items-center gap-1">
+              <button onClick={toggleLanguage} className="text-xs font-bold tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-400 hover:text-neutral-600 border border-neutral-200" aria-label={t('language.current')}>
+                {t('language.toggle')}
+              </button>
               <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded focus-visible:ring-2 focus-visible:ring-brand-500" aria-expanded={menuOpen} aria-controls="mobile-nav-menu" aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}>
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   {menuOpen ? (
