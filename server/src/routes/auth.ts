@@ -15,6 +15,7 @@ import {
 import { getUserById } from '../services/user.js'
 import { createLogger } from '../lib/logger.js'
 import prisma from '../lib/prisma.js'
+import * as brevo from '../services/brevo.js'
 
 const log = createLogger('auth')
 
@@ -226,6 +227,54 @@ router.delete('/digest-exclusions/:communityId', requireMember, async (req, res)
   } catch (err) {
     log.error({ err }, 'failed to remove digest exclusion')
     res.status(500).json({ error: 'Failed to update preferences' })
+  }
+})
+
+/**
+ * GET /api/auth/subscription
+ * Returns the newsletter subscription status for the authenticated user.
+ */
+router.get('/subscription', requireMember, async (req, res) => {
+  try {
+    const subscription = await prisma.pendingSubscription.findFirst({
+      where: { email: req.user!.email, confirmedAt: { not: null } },
+    })
+    res.json({ subscribed: !!subscription, confirmedAt: subscription?.confirmedAt ?? null })
+  } catch (err) {
+    log.error({ err }, 'failed to fetch subscription status')
+    res.status(500).json({ error: 'Failed to fetch subscription status' })
+  }
+})
+
+/**
+ * DELETE /api/auth/subscription
+ * Cancels the newsletter subscription for the authenticated user.
+ * Removes them from Brevo list 2 and deletes the PendingSubscription record.
+ */
+router.delete('/subscription', requireMember, async (req, res) => {
+  try {
+    const subscription = await prisma.pendingSubscription.findFirst({
+      where: { email: req.user!.email, confirmedAt: { not: null } },
+    })
+    if (!subscription) {
+      res.status(404).json({ error: 'No active subscription found' })
+      return
+    }
+
+    if (subscription.plunkContactId) {
+      try {
+        await brevo.updateContact(subscription.plunkContactId, { subscribed: false })
+      } catch (err) {
+        log.warn({ err, email: req.user!.email }, 'failed to update Brevo contact on unsubscribe, deleting record anyway')
+      }
+    }
+
+    await prisma.pendingSubscription.delete({ where: { id: subscription.id } })
+    log.info({ email: req.user!.email }, 'subscription cancelled')
+    res.json({ success: true })
+  } catch (err) {
+    log.error({ err }, 'failed to cancel subscription')
+    res.status(500).json({ error: 'Failed to cancel subscription' })
   }
 })
 

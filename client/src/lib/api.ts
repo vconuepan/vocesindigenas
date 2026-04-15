@@ -150,6 +150,10 @@ export const publicApi = {
       memberRequest<{ success: boolean }>(`/auth/digest-exclusions/${communityId}`, { method: 'POST' }),
     includeDigest: (communityId: string) =>
       memberRequest<{ success: boolean }>(`/auth/digest-exclusions/${communityId}`, { method: 'DELETE' }),
+    subscriptionStatus: () =>
+      memberRequest<{ subscribed: boolean; confirmedAt: string | null }>('/auth/subscription'),
+    unsubscribe: () =>
+      memberRequest<{ success: boolean }>('/auth/subscription', { method: 'DELETE' }),
   },
 
   auth: {

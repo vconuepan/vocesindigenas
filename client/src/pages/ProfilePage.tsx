@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [nameInput, setNameInput] = useState('')
   const [nameError, setNameError] = useState('')
   const [nameSaved, setNameSaved] = useState(false)
+  const [unsubscribeConfirm, setUnsubscribeConfirm] = useState(false)
 
   // Capture member_token from magic link redirect
   useEffect(() => {
@@ -49,6 +50,21 @@ export default function ProfilePage() {
     queryFn: () => publicApi.profile.digestExclusions(),
     enabled: isAuthenticated,
     retry: false,
+  })
+
+  const subscriptionQuery = useQuery({
+    queryKey: ['profile-subscription'],
+    queryFn: () => publicApi.profile.subscriptionStatus(),
+    enabled: isAuthenticated,
+    retry: false,
+  })
+
+  const unsubscribeMutation = useMutation({
+    mutationFn: () => publicApi.profile.unsubscribe(),
+    onSuccess: () => {
+      queryClient.setQueryData(['profile-subscription'], { subscribed: false, confirmedAt: null })
+      setUnsubscribeConfirm(false)
+    },
   })
 
   const excludeMutation = useMutation({
@@ -254,6 +270,72 @@ export default function ProfilePage() {
                 })}
               </ul>
             </>
+          )}
+        </section>
+
+        {/* Newsletter */}
+        <section className="mb-8 rounded-lg border border-neutral-200 bg-white p-6">
+          <h2 className="text-base font-semibold text-neutral-800 mb-4">Newsletter</h2>
+
+          {subscriptionQuery.isLoading ? (
+            <div className="h-4 bg-neutral-100 rounded animate-pulse w-48" />
+          ) : subscriptionQuery.data?.subscribed ? (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500" aria-hidden="true" />
+                <span className="text-sm text-neutral-700">
+                  Suscrito
+                  {subscriptionQuery.data.confirmedAt && (
+                    <span className="text-neutral-400 ml-1">
+                      desde {new Date(subscriptionQuery.data.confirmedAt).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              {!unsubscribeConfirm ? (
+                <button
+                  onClick={() => setUnsubscribeConfirm(true)}
+                  className="text-sm text-neutral-500 hover:text-red-600 transition-colors"
+                >
+                  Cancelar suscripción
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-neutral-600">¿Confirmas la cancelación?</span>
+                  <button
+                    onClick={() => unsubscribeMutation.mutate()}
+                    disabled={unsubscribeMutation.isPending}
+                    className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50 transition-colors"
+                  >
+                    {unsubscribeMutation.isPending ? 'Cancelando…' : 'Sí, cancelar'}
+                  </button>
+                  <button
+                    onClick={() => setUnsubscribeConfirm(false)}
+                    className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+                  >
+                    No, mantener
+                  </button>
+                </div>
+              )}
+
+              {unsubscribeMutation.isError && (
+                <p className="mt-2 text-sm text-red-600">No se pudo cancelar. Intenta de nuevo.</p>
+              )}
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-block w-2 h-2 rounded-full bg-neutral-300" aria-hidden="true" />
+                <span className="text-sm text-neutral-500">No estás suscrito al newsletter.</span>
+              </div>
+              <Link
+                to="/"
+                className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+              >
+                Suscribirse →
+              </Link>
+            </div>
           )}
         </section>
 
