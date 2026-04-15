@@ -157,10 +157,10 @@ export default function MethodologyPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {[
-            { slug: 'cambio-climatico', title: 'Cambio Climatico y Biodiversidad', description: 'Territorios indigenas, medio ambiente, biodiversidad, accion climatica' },
-            { slug: 'derechos-indigenas', title: 'Derechos Indigenas', description: 'Derechos territoriales, autodeterminacion, reconocimiento legal, derechos humanos' },
-            { slug: 'desarrollo-sostenible', title: 'Desarrollo Sostenible', description: 'Economias indigenas, gobernanza propia, educacion intercultural' },
-            { slug: 'reconciliacion-paz', title: 'Reconciliacion y Paz', description: 'Justicia historica, reparaciones, dialogo intercultural, consolidacion de la paz' },
+            { slug: 'cambio-climatico', title: 'Cambio Climático y Biodiversidad', description: 'Territorios indígenas, medio ambiente, biodiversidad, acción climática' },
+            { slug: 'derechos-indigenas', title: 'Derechos de los Pueblos Indígenas', description: 'Derechos territoriales, autodeterminación, reconocimiento legal, derechos humanos' },
+            { slug: 'desarrollo-sostenible-y-autodeterminado', title: 'Empresas Indígenas', description: 'Economías indígenas, emprendimiento, gobernanza propia, educación intercultural' },
+            { slug: 'reconciliacion-y-paz', title: 'Reconciliación y Paz', description: 'Justicia histórica, reparaciones, diálogo intercultural, consolidación de la paz' },
           ].map((card) => {
             const colors = getCategoryColor(card.slug)
             return (
