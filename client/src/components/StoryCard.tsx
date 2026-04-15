@@ -202,18 +202,25 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
               <p className="text-neutral-600 leading-relaxed mt-3 line-clamp-3">{displaySummary}</p>
             )}
           </div>
-          {/* Image right */}
-          {imageUrl && (
-            <Link to={`/stories/${story.slug}`} className="md:w-56 md:shrink-0 overflow-hidden rounded-b-xl md:rounded-b-none md:rounded-r-xl focus-visible:ring-2 focus-visible:ring-brand-500">
-              <div className="h-48 md:h-full min-h-[180px] overflow-hidden bg-neutral-100">
+          {/* Image right — shown with image or as color accent strip */}
+          <Link to={`/stories/${story.slug}`} className="md:w-56 md:shrink-0 overflow-hidden rounded-b-xl md:rounded-b-none md:rounded-r-xl focus-visible:ring-2 focus-visible:ring-brand-500">
+            <div className="h-48 md:h-full min-h-[180px] overflow-hidden bg-neutral-100 relative">
+              {imageUrl ? (
                 <CardImage
                   src={imageUrl}
                   alt={headlineText}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-              </div>
-            </Link>
-          )}
+              ) : (
+                <div
+                  className="w-full h-full"
+                  style={{ background: `linear-gradient(150deg, ${hexToRgba(colors.hex, 0.18)}, ${hexToRgba(colors.hex, 0.42)})` }}
+                >
+                  {Pattern && <Pattern opacity={0.22} />}
+                </div>
+              )}
+            </div>
+          </Link>
         </div>
       </article>
     )
@@ -221,16 +228,16 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
 
   // === COMPACT variant — no image, "en breve" style ===
   return (
-    <article className={`group relative flex gap-3 py-3 border-b border-neutral-100 last:border-0 ${readClass}`}>
-      {/* Color accent bar */}
-      <div className="w-px shrink-0 self-stretch" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
+    <article className={`group relative flex gap-3 py-3.5 border-b border-neutral-100 last:border-0 ${readClass}`}>
+      {/* Category dot */}
+      <div className="mt-1.5 w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <Link
           to={`/stories/${story.slug}`}
           className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
         >
           {getTitleLabel(localizedStory) && (
-            <span className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-0.5">{getTitleLabel(localizedStory)}</span>
+            <span className="block text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.hex }}>{getTitleLabel(localizedStory)}</span>
           )}
           <h3 className="text-sm font-bold text-neutral-800 mb-1 group-hover:text-brand-800 transition-colors leading-snug">
             {headlineText}

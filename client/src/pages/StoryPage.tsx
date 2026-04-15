@@ -181,14 +181,15 @@ export default function StoryPage() {
 
       <article>
         {/* Article header with category accent */}
-        <header className="border-b border-neutral-100 pb-8 mb-8">
+        <header className="border-b border-neutral-100 pb-10 mb-8">
           <div className="page-section !pb-0 !mb-0">
             {/* Category label */}
-            <div className="flex items-center gap-2 mb-6">
-              <span className={`category-dot ${colors.dotBg}`} aria-hidden="true" />
+            <div className="flex items-center gap-2 mb-5">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
               <Link
                 to={`/issues/${issueSlug}`}
-                className="text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                className="text-xs font-bold uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                style={{ color: colors.hex }}
               >
                 {issueName}
               </Link>
@@ -196,9 +197,9 @@ export default function StoryPage() {
 
             {/* Title */}
             {titleLabel && (
-              <span className="block text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3">{titleLabel}</span>
+              <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">{titleLabel}</span>
             )}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-5 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
               {headline}
             </h1>
 

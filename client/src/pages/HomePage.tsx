@@ -43,30 +43,30 @@ function HeroSection({ story }: { story: PublicStory }) {
   return (
     <section className="relative overflow-hidden">
       {/* Full-bleed image background */}
-      <div className="relative w-full h-[420px] md:h-[540px] overflow-hidden bg-neutral-900">
+      <div className="relative w-full h-[460px] md:h-[580px] overflow-hidden bg-neutral-900">
         {heroImage ? (
           <img
             src={heroImage}
             alt=""
-            className="w-full h-full object-cover opacity-70"
+            className="w-full h-full object-cover opacity-65"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         ) : (
-          <div className="w-full h-full relative" style={{ background: `linear-gradient(135deg, ${colors.hex}44, #171717)` }}>
-            {Pattern && <Pattern opacity={0.15} />}
+          <div className="w-full h-full relative" style={{ background: `linear-gradient(150deg, ${colors.hex}55 0%, #1a1a1a 60%)` }}>
+            {Pattern && <Pattern opacity={0.18} />}
           </div>
         )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
+        {/* Gradient overlay — heavier at bottom for legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/5" />
 
         {/* Content on overlay */}
         <div className="absolute inset-0 flex items-end">
-          <div className="max-w-4xl mx-auto px-4 pb-10 md:pb-14 w-full">
+          <div className="max-w-4xl mx-auto px-4 pb-12 md:pb-16 w-full">
             {/* Issue pill */}
             {issueName && (
               <span
-                className="inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3"
-                style={{ backgroundColor: `${colors.hex}33`, color: colors.hex, border: `1px solid ${colors.hex}66` }}
+                className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
+                style={{ backgroundColor: `${colors.hex}40`, color: colors.hex, border: `1px solid ${colors.hex}80` }}
               >
                 {issueName}
               </span>
@@ -118,17 +118,26 @@ function RuledHeading({ issue }: { issue: PublicIssue }) {
   const colors = getCategoryColor(issue.slug)
 
   return (
-    <div className="relative z-20 mb-5">
-      <div className="flex items-center justify-center gap-4 text-neutral-600">
-        <span className="hidden md:block flex-1 border-t border-neutral-200" aria-hidden="true" />
+    <div className="relative z-20 mb-6">
+      <div className="flex items-center gap-4">
+        <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
         <Link
           to={`/issues/${issue.slug}`}
-          className="flex items-center gap-2 hover:text-neutral-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
-          <span className={`w-2.5 h-2.5 rounded-full ${colors.dotBg} shrink-0`} aria-hidden="true" />
-          <h2 className="text-lg font-bold uppercase tracking-wider md:text-xl">{issue.name}</h2>
+          <span
+            className={`w-3 h-3 rounded-full shrink-0`}
+            style={{ backgroundColor: colors.hex }}
+            aria-hidden="true"
+          />
+          <h2
+            className="text-sm font-bold uppercase tracking-widest"
+            style={{ color: colors.hex }}
+          >
+            {issue.name}
+          </h2>
         </Link>
-        <span className="hidden md:block flex-1 border-t border-neutral-200" aria-hidden="true" />
+        <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
       </div>
     </div>
   )
@@ -166,7 +175,7 @@ function IssueSection({
 
   return (
     <>
-      <section className="relative mb-6 mt-14 md:mt-28">
+      <section className="relative mb-8 mt-16 md:mt-32">
         {/* Pre-rendered PNG to avoid Chromium inline-SVG compositing bug */}
         <div className="absolute -left-12 top-0 -translate-y-[40%] z-10 pointer-events-none select-none hidden md:block w-[200px] h-[200px]">
           <img src={`/illustrations/${issue.slug}.png`} alt="" className="opacity-[0.18] w-full h-full" />

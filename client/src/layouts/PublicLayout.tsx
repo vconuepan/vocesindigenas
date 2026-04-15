@@ -194,20 +194,20 @@ function PublicLayoutInner() {
 
       <header>
         <div className="bg-white border-b border-neutral-100">
-          <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-start justify-center relative">
+          <div className="max-w-6xl mx-auto px-4 py-4 md:py-5 flex items-center justify-center relative">
             <BrandLogo />
-            <div className="hidden lg:flex items-center absolute left-12 top-4 h-16">
+            <div className="hidden lg:flex items-center absolute left-12 top-0 h-full">
               <MoodDialPanel />
             </div>
-            <div className="hidden lg:flex items-center gap-1 absolute right-12 top-4 h-16">
+            <div className="hidden lg:flex items-center gap-1 absolute right-12 top-0 h-full">
               <Link to="/saved" className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700">
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
                 {t('nav.saved')}{savedCount > 0 && ` (${savedCount})`}
               </Link>
-              <button onClick={() => openSubscribe()} className="inline-flex items-center gap-1.5 text-base font-normal tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-500 hover:text-brand-700">
-                <NewsletterIcon className="w-4 h-4 shrink-0" />
+              <button onClick={() => openSubscribe()} className="inline-flex items-center gap-1.5 text-sm font-bold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded-full px-4 py-1.5 bg-brand-500 text-white hover:bg-brand-600">
+                <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                 {t('nav.subscribe')}
               </button>
               <button onClick={toggleLanguage} className="inline-flex items-center text-xs font-bold tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 py-1 text-neutral-400 hover:text-brand-700 border border-neutral-200 hover:border-brand-300" aria-label={t('language.current')}>
@@ -246,7 +246,7 @@ function PublicLayoutInner() {
               return (
                 <li key={link.href}>
                   <Link to={link.href} className="issue-nav-link" data-active={active} style={{ "--issue-color": colors.hex } as React.CSSProperties}>
-                    <span className={`w-3 h-3 rounded-full -translate-y-px ${colors.dotBg} ${active ? "opacity-100" : "opacity-50"}`} aria-hidden="true" />
+                    <span className={`w-2.5 h-2.5 rounded-full ${active ? "opacity-100" : "opacity-70"}`} style={{ backgroundColor: colors.hex }} aria-hidden="true" />
                     {t(link.labelKey)}
                   </Link>
                 </li>
@@ -373,14 +373,14 @@ function PublicLayoutInner() {
         <Outlet />
       </main>
 
-      <div className="bg-neutral-50 border-t border-neutral-200 py-10 md:py-14 text-center" aria-hidden="true">
-        <div className="max-w-md mx-auto px-4">
-          <div className="flex items-center justify-center gap-4 mb-4">
+      <div className="bg-white border-t border-neutral-100 py-10 md:py-14 text-center" aria-hidden="true">
+        <div className="max-w-lg mx-auto px-4">
+          <div className="flex items-center justify-center gap-4 mb-5">
             <span className="flex-1 border-t border-neutral-200" />
-            <span className="text-brand-300 text-sm">&#9670;</span>
+            <span className="text-neutral-300 text-xs">&#9670;</span>
             <span className="flex-1 border-t border-neutral-200" />
           </div>
-          <p className="text-lg italic text-neutral-500 leading-relaxed">
+          <p className="text-sm uppercase tracking-widest text-neutral-400 font-bold">
             {BRAND.claimSupport}
           </p>
         </div>

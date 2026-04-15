@@ -145,11 +145,19 @@
   }
 
   .pull-quote {
-    @apply border-l-4 border-brand-300 pl-5 py-3 my-6 bg-brand-50 rounded-r-lg;
+    @apply border-l-0 pl-0 py-6 my-8;
+    border-top: 2px solid;
+    border-bottom: 1px solid;
+    @apply border-neutral-200;
   }
 
   .pull-quote p {
-    @apply text-lg md:text-xl text-neutral-700 leading-relaxed italic;
+    @apply text-xl md:text-2xl text-neutral-700 leading-relaxed font-lora italic;
+  }
+
+  /* Hover transition on equal/horizontal cards */
+  .story-card-title-hover {
+    transition: color 0.15s ease;
   }
 
   .section-divider {
@@ -222,8 +230,8 @@
   }
 
   .issue-nav-link {
-    @apply inline-flex items-center gap-2 px-5 py-3.5 text-base font-bold uppercase tracking-wider transition-colors;
-    @apply focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 border-transparent text-neutral-500;
+    @apply inline-flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-widest transition-colors;
+    @apply focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 border-transparent text-neutral-400;
   }
 
   .issue-nav-link:hover {
@@ -234,6 +242,7 @@
   .issue-nav-link[data-active='true'] {
     color: var(--issue-color);
     border-bottom-color: var(--issue-color);
+    @apply text-neutral-700;
   }
 
   /* Positivity slider thumb */
