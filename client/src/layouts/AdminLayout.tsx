@@ -20,6 +20,7 @@ import {
   ChatBubbleLeftRightIcon,
   ChatBubbleLeftEllipsisIcon,
   GlobeAltIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
 import { adminApi } from '../lib/admin-api'
@@ -43,6 +44,7 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Miembros', href: '/admin/members', icon: UserGroupIcon },
   { name: 'Comunidades', href: '/admin/communities', icon: GlobeAltIcon },
+  { name: 'Mantenimiento', href: '/admin/maintenance', icon: WrenchScrewdriverIcon },
 ]
 
 function NavItems({ onClick, unreadFeedbackCount }: { onClick?: () => void; unreadFeedbackCount: number }) {

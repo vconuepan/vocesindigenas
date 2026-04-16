@@ -495,6 +495,26 @@ export const adminApi = {
       }),
   },
 
+  // Maintenance
+  maintenance: {
+    storyStatus: (slug: string) =>
+      request<{ found: boolean; slug: string; id?: string; status?: string; title?: string; datePublished?: string; clusterId?: string }>(
+        `/maintenance/story-status?slug=${encodeURIComponent(slug)}`
+      ),
+    republishSlug: (slug: string) =>
+      request<{ ok: boolean; slug: string; prevStatus: string; newStatus: string; title: string }>(
+        '/maintenance/republish-slug', { method: 'POST', body: JSON.stringify({ slug }) }
+      ),
+    backfillImages: () =>
+      request<{ total: number; updated: number; skipped: number }>(
+        '/maintenance/backfill-images', { method: 'POST' }
+      ),
+    backfillTitles: () =>
+      request<{ ok: boolean; total: number; message: string }>(
+        '/maintenance/backfill-titles', { method: 'POST' }
+      ),
+  },
+
   // Users
   users: {
     list: () => request<User[]>('/users'),
