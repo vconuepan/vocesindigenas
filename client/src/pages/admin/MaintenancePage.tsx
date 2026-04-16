@@ -14,6 +14,7 @@ interface JobResult {
   skipped?: number
   message?: string
   error?: string
+  [key: string]: unknown
 }
 
 function JobCard({
