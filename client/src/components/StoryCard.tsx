@@ -16,7 +16,7 @@ interface StoryCardProps {
 }
 
 function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | 'xs' }) {
-  const dateStr = story.datePublished ? formatDate(story.datePublished) : null
+  const dateStr = formatDate(story.sourceDatePublished || story.datePublished || '')
   const ageMonths = story.sourceDatePublished ? storyAgeMonths(story.sourceDatePublished) : 0
   const isOld = ageMonths >= 3
   return (

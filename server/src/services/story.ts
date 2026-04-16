@@ -1079,10 +1079,18 @@ export async function getHomepageData(issueSlugs: string[], storiesPerIssue = 7)
     ],
   })
 
-  const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ datePublished: 'desc' }, { dateCrawled: 'desc' }]
+  // Sort by original article date, not platform ingestion date
+  const orderBy: Prisma.StoryOrderByWithRelationInput[] = [{ sourceDatePublished: 'desc' }, { datePublished: 'desc' }]
+
+  // Only surface articles published within the last 18 months
+  const eighteenMonthsAgo = new Date(Date.now() - 18 * 30 * 24 * 60 * 60 * 1000)
 
   const storiesPromises = issueSlugs.map(async (slug) => {
-    const baseWhere: Prisma.StoryWhereInput = { status: 'published', ...buildIssueCondition(slug) }
+    const baseWhere: Prisma.StoryWhereInput = {
+      status: 'published',
+      sourceDatePublished: { gte: eighteenMonthsAgo },
+      ...buildIssueCondition(slug),
+    }
 
     const [uplifting, calm, negative] = await Promise.all([
       prisma.story.findMany({

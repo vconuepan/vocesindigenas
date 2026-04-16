@@ -47,20 +47,26 @@ async function rewriteTitle(story: {
     : 0
   const publishedDate = story.sourceDatePublished?.toISOString().slice(0, 10) ?? 'unknown'
 
+  const yearNote = ageMonths >= 12
+    ? `- Si la noticia tiene más de 12 meses, incluye el año (${story.sourceDatePublished?.getFullYear()}) al inicio del título. Ej: "En 2023, comunidad mapuche logró..."\n`
+    : ''
+
   const result = await structuredLlm.invoke([
     new HumanMessage(
-      `Esta noticia fue publicada el ${publishedDate} (hace ${ageMonths} meses). Reescribe el título en tiempo PASADO.\n\n` +
+      `Esta noticia fue publicada el ${publishedDate} (hace ${ageMonths} meses). Reescribe el título y la etiqueta.\n\n` +
         `REGLAS DEL LABEL (etiqueta del título):\n` +
         `- 1-3 palabras cortas. Frase nominal — sin conjunciones, sin "y".\n` +
-        `- Minúsculas excepto nombres propios.\n\n` +
+        `- Minúsculas excepto nombres propios.\n` +
+        `- No repitas palabras que ya aparezcan en el título.\n\n` +
         `REGLAS DEL TÍTULO:\n` +
-        `- Máximo 10 palabras. Titular independiente.\n` +
-        `- Usa tiempo PASADO: "logró", "aprobó", "firmó", "anunció", "rechazó".\n` +
-        `- NO uses presente ni futuro: no "logra", no "logrará".\n` +
-        `- Concreto: nombra al actor, la acción o lo que está en juego.\n` +
-        `- Escrito para un joven de 16 años inteligente — sin jerga.\n` +
-        `- El label y el título NO deben compartir palabras.\n\n` +
-        `Label actual: "${story.titleLabel ?? ''}"\n` +
+        `- Máximo 10 palabras. Titular independiente — debe funcionar sin contexto adicional.\n` +
+        `- TIEMPO PASADO obligatorio: "logró", "aprobó", "firmó", "anunció", "rechazó", "denunció".\n` +
+        `- NO uses presente ni futuro.\n` +
+        `- CONCRETO: nombra al actor específico (quién), la acción (qué) y el impacto real (para qué).\n` +
+        `- EVITA títulos vagos como "mostró su trabajo" o "presentó un corto" — ¿qué importa de eso para pueblos indígenas?\n` +
+        `- Escrito para un joven de 16 años — sin jerga técnica ni siglas sin explicar.\n` +
+        yearNote +
+        `\nLabel actual: "${story.titleLabel ?? ''}"\n` +
         `Título actual: "${story.title ?? ''}"`,
     ),
   ])

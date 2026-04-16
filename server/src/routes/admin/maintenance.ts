@@ -2,6 +2,11 @@ import { Router } from 'express'
 import prisma from '../../lib/prisma.js'
 import { fetchOgImage } from '../../lib/extract-og-image.js'
 import { createLogger } from '../../lib/logger.js'
+import { ChatOpenAI } from '@langchain/openai'
+import { HumanMessage } from '@langchain/core/messages'
+import { z } from 'zod'
+import { Semaphore } from '../../lib/semaphore.js'
+import { config } from '../../config.js'
 
 const router = Router()
 const log = createLogger('maintenance')
@@ -74,6 +79,91 @@ router.post('/backfill-images', async (req, res) => {
 
   log.info({ updated, skipped }, 'image backfill complete')
   res.json({ total: stories.length, updated, skipped })
+})
+
+// POST /api/admin/maintenance/backfill-titles
+// Rewrite titles+labels for stories published > 3 months ago (past tense, includes year if > 12 months)
+// Runs in background — returns immediately with job status. Check server logs for progress.
+router.post('/backfill-titles', async (req, res) => {
+  const THREE_MONTHS_AGO = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000)
+
+  const stories = await prisma.story.findMany({
+    where: {
+      status: 'published',
+      title: { not: null },
+      sourceDatePublished: { lt: THREE_MONTHS_AGO },
+    },
+    select: { id: true, title: true, titleLabel: true, sourceDatePublished: true },
+    orderBy: { sourceDatePublished: 'desc' },
+  })
+
+  log.info({ total: stories.length }, 'backfill-titles: starting background job')
+  res.json({ ok: true, total: stories.length, message: 'Title rewrite started in background. Check server logs.' })
+
+  // Run in background after response is sent
+  setImmediate(async () => {
+    const llm = new ChatOpenAI({
+      model: config.llm.models.medium.name,
+      reasoning: { effort: config.llm.models.medium.reasoningEffort },
+      maxRetries: 3,
+    })
+    const rewriteSchema = z.object({
+      titleLabel: z.string().describe('Ultra-short topic label (1-3 words, lowercase except proper nouns)'),
+      title: z.string().describe('Standalone headline in PAST TENSE (max 10 words)'),
+    })
+    const structuredLlm = llm.withStructuredOutput(rewriteSchema)
+    const semaphore = new Semaphore(6)
+
+    let updated = 0
+    let failed = 0
+
+    await Promise.allSettled(
+      stories.map((story) =>
+        semaphore.run(async () => {
+          try {
+            const ageMonths = story.sourceDatePublished
+              ? Math.floor((Date.now() - story.sourceDatePublished.getTime()) / (1000 * 60 * 60 * 24 * 30))
+              : 0
+            const publishedDate = story.sourceDatePublished?.toISOString().slice(0, 10) ?? 'unknown'
+            const yearNote = ageMonths >= 12
+              ? `- Si la noticia tiene más de 12 meses, incluye el año (${story.sourceDatePublished?.getFullYear()}) al inicio: ej. "En 2023, comunidad mapuche logró..."\n`
+              : ''
+
+            const result = await structuredLlm.invoke([
+              new HumanMessage(
+                `Esta noticia fue publicada el ${publishedDate} (hace ${ageMonths} meses). Reescribe el título y la etiqueta.\n\n` +
+                  `REGLAS DEL LABEL (etiqueta):\n` +
+                  `- 1-3 palabras. Frase nominal, sin conjunciones.\n` +
+                  `- Minúsculas excepto nombres propios.\n` +
+                  `- No repitas palabras del título.\n\n` +
+                  `REGLAS DEL TÍTULO:\n` +
+                  `- Máximo 10 palabras. Titular independiente.\n` +
+                  `- TIEMPO PASADO: "logró", "aprobó", "firmó", "anunció", "rechazó", "denunció".\n` +
+                  `- No uses presente ni futuro.\n` +
+                  `- CONCRETO: actor + acción + impacto real para pueblos indígenas.\n` +
+                  `- Evita títulos vagos ("mostró su trabajo") — ¿qué importa para los pueblos indígenas?\n` +
+                  yearNote +
+                  `\nLabel actual: "${story.titleLabel ?? ''}"\n` +
+                  `Título actual: "${story.title ?? ''"`,
+              ),
+            ])
+
+            await prisma.story.update({
+              where: { id: story.id },
+              data: { title: result.title, titleLabel: result.titleLabel },
+            })
+            updated++
+            log.info({ id: story.id, date: publishedDate, old: story.title, new: result.title }, 'backfill-titles: updated')
+          } catch (err) {
+            failed++
+            log.error({ err, id: story.id, title: story.title }, 'backfill-titles: failed')
+          }
+        }),
+      ),
+    )
+
+    log.info({ updated, failed, total: stories.length }, 'backfill-titles: complete')
+  })
 })
 
 export default router

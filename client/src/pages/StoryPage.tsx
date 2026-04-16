@@ -132,20 +132,16 @@ export default function StoryPage() {
   const ageMonths = story.sourceDatePublished ? storyAgeMonths(story.sourceDatePublished) : 0
   const isOld = ageMonths >= 3
   const hasSourceDate = !!story.sourceDatePublished
-  const displayDate = story.datePublished || story.dateCrawled
+  // Show the original article date first; fall back to platform publication date
+  const displayDate = story.sourceDatePublished || story.datePublished || story.dateCrawled
   const dateLocale = i18n.language === 'en' ? 'en-US' : 'es-CL'
   const dateStr = new Date(displayDate).toLocaleDateString(dateLocale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
-  const sourceDateStr = story.sourceDatePublished
-    ? new Date(story.sourceDatePublished).toLocaleDateString(dateLocale, {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : null
+  // sourceDateStr now unused (displayDate already uses sourceDatePublished)
+  const sourceDateStr = null
 
   const description = loc.summary || displayTitle
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
