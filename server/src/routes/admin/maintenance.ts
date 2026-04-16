@@ -144,7 +144,7 @@ router.post('/backfill-titles', async (req, res) => {
                   `- Evita títulos vagos ("mostró su trabajo") — ¿qué importa para los pueblos indígenas?\n` +
                   yearNote +
                   `\nLabel actual: "${story.titleLabel ?? ''}"\n` +
-                  `Título actual: "${story.title ?? ''"`,
+                  `Título actual: "${story.title ?? ''}"`,
               ),
             ])
 
