@@ -32,6 +32,7 @@ export const routes: RouteConfig[] = [
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
   { path: '/thank-you', priority: 0.2, changefreq: 'yearly' },
   // Evergreen reference pages
+  { path: '/mapa', priority: 0.8, changefreq: 'monthly' },
   { path: '/glosario', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia/pueblo-mapuche', priority: 0.8, changefreq: 'monthly' },

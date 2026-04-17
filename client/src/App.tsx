@@ -34,6 +34,7 @@ const MagicLinkSentPage = lazy(() => import('./pages/MagicLinkSentPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const GuidesIndexPage = lazy(() => import('./pages/GuidesIndexPage'))
 const GlossaryPage = lazy(() => import('./pages/GlossaryPage'))
+const MapPage = lazy(() => import('./pages/MapPage'))
 const MapuchePage = lazy(() => import('./pages/MapuchePage'))
 const FpicPage = lazy(() => import('./pages/FpicPage'))
 const ChileHubPage = lazy(() => import('./pages/ChileHubPage'))
@@ -126,6 +127,7 @@ export default function App() {
         <Route path="/magic-sent" element={<LazyPage><MagicLinkSentPage /></LazyPage>} />
         <Route path="/perfil" element={<LazyPage><ProfilePage /></LazyPage>} />
         <Route path="/glosario" element={<LazyPage><GlossaryPage /></LazyPage>} />
+        <Route path="/mapa" element={<LazyPage><MapPage /></LazyPage>} />
         <Route path="/guia" element={<LazyPage><GuidesIndexPage /></LazyPage>} />
         <Route path="/guia/pueblo-mapuche" element={<LazyPage><MapuchePage /></LazyPage>} />
         <Route path="/guia/consulta-previa-fpic" element={<LazyPage><FpicPage /></LazyPage>} />

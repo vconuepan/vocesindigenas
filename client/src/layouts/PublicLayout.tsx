@@ -62,6 +62,7 @@ const FOOTER_GUIDES = [
   { labelKey: 'footer.guideFpic', href: '/guia/consulta-previa-fpic' },
   { labelKey: 'footer.guideChile', href: '/guia/pueblos-indigenas-chile' },
   { labelKey: 'footer.glossary', href: '/glosario' },
+  { labelKey: 'footer.map', href: '/mapa' },
 ]
 
 const FOOTER_LEGAL = [
