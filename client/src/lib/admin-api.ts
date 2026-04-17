@@ -557,6 +557,20 @@ export const adminApi = {
       ),
   },
 
+  analytics: {
+    overview: (days = 30) =>
+      request<{
+        period: number
+        total: number
+        today: number
+        yesterday: number
+        uniquePages: number
+        byDay: Array<{ date: string; count: number }>
+        topPages: Array<{ path: string; count: number }>
+        topStories: Array<{ path: string; count: number }>
+      }>(`/analytics?days=${days}`),
+  },
+
   subscribers: {
     list: (params?: { status?: string; page?: number; pageSize?: number }) =>
       request<{ data: Subscriber[]; total: number; page: number; pageSize: number; totalPages: number }>(

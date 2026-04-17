@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
+import { usePageTracking } from "../hooks/usePageTracking";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
@@ -115,6 +116,7 @@ export default function PublicLayout() {
 }
 
 function PublicLayoutInner() {
+  usePageTracking();
   const { t, i18n } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);

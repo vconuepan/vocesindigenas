@@ -22,6 +22,7 @@ import {
   GlobeAltIcon,
   WrenchScrewdriverIcon,
   EnvelopeOpenIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../lib/auth'
 import { adminApi } from '../lib/admin-api'
@@ -45,6 +46,7 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Miembros', href: '/admin/members', icon: UserGroupIcon },
   { name: 'Comunidades', href: '/admin/communities', icon: GlobeAltIcon },
+  { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
   { name: 'Suscriptores', href: '/admin/subscribers', icon: EnvelopeOpenIcon },
   { name: 'Mantenimiento', href: '/admin/maintenance', icon: WrenchScrewdriverIcon },
 ]
