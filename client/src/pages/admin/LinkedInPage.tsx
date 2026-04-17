@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
-import { ArrowTopRightOnSquareIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
-import { HeartIcon, ChatBubbleOvalLeftIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { ArrowTopRightOnSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import type { LinkedInPost, LinkedInPostStatus } from '@shared/types'
 import { adminApi } from '../../lib/admin-api'
 import { PageHeader } from '../../components/ui/PageHeader'
@@ -55,15 +54,6 @@ export default function LinkedInPage() {
     onError: (err) => toast('error', err instanceof Error ? err.message : 'Error al eliminar'),
   })
 
-  const refreshMetricsMutation = useMutation({
-    mutationFn: () => adminApi.linkedin.refreshMetrics(),
-    onSuccess: () => {
-      toast('success', 'Métricas actualizadas')
-      queryClient.invalidateQueries({ queryKey: ['linkedinPosts'] })
-    },
-    onError: (err) => toast('error', err instanceof Error ? err.message : 'Error al actualizar métricas'),
-  })
-
   const posts = query.data?.posts ?? []
   const total = query.data?.total ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -71,10 +61,6 @@ export default function LinkedInPage() {
   const published = posts.filter((p) => p.status === 'published').length
   const drafts = posts.filter((p) => p.status === 'draft').length
   const failed = posts.filter((p) => p.status === 'failed').length
-
-  const totalLikes = posts.filter((p) => p.status === 'published').reduce((s, p) => s + p.likeCount, 0)
-  const totalComments = posts.filter((p) => p.status === 'published').reduce((s, p) => s + p.commentCount, 0)
-  const totalImpressions = posts.filter((p) => p.status === 'published').reduce((s, p) => s + p.impressionCount, 0)
 
   function handleDelete(post: LinkedInPost) {
     if (!confirm(`¿Eliminar esta publicación de LinkedIn?\n\n"${post.postText.slice(0, 80)}..."`)) return
@@ -105,51 +91,35 @@ export default function LinkedInPage() {
       />
 
       {/* Stats bar */}
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Total (página)', value: total, color: 'text-neutral-900' },
           { label: 'Publicados', value: published, color: 'text-green-700' },
           { label: 'Borradores', value: drafts, color: 'text-amber-700' },
           { label: 'Fallidos', value: failed, color: 'text-red-700' },
-          { label: 'Likes', value: totalLikes, color: 'text-rose-600', icon: '❤️' },
-          { label: 'Comentarios', value: totalComments, color: 'text-blue-600', icon: '💬' },
-          { label: 'Impresiones', value: totalImpressions, color: 'text-purple-600', icon: '👁️' },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-lg border border-neutral-200 px-4 py-3">
-            <p className="text-xs text-neutral-500 uppercase tracking-wide mb-0.5">
-              {s.icon ? `${s.icon} ${s.label}` : s.label}
-            </p>
+            <p className="text-xs text-neutral-500 uppercase tracking-wide mb-0.5">{s.label}</p>
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Filter tabs + refresh button */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1 bg-neutral-100 rounded-lg p-1 w-fit">
-          {filters.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => handleFilterChange(f.value)}
-              className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
-                filter === f.value
-                  ? 'bg-white text-neutral-900 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={() => refreshMetricsMutation.mutate()}
-          disabled={refreshMetricsMutation.isPending}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-md hover:bg-neutral-50 disabled:opacity-50"
-          title="Actualizar métricas de engagement (solo cuentas de organización)"
-        >
-          <ArrowPathIcon className={`h-4 w-4 ${refreshMetricsMutation.isPending ? 'animate-spin' : ''}`} />
-          Actualizar métricas
-        </button>
+      {/* Filter tabs */}
+      <div className="flex gap-1 mb-4 bg-neutral-100 rounded-lg p-1 w-fit">
+        {filters.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => handleFilterChange(f.value)}
+            className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
+              filter === f.value
+                ? 'bg-white text-neutral-900 shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-700'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       {/* Content */}
@@ -178,9 +148,6 @@ export default function LinkedInPage() {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wide">
                     Estado
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wide hidden lg:table-cell">
-                    Métricas
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wide hidden md:table-cell">
                     Publicado
@@ -276,33 +243,6 @@ function PostRow({
         >
           {STATUS_LABELS[post.status]}
         </span>
-      </td>
-
-      {/* Metrics */}
-      <td className="px-4 py-3 hidden lg:table-cell">
-        {post.status === 'published' ? (
-          <div className="flex items-center gap-3 text-xs text-neutral-600">
-            <span className="flex items-center gap-1" title="Likes">
-              <HeartIcon className="h-3.5 w-3.5 text-rose-400" />
-              {post.likeCount}
-            </span>
-            <span className="flex items-center gap-1" title="Comentarios">
-              <ChatBubbleOvalLeftIcon className="h-3.5 w-3.5 text-blue-400" />
-              {post.commentCount}
-            </span>
-            <span className="flex items-center gap-1" title="Impresiones">
-              <EyeIcon className="h-3.5 w-3.5 text-purple-400" />
-              {post.impressionCount}
-            </span>
-            {post.metricsUpdatedAt && (
-              <span className="text-neutral-400 text-[10px]" title={`Actualizado ${formatRelativeTime(post.metricsUpdatedAt)}`}>
-                ↻ {formatRelativeTime(post.metricsUpdatedAt)}
-              </span>
-            )}
-          </div>
-        ) : (
-          <span className="text-neutral-300 text-xs">—</span>
-        )}
       </td>
 
       {/* Published at */}
