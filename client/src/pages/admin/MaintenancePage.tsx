@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useMutation } from '@tanstack/react-query'
-import { adminApi } from '../../lib/admin-api'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { adminApi, type FeedStatusItem } from '../../lib/admin-api'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -12,6 +12,7 @@ interface JobResult {
   total?: number
   updated?: number
   skipped?: number
+  deleted?: number
   message?: string
   error?: string
   [key: string]: unknown
@@ -77,6 +78,13 @@ export default function MaintenancePage() {
   const [storyStatusResult, setStoryStatusResult] = useState<JobResult | null>(null)
   const [republishResult, setRepublishResult] = useState<JobResult | null>(null)
 
+  // Limpieza y diagnóstico
+  const [purgeTrashedResult, setPurgeTrashedResult] = useState<JobResult | null>(null)
+  const [backfillSlugsResult, setBackfillSlugsResult] = useState<JobResult | null>(null)
+  const [feedIdInput, setFeedIdInput] = useState('')
+  const [backfillFeedResult, setBackfillFeedResult] = useState<JobResult | null>(null)
+  const [loadFeedStatus, setLoadFeedStatus] = useState(false)
+
   const backfillImages = useMutation({
     mutationFn: () => adminApi.maintenance.backfillImages(),
     onSuccess: (data) => {
@@ -105,6 +113,49 @@ export default function MaintenancePage() {
     mutationFn: () => adminApi.maintenance.storyStatus(storySlug),
     onSuccess: (data) => setStoryStatusResult(data),
     onError: (err: Error) => setStoryStatusResult({ error: err.message }),
+  })
+
+  const purgeTrashed = useMutation({
+    mutationFn: () => adminApi.maintenance.purgeTrashed(),
+    onSuccess: (data) => {
+      setPurgeTrashedResult(data)
+      toast('success', `${data.deleted} historias eliminadas permanentemente`)
+    },
+    onError: (err: Error) => {
+      setPurgeTrashedResult({ error: err.message })
+      toast('error', 'Error al purgar papelera')
+    },
+  })
+
+  const backfillSlugs = useMutation({
+    mutationFn: () => adminApi.maintenance.backfillSlugs(),
+    onSuccess: (data) => {
+      setBackfillSlugsResult(data)
+      toast('success', `Slugs: ${data.updated} generados, ${data.skipped} omitidos`)
+    },
+    onError: (err: Error) => {
+      setBackfillSlugsResult({ error: err.message })
+      toast('error', 'Error al generar slugs')
+    },
+  })
+
+  const backfillFeed = useMutation({
+    mutationFn: () => adminApi.maintenance.backfillImagesByFeed(feedIdInput.trim()),
+    onSuccess: (data) => {
+      setBackfillFeedResult(data)
+      toast('success', `${data.total} historias en cola`)
+    },
+    onError: (err: Error) => {
+      setBackfillFeedResult({ error: err.message })
+      toast('error', 'Error al iniciar extracción')
+    },
+  })
+
+  const feedStatusQuery = useQuery({
+    queryKey: ['maintenance-feed-status'],
+    queryFn: () => adminApi.maintenance.feedStatus(),
+    enabled: loadFeedStatus,
+    staleTime: 60_000,
   })
 
   const republishStory = useMutation({
@@ -202,6 +253,123 @@ export default function MaintenancePage() {
               {JSON.stringify(republishResult, null, 2)}
             </div>
           )}
+        </Card>
+
+        {/* Limpieza y diagnóstico */}
+        <Card title="Limpieza y diagnóstico">
+          <div className="space-y-3">
+            <JobCard
+              title="Purgar papelera"
+              description="Elimina permanentemente todas las historias con estado 'trashed'. Esta acción no se puede deshacer."
+              buttonLabel="Purgar"
+              onRun={() => purgeTrashed.mutate()}
+              isPending={purgeTrashed.isPending}
+              result={purgeTrashedResult}
+            />
+            <JobCard
+              title="Backfill de slugs faltantes"
+              description="Genera slugs para historias publicadas que no tienen uno (máx. 500 por vez). Los slugs se derivan del título."
+              buttonLabel="Ejecutar"
+              onRun={() => backfillSlugs.mutate()}
+              isPending={backfillSlugs.isPending}
+              result={backfillSlugsResult}
+            />
+          </div>
+
+          {/* Re-extraer imágenes por feed */}
+          <div className="mt-3 bg-white rounded-lg border border-neutral-200 p-5">
+            <h3 className="font-semibold text-neutral-900 mb-1">Re-extraer imágenes por feed</h3>
+            <p className="text-sm text-neutral-500 mb-3">
+              Vuelve a extraer og:image de las historias publicadas sin imagen de un feed específico. Corre en background.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={feedIdInput}
+                onChange={(e) => { setFeedIdInput(e.target.value); setBackfillFeedResult(null) }}
+                placeholder="Feed ID (UUID)"
+                className="flex-1 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => backfillFeed.mutate()}
+                disabled={!feedIdInput.trim()}
+                loading={backfillFeed.isPending}
+                className="shrink-0"
+              >
+                Ejecutar
+              </Button>
+            </div>
+            {backfillFeedResult && (
+              <div className={`mt-3 rounded-md px-3 py-2 text-sm ${backfillFeedResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+                {backfillFeedResult.error ? `Error: ${backfillFeedResult.error}` : backfillFeedResult.message ?? JSON.stringify(backfillFeedResult)}
+              </div>
+            )}
+          </div>
+
+          {/* Estado de feeds */}
+          <div className="mt-3 bg-white rounded-lg border border-neutral-200 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-neutral-900 mb-1">Estado de feeds activos</h3>
+                <p className="text-sm text-neutral-500">Muestra el último crawl, errores y cantidad de historias por feed.</p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setLoadFeedStatus(true)}
+                loading={feedStatusQuery.isFetching}
+                className="shrink-0"
+              >
+                Cargar
+              </Button>
+            </div>
+            {feedStatusQuery.isSuccess && feedStatusQuery.data && (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-200 text-left text-neutral-500">
+                      <th className="py-1.5 pr-3 font-medium">Feed</th>
+                      <th className="py-1.5 pr-3 font-medium">Historias</th>
+                      <th className="py-1.5 pr-3 font-medium">Último crawl</th>
+                      <th className="py-1.5 font-medium">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {feedStatusQuery.data.feeds.map((feed: FeedStatusItem) => (
+                      <tr key={feed.id} className="border-b border-neutral-100">
+                        <td className="py-1.5 pr-3 font-medium text-neutral-800 truncate max-w-[200px]" title={feed.title}>{feed.title}</td>
+                        <td className="py-1.5 pr-3 text-neutral-600">{feed._count.stories}</td>
+                        <td className="py-1.5 pr-3 text-neutral-500">
+                          {feed.lastCrawledAt
+                            ? new Date(feed.lastCrawledAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
+                            : '—'}
+                        </td>
+                        <td className="py-1.5">
+                          {feed.consecutiveFailedCrawls > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-red-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />
+                              {feed.consecutiveFailedCrawls} errores
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-green-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
+                              OK
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="mt-2 text-xs text-neutral-400">{feedStatusQuery.data.total} feeds activos</p>
+              </div>
+            )}
+            {feedStatusQuery.isError && (
+              <div className="mt-3 text-sm text-red-600">Error al cargar estado de feeds</div>
+            )}
+          </div>
         </Card>
 
       </div>

@@ -166,4 +166,108 @@ router.post('/backfill-titles', async (req, res) => {
   })
 })
 
+// POST /api/admin/maintenance/purge-trashed
+// Permanently delete all trashed stories
+router.post('/purge-trashed', async (_req, res) => {
+  const { count } = await prisma.story.deleteMany({ where: { status: 'trashed' } })
+  log.info({ count }, 'purged trashed stories')
+  res.json({ ok: true, deleted: count })
+})
+
+// GET /api/admin/maintenance/feed-status
+// Return all active feeds with last crawl info
+router.get('/feed-status', async (_req, res) => {
+  const feeds = await prisma.feed.findMany({
+    where: { active: true },
+    select: {
+      id: true,
+      title: true,
+      rssUrl: true,
+      lastCrawledAt: true,
+      lastCrawlError: true,
+      lastSuccessfulCrawlAt: true,
+      consecutiveFailedCrawls: true,
+      _count: { select: { stories: true } },
+    },
+    orderBy: { title: 'asc' },
+  })
+  res.json({ feeds, total: feeds.length })
+})
+
+// POST /api/admin/maintenance/backfill-slugs
+// Generate slugs for published stories that have no slug
+router.post('/backfill-slugs', async (_req, res) => {
+  function toSlug(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80)
+  }
+
+  const stories = await prisma.story.findMany({
+    where: { status: 'published', title: { not: null }, slug: null },
+    select: { id: true, title: true },
+    take: 500,
+  })
+
+  let updated = 0
+  let skipped = 0
+
+  await Promise.allSettled(
+    stories.map(async (story) => {
+      if (!story.title) { skipped++; return }
+      const base = toSlug(story.title)
+      if (!base) { skipped++; return }
+      const slug = base + '-' + story.id.slice(0, 6)
+      try {
+        await prisma.story.update({ where: { id: story.id }, data: { slug } })
+        updated++
+      } catch {
+        skipped++
+      }
+    }),
+  )
+
+  log.info({ total: stories.length, updated, skipped }, 'backfill-slugs complete')
+  res.json({ ok: true, total: stories.length, updated, skipped })
+})
+
+// POST /api/admin/maintenance/backfill-images-by-feed
+// Re-extract og:image for published stories in a specific feed that have no image
+router.post('/backfill-images-by-feed', async (req, res) => {
+  const { feedId } = req.body as { feedId?: string }
+  if (!feedId) {
+    res.status(400).json({ error: 'feedId required in body' })
+    return
+  }
+
+  const stories = await prisma.story.findMany({
+    where: { feedId, status: 'published', imageUrl: null },
+    select: { id: true, sourceUrl: true },
+  })
+
+  log.info({ feedId, total: stories.length }, 'backfill-images-by-feed starting')
+  res.json({ ok: true, total: stories.length, message: `Procesando ${stories.length} historias en background. Revisa los logs.` })
+
+  setImmediate(async () => {
+    let updated = 0
+    let skipped = 0
+    await Promise.allSettled(
+      stories.map(async (story) => {
+        const imageUrl = await fetchOgImage(story.sourceUrl)
+        if (imageUrl) {
+          await prisma.story.update({ where: { id: story.id }, data: { imageUrl } })
+          updated++
+        } else {
+          skipped++
+        }
+      }),
+    )
+    log.info({ feedId, updated, skipped }, 'backfill-images-by-feed complete')
+  })
+})
+
 export default router

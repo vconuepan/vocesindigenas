@@ -72,6 +72,32 @@ export interface FeedbackItem {
   updatedAt: string
 }
 
+export interface Subscriber {
+  id: string
+  email: string
+  confirmedAt: string | null
+  expiresAt: string
+  createdAt: string
+}
+
+export interface SubscriberStats {
+  confirmed: number
+  pending: number
+  expired: number
+  total: number
+}
+
+export interface FeedStatusItem {
+  id: string
+  title: string
+  rssUrl: string
+  lastCrawledAt: string | null
+  lastCrawlError: string | null
+  lastSuccessfulCrawlAt: string | null
+  consecutiveFailedCrawls: number
+  _count: { stories: number }
+}
+
 export interface FeedQualityMetrics {
   totalCrawled: number
   publishedCount: number
@@ -513,6 +539,31 @@ export const adminApi = {
       request<{ ok: boolean; total: number; message: string }>(
         '/maintenance/backfill-titles', { method: 'POST' }
       ),
+    purgeTrashed: () =>
+      request<{ ok: boolean; deleted: number }>(
+        '/maintenance/purge-trashed', { method: 'POST' }
+      ),
+    feedStatus: () =>
+      request<{ feeds: FeedStatusItem[]; total: number }>(
+        '/maintenance/feed-status'
+      ),
+    backfillSlugs: () =>
+      request<{ ok: boolean; total: number; updated: number; skipped: number }>(
+        '/maintenance/backfill-slugs', { method: 'POST' }
+      ),
+    backfillImagesByFeed: (feedId: string) =>
+      request<{ ok: boolean; total: number; message: string }>(
+        '/maintenance/backfill-images-by-feed', { method: 'POST', body: JSON.stringify({ feedId }) }
+      ),
+  },
+
+  subscribers: {
+    list: (params?: { status?: string; page?: number; pageSize?: number }) =>
+      request<{ data: Subscriber[]; total: number; page: number; pageSize: number; totalPages: number }>(
+        `/subscribers${toQueryString((params || {}) as Record<string, unknown>)}`
+      ),
+    stats: () => request<SubscriberStats>('/subscribers/stats'),
+    delete: (id: string) => request<{ ok: boolean }>(`/subscribers/${id}`, { method: 'DELETE' }),
   },
 
   // Users

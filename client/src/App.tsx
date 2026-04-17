@@ -55,6 +55,7 @@ const FeedbackPage = lazy(() => import('./pages/admin/FeedbackPage'))
 const MembersPage = lazy(() => import('./pages/admin/MembersPage'))
 const CommunitiesAdminPage = lazy(() => import('./pages/admin/CommunitiesAdminPage'))
 const MaintenancePage = lazy(() => import('./pages/admin/MaintenancePage'))
+const SubscribersPage = lazy(() => import('./pages/admin/SubscribersPage'))
 
 /** Preload the admin layout and dashboard chunks (call from LoginPage). */
 export function preloadAdminChunks() {
@@ -169,6 +170,7 @@ export default function App() {
         <Route path="communities" element={<CommunitiesAdminPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
         <Route path="maintenance" element={<MaintenancePage />} />
+        <Route path="subscribers" element={<SubscribersPage />} />
       </Route>
 
       {/* Catch-all */}
