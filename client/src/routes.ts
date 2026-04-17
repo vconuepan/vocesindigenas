@@ -31,7 +31,8 @@ export const routes: RouteConfig[] = [
   { path: '/saved', priority: 0.3, changefreq: 'daily' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
   { path: '/thank-you', priority: 0.2, changefreq: 'yearly' },
-  // Evergreen guide pages
+  // Evergreen reference pages
+  { path: '/glosario', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia/pueblo-mapuche', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia/consulta-previa-fpic', priority: 0.8, changefreq: 'monthly' },

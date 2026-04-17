@@ -61,6 +61,7 @@ const FOOTER_GUIDES = [
   { labelKey: 'footer.guideMapuche', href: '/guia/pueblo-mapuche' },
   { labelKey: 'footer.guideFpic', href: '/guia/consulta-previa-fpic' },
   { labelKey: 'footer.guideChile', href: '/guia/pueblos-indigenas-chile' },
+  { labelKey: 'footer.glossary', href: '/glosario' },
 ]
 
 const FOOTER_LEGAL = [
@@ -336,6 +337,16 @@ function PublicLayoutInner() {
                   >
                     <span className="w-2 h-2 rounded-full bg-neutral-400" aria-hidden="true" />
                     {t('footer.guides')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/glosario"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${location.pathname === '/glosario' ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"}`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-neutral-400" aria-hidden="true" />
+                    {t('footer.glossary')}
                   </Link>
                 </li>
                 {memberAuth.isAuthenticated() && (
