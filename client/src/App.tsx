@@ -49,8 +49,8 @@ const PodcastDetailPage = lazy(() => import('./pages/admin/PodcastDetailPage'))
 const JobsPage = lazy(() => import('./pages/admin/JobsPage'))
 const UsersPage = lazy(() => import('./pages/admin/UsersPage'))
 const ClustersPage = lazy(() => import('./pages/admin/ClustersPage'))
-const BlueskyPage = lazy(() => import('./pages/admin/BlueskyPage'))
-const MastodonPage = lazy(() => import('./pages/admin/MastodonPage'))
+const InstagramPage = lazy(() => import('./pages/admin/InstagramPage'))
+const LinkedInPage = lazy(() => import('./pages/admin/LinkedInPage'))
 const FeedbackPage = lazy(() => import('./pages/admin/FeedbackPage'))
 const MembersPage = lazy(() => import('./pages/admin/MembersPage'))
 const CommunitiesAdminPage = lazy(() => import('./pages/admin/CommunitiesAdminPage'))
@@ -164,8 +164,8 @@ export default function App() {
         <Route path="podcasts/:id" element={<PodcastDetailPage />} />
         <Route path="jobs" element={<JobsPage />} />
         <Route path="clusters" element={<ClustersPage />} />
-        <Route path="bluesky" element={<BlueskyPage />} />
-        <Route path="mastodon" element={<MastodonPage />} />
+        <Route path="instagram" element={<InstagramPage />} />
+        <Route path="linkedin" element={<LinkedInPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="members" element={<MembersPage />} />
         <Route path="communities" element={<CommunitiesAdminPage />} />
