@@ -9,13 +9,21 @@ import { useToast } from '../../components/ui/Toast'
 
 interface JobResult {
   ok?: boolean
+  found?: boolean
   total?: number
   updated?: number
   skipped?: number
   deleted?: number
   message?: string
   error?: string
-  [key: string]: unknown
+  slug?: string
+  id?: string
+  status?: string
+  title?: string
+  datePublished?: string
+  clusterId?: string
+  prevStatus?: string
+  newStatus?: string
 }
 
 function JobCard({
