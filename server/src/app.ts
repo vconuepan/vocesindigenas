@@ -91,7 +91,10 @@ app.use((req, res, next) => {
     const ms = Date.now() - start
     const status = res.statusCode
     const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
-    httpLog[level]({ requestId: req.id }, `${req.method} ${req.originalUrl} ${status} ${ms}ms`)
+    const logUrl = req.originalUrl.includes('/magic/')
+      ? req.originalUrl.replace(/([?&])token=[^&]*/g, '$1token=[REDACTED]')
+      : req.originalUrl
+    httpLog[level]({ requestId: req.id }, `${req.method} ${logUrl} ${status} ${ms}ms`)
   })
   next()
 })
