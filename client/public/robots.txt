@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://actuallyrelevant.news/sitemap.xml
+Sitemap: https://impactoindigena.news/sitemap.xml
