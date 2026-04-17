@@ -26,6 +26,7 @@ function buildFeed(options: { title: string; description: string; feedPath: stri
     link: siteUrl,
     language: 'es',
     copyright: `© ${new Date().getFullYear()} Impacto Indígena`,
+    author: { name: 'Impacto Indígena', link: siteUrl },
     feedLinks: {
       rss: `${siteUrl}${options.feedPath}`,
     },
@@ -58,6 +59,8 @@ router.get('/', async (_req, res) => {
           description: story.summary || undefined,
           date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
           category: [{ name: (story.issue ?? story.feed?.issue)?.name || 'General' }],
+          author: [{ name: 'Impacto Indígena', link: getSiteUrl() }],
+          ...(story.imageUrl ? { image: story.imageUrl } : {}),
         })
       }
 
@@ -132,6 +135,7 @@ router.get('/comunidad/:slug', async (req, res) => {
           description: story.summary || undefined,
           date: story.datePublished ? new Date(story.datePublished) : new Date(story.dateCrawled),
           category: [{ name: story.issue?.name || 'General' }],
+          author: [{ name: 'Impacto Indígena', link: getSiteUrl() }],
         })
       }
 

@@ -34,8 +34,10 @@ export function buildArticleSchema(story: PublicStory) {
     },
     publisher,
     mainEntityOfPage: `${SEO.siteUrl}/stories/${story.slug}`,
-    image: SEO.ogImage,
+    image: story.imageUrl || SEO.ogImage,
+    dateModified: story.datePublished || story.dateCrawled,
     articleSection: issueName,
+    url: `${SEO.siteUrl}/stories/${story.slug}`,
   }
 }
 
@@ -61,7 +63,11 @@ export function buildOrganizationSchema() {
     name: SEO.siteName,
     url: SEO.siteUrl,
     logo: LOGO_URL,
-    sameAs: [],
+    sameAs: [
+      'https://www.instagram.com/impactoindigena',
+      'https://x.com/impactoindigena',
+      'https://www.youtube.com/@impactoindigena',
+    ],
   }
 }
 
