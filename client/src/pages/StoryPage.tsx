@@ -287,6 +287,7 @@ export default function StoryPage() {
                 src={story.imageUrl}
                 alt={headline}
                 className="w-full max-h-[420px] object-cover"
+                fetchPriority="high"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
             </div>

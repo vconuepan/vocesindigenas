@@ -49,6 +49,7 @@ function HeroSection({ story }: { story: PublicStory }) {
             src={heroImage}
             alt=""
             className="w-full h-full object-cover opacity-65"
+            fetchPriority="high"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         ) : (
