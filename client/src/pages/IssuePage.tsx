@@ -448,7 +448,43 @@ export default function IssuePage() {
             </div>
           </>
         )}
+        {/* Contextual guide links for relevant issues */}
+        {ISSUE_GUIDES[slug ?? ''] && (
+          <div className="mt-8 pt-6 border-t border-neutral-100">
+            <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Profundiza</p>
+            <div className="flex flex-wrap gap-3">
+              {ISSUE_GUIDES[slug ?? ''].map((guide) => (
+                <Link
+                  key={guide.href}
+                  to={guide.href}
+                  className="text-sm text-brand-700 hover:text-brand-800 font-medium border border-brand-200 hover:border-brand-400 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  {guide.label} →
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Guide links to show on specific issue pages
+// ---------------------------------------------------------------------------
+const ISSUE_GUIDES: Record<string, { label: string; href: string }[]> = {
+  'chile-indigena': [
+    { label: 'Pueblos Indígenas de Chile', href: '/guia/pueblos-indigenas-chile' },
+    { label: 'Pueblo Mapuche', href: '/guia/pueblo-mapuche' },
+    { label: 'Consulta Previa y CLPI', href: '/guia/consulta-previa-fpic' },
+  ],
+  'derechos-indigenas': [
+    { label: 'Consulta Previa y CLPI', href: '/guia/consulta-previa-fpic' },
+    { label: 'Pueblo Mapuche', href: '/guia/pueblo-mapuche' },
+  ],
+  'reconciliacion-y-paz': [
+    { label: 'Pueblo Mapuche', href: '/guia/pueblo-mapuche' },
+    { label: 'Consulta Previa y CLPI', href: '/guia/consulta-previa-fpic' },
+  ],
 }

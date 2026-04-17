@@ -57,6 +57,12 @@ const FOOTER_NAV = [
   { labelKey: "footer.contact", href: "/feedback" },
 ];
 
+const FOOTER_GUIDES = [
+  { labelKey: 'footer.guideMapuche', href: '/guia/pueblo-mapuche' },
+  { labelKey: 'footer.guideFpic', href: '/guia/consulta-previa-fpic' },
+  { labelKey: 'footer.guideChile', href: '/guia/pueblos-indigenas-chile' },
+]
+
 const FOOTER_LEGAL = [
   { labelKey: "footer.imprint", href: "/imprint" },
   { labelKey: "footer.privacy", href: "/privacy" },
@@ -322,6 +328,16 @@ function PublicLayoutInner() {
                     Comunidades
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/guia"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${location.pathname.startsWith('/guia') ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"}`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-neutral-400" aria-hidden="true" />
+                    {t('footer.guides')}
+                  </Link>
+                </li>
                 {memberAuth.isAuthenticated() && (
                   <li>
                     <Link
@@ -395,7 +411,7 @@ function PublicLayoutInner() {
       <footer className="bg-neutral-900 text-neutral-300">
         <CategoryColorStrip />
         <div className="max-w-5xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 md:gap-10">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-6 md:gap-8">
             <div className="col-span-2">
               <Link to="/" className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                 Impacto Indígena
@@ -482,9 +498,9 @@ function PublicLayoutInner() {
               </ul>
             </div>
 
-            <div className="col-span-2 md:col-span-1">
+            <div>
               <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">{t('footer.topics')}</p>
-              <ul className="grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-1 auto-rows-[1.25rem]">
+              <ul className="grid auto-rows-[1.25rem] gap-y-2">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug);
                   return (
@@ -496,6 +512,21 @@ function PublicLayoutInner() {
                     </li>
                   );
                 })}
+              </ul>
+            </div>
+
+            <div className="col-span-2 md:col-span-1">
+              <Link to="/guia" className="text-xs font-bold uppercase tracking-widest text-neutral-400 hover:text-neutral-200 mb-3 leading-none inline-block focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                {t('footer.guides')}
+              </Link>
+              <ul className="grid auto-rows-[1.25rem] gap-y-2">
+                {FOOTER_GUIDES.map((link) => (
+                  <li key={link.href} className="flex items-center">
+                    <Link to={link.href} className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                      {t(link.labelKey)}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

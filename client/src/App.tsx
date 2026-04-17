@@ -32,6 +32,10 @@ const CommunityDirectoryPage = lazy(() => import('./pages/CommunityDirectoryPage
 const CommunityPage = lazy(() => import('./pages/CommunityPage'))
 const MagicLinkSentPage = lazy(() => import('./pages/MagicLinkSentPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const GuidesIndexPage = lazy(() => import('./pages/GuidesIndexPage'))
+const MapuchePage = lazy(() => import('./pages/MapuchePage'))
+const FpicPage = lazy(() => import('./pages/FpicPage'))
+const ChileHubPage = lazy(() => import('./pages/ChileHubPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -120,6 +124,10 @@ export default function App() {
         <Route path="/comunidad/:slug" element={<LazyPage><CommunityPage /></LazyPage>} />
         <Route path="/magic-sent" element={<LazyPage><MagicLinkSentPage /></LazyPage>} />
         <Route path="/perfil" element={<LazyPage><ProfilePage /></LazyPage>} />
+        <Route path="/guia" element={<LazyPage><GuidesIndexPage /></LazyPage>} />
+        <Route path="/guia/pueblo-mapuche" element={<LazyPage><MapuchePage /></LazyPage>} />
+        <Route path="/guia/consulta-previa-fpic" element={<LazyPage><FpicPage /></LazyPage>} />
+        <Route path="/guia/pueblos-indigenas-chile" element={<LazyPage><ChileHubPage /></LazyPage>} />
       </Route>
 
       {/* Embed page — no layout wrapper */}
