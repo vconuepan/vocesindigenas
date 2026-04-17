@@ -19,6 +19,23 @@ import { SEO, CommonOgTags } from '../lib/seo'
 import { buildArticleSchema, buildBreadcrumbSchema } from '../lib/structured-data'
 
 // ---------------------------------------------------------------------------
+// Guide links shown below related stories for specific issue areas
+// ---------------------------------------------------------------------------
+const STORY_GUIDES: Record<string, { label: string; href: string }[]> = {
+  'chile-indigena': [
+    { label: 'Pueblos de Chile', href: '/guia/pueblos-indigenas-chile' },
+    { label: 'Pueblo Mapuche', href: '/guia/pueblo-mapuche' },
+  ],
+  'derechos-indigenas': [
+    { label: 'Consulta Previa y CLPI', href: '/guia/consulta-previa-fpic' },
+  ],
+  'reconciliacion-y-paz': [
+    { label: 'Pueblo Mapuche', href: '/guia/pueblo-mapuche' },
+    { label: 'Consulta Previa y CLPI', href: '/guia/consulta-previa-fpic' },
+  ],
+}
+
+// ---------------------------------------------------------------------------
 // Analysis section with ruled heading + numbered points
 // ---------------------------------------------------------------------------
 
@@ -330,6 +347,26 @@ export default function StoryPage() {
 
           {/* Related stories */}
           {story.slug && <RelatedStories slug={story.slug} />}
+
+          {/* Contextual guide link for relevant issue areas */}
+          {STORY_GUIDES[issueSlug] && (
+            <div className="mt-8 p-4 bg-neutral-50 border border-neutral-200 rounded-lg flex flex-col sm:flex-row sm:items-center gap-3">
+              <p className="text-sm text-neutral-600 flex-1">
+                Contexto sobre este tema:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {STORY_GUIDES[issueSlug].map((g) => (
+                  <Link
+                    key={g.href}
+                    to={g.href}
+                    className="text-sm font-medium text-brand-700 hover:text-brand-800 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-3 py-1 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  >
+                    {g.label} →
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Find similar — below related stories */}
           <div className="text-center mt-6">
