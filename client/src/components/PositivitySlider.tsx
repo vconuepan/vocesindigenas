@@ -49,7 +49,7 @@ export function MoodDialPanel({ className }: { className?: string }) {
           onFocus={() => setShowTooltip(true)}
           onBlur={() => setShowTooltip(false)}
           onClick={() => setShowTooltip(!showTooltip)}
-          className="text-[10px] text-neutral-400 hover:text-neutral-600 leading-none focus:outline-none"
+          className="inline-flex items-center justify-center w-[44px] h-[44px] -m-[16px] text-[10px] text-neutral-400 hover:text-neutral-600 leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           aria-label="¿Qué es el filtro de tono?"
         >
           ⓘ
