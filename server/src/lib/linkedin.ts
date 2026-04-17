@@ -90,6 +90,75 @@ async function uploadImageAsset(imageUrl: string): Promise<string | null> {
 // UGC post creation
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Post metrics — organization pages only
+// ---------------------------------------------------------------------------
+
+export interface PostMetrics {
+  likeCount: number
+  commentCount: number
+  impressionCount: number
+}
+
+/**
+ * Fetch engagement metrics for a published LinkedIn post.
+ * Only works when authorUrn is an organization (urn:li:organization:...).
+ * For personal profiles LinkedIn does not expose post stats via the API.
+ */
+export async function getOrgPostMetrics(
+  postUrn: string,
+  authorUrn: string,
+): Promise<PostMetrics | null> {
+  // Only attempt for organization URNs
+  if (!authorUrn.includes('organization')) {
+    log.debug({ authorUrn }, 'LinkedIn metrics only available for organization accounts, skipping')
+    return null
+  }
+
+  try {
+    const encodedPost = encodeURIComponent(postUrn)
+    const encodedOrg = encodeURIComponent(authorUrn)
+    const url =
+      `https://api.linkedin.com/v2/organizationalEntityShareStatistics` +
+      `?q=organizationalEntity&organizationalEntity=${encodedOrg}&ugcPosts[0]=${encodedPost}`
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${config.linkedin.accessToken}`,
+        'X-Restli-Protocol-Version': '2.0.0',
+      },
+    })
+
+    if (!res.ok) {
+      const text = await res.text()
+      log.warn({ status: res.status, body: text, postUrn }, 'LinkedIn metrics fetch failed')
+      return null
+    }
+
+    const data = (await res.json()) as {
+      elements?: Array<{
+        totalShareStatistics?: {
+          likeCount?: number
+          commentCount?: number
+          impressionCount?: number
+        }
+      }>
+    }
+
+    const stats = data.elements?.[0]?.totalShareStatistics
+    if (!stats) return null
+
+    return {
+      likeCount: stats.likeCount ?? 0,
+      commentCount: stats.commentCount ?? 0,
+      impressionCount: stats.impressionCount ?? 0,
+    }
+  } catch (err) {
+    log.warn({ err, postUrn }, 'LinkedIn metrics fetch error')
+    return null
+  }
+}
+
 export async function createUgcPost(
   text: string,
   articleUrl: string,

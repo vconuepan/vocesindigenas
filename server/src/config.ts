@@ -203,12 +203,18 @@ r2: {
     autoPost: {
       enabled: process.env.INSTAGRAM_AUTO_POST_ENABLED === 'true',
     },
+    metrics: {
+      maxAgeDays: parseInt(process.env.INSTAGRAM_METRICS_MAX_AGE_DAYS || '30', 10),
+    },
   },
   linkedin: {
     accessToken: process.env.LINKEDIN_ACCESS_TOKEN || '',
     authorUrn: process.env.LINKEDIN_AUTHOR_URN || '',
     autoPost: {
       enabled: process.env.LINKEDIN_AUTO_POST_ENABLED === 'true',
+    },
+    metrics: {
+      maxAgeDays: parseInt(process.env.LINKEDIN_METRICS_MAX_AGE_DAYS || '30', 10),
     },
   },
   podcast: {

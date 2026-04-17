@@ -2,11 +2,12 @@ import { z } from 'zod'
 import { HumanMessage } from '@langchain/core/messages'
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
-import { createCarouselPost, isInstagramConfigured } from '../lib/instagram.js'
+import { createCarouselPost, getPostMetrics, isInstagramConfigured } from '../lib/instagram.js'
 import { generateCarousel } from '../lib/carouselGen.js'
 import { generateStoryImage } from '../lib/imageGen.js'
 import { getMediumLLM, rateLimitDelay } from './llm.js'
 import { buildInstagramCaptionPrompt } from '../prompts/instagram.js'
+import { config } from '../config.js'
 const log = createLogger('instagram-service')
 
 const instagramCaptionSchema = z.object({
@@ -201,4 +202,59 @@ export async function publishPost(postId: string) {
     log.error({ err, postId }, 'failed to publish Instagram carousel')
     throw err
   }
+}
+
+// ---------------------------------------------------------------------------
+// Metrics
+// ---------------------------------------------------------------------------
+
+/**
+ * Update engagement metrics for all recent published posts.
+ */
+export async function updateMetrics() {
+  if (!isInstagramConfigured()) {
+    log.warn('Instagram not configured, skipping metrics update')
+    return
+  }
+
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - config.instagram.metrics.maxAgeDays)
+
+  const posts = await prisma.instagramPost.findMany({
+    where: {
+      status: 'published',
+      instagramPostId: { not: null },
+      publishedAt: { gte: cutoff },
+    },
+  })
+
+  if (posts.length === 0) {
+    log.info('no published posts to update metrics for')
+    return
+  }
+
+  log.info({ postCount: posts.length }, 'updating Instagram engagement metrics')
+
+  let updated = 0
+  let failed = 0
+
+  for (const post of posts) {
+    try {
+      const metrics = await getPostMetrics(post.instagramPostId!)
+      await prisma.instagramPost.update({
+        where: { id: post.id },
+        data: {
+          likeCount: metrics.likeCount,
+          commentCount: metrics.commentCount,
+          metricsUpdatedAt: new Date(),
+        },
+      })
+      updated++
+    } catch (err) {
+      log.warn({ err, postId: post.id, instagramPostId: post.instagramPostId }, 'failed to update metrics for post')
+      failed++
+    }
+  }
+
+  log.info({ updated, failed }, 'Instagram metrics update complete')
 }

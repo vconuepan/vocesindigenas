@@ -46,6 +46,16 @@ async function main() {
       create: { jobName: 'mastodon_update_metrics', cronExpression: '0 4 * * *', enabled: false },
     }),
     prisma.jobRun.upsert({
+      where: { jobName: 'instagram_update_metrics' },
+      update: {},
+      create: { jobName: 'instagram_update_metrics', cronExpression: '0 */6 * * *', enabled: false },
+    }),
+    prisma.jobRun.upsert({
+      where: { jobName: 'linkedin_update_metrics' },
+      update: {},
+      create: { jobName: 'linkedin_update_metrics', cronExpression: '0 */6 * * *', enabled: false },
+    }),
+    prisma.jobRun.upsert({
       where: { jobName: 'generate_newsletter' },
       update: {},
       create: { jobName: 'generate_newsletter', cronExpression: '0 4 * * 6', enabled: false },

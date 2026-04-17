@@ -374,6 +374,9 @@ export interface InstagramPost {
   slideUrls: string[]
   error: string | null
   publishedAt: string | null
+  likeCount: number
+  commentCount: number
+  metricsUpdatedAt: string | null
   createdAt: string
   updatedAt: string
   story?: {
@@ -398,6 +401,10 @@ export interface LinkedInPost {
   postText: string
   error: string | null
   publishedAt: string | null
+  likeCount: number
+  commentCount: number
+  impressionCount: number
+  metricsUpdatedAt: string | null
   createdAt: string
   updatedAt: string
   story?: {

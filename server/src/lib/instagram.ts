@@ -113,4 +113,43 @@ export async function createCarouselPost(
   )
 }
 
+export interface PostMetrics {
+  likeCount: number
+  commentCount: number
+}
+
+/**
+ * Fetch engagement metrics for a published Instagram post.
+ * Uses the basic media fields — no special insights permission required.
+ */
+export async function getPostMetrics(instagramPostId: string): Promise<PostMetrics> {
+  if (!isConfigured()) {
+    throw new Error('Instagram credentials not configured.')
+  }
+
+  return withRetry(
+    async () => {
+      const { accessToken } = config.instagram
+      const params = new URLSearchParams({
+        fields: 'like_count,comments_count',
+        access_token: accessToken,
+      })
+      const res = await fetch(
+        `https://graph.instagram.com/v21.0/${instagramPostId}?${params}`,
+      )
+      const data = await res.json() as any
+
+      if (!res.ok || data.error) {
+        throw new Error(`Instagram metrics error: ${JSON.stringify(data.error || data)}`)
+      }
+
+      return {
+        likeCount: data.like_count ?? 0,
+        commentCount: data.comments_count ?? 0,
+      }
+    },
+    { retries: 2, baseDelayMs: 2000 },
+  )
+}
+
 export { isConfigured as isInstagramConfigured }

@@ -470,6 +470,8 @@ export const adminApi = {
       request<InstagramPost>(`/instagram/posts/${id}/publish`, { method: 'POST' }),
     deletePost: (id: string) =>
       request<void>(`/instagram/posts/${id}`, { method: 'DELETE' }),
+    refreshMetrics: () =>
+      request<{ success: boolean }>('/instagram/metrics/refresh', { method: 'POST' }),
   },
 
   // LinkedIn
@@ -485,6 +487,8 @@ export const adminApi = {
       request<LinkedInPost>(`/linkedin/posts/${id}/publish`, { method: 'POST' }),
     deletePost: (id: string) =>
       request<void>(`/linkedin/posts/${id}`, { method: 'DELETE' }),
+    refreshMetrics: () =>
+      request<{ success: boolean }>('/linkedin/metrics/refresh', { method: 'POST' }),
   },
 
   // Feedback

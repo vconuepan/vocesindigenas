@@ -110,4 +110,15 @@ router.delete('/posts/:id', async (req, res) => {
   }
 })
 
+// Manually trigger metrics refresh
+router.post('/metrics/refresh', expensiveOpLimiter, async (_req, res) => {
+  try {
+    await instagramService.updateMetrics()
+    res.json({ success: true })
+  } catch (err) {
+    log.error({ err }, 'failed to refresh Instagram metrics')
+    res.status(500).json({ error: 'Failed to refresh metrics' })
+  }
+})
+
 export default router

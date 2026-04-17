@@ -7,6 +7,8 @@ import { runBlueskyUpdateMetrics } from './blueskyUpdateMetrics.js'
 import { runGenerateNewsletter } from './generateNewsletter.js'
 import { runSocialAutoPost } from './socialAutoPost.js'
 import { runMastodonUpdateMetrics } from './mastodonUpdateMetrics.js'
+import { runInstagramUpdateMetrics } from './instagramUpdateMetrics.js'
+import { runLinkedInUpdateMetrics } from './linkedinUpdateMetrics.js'
 import { runSendNewsletter } from './sendNewsletter.js'
 import { runSendPrivateNewsletter } from './sendPrivateNewsletter.js'
 import { runScrapeDOCIP } from './scrapeDOCIP.js'
@@ -22,6 +24,8 @@ export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   bluesky_update_metrics: runBlueskyUpdateMetrics,
   generate_newsletter: runGenerateNewsletter,
   mastodon_update_metrics: runMastodonUpdateMetrics,
+  instagram_update_metrics: runInstagramUpdateMetrics,
+  linkedin_update_metrics: runLinkedInUpdateMetrics,
   send_newsletter: runSendNewsletter,
   send_private_newsletter: runSendPrivateNewsletter,
   scrape_docip: runScrapeDOCIP,
