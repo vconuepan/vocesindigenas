@@ -158,6 +158,7 @@ export default function StoryPage() {
         <meta property="og:description" content={description.slice(0, 200)} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`${SEO.siteUrl}/stories/${story.slug}`} />
+        <link rel="canonical" href={`${SEO.siteUrl}/stories/${story.slug}`} />
         <meta property="article:author" content="Impacto Indígena" />
         {story.datePublished && (
           <meta property="article:published_time" content={story.datePublished} />

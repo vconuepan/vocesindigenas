@@ -185,6 +185,7 @@ export default function IssuePage() {
         <meta property="og:description" content={(issue.intro || issue.description).slice(0, 200)} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/issues/${slug}`} />
+        <link rel="canonical" href={`${SEO.siteUrl}/issues/${slug}`} />
         {CommonOgTags({})}
         <link rel="alternate" type="application/rss+xml" title={`${issue.name} RSS Feed`} href={`${API_BASE}/feed/${slug}`} />
         <script type="application/ld+json">

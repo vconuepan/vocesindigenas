@@ -209,6 +209,7 @@ export default function CommunityPage() {
           <meta property="og:description" content={ogDesc.slice(0, 200)} />
           <meta property="og:type" content="website" />
           <meta property="og:url" content={`${SEO.siteUrl}/comunidad/${slug}`} />
+          <link rel="canonical" href={`${SEO.siteUrl}/comunidad/${slug}`} />
           {CommonOgTags({ image: ogImage })}
         </Helmet>
       )}
