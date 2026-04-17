@@ -116,11 +116,14 @@ export async function getOrgPostMetrics(
   }
 
   try {
-    const encodedPost = encodeURIComponent(postUrn)
     const encodedOrg = encodeURIComponent(authorUrn)
+    // Use shares[0]= for urn:li:share:... and ugcPosts[0]= for urn:li:ugcPost:...
+    const postParam = postUrn.startsWith('urn:li:share:')
+      ? `shares[0]=${encodeURIComponent(postUrn)}`
+      : `ugcPosts[0]=${encodeURIComponent(postUrn)}`
     const url =
       `https://api.linkedin.com/v2/organizationalEntityShareStatistics` +
-      `?q=organizationalEntity&organizationalEntity=${encodedOrg}&ugcPosts[0]=${encodedPost}`
+      `?q=organizationalEntity&organizationalEntity=${encodedOrg}&${postParam}`
 
     const res = await fetch(url, {
       headers: {
