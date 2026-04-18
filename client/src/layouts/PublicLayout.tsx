@@ -217,7 +217,7 @@ function PublicLayoutInner() {
                 </svg>
                 {t('nav.saved')}{savedCount > 0 && ` (${savedCount})`}
               </Link>
-              <button onClick={() => openSubscribe()} className="inline-flex items-center gap-1.5 text-sm font-bold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded-full px-4 py-2.5 min-h-[44px] bg-brand-500 text-white hover:bg-brand-600">
+              <button onClick={() => openSubscribe()} className="inline-flex items-center gap-1.5 text-sm font-bold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent-500 rounded-full px-4 py-2.5 min-h-[44px] bg-accent-500 text-white hover:bg-accent-600">
                 <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                 {t('nav.subscribe')}
               </button>
@@ -425,7 +425,7 @@ function PublicLayoutInner() {
         <div className="max-w-5xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-6 md:gap-8">
             <div className="col-span-2">
-              <Link to="/" className="inline-block mb-3 font-nexa text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+              <Link to="/" className="inline-block mb-3 font-fraunces text-xl font-bold text-white hover:text-brand-300 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                 Impacto Indígena
               </Link>
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">

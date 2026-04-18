@@ -75,7 +75,7 @@ function HeroSection({ story }: { story: PublicStory }) {
             {getTitleLabel(localizedStory) && (
               <span className="block text-sm font-bold uppercase tracking-wider text-white/60 mb-2">{getTitleLabel(localizedStory)}</span>
             )}
-            <h1 className="text-3xl md:text-5xl font-bold font-nexa text-white mb-4 leading-tight max-w-3xl">
+            <h1 className="text-3xl md:text-5xl font-bold font-fraunces text-white mb-4 leading-tight max-w-3xl">
               <Link
                 to={`/stories/${story.slug}`}
                 className="hover:text-white/90 transition-colors focus-visible:ring-2 focus-visible:ring-white rounded"

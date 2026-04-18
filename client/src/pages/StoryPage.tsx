@@ -69,7 +69,7 @@ function AnalysisSection({
         {points.map((point, idx) => (
           <div key={idx} className="flex gap-4">
             <span
-              className="font-nexa text-2xl font-bold leading-none pt-1 select-none text-right"
+              className="font-fraunces text-2xl font-bold leading-none pt-1 select-none text-right"
               style={{ color: accentColor, opacity: 0.25, width: '2ch' }}
               aria-hidden="true"
             >

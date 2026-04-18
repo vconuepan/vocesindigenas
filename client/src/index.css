@@ -11,17 +11,6 @@
   display: none;
 }
 
-/* Nexa Bold — headings */
-@font-face {
-  font-family: 'Nexa';
-  src: url('/fonts/NexaBold/Nexa Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Nexa Light removed — only used in one decorative place, saves 20KB */
-
 /* Lora — body text (variable: 400–700, auto-selects correct weight) */
 @font-face {
   font-family: 'Lora';
@@ -74,7 +63,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Nexa', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Fraunces', Georgia, ui-serif, serif;
     text-wrap: balance;
   }
 
@@ -213,15 +202,15 @@
   /* Drop cap for story page lead text */
   .drop-cap::first-letter {
     float: left;
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-weight: 700;
     font-size: 4.5rem;
     line-height: 0.7;
     margin-right: 0.08em;
     margin-top: 0.05em;
     margin-bottom: -0.1em;
-    color: var(--drop-cap-color, #171717);
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.04);
+    color: var(--drop-cap-color, #0D5F3C);
+    text-shadow: none;
   }
 
   /* Story card — subtle category-colored hover background */
@@ -252,7 +241,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #737373;
+    background: #0D5F3C;
     cursor: pointer;
     border: 2px solid white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -263,7 +252,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #737373;
+    background: #0D5F3C;
     cursor: pointer;
     border: 2px solid white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -271,10 +260,10 @@
   }
 
   .positivity-slider::-webkit-slider-thumb:hover {
-    background: #525252;
+    background: #156040;
   }
 
   .positivity-slider::-moz-range-thumb:hover {
-    background: #525252;
+    background: #156040;
   }
 }
