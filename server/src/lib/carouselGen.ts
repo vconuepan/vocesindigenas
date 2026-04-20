@@ -27,6 +27,10 @@ const SCALE = 2
 const RENDER_W = W * SCALE   // 2160 px
 const RENDER_H = H * SCALE   // 2700 px
 
+// Margen de seguridad: Instagram recorta ~4% en los bordes del feed
+// 60px display → 120px render — mantiene texto y logo fuera de la zona peligrosa
+const MARGIN = 60 * SCALE
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -152,33 +156,33 @@ async function generateSlide1(title: string, aiImageUrl: string): Promise<Buffer
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
-  // Logo blanco en esquina superior izquierda
-  await drawLogo(ctx, 40 * SCALE, 36 * SCALE, 60 * SCALE, LOGO_WHITE)
+  // Logo blanco en esquina superior izquierda (dentro del margen de seguridad)
+  await drawLogo(ctx, MARGIN, MARGIN, 90 * SCALE, LOGO_WHITE)
 
   // Etiqueta naranja encima del título
   ctx.fillStyle = COLORS.orange
-  ctx.font = `bold ${18 * SCALE}px Arial`
+  ctx.font = `bold ${24 * SCALE}px Arial`
   ctx.textAlign = 'left'
-  ctx.fillText('IMPACTO INDÍGENA', 50 * SCALE, RENDER_H * 0.65)
+  ctx.fillText('IMPACTO INDÍGENA', MARGIN, RENDER_H * 0.63)
 
   // Título grande blanco
   ctx.fillStyle = COLORS.white
-  ctx.font = `bold ${46 * SCALE}px Arial`
+  ctx.font = `bold ${54 * SCALE}px Arial`
   drawWrappedText(
     ctx,
     cleanText(title),
-    50 * SCALE,
-    RENDER_H * 0.70,
-    RENDER_W - 100 * SCALE,
-    58 * SCALE,
+    MARGIN,
+    RENDER_H * 0.68,
+    RENDER_W - MARGIN * 2,
+    70 * SCALE,
     3,
   )
 
   // Número de slide
   ctx.fillStyle = 'rgba(255,255,255,0.6)'
-  ctx.font = `${20 * SCALE}px Arial`
+  ctx.font = `${22 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('1 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
+  ctx.fillText('1 / 4', RENDER_W - MARGIN, RENDER_H - MARGIN)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
@@ -197,42 +201,42 @@ async function generateSlide2(text: string): Promise<Buffer> {
   ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
   // Header azul
-  const headerH = 170 * SCALE
+  const headerH = 210 * SCALE
   ctx.fillStyle = COLORS.blue
   ctx.fillRect(0, 0, RENDER_W, headerH)
 
-  // Logo blanco en header
-  await drawLogo(ctx, 40 * SCALE, 42 * SCALE, 72 * SCALE, LOGO_WHITE)
+  // Logo blanco en header (margen de seguridad)
+  await drawLogo(ctx, MARGIN, 55 * SCALE, 100 * SCALE, LOGO_WHITE)
 
   // Título del slide centrado
   ctx.fillStyle = COLORS.white
-  ctx.font = `bold ${38 * SCALE}px Arial`
+  ctx.font = `bold ${52 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('RESUMEN', RENDER_W / 2, 116 * SCALE)
+  ctx.fillText('RESUMEN', RENDER_W / 2, 150 * SCALE)
 
   // Línea decorativa azul vertical
   ctx.fillStyle = COLORS.blue
-  ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
+  ctx.fillRect(MARGIN, headerH + 60 * SCALE, 8 * SCALE, 100 * SCALE)
 
-  // Texto principal (más líneas gracias al alto extra del 4:5)
+  // Texto principal
   ctx.fillStyle = COLORS.darkGray
-  ctx.font = `${40 * SCALE}px Arial`
+  ctx.font = `${52 * SCALE}px Arial`
   ctx.textAlign = 'left'
   drawWrappedText(
     ctx,
     cleanText(text),
-    100 * SCALE,
-    headerH + 80 * SCALE,
-    RENDER_W - 180 * SCALE,
-    58 * SCALE,
-    18,
+    MARGIN + 36 * SCALE,
+    headerH + 110 * SCALE,
+    RENDER_W - MARGIN * 2 - 36 * SCALE,
+    76 * SCALE,
+    14,
   )
 
   // Número de slide
   ctx.fillStyle = COLORS.blue
-  ctx.font = `bold ${22 * SCALE}px Arial`
+  ctx.font = `bold ${24 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('2 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
+  ctx.fillText('2 / 4', RENDER_W - MARGIN, RENDER_H - MARGIN)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
@@ -251,30 +255,30 @@ async function generateSlide3(text: string): Promise<Buffer> {
   ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
   // Header verde
-  const headerH = 170 * SCALE
+  const headerH = 210 * SCALE
   ctx.fillStyle = COLORS.green
   ctx.fillRect(0, 0, RENDER_W, headerH)
 
-  // Logo blanco en header
-  await drawLogo(ctx, 40 * SCALE, 42 * SCALE, 72 * SCALE, LOGO_WHITE)
+  // Logo blanco en header (margen de seguridad)
+  await drawLogo(ctx, MARGIN, 55 * SCALE, 100 * SCALE, LOGO_WHITE)
 
   // Título del slide centrado
   ctx.fillStyle = COLORS.white
-  ctx.font = `bold ${38 * SCALE}px Arial`
+  ctx.font = `bold ${52 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_W / 2, 116 * SCALE)
+  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_W / 2, 150 * SCALE)
 
   // Línea decorativa verde vertical
   ctx.fillStyle = COLORS.green
-  ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
+  ctx.fillRect(MARGIN, headerH + 60 * SCALE, 8 * SCALE, 100 * SCALE)
 
   // Renderizar texto con formato markdown
-  const FONT_TITLE = 27 * SCALE
-  const FONT_BODY = 25 * SCALE
-  const LINE_HEIGHT = 38 * SCALE
-  const MAX_WIDTH = RENDER_W - 200 * SCALE
-  const LEFT = 100 * SCALE
-  const MAX_LINES = 28   // más espacio vertical en 4:5
+  const FONT_TITLE = 44 * SCALE
+  const FONT_BODY = 40 * SCALE
+  const LINE_HEIGHT = 60 * SCALE
+  const MAX_WIDTH = RENDER_W - MARGIN * 2 - 36 * SCALE
+  const LEFT = MARGIN + 36 * SCALE
+  const MAX_LINES = 16   // fuentes más grandes, menos líneas
 
   // Parsear ANTES de limpiar para preservar el formato markdown
   const bullets = text
@@ -282,7 +286,7 @@ async function generateSlide3(text: string): Promise<Buffer> {
     .map((s: string) => s.replace(/^-\s*/, '').trim())
     .filter(Boolean)
 
-  let currentY = headerH + 65 * SCALE
+  let currentY = headerH + 110 * SCALE
   let totalLines = 0
 
   for (const bullet of bullets) {
@@ -374,9 +378,9 @@ async function generateSlide3(text: string): Promise<Buffer> {
 
   // Número de slide
   ctx.fillStyle = COLORS.green
-  ctx.font = `bold ${22 * SCALE}px Arial`
+  ctx.font = `bold ${24 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('3 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
+  ctx.fillText('3 / 4', RENDER_W - MARGIN, RENDER_H - MARGIN)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
@@ -394,52 +398,54 @@ async function generateSlide4(): Promise<Buffer> {
   ctx.fillStyle = COLORS.black
   ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
-  // Contenido centrado verticalmente (offY desplaza todo hacia el centro del canvas más alto)
-  const offY = 210 * SCALE   // offset desde el tope del bloque de contenido
+  // Contenido distribuido verticalmente para ocupar ~70% del canvas
+  // Zona de contenido: desde 15% hasta 85% del alto (405px–2295px render)
+  // Centrar bloque de contenido verticalmente (bloque mide ~1600px render)
+  // (RENDER_H - barHeight - contentH) / 2 ≈ (2700 - 28 - 1600) / 2 = 536
+  const offY = 268 * SCALE
 
-  // Logo blanco grande centrado
-  const logoH = 110 * SCALE
+  // Logo blanco grande centrado — más visible
+  const logoH = 200 * SCALE
   const logoAspect = 3.2
   const logoW = logoH * logoAspect
   const logoX = (RENDER_W - logoW) / 2
-  const logoY = offY
-  await drawLogo(ctx, logoX, logoY, logoH, LOGO_WHITE)
+  await drawLogo(ctx, logoX, offY, logoH, LOGO_WHITE)
 
   // Texto principal
   ctx.fillStyle = COLORS.white
-  ctx.font = `bold ${42 * SCALE}px Arial`
+  ctx.font = `bold ${62 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('Lee la noticia completa', RENDER_W / 2, offY + 220 * SCALE)
+  ctx.fillText('Lee la noticia completa', RENDER_W / 2, offY + 320 * SCALE)
 
   // URL en amarillo
   ctx.fillStyle = COLORS.yellow
-  ctx.font = `${30 * SCALE}px Arial`
-  ctx.fillText('impactoindigena.news', RENDER_W / 2, offY + 270 * SCALE)
+  ctx.font = `${46 * SCALE}px Arial`
+  ctx.fillText('impactoindigena.news', RENDER_W / 2, offY + 410 * SCALE)
 
   // Separador naranja
   ctx.strokeStyle = COLORS.orange
-  ctx.lineWidth = 3 * SCALE
+  ctx.lineWidth = 4 * SCALE
   ctx.beginPath()
-  ctx.moveTo(120 * SCALE, offY + 320 * SCALE)
-  ctx.lineTo(RENDER_W - 120 * SCALE, offY + 320 * SCALE)
+  ctx.moveTo(MARGIN * 2, offY + 490 * SCALE)
+  ctx.lineTo(RENDER_W - MARGIN * 2, offY + 490 * SCALE)
   ctx.stroke()
 
   // Tagline en gris
   ctx.fillStyle = COLORS.mediumGray
-  ctx.font = `${27 * SCALE}px Arial`
-  ctx.fillText('Noticias sobre pueblos indígenas', RENDER_W / 2, offY + 380 * SCALE)
-  ctx.fillText('curadas con IA por Impacto Indígena', RENDER_W / 2, offY + 422 * SCALE)
+  ctx.font = `${40 * SCALE}px Arial`
+  ctx.fillText('Noticias sobre pueblos indígenas', RENDER_W / 2, offY + 600 * SCALE)
+  ctx.fillText('curadas con IA por Impacto Indígena', RENDER_W / 2, offY + 680 * SCALE)
 
   // Hashtags en naranja
   ctx.fillStyle = COLORS.orange
-  ctx.font = `bold ${25 * SCALE}px Arial`
-  ctx.fillText('#PueblosIndígenas  #ImpactoIndígena', RENDER_W / 2, offY + 500 * SCALE)
+  ctx.font = `bold ${38 * SCALE}px Arial`
+  ctx.fillText('#PueblosIndígenas  #ImpactoIndígena', RENDER_W / 2, offY + 800 * SCALE)
 
   // Número de slide
   ctx.fillStyle = COLORS.mediumGray
-  ctx.font = `${22 * SCALE}px Arial`
+  ctx.font = `${24 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('4 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
+  ctx.fillText('4 / 4', RENDER_W - MARGIN, RENDER_H - MARGIN)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
