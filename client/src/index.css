@@ -103,7 +103,8 @@
   }
 
   .prose {
-    @apply text-lg text-neutral-600 leading-relaxed;
+    @apply text-lg text-neutral-600;
+    line-height: 1.75;
   }
 
   .prose p {
@@ -190,6 +191,7 @@
   /* Ruled heading: ——— TITLE ——— */
   .ruled-heading {
     @apply flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-neutral-400;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   }
 
   .ruled-heading::before,
@@ -221,6 +223,7 @@
   .issue-nav-link {
     @apply inline-flex items-center gap-2 px-3 py-3 text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-colors;
     @apply focus-visible:ring-2 focus-visible:ring-brand-500 border-b-2 border-transparent text-neutral-400;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   }
 
   .issue-nav-link:hover {

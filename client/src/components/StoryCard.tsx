@@ -20,7 +20,7 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
   const ageMonths = story.sourceDatePublished ? storyAgeMonths(story.sourceDatePublished) : 0
   const isOld = ageMonths >= 3
   return (
-    <div className={`flex flex-wrap items-center gap-x-2 text-neutral-500 ${size === 'xs' ? 'text-xs' : 'text-sm'}`}>
+    <div className={`flex flex-wrap items-center gap-x-2 text-neutral-500 font-dm-sans ${size === 'xs' ? 'text-xs' : 'text-sm'}`}>
       <span className="inline-flex items-center gap-1.5">
         <FeedFavicon feedId={story.feed.id} size={size === 'xs' ? 14 : 16} />
         <a
@@ -46,7 +46,7 @@ function StoryMeta({ story, size = 'sm' }: { story: PublicStory; size?: 'sm' | '
 function CategoryPill({ name, hex }: { name: string; hex: string }) {
   return (
     <span
-      className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2"
+      className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2 font-dm-sans"
       style={{
         backgroundColor: hexToRgba(hex, 0.12),
         color: hex,
@@ -237,9 +237,9 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
           className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
         >
           {getTitleLabel(localizedStory) && (
-            <span className="block text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: colors.hex }}>{getTitleLabel(localizedStory)}</span>
+            <span className="block text-xs font-bold uppercase tracking-wider mb-0.5 font-dm-sans" style={{ color: colors.hex }}>{getTitleLabel(localizedStory)}</span>
           )}
-          <h3 className="text-sm font-bold text-neutral-800 mb-1 group-hover:text-brand-800 transition-colors leading-snug">
+          <h3 className="text-[15px] font-bold text-neutral-800 mb-1 group-hover:text-brand-800 transition-colors leading-snug">
             {headlineText}
           </h3>
         </Link>

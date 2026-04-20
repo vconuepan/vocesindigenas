@@ -202,7 +202,7 @@ export default function StoryPage() {
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colors.hex }} aria-hidden="true" />
               <Link
                 to={`/issues/${issueSlug}`}
-                className="text-xs font-bold uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                className="text-xs font-bold uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 font-dm-sans"
                 style={{ color: colors.hex }}
               >
                 {issueName}
@@ -211,14 +211,14 @@ export default function StoryPage() {
 
             {/* Title */}
             {titleLabel && (
-              <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">{titleLabel}</span>
+              <span className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 font-dm-sans">{titleLabel}</span>
             )}
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
               {headline}
             </h1>
 
             {/* Metadata + share */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500 font-dm-sans">
               {isOld && (
                 <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
                   Noticia antigua
