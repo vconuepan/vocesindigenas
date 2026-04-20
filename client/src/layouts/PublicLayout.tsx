@@ -473,7 +473,7 @@ function PublicLayoutInner() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">{t('footer.navigate')}</p>
-              <ul className="grid auto-rows-[1.25rem] gap-y-2">
+              <ul className="space-y-2">
                 {FOOTER_NAV.map((link) => (
                   <li key={link.labelKey} className="flex items-center">
                     <Link to={link.href} className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
@@ -486,7 +486,7 @@ function PublicLayoutInner() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">{t('footer.connect')}</p>
-              <ul className="grid auto-rows-[1.25rem] gap-y-2">
+              <ul className="space-y-2">
                 <li className="flex items-center">
                   <Link to="/newsletter" className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                     {t('footer.newsletter')}
@@ -512,7 +512,7 @@ function PublicLayoutInner() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">{t('footer.topics')}</p>
-              <ul className="grid auto-rows-[1.25rem] gap-y-2">
+              <ul className="space-y-2">
                 {ISSUE_LINKS.map((link) => {
                   const colors = getCategoryColor(link.slug);
                   return (
@@ -531,7 +531,7 @@ function PublicLayoutInner() {
               <Link to="/guia" className="text-xs font-bold uppercase tracking-widest text-neutral-400 hover:text-neutral-200 mb-3 leading-none inline-block focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                 {t('footer.guides')}
               </Link>
-              <ul className="grid auto-rows-[1.25rem] gap-y-2">
+              <ul className="space-y-2">
                 {FOOTER_GUIDES.map((link) => (
                   <li key={link.href} className="flex items-center">
                     <Link to={link.href} className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
