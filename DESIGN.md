@@ -137,11 +137,12 @@ Estos colores se usan en: dots de categoría en nav, tags en cards, borders acti
 
 ## Header
 
-- **Estructura:** Logo centrado, acciones a la derecha (Guardados, Suscribirse, idioma), slider Tono a la izquierda
+- **Estructura:** Logo centrado, acciones a la derecha (Guardados, Suscribirse, "Apóyanos", idioma), slider Tono a la izquierda
 - **Background:** Blanco puro (`#FFFFFF`) — sin strip de color adicional
 - **Altura:** 60px
 - **Font:** DM Sans para todas las acciones del header
-- **Botón Suscribirse:** Terracota (`#C8473A`), pills (`border-radius: 9999px`), `min-height: 44px`
+- **Botón Suscribirse:** Terracota (`#C8473A`), pills (`border-radius: 9999px`), `min-height: 44px` — CTA principal
+- **Botón Apóyanos (Support us):** Brand verde (`#0D5F3C`), ghost/outline o filled secundario. **Debe tener menor jerarquía visual que Suscribirse** — usar `border: 1px solid` con texto verde y fondo transparente para no competir con el terracota. Referencia: `<LandingCta>`
 
 ## Componentes clave
 
