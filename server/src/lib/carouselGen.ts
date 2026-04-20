@@ -20,10 +20,12 @@ const COLORS = {
 const LOGO_WHITE = 'https://impactoindigena.com/wp-content/uploads/2025/04/cropped-logo-impacto-indigena_letras_blancas-1-scaled-1.png'
 const LOGO_BLACK = 'https://impactoindigena.com/wp-content/uploads/2025/04/1-2.png'
 
-// Renderizamos en 2x para máxima nitidez
-const SIZE = 1080
+// Formato 4:5 vertical (1080×1350 px), renderizado en 2x para máxima nitidez
+const W = 1080   // ancho display
+const H = 1350   // alto display (ratio 4:5)
 const SCALE = 2
-const RENDER_SIZE = SIZE * SCALE
+const RENDER_W = W * SCALE   // 2160 px
+const RENDER_H = H * SCALE   // 2700 px
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -105,14 +107,14 @@ async function drawLogo(
 /** Dibuja barra de colores multicolor en la parte inferior */
 function drawRainbowBar(ctx: any): void {
   const barColors = [COLORS.blue, COLORS.green, COLORS.yellow, COLORS.orange, COLORS.red]
-  const barWidth = RENDER_SIZE / barColors.length
+  const barWidth = RENDER_W / barColors.length
   const barHeight = 14 * SCALE
   barColors.forEach((color, i) => {
     ctx.fillStyle = color
-    ctx.fillRect(i * barWidth, RENDER_SIZE - barHeight, barWidth, barHeight)
+    ctx.fillRect(i * barWidth, RENDER_H - barHeight, barWidth, barHeight)
   })
 }
-/** Exporta canvas directamente en 2160x2160 para máxima nitidez */
+/** Exporta canvas en formato JPEG a 2160×2700 (4:5 × 2x) para máxima nitidez */
 function exportCanvas(sourceCanvas: any): Buffer {
   return sourceCanvas.toBuffer('image/jpeg', { quality: 92 })
 }
@@ -121,41 +123,43 @@ function exportCanvas(sourceCanvas: any): Buffer {
 // ---------------------------------------------------------------------------
 
 async function generateSlide1(title: string, aiImageUrl: string): Promise<Buffer> {
-  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
+  const canvas = createCanvas(RENDER_W, RENDER_H)
   const ctx = canvas.getContext('2d')
 
   // Fondo negro por defecto
   ctx.fillStyle = COLORS.black
-  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+  ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
-  // Imagen IA como fondo cuadrado
+  // Imagen IA como fondo — crop centrado para rellenar canvas 4:5
   try {
     const bgImage = await loadImage(aiImageUrl)
-    const srcSize = Math.min(bgImage.width, bgImage.height)
-    const srcX = (bgImage.width - srcSize) / 2
-    const srcY = (bgImage.height - srcSize) / 2
-    ctx.drawImage(bgImage, srcX, srcY, srcSize, srcSize, 0, 0, RENDER_SIZE, RENDER_SIZE)
+    const targetRatio = RENDER_W / RENDER_H   // 0.8 para 4:5
+    const srcW = Math.min(bgImage.width, bgImage.height * targetRatio)
+    const srcH = srcW / targetRatio
+    const srcX = (bgImage.width - srcW) / 2
+    const srcY = (bgImage.height - srcH) / 2
+    ctx.drawImage(bgImage, srcX, srcY, srcW, srcH, 0, 0, RENDER_W, RENDER_H)
   } catch {
     ctx.fillStyle = '#1a1a2e'
-    ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+    ctx.fillRect(0, 0, RENDER_W, RENDER_H)
   }
 
-  // Gradient oscuro en parte inferior
-  const gradient = ctx.createLinearGradient(0, RENDER_SIZE * 0.35, 0, RENDER_SIZE)
+  // Gradient oscuro en parte inferior (comienza al 40% del alto)
+  const gradient = ctx.createLinearGradient(0, RENDER_H * 0.40, 0, RENDER_H)
   gradient.addColorStop(0, 'rgba(0,0,0,0)')
   gradient.addColorStop(0.5, 'rgba(0,0,0,0.72)')
   gradient.addColorStop(1, 'rgba(0,0,0,0.93)')
   ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+  ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
-  // Logo blanco en esquina superior izquierda (sin recuadro)
+  // Logo blanco en esquina superior izquierda
   await drawLogo(ctx, 40 * SCALE, 36 * SCALE, 60 * SCALE, LOGO_WHITE)
 
   // Etiqueta naranja encima del título
   ctx.fillStyle = COLORS.orange
   ctx.font = `bold ${18 * SCALE}px Arial`
   ctx.textAlign = 'left'
-  ctx.fillText('IMPACTO INDÍGENA', 50 * SCALE, RENDER_SIZE * 0.62)
+  ctx.fillText('IMPACTO INDÍGENA', 50 * SCALE, RENDER_H * 0.65)
 
   // Título grande blanco
   ctx.fillStyle = COLORS.white
@@ -164,8 +168,8 @@ async function generateSlide1(title: string, aiImageUrl: string): Promise<Buffer
     ctx,
     cleanText(title),
     50 * SCALE,
-    RENDER_SIZE * 0.67,
-    RENDER_SIZE - 100 * SCALE,
+    RENDER_H * 0.70,
+    RENDER_W - 100 * SCALE,
     58 * SCALE,
     3,
   )
@@ -174,7 +178,7 @@ async function generateSlide1(title: string, aiImageUrl: string): Promise<Buffer
   ctx.fillStyle = 'rgba(255,255,255,0.6)'
   ctx.font = `${20 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('1 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
+  ctx.fillText('1 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
@@ -185,17 +189,17 @@ async function generateSlide1(title: string, aiImageUrl: string): Promise<Buffer
 // ---------------------------------------------------------------------------
 
 async function generateSlide2(text: string): Promise<Buffer> {
-  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
+  const canvas = createCanvas(RENDER_W, RENDER_H)
   const ctx = canvas.getContext('2d')
 
   // Fondo blanco
   ctx.fillStyle = COLORS.white
-  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+  ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
   // Header azul
   const headerH = 170 * SCALE
   ctx.fillStyle = COLORS.blue
-  ctx.fillRect(0, 0, RENDER_SIZE, headerH)
+  ctx.fillRect(0, 0, RENDER_W, headerH)
 
   // Logo blanco en header
   await drawLogo(ctx, 40 * SCALE, 42 * SCALE, 72 * SCALE, LOGO_WHITE)
@@ -204,13 +208,13 @@ async function generateSlide2(text: string): Promise<Buffer> {
   ctx.fillStyle = COLORS.white
   ctx.font = `bold ${38 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('RESUMEN', RENDER_SIZE / 2, 116 * SCALE)
+  ctx.fillText('RESUMEN', RENDER_W / 2, 116 * SCALE)
 
   // Línea decorativa azul vertical
   ctx.fillStyle = COLORS.blue
   ctx.fillRect(70 * SCALE, headerH + 50 * SCALE, 8 * SCALE, 90 * SCALE)
 
-  // Texto principal
+  // Texto principal (más líneas gracias al alto extra del 4:5)
   ctx.fillStyle = COLORS.darkGray
   ctx.font = `${40 * SCALE}px Arial`
   ctx.textAlign = 'left'
@@ -219,16 +223,16 @@ async function generateSlide2(text: string): Promise<Buffer> {
     cleanText(text),
     100 * SCALE,
     headerH + 80 * SCALE,
-    RENDER_SIZE - 180 * SCALE,
+    RENDER_W - 180 * SCALE,
     58 * SCALE,
-    13,
+    18,
   )
 
   // Número de slide
   ctx.fillStyle = COLORS.blue
   ctx.font = `bold ${22 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('2 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
+  ctx.fillText('2 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
@@ -239,17 +243,17 @@ async function generateSlide2(text: string): Promise<Buffer> {
 // ---------------------------------------------------------------------------
 
 async function generateSlide3(text: string): Promise<Buffer> {
-  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
+  const canvas = createCanvas(RENDER_W, RENDER_H)
   const ctx = canvas.getContext('2d')
 
   // Fondo blanco
   ctx.fillStyle = COLORS.white
-  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+  ctx.fillRect(0, 0, RENDER_W, RENDER_H)
 
   // Header verde
   const headerH = 170 * SCALE
   ctx.fillStyle = COLORS.green
-  ctx.fillRect(0, 0, RENDER_SIZE, headerH)
+  ctx.fillRect(0, 0, RENDER_W, headerH)
 
   // Logo blanco en header
   await drawLogo(ctx, 40 * SCALE, 42 * SCALE, 72 * SCALE, LOGO_WHITE)
@@ -258,7 +262,7 @@ async function generateSlide3(text: string): Promise<Buffer> {
   ctx.fillStyle = COLORS.white
   ctx.font = `bold ${38 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_SIZE / 2, 116 * SCALE)
+  ctx.fillText('¿POR QUÉ IMPORTA?', RENDER_W / 2, 116 * SCALE)
 
   // Línea decorativa verde vertical
   ctx.fillStyle = COLORS.green
@@ -268,9 +272,9 @@ async function generateSlide3(text: string): Promise<Buffer> {
   const FONT_TITLE = 27 * SCALE
   const FONT_BODY = 25 * SCALE
   const LINE_HEIGHT = 38 * SCALE
-  const MAX_WIDTH = RENDER_SIZE - 200 * SCALE
+  const MAX_WIDTH = RENDER_W - 200 * SCALE
   const LEFT = 100 * SCALE
-  const MAX_LINES = 20
+  const MAX_LINES = 28   // más espacio vertical en 4:5
 
   // Parsear ANTES de limpiar para preservar el formato markdown
   const bullets = text
@@ -370,11 +374,9 @@ async function generateSlide3(text: string): Promise<Buffer> {
 
   // Número de slide
   ctx.fillStyle = COLORS.green
-  // Número de slide
-  ctx.fillStyle = COLORS.green
   ctx.font = `bold ${22 * SCALE}px Arial`
   ctx.textAlign = 'right'
-  ctx.fillText('3 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
+  ctx.fillText('3 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
@@ -385,55 +387,59 @@ async function generateSlide3(text: string): Promise<Buffer> {
 // ---------------------------------------------------------------------------
 
 async function generateSlide4(): Promise<Buffer> {
-  const canvas = createCanvas(RENDER_SIZE, RENDER_SIZE)
+  const canvas = createCanvas(RENDER_W, RENDER_H)
   const ctx = canvas.getContext('2d')
 
   // Fondo negro
   ctx.fillStyle = COLORS.black
-  ctx.fillRect(0, 0, RENDER_SIZE, RENDER_SIZE)
+  ctx.fillRect(0, 0, RENDER_W, RENDER_H)
+
+  // Contenido centrado verticalmente (offY desplaza todo hacia el centro del canvas más alto)
+  const offY = 210 * SCALE   // offset desde el tope del bloque de contenido
 
   // Logo blanco grande centrado
   const logoH = 110 * SCALE
   const logoAspect = 3.2
   const logoW = logoH * logoAspect
-  const logoX = (RENDER_SIZE - logoW) / 2
-  const logoY = 210 * SCALE
+  const logoX = (RENDER_W - logoW) / 2
+  const logoY = offY
   await drawLogo(ctx, logoX, logoY, logoH, LOGO_WHITE)
 
   // Texto principal
   ctx.fillStyle = COLORS.white
   ctx.font = `bold ${42 * SCALE}px Arial`
   ctx.textAlign = 'center'
-  ctx.fillText('Lee la noticia completa', RENDER_SIZE / 2, 430 * SCALE)
+  ctx.fillText('Lee la noticia completa', RENDER_W / 2, offY + 220 * SCALE)
 
   // URL en amarillo
   ctx.fillStyle = COLORS.yellow
   ctx.font = `${30 * SCALE}px Arial`
-  ctx.fillText('impactoindigena.news', RENDER_SIZE / 2, 480 * SCALE)
+  ctx.fillText('impactoindigena.news', RENDER_W / 2, offY + 270 * SCALE)
 
   // Separador naranja
   ctx.strokeStyle = COLORS.orange
   ctx.lineWidth = 3 * SCALE
   ctx.beginPath()
-  ctx.moveTo(120 * SCALE, 530 * SCALE)
-  ctx.lineTo(RENDER_SIZE - 120 * SCALE, 530 * SCALE)
+  ctx.moveTo(120 * SCALE, offY + 320 * SCALE)
+  ctx.lineTo(RENDER_W - 120 * SCALE, offY + 320 * SCALE)
   ctx.stroke()
 
   // Tagline en gris
   ctx.fillStyle = COLORS.mediumGray
   ctx.font = `${27 * SCALE}px Arial`
-  ctx.fillText('Noticias sobre pueblos indígenas', RENDER_SIZE / 2, 590 * SCALE)
-  ctx.fillText('curadas con IA por Impacto Indígena', RENDER_SIZE / 2, 632 * SCALE)
+  ctx.fillText('Noticias sobre pueblos indígenas', RENDER_W / 2, offY + 380 * SCALE)
+  ctx.fillText('curadas con IA por Impacto Indígena', RENDER_W / 2, offY + 422 * SCALE)
 
   // Hashtags en naranja
   ctx.fillStyle = COLORS.orange
   ctx.font = `bold ${25 * SCALE}px Arial`
-  ctx.fillText('#PueblosIndígenas  #ImpactoIndígena', RENDER_SIZE / 2, 710 * SCALE)
+  ctx.fillText('#PueblosIndígenas  #ImpactoIndígena', RENDER_W / 2, offY + 500 * SCALE)
 
   // Número de slide
   ctx.fillStyle = COLORS.mediumGray
   ctx.font = `${22 * SCALE}px Arial`
-  ctx.fillText('4 / 4', RENDER_SIZE - 50 * SCALE, RENDER_SIZE - 30 * SCALE)
+  ctx.textAlign = 'right'
+  ctx.fillText('4 / 4', RENDER_W - 50 * SCALE, RENDER_H - 30 * SCALE)
 
   drawRainbowBar(ctx)
   return exportCanvas(canvas)
