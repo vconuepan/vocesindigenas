@@ -91,7 +91,7 @@ export default function MethodologyPage() {
 
           <div className="my-6">
             <div className="flex items-center gap-1.5 justify-end mb-4 text-xs text-neutral-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0" aria-hidden="true" />
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-800 shrink-0" aria-hidden="true" />
               <span>= noticia</span>
             </div>
 
@@ -138,7 +138,7 @@ export default function MethodologyPage() {
                     {Array.from({ length: step.dots }).map((_, j) => (
                       <span
                         key={j}
-                        className="w-2.5 h-2.5 rounded-full bg-brand-500"
+                        className="w-2.5 h-2.5 rounded-full bg-brand-800"
                         style={{ opacity: 0.25 + 0.75 * (1 - step.dots / 20) }}
                         aria-hidden="true"
                       />

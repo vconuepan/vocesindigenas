@@ -310,7 +310,6 @@ function PublicLayoutInner() {
                 </button>
               </div>
             </div>
-            <CategoryColorStrip />
           </div>
           <div className="bg-white border-b border-neutral-200 shadow-lg">
             <nav className="px-4 py-3">
@@ -335,7 +334,7 @@ function PublicLayoutInner() {
                     onClick={() => setMenuOpen(false)}
                     className={`flex items-center gap-2 py-2.5 text-sm font-bold focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-2 ${location.pathname.startsWith('/comunidad') ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"}`}
                   >
-                    <span className="w-2 h-2 rounded-full bg-brand-500" aria-hidden="true" />
+                    <span className="w-2 h-2 rounded-full bg-brand-800" aria-hidden="true" />
                     Comunidades
                   </Link>
                 </li>
@@ -383,6 +382,16 @@ function PublicLayoutInner() {
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                   {t('nav.subscribe')}
                 </button>
+                <a
+                  href={KOFI_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                >
+                  {t('nav.support')}
+                  <span className="sr-only"> (opens in new tab)</span>
+                </a>
                 <button onClick={() => { setMenuOpen(false); toggleLanguage(); }} className="flex items-center gap-2 py-2.5 text-sm font-bold text-neutral-500 hover:text-neutral-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded" aria-label={t('language.current')}>
                   {t('language.toggle')}
                 </button>
@@ -409,8 +418,6 @@ function PublicLayoutInner() {
           </div>
         )}
       </header>
-
-      <CategoryColorStrip className="lg:hidden" />
 
       <main id="main-content" className="flex-1">
         <Outlet />
