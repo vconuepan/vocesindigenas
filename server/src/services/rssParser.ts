@@ -6,6 +6,7 @@ import { withRetry } from '../lib/retry.js'
 import { normalizeUrl } from '../utils/urlNormalization.js'
 import { summarizeError } from '../utils/errors.js'
 import { crawlLimiter } from '../lib/crawlLimiter.js'
+import { SCRAPED_FEED_URLS, scrapeDISD } from './disdScraper.js'
 
 const log = createLogger('rssParser')
 
@@ -31,8 +32,17 @@ export interface ParseFeedResult {
 }
 
 export async function parseFeed(feedUrl: string, cacheHeaders?: FeedCacheHeaders): Promise<ParseFeedResult> {
+  // Route HTML-scraped feeds to their dedicated scrapers instead of the RSS parser
+  if (SCRAPED_FEED_URLS.has(feedUrl)) {
+    return scrapeDISD(feedUrl)
+  }
+
   try {
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {
+      // Mimic a real browser so sites that block generic bots (UN, OHCHR, etc.) respond correctly
+      'User-Agent': 'Mozilla/5.0 (compatible; ImpactoIndigenaCrawler/1.0; +https://impactoindigena.news)',
+      'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+    }
     if (cacheHeaders?.etag) {
       headers['If-None-Match'] = cacheHeaders.etag
     }

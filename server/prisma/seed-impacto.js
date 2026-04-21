@@ -266,8 +266,9 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
     // Google News indexa cobertura activa desde UNESCO, OTCA, medios regionales
     { title: 'Google News — Foro Permanente ONU', rssUrl: 'https://news.google.com/rss/search?q=%22foro+permanente%22+ind%C3%ADgenas&hl=es-419&gl=MX&ceid=MX:es-419', slug: 'derechos-indigenas', language: 'es', region: 'global' },
     { title: 'Google News — UNPFII', rssUrl: 'https://news.google.com/rss/search?q=UNPFII+%22pueblos+ind%C3%ADgenas%22&hl=es-419&gl=MX&ceid=MX:es-419', slug: 'derechos-indigenas', language: 'es', region: 'global' },
-    // Amazon Watch: ONG especializada en Amazonía, cubre UNPFII y derechos territoriales
-    { title: 'Amazon Watch', rssUrl: 'https://amazonwatch.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'latin_america' },
+    // DISD — UN Division for Inclusive Social Development (scraped, no RSS feed)
+    // The crawler detects this URL and routes to the cheerio scraper instead of RSS parser
+    { title: 'UNPFII — UN Division for Inclusive Social Development', rssUrl: 'https://social.desa.un.org/issues/indigenous-peoples/news', slug: 'derechos-indigenas', language: 'en', region: 'global' },
   ];
 
   for (const feed of feeds) {
