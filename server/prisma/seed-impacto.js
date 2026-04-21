@@ -261,6 +261,13 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
     { title: 'Google News — Pueblos Indígenas México', rssUrl: 'https://news.google.com/rss/search?q=pueblos+ind%C3%ADgenas+M%C3%A9xico&hl=es-419&gl=MX&ceid=MX:es-419', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
     { title: 'Mongabay LatAm – Pueblos Indígenas', rssUrl: 'https://es.mongabay.com/tag/pueblos-indigenas/feed/', slug: 'cambio-climatico', language: 'es', region: 'latin_america' },
     { title: 'Diálogo Chino LatAm', rssUrl: 'https://dialogochino.net/es/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'es', region: 'latin_america' },
+
+    // Foro Permanente de Cuestiones Indígenas ONU (UNPFII)
+    // Google News indexa cobertura activa desde UNESCO, OTCA, medios regionales
+    { title: 'Google News — Foro Permanente ONU', rssUrl: 'https://news.google.com/rss/search?q=%22foro+permanente%22+ind%C3%ADgenas&hl=es-419&gl=MX&ceid=MX:es-419', slug: 'derechos-indigenas', language: 'es', region: 'global' },
+    { title: 'Google News — UNPFII', rssUrl: 'https://news.google.com/rss/search?q=UNPFII+%22pueblos+ind%C3%ADgenas%22&hl=es-419&gl=MX&ceid=MX:es-419', slug: 'derechos-indigenas', language: 'es', region: 'global' },
+    // Amazon Watch: ONG especializada en Amazonía, cubre UNPFII y derechos territoriales
+    { title: 'Amazon Watch', rssUrl: 'https://amazonwatch.org/feed', slug: 'derechos-indigenas', language: 'en', region: 'latin_america' },
   ];
 
   for (const feed of feeds) {
