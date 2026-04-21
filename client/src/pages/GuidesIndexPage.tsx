@@ -79,7 +79,7 @@ export default function GuidesIndexPage() {
               className="block border border-neutral-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all group focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <div className="flex items-start justify-between gap-4 mb-2">
-                <h2 className="text-lg font-bold text-neutral-900 group-hover:text-brand-700 transition-colors leading-snug">
+                <h2 className="text-lg font-bold text-neutral-900 group-hover:text-brand-800 transition-colors leading-snug">
                   {guide.title}
                 </h2>
                 <span className="text-xs text-brand-600 font-medium whitespace-nowrap mt-0.5 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-100">
@@ -87,7 +87,7 @@ export default function GuidesIndexPage() {
                 </span>
               </div>
               <p className="text-sm text-neutral-600 leading-relaxed">{guide.description}</p>
-              <span className="inline-block mt-3 text-sm font-medium text-brand-700 group-hover:text-brand-800">
+              <span className="inline-block mt-3 text-sm font-medium text-brand-800 group-hover:text-brand-800">
                 Leer guía →
               </span>
             </Link>

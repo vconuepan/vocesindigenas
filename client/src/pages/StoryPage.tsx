@@ -120,7 +120,7 @@ export default function StoryPage() {
         </p>
         <Link
           to="/"
-          className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+          className="text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
           {t('storyPage.backToHome')}
         </Link>
@@ -232,7 +232,7 @@ export default function StoryPage() {
                   href={story.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                 >
                   {story.feed.displayTitle || story.feed.title}
                   <span className="sr-only"> (opens in new tab)</span>
@@ -243,7 +243,7 @@ export default function StoryPage() {
                 href={story.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
                 {t('storyPage.originalArticle')}
                 {hasSourceDate && (
@@ -254,7 +254,7 @@ export default function StoryPage() {
               <span className="text-neutral-300">|</span>
               <Link
                 to="/methodology"
-                className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
               >
                 {t('storyPage.generatedByAI')}
               </Link>
@@ -360,7 +360,7 @@ export default function StoryPage() {
                   <Link
                     key={g.href}
                     to={g.href}
-                    className="text-sm font-medium text-brand-700 hover:text-brand-800 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-3 py-1 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                    className="text-sm font-medium text-brand-800 hover:text-brand-700 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-3 py-1 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                   >
                     {g.label} →
                   </Link>
@@ -373,7 +373,7 @@ export default function StoryPage() {
           <div className="text-center mt-6">
             <Link
               to={`/search?q=${encodeURIComponent(headline)}`}
-              className="text-sm text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="text-sm text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               {t('storyPage.searchSimilar')}
             </Link>
@@ -383,13 +383,13 @@ export default function StoryPage() {
           <div className="border-t border-neutral-200 pt-6 mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Link
               to="/"
-              className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               {t('storyPage.backToHome')}
             </Link>
             <Link
               to={`/issues/${issueSlug}`}
-              className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+              className="text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
             >
               {t('storyPage.moreIn', { issue: issueName })}
             </Link>

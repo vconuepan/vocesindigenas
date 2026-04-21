@@ -242,7 +242,7 @@ export default function WidgetGeneratorPage() {
 
         <p className="text-sm text-neutral-500 mt-8">
           Need more control? Use the{' '}
-          <Link to="/free-api" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+          <Link to="/free-api" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
             free API
           </Link>
           {' '}to build custom integrations.

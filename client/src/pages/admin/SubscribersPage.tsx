@@ -130,7 +130,7 @@ export default function SubscribersPage() {
               onClick={() => handleTabChange(tab.value)}
               className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
                 statusFilter === tab.value
-                  ? 'border-brand-600 text-brand-700'
+                  ? 'border-brand-600 text-brand-800'
                   : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >

@@ -24,7 +24,7 @@ export default function LandingCta({ heading, description }: LandingCtaProps) {
         </Link>
         <button
           onClick={() => openSubscribe()}
-          className="inline-flex items-center gap-2 px-6 py-3 border border-brand-700 text-brand-700 font-medium rounded-lg hover:bg-brand-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-2 px-6 py-3 border border-brand-700 text-brand-800 font-medium rounded-lg hover:bg-brand-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
         >
           {t('landing.subscribeNewsletter')}
         </button>

@@ -104,7 +104,7 @@ export default function NoAdsNoTrackingPage() {
           </p>
           <p className="mt-4">
             Want the full comparison?{' '}
-            <Link to="/compare" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/compare" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               See all aggregators side by side
             </Link>
           </p>
@@ -171,7 +171,7 @@ export default function NoAdsNoTrackingPage() {
         <div className="prose max-w-none mt-4">
           <p>
             For details on what data we collect (or rather don't collect), see our{' '}
-            <Link to="/privacy" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/privacy" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               privacy policy
             </Link>
             .

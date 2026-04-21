@@ -92,7 +92,7 @@ export default function AboutPage() {
           <h2 className="section-heading mt-10">Impacto Indígena SpA</h2>
           <p>
             Esta plataforma es parte de{" "}
-            <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               Impacto Indígena SpA
             </a>
             , una Empresa Social Indígena constituida en Chile en 2023 que promueve un
@@ -210,14 +210,14 @@ export default function AboutPage() {
             Apoyamos a las empresas responsables en el diseño de estrategias efectivas para
             cumplir sus compromisos de respeto a los derechos humanos de los pueblos indígenas,
             mediante un enfoque práctico, integrado y basado en principios internacionales.{" "}
-            <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               Conoce más en impactoindigena.com
             </a>.
           </p>
 
           <h2 className="section-heading mt-10">Fundador</h2>
           <p>
-            <a href="https://www.linkedin.com/in/vconuepan/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="https://www.linkedin.com/in/vconuepan/" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               <strong>Venancio Conuepan Mesías</strong>
             </a>{" "}
             es un abogado mapuche y consultor en sostenibilidad, fundador de Impacto Indígena
@@ -236,7 +236,7 @@ export default function AboutPage() {
           </p>
           <p>
             Contacto:{" "}
-            <a href="mailto:venancio@impactoindigena.com" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="mailto:venancio@impactoindigena.com" className="text-brand-800 hover:text-brand-700 underline">
               venancio@impactoindigena.com
             </a>
           </p>
@@ -260,11 +260,11 @@ export default function AboutPage() {
           <p>
             La plataforma fue desarrollada como una adaptación con enfoque exclusivo indígena
             del proyecto{" "}
-            <a href="https://github.com/OdinMB/actually-relevant" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="https://github.com/OdinMB/actually-relevant" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               Actually Relevant
             </a>
             , creado originalmente por{" "}
-            <a href="https://www.linkedin.com/in/odinmuehlenbein/" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="https://www.linkedin.com/in/odinmuehlenbein/" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               Odin Mühlebein
             </a>
             . Mientras Actually Relevant cura noticias relevantes para la humanidad en general,
@@ -277,12 +277,12 @@ export default function AboutPage() {
           <p>
             El prototipo fue desarrollado en el marco de la cohorte{" "}
             <strong>LatAm AI 2025</strong> de{" "}
-            <a href="https://changemakerxchange.ai" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href="https://changemakerxchange.ai" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               Changemakerxchange.ai
             </a>
             , con el apoyo de Odin como mentor de la cohorte y experto en inteligencia
             artificial del Ashoka AI Lab. El código es abierto y está disponible en{" "}
-            <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               GitHub
             </a>.
           </p>
@@ -293,13 +293,13 @@ export default function AboutPage() {
           <h2 className="section-heading">Explorar</h2>
           <ul className="space-y-2 my-4">
             <li>
-              <Link to="/methodology" className="text-brand-700 hover:text-brand-800 font-normal">
+              <Link to="/methodology" className="text-brand-800 hover:text-brand-700 font-normal">
                 Metodología
               </Link>{" "}
               &mdash; Cómo seleccionamos las noticias, desde la fuente hasta la publicación
             </li>
             <li>
-              <Link to="/privacy" className="text-brand-700 hover:text-brand-800 font-normal">
+              <Link to="/privacy" className="text-brand-800 hover:text-brand-700 font-normal">
                 Privacidad
               </Link>{" "}
               &mdash; Nuestro compromiso con tu privacidad e independencia

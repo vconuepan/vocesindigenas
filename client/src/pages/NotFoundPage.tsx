@@ -16,7 +16,7 @@ export default function NotFoundPage() {
         <p className="page-intro">{t('notFound.message')}</p>
         <Link
           to="/"
-          className="text-brand-700 hover:text-brand-800 underline underline-offset-2 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+          className="text-brand-800 hover:text-brand-700 underline underline-offset-2 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
           {t('notFound.goHome')}
         </Link>

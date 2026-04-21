@@ -102,7 +102,7 @@ function IssueAccordion({ issue }: { issue: PublicIssue }) {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                        className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                       >
                         {link.label}
                         <span className="sr-only"> {t('issuePage.opensInNewTab')}</span>

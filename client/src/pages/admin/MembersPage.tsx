@@ -187,13 +187,13 @@ export default function MembersPage() {
               onClick={() => setTab(tab.value)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 isActive
-                  ? 'border-brand-600 text-brand-700'
+                  ? 'border-brand-600 text-brand-800'
                   : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >
               {tab.label}
               {count !== undefined && (
-                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${isActive ? 'bg-brand-100 text-brand-700' : 'bg-neutral-100 text-neutral-500'}`}>
+                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${isActive ? 'bg-brand-100 text-brand-800' : 'bg-neutral-100 text-neutral-500'}`}>
                   {count}
                 </span>
               )}

@@ -350,7 +350,7 @@ export default function ComparePage() {
               <h3 className="font-bold text-neutral-800 mb-1">{card.title}</h3>
               <p className="text-sm text-neutral-600 leading-relaxed">
                 {card.description}{' '}
-                <Link to={card.link} className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                <Link to={card.link} className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                   {card.linkText}
                 </Link>
               </p>

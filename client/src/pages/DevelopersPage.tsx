@@ -47,7 +47,7 @@ export default function DevelopersPage() {
       <div className="border-b border-neutral-200 bg-white px-4 py-3 flex items-center gap-3">
         <Link
           to="/"
-          className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+          className="text-sm text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
           &larr; Impacto Indígena
         </Link>

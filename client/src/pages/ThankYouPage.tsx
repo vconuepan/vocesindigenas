@@ -57,7 +57,7 @@ function CreditList({ title, credits }: { title: string; credits: Credit[] }) {
               href={credit.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-700 hover:text-brand-800 font-medium"
+              className="text-brand-800 hover:text-brand-700 font-medium"
             >
               {credit.name}
               <span className="sr-only"> (opens in new tab)</span>
@@ -107,7 +107,7 @@ export default function ThankYouPage() {
             href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+            className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
           >
             open source on GitHub
             <span className="sr-only"> (opens in new tab)</span>
@@ -132,7 +132,7 @@ export default function ThankYouPage() {
               href="https://www.toolpilot.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
             >
               ToolPilot.ai
               <span className="sr-only"> (opens in new tab)</span>

@@ -206,7 +206,7 @@ export default function ProfilePage() {
             <h2 className="text-base font-semibold text-neutral-800">Mis comunidades</h2>
             <Link
               to="/comunidades"
-              className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+              className="text-sm text-brand-800 hover:text-brand-700 font-medium"
             >
               Explorar más →
             </Link>
@@ -221,7 +221,7 @@ export default function ProfilePage() {
           ) : communities.length === 0 ? (
             <p className="text-sm text-neutral-500 italic">
               Aún no te has unido a ninguna comunidad.{' '}
-              <Link to="/comunidades" className="text-brand-700 underline">Explorar comunidades</Link>
+              <Link to="/comunidades" className="text-brand-800 underline">Explorar comunidades</Link>
             </p>
           ) : (
             <>
@@ -331,7 +331,7 @@ export default function ProfilePage() {
               </div>
               <Link
                 to="/"
-                className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+                className="text-sm text-brand-800 hover:text-brand-700 font-medium"
               >
                 Suscribirse →
               </Link>

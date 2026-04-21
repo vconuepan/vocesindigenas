@@ -75,7 +75,7 @@ export default function MagicLinkSentPage() {
             <button
               onClick={handleResend}
               disabled={secondsLeft > 0 || resendState === 'sending'}
-              className="text-sm text-brand-700 hover:text-brand-800 disabled:text-neutral-400 disabled:cursor-not-allowed transition-colors"
+              className="text-sm text-brand-800 hover:text-brand-700 disabled:text-neutral-400 disabled:cursor-not-allowed transition-colors"
             >
               {resendState === 'sending'
                 ? 'Enviando...'

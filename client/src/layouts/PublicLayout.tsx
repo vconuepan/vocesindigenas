@@ -199,7 +199,7 @@ function PublicLayoutInner() {
         <link rel="alternate" type="application/rss+xml" title="Impacto Indígena RSS Feed" href={`${API_BASE}/feed`} />
       </Helmet>
 
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500">
         {t('nav.skipToContent')}
       </a>
 
@@ -225,7 +225,7 @@ function PublicLayoutInner() {
                 href={KOFI_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-bold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded-full px-4 py-2.5 min-h-[44px] border border-brand-700 text-brand-700 hover:bg-brand-50"
+                className="inline-flex items-center gap-1.5 text-sm font-bold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded-full px-4 py-2.5 min-h-[44px] border border-brand-700 text-brand-800 hover:bg-brand-50"
               >
                 {t('nav.support')}
                 <span className="sr-only"> (opens in new tab)</span>
@@ -235,7 +235,7 @@ function PublicLayoutInner() {
               </button>
             </div>
             <div className="lg:hidden absolute left-4 top-0 h-full flex items-center gap-1">
-              <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${searchOpen ? "text-brand-700" : "text-neutral-400 hover:text-neutral-600"}`} aria-label={searchOpen ? t('nav.closeSearch') : t('nav.openSearch')} aria-expanded={searchOpen} aria-controls="search-panel">
+              <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} className={`p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${searchOpen ? "text-brand-800" : "text-neutral-400 hover:text-neutral-600"}`} aria-label={searchOpen ? t('nav.closeSearch') : t('nav.openSearch')} aria-expanded={searchOpen} aria-controls="search-panel">
                 <SearchIcon className="w-5 h-5" />
               </button>
             </div>
@@ -259,7 +259,7 @@ function PublicLayoutInner() {
         <nav className="hidden lg:block border-b border-neutral-200" aria-label={t('nav.thematicCategories')}>
           <ul className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-0">
             <li>
-              <button onClick={() => setSearchOpen(!searchOpen)} className={`issue-nav-link ${searchOpen ? "!text-brand-700" : ""}`} aria-label={searchOpen ? t('nav.closeSearch') : t('nav.openSearch')} aria-expanded={searchOpen} aria-controls="search-panel">
+              <button onClick={() => setSearchOpen(!searchOpen)} className={`issue-nav-link ${searchOpen ? "!text-brand-800" : ""}`} aria-label={searchOpen ? t('nav.closeSearch') : t('nav.openSearch')} aria-expanded={searchOpen} aria-controls="search-panel">
                 <SearchIcon className="w-5 h-5" />
               </button>
             </li>
@@ -372,13 +372,13 @@ function PublicLayoutInner() {
                 )}
               </ul>
               <div className="border-t border-neutral-100 pt-3 px-2 flex flex-col">
-                <Link to="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                <Link to="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                   <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                   </svg>
                   {t('nav.savedNews')}{savedCount > 0 && ` (${savedCount})`}
                 </Link>
-                <button onClick={() => { setMenuOpen(false); openSubscribe(); }} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                <button onClick={() => { setMenuOpen(false); openSubscribe(); }} className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                   <NewsletterIcon className="w-3.5 h-3.5 shrink-0" />
                   {t('nav.subscribe')}
                 </button>
@@ -387,7 +387,7 @@ function PublicLayoutInner() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className="flex items-center gap-2 py-2.5 text-sm font-bold text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   {t('nav.support')}
                   <span className="sr-only"> (opens in new tab)</span>

@@ -53,7 +53,7 @@ export default function PrivacyPage() {
             Usamos{" "}
             <a
               href="https://www.simpleanalytics.com/"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
             privacidad en{" "}
             <a
               href="https://simpleanalytics.com/privacy"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
               Tu <strong>direccion IP</strong> (registrada por nuestro proveedor de boletin,{" "}
               <a
                 href="https://www.useplunk.com/"
-                className="text-brand-700 hover:text-brand-800"
+                className="text-brand-800 hover:text-brand-700"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -183,7 +183,7 @@ export default function PrivacyPage() {
                   <td className="align-top py-2 pr-4">
                     <a
                       href="https://www.simpleanalytics.com/"
-                      className="text-brand-700 hover:text-brand-800"
+                      className="text-brand-800 hover:text-brand-700"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -199,7 +199,7 @@ export default function PrivacyPage() {
                   <td className="align-top py-2 pr-4">
                     <a
                       href="https://www.useplunk.com/"
-                      className="text-brand-700 hover:text-brand-800"
+                      className="text-brand-800 hover:text-brand-700"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -211,7 +211,7 @@ export default function PrivacyPage() {
                     Correo electronico y direccion IP (si te suscribes). Ver su{" "}
                     <a
                       href="https://www.useplunk.com/privacy"
-                      className="text-brand-700 hover:text-brand-800"
+                      className="text-brand-800 hover:text-brand-700"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -224,7 +224,7 @@ export default function PrivacyPage() {
                   <td className="align-top py-2 pr-4">
                     <a
                       href="https://render.com/"
-                      className="text-brand-700 hover:text-brand-800"
+                      className="text-brand-800 hover:text-brand-700"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -263,7 +263,7 @@ export default function PrivacyPage() {
           </p>
           <p>
             Para cualquier consulta relacionada con privacidad, contactanos en{" "}
-            <ObfuscatedEmail className="text-brand-700 hover:text-brand-800" />.
+            <ObfuscatedEmail className="text-brand-800 hover:text-brand-700" />.
           </p>
         </div>
       </div>

@@ -106,7 +106,7 @@ export default function FeedbackForm({
                 key={cat.value}
                 className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors border ${
                   category === cat.value
-                    ? 'bg-brand-50 border-brand-300 text-brand-700 font-medium'
+                    ? 'bg-brand-50 border-brand-300 text-brand-800 font-medium'
                     : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100'
                 }`}
               >

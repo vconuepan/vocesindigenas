@@ -80,19 +80,19 @@ export default function MapPage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/guia/pueblos-indigenas-chile"
-              className="text-sm font-medium text-brand-700 hover:text-brand-800 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="text-sm font-medium text-brand-800 hover:text-brand-700 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               Guía: Pueblos de Chile →
             </Link>
             <Link
               to="/guia/pueblo-mapuche"
-              className="text-sm font-medium text-brand-700 hover:text-brand-800 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="text-sm font-medium text-brand-800 hover:text-brand-700 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               Guía: Pueblo Mapuche →
             </Link>
             <Link
               to="/glosario"
-              className="text-sm font-medium text-brand-700 hover:text-brand-800 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="text-sm font-medium text-brand-800 hover:text-brand-700 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               Glosario de términos →
             </Link>

@@ -16,7 +16,7 @@ export default function AlsoCoveredBy({ slug }: { slug: string }) {
             href={s.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+            className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
           >
             {s.feedTitle}
             <span className="sr-only"> (abre en nueva pestana)</span>

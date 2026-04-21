@@ -69,7 +69,7 @@ export default function NewslettersPage() {
             onClick={() => setStatusFilter(tab.value)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
               statusFilter === tab.value
-                ? 'bg-brand-50 text-brand-700'
+                ? 'bg-brand-50 text-brand-800'
                 : 'text-neutral-600 hover:bg-neutral-100'
             }`}
           >

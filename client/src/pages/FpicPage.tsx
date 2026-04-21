@@ -215,7 +215,7 @@ export default function FpicPage() {
             </p>
             <Link
               to="/issues/derechos-indigenas"
-              className="inline-block text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              className="inline-block text-sm font-medium text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
               Ver últimas noticias sobre derechos indígenas →
             </Link>

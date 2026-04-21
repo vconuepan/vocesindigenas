@@ -188,7 +188,7 @@ export default function CommunityPage() {
       <div className="page-section text-center">
         <h1 className="page-title">Comunidad no encontrada</h1>
         <p className="text-neutral-500 mb-6">Esta comunidad no existe o fue eliminada.</p>
-        <Link to="/comunidades" className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1">
+        <Link to="/comunidades" className="text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1">
           &larr; Ver todas las comunidades
         </Link>
       </div>
@@ -218,7 +218,7 @@ export default function CommunityPage() {
         {/* Breadcrumb */}
         <Link
           to="/comunidades"
-          className="text-xs text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 mb-3 inline-block"
+          className="text-xs text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 mb-3 inline-block"
         >
           &larr; Comunidades
         </Link>

@@ -33,7 +33,7 @@ export default function PullQuote({ story, variant = 'centered' }: PullQuoteProp
           {story.quoteAttribution}, via{' '}
           <Link
             to={`/stories/${story.slug}`}
-            className="text-brand-700 hover:text-brand-800 underline decoration-brand-300 hover:decoration-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+            className="text-brand-800 hover:text-brand-700 underline decoration-brand-300 hover:decoration-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
           >
             {displayTitle || story.sourceTitle}
           </Link>
@@ -43,7 +43,7 @@ export default function PullQuote({ story, variant = 'centered' }: PullQuoteProp
           from{' '}
           <Link
             to={`/stories/${story.slug}`}
-            className="text-brand-700 hover:text-brand-800 underline decoration-brand-300 hover:decoration-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+            className="text-brand-800 hover:text-brand-700 underline decoration-brand-300 hover:decoration-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
           >
             {displayTitle || story.sourceTitle}
           </Link>

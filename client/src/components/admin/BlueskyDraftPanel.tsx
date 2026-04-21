@@ -155,7 +155,7 @@ export function BlueskyDraftPanel({
               <div className="space-y-2 text-sm">
                 <div className="flex items-start gap-2">
                   <span className="shrink-0 text-neutral-400">Card:</span>
-                  <span className="text-brand-700 break-all">
+                  <span className="text-brand-800 break-all">
                     actuallyrelevant.com/stories/{draft.story.slug || '...'}
                   </span>
                 </div>

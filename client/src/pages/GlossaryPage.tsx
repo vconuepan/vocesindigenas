@@ -315,7 +315,7 @@ export default function GlossaryPage() {
                                 document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                               }, 50)
                             }}
-                            className="text-xs text-brand-700 hover:text-brand-900 underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                            className="text-xs text-brand-800 hover:text-brand-900 underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                           >
                             {r}
                           </button>
@@ -327,7 +327,7 @@ export default function GlossaryPage() {
                     <div className="mt-2">
                       <Link
                         to={entry.seeAlso.href}
-                        className="text-xs font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                        className="text-xs font-medium text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                       >
                         → {entry.seeAlso.label}
                       </Link>
@@ -344,7 +344,7 @@ export default function GlossaryPage() {
             </p>
             <Link
               to="/feedback"
-              className="inline-block text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              className="inline-block text-sm font-medium text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
               Sugerir un término →
             </Link>

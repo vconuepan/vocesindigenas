@@ -217,12 +217,12 @@ export default function ChileHubPage() {
                   {pueblo.poblacion} personas
                 </span>
               </div>
-              <p className="text-xs text-brand-700 font-medium mb-2">{pueblo.region}</p>
+              <p className="text-xs text-brand-800 font-medium mb-2">{pueblo.region}</p>
               <p className="text-sm text-neutral-700 leading-relaxed">{pueblo.descripcion}</p>
               {pueblo.guia && (
                 <Link
                   to={pueblo.guia}
-                  className="inline-block mt-3 text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className="inline-block mt-3 text-sm font-medium text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   Guía completa sobre el pueblo {pueblo.nombre} →
                 </Link>
@@ -289,7 +289,7 @@ export default function ChileHubPage() {
             </p>
             <Link
               to="/issues/chile-indigena"
-              className="inline-block text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+              className="inline-block text-sm font-medium text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
               Ver últimas noticias sobre Chile Indígena →
             </Link>

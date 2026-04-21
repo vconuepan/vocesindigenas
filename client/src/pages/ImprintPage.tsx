@@ -31,7 +31,7 @@ export default function ImprintPage() {
             Impacto Indígena<br />
             <a
               href="mailto:contacto@impactoindigena.news"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
             >
               contacto@impactoindigena.news
             </a>
@@ -41,7 +41,7 @@ export default function ImprintPage() {
 
           <p>
             For information about data collection and privacy, see our{" "}
-            <Link to="/privacy" className="text-brand-700 hover:text-brand-800">
+            <Link to="/privacy" className="text-brand-800 hover:text-brand-700">
               Privacy Policy
             </Link>
             .
@@ -53,7 +53,7 @@ export default function ImprintPage() {
               href="https://actuallyrelevant.news"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
             >
               Actually Relevant
               <span className="sr-only"> (opens in new tab)</span>
@@ -63,7 +63,7 @@ export default function ImprintPage() {
               href={GITHUB_LICENSE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
             >
               GNU AGPL v3 license
               <span className="sr-only"> (opens in new tab)</span>
@@ -73,7 +73,7 @@ export default function ImprintPage() {
               href={GITHUB_REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-700 hover:text-brand-800"
+              className="text-brand-800 hover:text-brand-700"
             >
               GitHub
               <span className="sr-only"> (opens in new tab)</span>

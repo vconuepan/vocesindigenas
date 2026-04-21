@@ -107,7 +107,7 @@ export function PodcastDetail({ podcast }: PodcastDetailProps) {
             href={podcast.audioUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-brand-700 hover:text-brand-800 mt-2 inline-block"
+            className="text-xs text-brand-800 hover:text-brand-700 mt-2 inline-block"
           >
             Download MP3
           </a>

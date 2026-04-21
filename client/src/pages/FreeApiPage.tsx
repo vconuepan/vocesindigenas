@@ -187,7 +187,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
             area, relevance scores, publication date, and more.
           </p>
           <p className="mt-2">
-            <Link to="/developers" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/developers" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               Full API documentation            </Link>
           </p>
 
@@ -252,7 +252,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
         </div>
         <div className="prose max-w-none mt-4">
           <p>
-            <Link to="/methodology" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/methodology" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               Learn how our curation works
             </Link>
           </p>
@@ -292,7 +292,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
         <div className="prose max-w-none">
           <p className="mt-4">
             For the full OpenAPI specification, endpoint details, and response schemas:{' '}
-            <Link to="/developers" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/developers" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               API Documentation            </Link>
           </p>
 
@@ -306,7 +306,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
             />
           </div>
           <p>
-            <Link to="/compare" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/compare" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               See how we compare to other news services overall            </Link>
           </p>
 
@@ -319,25 +319,25 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
           <ul className="list-disc pl-6 space-y-1 mt-3 font-mono text-sm">
             <li>
               Human Development:{' '}
-              <span className="text-brand-700">
+              <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=human-development
               </span>
             </li>
             <li>
               Planet & Climate:{' '}
-              <span className="text-brand-700">
+              <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=planet-climate
               </span>
             </li>
             <li>
               Existential Threats:{' '}
-              <span className="text-brand-700">
+              <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=existential-threats
               </span>
             </li>
             <li>
               Science & Technology:{' '}
-              <span className="text-brand-700">
+              <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=science-technology
               </span>
             </li>
@@ -350,7 +350,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
             create a customizable news widget — no backend required.
           </p>
           <p className="mt-2">
-            <Link to="/widgets" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/widgets" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               Build a widget
             </Link>
           </p>
@@ -374,7 +374,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
               href={`${API_BASE}/stories`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-brand-700 text-brand-700 font-medium rounded-lg hover:bg-brand-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-brand-700 text-brand-800 font-medium rounded-lg hover:bg-brand-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
             >
               Try it now: /api/stories              <span className="sr-only">(opens in new tab)</span>
             </a>

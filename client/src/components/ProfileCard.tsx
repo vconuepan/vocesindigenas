@@ -27,7 +27,7 @@ export default function ProfileCard({ className = '' }: ProfileCardProps) {
           href="https://odins.website"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
         >
           <svg
             className="w-4 h-4"
@@ -49,7 +49,7 @@ export default function ProfileCard({ className = '' }: ProfileCardProps) {
           href="https://www.linkedin.com/in/odinmuehlenbein/"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
         >
           <svg
             className="w-4 h-4"

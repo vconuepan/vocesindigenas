@@ -260,7 +260,7 @@ export default function NewsFatiguePage() {
           <ul className="list-disc pl-6 space-y-2 mt-3">
             <li>
               <strong>No ads.</strong> No revenue depends on keeping you engaged.{' '}
-              <Link to="/no-ads-no-tracking" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+              <Link to="/no-ads-no-tracking" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                 Read our commitment
               </Link>
             </li>
@@ -276,7 +276,7 @@ export default function NewsFatiguePage() {
             </li>
           </ul>
           <p className="mt-4">
-            <Link to="/methodology" className="text-brand-700 hover:text-brand-800 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+            <Link to="/methodology" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
               See how we select stories            </Link>
           </p>
         </div>

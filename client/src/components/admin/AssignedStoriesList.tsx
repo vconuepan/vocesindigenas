@@ -147,7 +147,7 @@ export function AssignedStoriesList({
                 <button
                   type="button"
                   onClick={() => refetch()}
-                  className="text-brand-700 hover:underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className="text-brand-800 hover:underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 >
                   Try again
                 </button>

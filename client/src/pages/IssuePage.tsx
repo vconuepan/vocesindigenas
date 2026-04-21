@@ -151,7 +151,7 @@ export default function IssuePage() {
         <p className="text-neutral-500 mb-6">{t('issuePage.notFoundDesc')}</p>
         <Link
           to="/issues"
-          className="text-brand-700 hover:text-brand-800 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
+          className="text-brand-800 hover:text-brand-700 font-normal focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-1"
         >
           {t('issuePage.viewAllIssues')}
         </Link>
@@ -360,7 +360,7 @@ export default function IssuePage() {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                            className="text-sm text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                           >
                             {link.label}
                             <span className="sr-only"> {t('issuePage.opensInNewTab')}</span>
@@ -429,7 +429,7 @@ export default function IssuePage() {
                               href={link.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                              className="text-sm text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                             >
                               {link.label}
                               <span className="sr-only"> {t('issuePage.opensInNewTab')}</span>
@@ -457,7 +457,7 @@ export default function IssuePage() {
                 <Link
                   key={guide.href}
                   to={guide.href}
-                  className="text-sm text-brand-700 hover:text-brand-800 font-medium border border-brand-200 hover:border-brand-400 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
+                  className="text-sm text-brand-800 hover:text-brand-700 font-medium border border-brand-200 hover:border-brand-400 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
                   {guide.label} →
                 </Link>

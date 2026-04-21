@@ -54,7 +54,7 @@ function PasswordResetSection({ userId }: { userId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm font-medium text-brand-700 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+        className="text-sm font-medium text-brand-800 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
       >
         Set password...
       </button>

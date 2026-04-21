@@ -17,14 +17,14 @@ function CommunityCard({ community }: { community: Community }) {
           aria-hidden="true"
         />
         <div>
-          <h2 className="font-bold text-neutral-900 group-hover:text-brand-700 transition-colors">
+          <h2 className="font-bold text-neutral-900 group-hover:text-brand-800 transition-colors">
             {community.name}
           </h2>
           {community.region && (
             <p className="text-xs text-neutral-400 mt-0.5">{community.region}</p>
           )}
           <p className="text-sm text-neutral-600 mt-2 line-clamp-2">{community.description}</p>
-          <span className="inline-block mt-3 text-xs font-semibold text-brand-700 group-hover:underline">
+          <span className="inline-block mt-3 text-xs font-semibold text-brand-800 group-hover:underline">
             Ver noticias &rarr;
           </span>
         </div>

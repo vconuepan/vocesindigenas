@@ -139,7 +139,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
           <dd className="text-neutral-900">{story.feed?.title || '—'}</dd>
           <dt className="text-neutral-500">URL</dt>
           <dd className="text-neutral-900 truncate">
-            <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:text-brand-800 underline">
+            <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               {story.sourceUrl}
             </a>
           </dd>
@@ -149,7 +149,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
             <button
               type="button"
               onClick={() => setContentExpanded(!contentExpanded)}
-              className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+              className="text-sm text-brand-800 hover:text-brand-700 font-medium"
             >
               {contentExpanded ? 'Hide content' : 'Show source content'}
             </button>
@@ -197,7 +197,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
           <div className="pt-2 flex items-center gap-3">
             <Link
               to={`/admin/clusters?open=${story.clusterId}`}
-              className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+              className="text-sm text-brand-800 hover:text-brand-700 font-medium"
             >
               Manage cluster
             </Link>
@@ -238,7 +238,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
           <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Cluster</h3>
           <Link
             to={`/admin/clusters?create=${story.id}`}
-            className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+            className="text-sm text-brand-800 hover:text-brand-700 font-medium"
           >
             Create cluster with this story
           </Link>
@@ -259,7 +259,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
                 return (
                   <>
                     {' '}
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                       View post
                     </a>
                   </>
@@ -288,7 +288,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
               {story.mastodonPosts?.[0]?.statusUrl && (
                 <>
                   {' '}
-                  <a href={story.mastodonPosts[0].statusUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                  <a href={story.mastodonPosts[0].statusUrl} target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                     View post
                   </a>
                 </>
@@ -316,7 +316,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
               {story.instagramPosts?.[0]?.permalink && (
                 <>
                   {' '}
-                  <a href={story.instagramPosts[0].permalink} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                  <a href={story.instagramPosts[0].permalink} target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                     View post
                   </a>
                 </>
@@ -344,7 +344,7 @@ export function StoryEditForm({ story, issues, onDone, onBlueskyGenerate, onMast
               {story.linkedinPosts?.[0]?.postUrl && (
                 <>
                   {' '}
-                  <a href={story.linkedinPosts[0].postUrl} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
+                  <a href={story.linkedinPosts[0].postUrl} target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
                     View post
                   </a>
                 </>
