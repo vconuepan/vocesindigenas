@@ -18,6 +18,7 @@ import membersRouter from './members.js'
 import adminCommunitiesRouter from './communities.js'
 import subscribersRouter from './subscribers.js'
 import analyticsRouter from './analytics.js'
+import spotlightsRouter from './spotlights.js'
 
 const router = Router()
 
@@ -42,5 +43,6 @@ router.use('/members', membersRouter)
 router.use('/communities', adminCommunitiesRouter)
 router.use('/subscribers', subscribersRouter)
 router.use('/analytics', analyticsRouter)
+router.use('/spotlights', spotlightsRouter)
 
 export default router

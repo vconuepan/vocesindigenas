@@ -14,6 +14,7 @@ import communitiesRouter from './communities.js'
 import coverageRouter from './coverage.js'
 import trackRouter from './track.js'
 import opendataRouter from './opendata.js'
+import spotlightRouter from './spotlight.js'
 
 const router = Router()
 
@@ -34,5 +35,6 @@ router.use('/communities', communitiesRouter)
 router.use('/coverage', coverageRouter)
 router.use('/track', trackRouter)
 router.use('/opendata', opendataRouter)
+router.use('/spotlight', spotlightRouter)
 
 export default router

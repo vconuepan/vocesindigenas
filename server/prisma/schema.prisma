@@ -554,3 +554,21 @@ model MagicLink {
   @@index([expiresAt])
   @@map("magic_links")
 }
+
+// --- Spotlight (En Foco) ---
+// Editorial tool: configure a topic of the moment (e.g. "Foro Permanente ONU 2025")
+// with keywords that filter stories, shown as a rotating band on the homepage.
+
+model Spotlight {
+  id        String    @id @default(cuid())
+  label     String                         // Display name: "Foro Permanente ONU 2025"
+  keywords  String[]  @default([])         // Keywords for ILIKE story matching
+  isActive  Boolean   @default(true) @map("is_active")
+  startsAt  DateTime? @map("starts_at")    // Optional window (null = always)
+  endsAt    DateTime? @map("ends_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@map("spotlights")
+}

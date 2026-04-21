@@ -98,6 +98,25 @@ export interface FeedStatusItem {
   _count: { stories: number }
 }
 
+export interface AdminSpotlight {
+  id:        string
+  label:     string
+  keywords:  string[]
+  isActive:  boolean
+  startsAt:  string | null
+  endsAt:    string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SpotlightBody {
+  label:    string
+  keywords: string[]
+  isActive?: boolean
+  startsAt?: string | null
+  endsAt?:   string | null
+}
+
 export interface FeedQualityMetrics {
   totalCrawled: number
   publishedCount: number
@@ -582,6 +601,17 @@ export const adminApi = {
       ),
     stats: () => request<SubscriberStats>('/subscribers/stats'),
     delete: (id: string) => request<{ ok: boolean }>(`/subscribers/${id}`, { method: 'DELETE' }),
+  },
+
+  // Spotlights (En Foco)
+  spotlights: {
+    list: () => request<AdminSpotlight[]>('/spotlights'),
+    create: (body: SpotlightBody) =>
+      request<AdminSpotlight>('/spotlights', { method: 'POST', body: JSON.stringify(body) }),
+    update: (id: string, body: Partial<SpotlightBody>) =>
+      request<AdminSpotlight>(`/spotlights/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    delete: (id: string) =>
+      request<void>(`/spotlights/${id}`, { method: 'DELETE' }),
   },
 
   // Users

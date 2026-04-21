@@ -44,6 +44,7 @@ const navigation = [
   { name: 'Jobs', href: '/admin/jobs', icon: ClockIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Miembros', href: '/admin/members', icon: UserGroupIcon },
+  { name: 'En Foco', href: '/admin/spotlights', icon: GlobeAltIcon },
   { name: 'Comunidades', href: '/admin/communities', icon: GlobeAltIcon },
   { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
   { name: 'Suscriptores', href: '/admin/subscribers', icon: EnvelopeOpenIcon },

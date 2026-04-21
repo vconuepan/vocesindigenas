@@ -190,4 +190,29 @@ export const publicApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     }),
+
+  spotlight: () =>
+    request<SpotlightResponse | null>('/spotlight'),
+}
+
+// ─── Spotlight types ──────────────────────────────────────────────────────────
+
+export interface SpotlightStory {
+  slug:          string | null
+  title:         string | null
+  titleLabel:    string | null
+  imageUrl:      string | null
+  datePublished: string | null
+  issue:         { name: string; slug: string } | null
+  source:        string | null
+}
+
+export interface SpotlightResponse {
+  spotlight: {
+    id:       string
+    label:    string
+    startsAt: string | null
+    endsAt:   string | null
+  }
+  stories: SpotlightStory[]
 }

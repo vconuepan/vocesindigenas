@@ -15,6 +15,7 @@ import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildWebSiteSchema, buildOrganizationSchema } from '../lib/structured-data'
 import SupportBanner from '../components/SupportBanner'
+import SpotlightBand from '../components/SpotlightBand'
 import DailySnippet from '../components/DailySnippet'
 import { usePositivity } from '../contexts/PositivityContext'
 import { mixHomepageStories, pickHero } from '../lib/mix-stories'
@@ -309,6 +310,9 @@ export default function HomePage() {
 
       {/* Hero — show skeleton while loading */}
       {isLoading ? <HeroSkeleton /> : heroStory ? <HeroSection story={heroStory} /> : null}
+
+      {/* En Foco — spotlight band (renders only when an active spotlight exists) */}
+      <SpotlightBand />
 
       {/* Issue sections with rotating layouts */}
       <div className="page-section-wide md:-mt-14 min-h-screen">
