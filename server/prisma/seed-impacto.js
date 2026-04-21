@@ -248,6 +248,19 @@ i) Figuras y patrimonio histórico: noticias relacionadas con Venancio Coñuepan
     { title: 'Google News — CONADI', rssUrl: 'https://news.google.com/rss/search?q=CONADI&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Google News — Pueblos Indígenas Chile', rssUrl: 'https://news.google.com/rss/search?q=pueblos+ind%C3%ADgenas+Chile&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
     { title: 'Google News — Mapuche', rssUrl: 'https://news.google.com/rss/search?q=mapuche&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    // Medios chilenos indígenas adicionales
+    { title: 'Azkintuwe', rssUrl: 'https://www.azkintuwe.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Werken Kurruf', rssUrl: 'https://www.werkenkurruf.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Wefkvletun', rssUrl: 'https://wefkvletun.cl/feed/', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Google News — Pueblo Mapuche', rssUrl: 'https://news.google.com/rss/search?q=%22pueblo+mapuche%22&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    { title: 'Google News — Convenio 169', rssUrl: 'https://news.google.com/rss/search?q=%22convenio+169%22+Chile&hl=es-419&gl=CL&ceid=CL:es-419', slug: 'chile-indigena', language: 'es', region: 'latin_america' },
+    // LatAm: Bolivia, Perú, México
+    { title: 'Erbol (Bolivia)', rssUrl: 'https://erbol.com.bo/feed', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
+    { title: 'Google News — Pueblos Indígenas Bolivia', rssUrl: 'https://news.google.com/rss/search?q=pueblos+ind%C3%ADgenas+Bolivia&hl=es-419&gl=BO&ceid=BO:es-419', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
+    { title: 'Google News — Pueblos Indígenas Perú', rssUrl: 'https://news.google.com/rss/search?q=pueblos+ind%C3%ADgenas+Per%C3%BA&hl=es-419&gl=PE&ceid=PE:es-419', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
+    { title: 'Google News — Pueblos Indígenas México', rssUrl: 'https://news.google.com/rss/search?q=pueblos+ind%C3%ADgenas+M%C3%A9xico&hl=es-419&gl=MX&ceid=MX:es-419', slug: 'derechos-indigenas', language: 'es', region: 'latin_america' },
+    { title: 'Mongabay LatAm – Pueblos Indígenas', rssUrl: 'https://es.mongabay.com/tag/pueblos-indigenas/feed/', slug: 'cambio-climatico', language: 'es', region: 'latin_america' },
+    { title: 'Diálogo Chino LatAm', rssUrl: 'https://dialogochino.net/es/feed/', slug: 'desarrollo-sostenible-y-autodeterminado', language: 'es', region: 'latin_america' },
   ];
 
   for (const feed of feeds) {

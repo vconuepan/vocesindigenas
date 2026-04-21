@@ -38,6 +38,8 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/guia/pueblos-indigenas-chile', priority: 0.8, changefreq: 'monthly' },
   { path: '/glosario', priority: 0.7, changefreq: 'monthly' },
   { path: '/mapa', priority: 0.6, changefreq: 'monthly' },
+  // Open Data API docs — for researchers and institutional users
+  { path: '/opendata', priority: 0.6, changefreq: 'monthly' },
 ]
 
 function formatDate(date: Date): string {
