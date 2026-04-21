@@ -21,6 +21,7 @@ export default function PrivacyPage() {
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/privacy`} />
+        <link rel="canonical" href={`${SEO.siteUrl}/privacy`} />
         {CommonOgTags({})}
       </Helmet>
 

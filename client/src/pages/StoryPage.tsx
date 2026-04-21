@@ -180,7 +180,7 @@ export default function StoryPage() {
         {story.datePublished && (
           <meta property="article:published_time" content={story.datePublished} />
         )}
-        {CommonOgTags({ image: story.imageUrl || SEO.ogImage })}
+        {CommonOgTags({ image: story.imageUrl || SEO.ogImage, title: displayTitle, description: description.slice(0, 200) })}
         <script type="application/ld+json">
           {JSON.stringify(buildArticleSchema(story))}
         </script>

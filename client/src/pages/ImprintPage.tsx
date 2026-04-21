@@ -19,6 +19,7 @@ export default function ImprintPage() {
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/imprint`} />
+        <link rel="canonical" href={`${SEO.siteUrl}/imprint`} />
         {CommonOgTags({})}
       </Helmet>
 

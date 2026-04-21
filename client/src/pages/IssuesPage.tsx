@@ -158,6 +158,7 @@ export default function IssuesPage() {
         <meta property="og:description" content={t('issuesPage.subtitle')} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/issues`} />
+        <link rel="canonical" href={`${SEO.siteUrl}/issues`} />
         {CommonOgTags({})}
       </Helmet>
 

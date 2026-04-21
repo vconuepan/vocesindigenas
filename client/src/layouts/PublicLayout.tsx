@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getCategoryColor } from "../lib/category-colors";
 import { API_BASE, memberAuth } from "../lib/api";
 import { BRAND, GITHUB_REPO_URL } from "../config";
+import { SEO } from "../lib/seo";
 import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
   useSubscribe,
@@ -197,6 +198,8 @@ function PublicLayoutInner() {
     <div className="min-h-screen flex flex-col">
       <Helmet>
         <link rel="alternate" type="application/rss+xml" title="Impacto Indígena RSS Feed" href={`${API_BASE}/feed`} />
+        <link rel="alternate" hrefLang="es" href={`${SEO.siteUrl}${location.pathname}`} />
+        <link rel="alternate" hrefLang="x-default" href={`${SEO.siteUrl}${location.pathname}`} />
       </Helmet>
 
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500">

@@ -31,6 +31,13 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/saved', priority: 0.3, changefreq: 'daily' },
   { path: '/subscribed', priority: 0.2, changefreq: 'yearly' },
   { path: '/thank-you', priority: 0.2, changefreq: 'yearly' },
+  // Guide pages — high-quality long-form content
+  { path: '/guia', priority: 0.7, changefreq: 'monthly' },
+  { path: '/guia/pueblo-mapuche', priority: 0.8, changefreq: 'monthly' },
+  { path: '/guia/consulta-previa-fpic', priority: 0.8, changefreq: 'monthly' },
+  { path: '/guia/pueblos-indigenas-chile', priority: 0.8, changefreq: 'monthly' },
+  { path: '/glosario', priority: 0.7, changefreq: 'monthly' },
+  { path: '/mapa', priority: 0.6, changefreq: 'monthly' },
 ]
 
 function formatDate(date: Date): string {

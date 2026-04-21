@@ -298,7 +298,7 @@ export default function HomePage() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/`} />
         <link rel="canonical" href={`${SEO.siteUrl}/`} />
-        {CommonOgTags({})}
+        {CommonOgTags({ title: SEO.defaultTitle, description: SEO.defaultDescription })}
         <script type="application/ld+json">
           {JSON.stringify(buildWebSiteSchema())}
         </script>

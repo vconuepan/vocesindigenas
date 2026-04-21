@@ -16,7 +16,15 @@ export const SEO = {
  * Use inside <Helmet> after page-specific tags.
  * Returns an array (not fragment) for react-helmet-async compatibility.
  */
-export function CommonOgTags({ image = SEO.ogImage }: { image?: string }): ReactNode {
+export function CommonOgTags({
+  image = SEO.ogImage,
+  title,
+  description,
+}: {
+  image?: string
+  title?: string
+  description?: string
+}): ReactNode {
   return [
     <meta key="og:site_name" property="og:site_name" content={SEO.siteName} />,
     <meta key="og:image" property="og:image" content={image} />,
@@ -24,5 +32,7 @@ export function CommonOgTags({ image = SEO.ogImage }: { image?: string }): React
     <meta key="og:image:height" property="og:image:height" content={SEO.ogImageHeight} />,
     <meta key="twitter:card" name="twitter:card" content={SEO.twitterCard} />,
     <meta key="twitter:image" name="twitter:image" content={image} />,
+    ...(title ? [<meta key="twitter:title" name="twitter:title" content={title} />] : []),
+    ...(description ? [<meta key="twitter:description" name="twitter:description" content={description.slice(0, 200)} />] : []),
   ]
 }

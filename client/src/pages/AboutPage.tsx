@@ -20,6 +20,7 @@ export default function AboutPage() {
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SEO.siteUrl}/about`} />
+        <link rel="canonical" href={`${SEO.siteUrl}/about`} />
         {CommonOgTags({})}
       </Helmet>
       <StructuredData
