@@ -12,7 +12,8 @@
     "mobileNav": "Mobile navigation",
     "searchPlaceholder": "Search stories...",
     "searchHint": "Semantic search, not just keywords.",
-    "searchLabel": "Search stories"
+    "searchLabel": "Search stories",
+    "support": "Support us"
   },
   "issues": {
     "climaBiodiversidad": "Climate Change and Biodiversity",
@@ -113,8 +114,10 @@
     "error": "Something went wrong. Please try again."
   },
   "support": {
+    "eyebrow": "Independent indigenous journalism",
+    "heading": "Voices the mainstream ignores. We cover them.",
     "message": "Free. Independent. Ad-free.\nHelp us keep it that way.",
-    "button": "Support us",
+    "button": "Support us on Ko-fi",
     "opensInNewTab": "(opens in new tab)"
   },
   "landing": {

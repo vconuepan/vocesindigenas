@@ -12,7 +12,8 @@
     "mobileNav": "Navegación móvil",
     "searchPlaceholder": "Buscar noticias...",
     "searchHint": "Búsqueda por significado, no solo por palabras clave.",
-    "searchLabel": "Buscar noticias"
+    "searchLabel": "Buscar noticias",
+    "support": "Apóyanos"
   },
   "issues": {
     "climaBiodiversidad": "Cambio Climático y Biodiversidad",
@@ -113,8 +114,10 @@
     "error": "Algo salió mal. Por favor intenta de nuevo."
   },
   "support": {
+    "eyebrow": "Periodismo indígena independiente",
+    "heading": "Voces que el mainstream ignora. Las cubrimos nosotros.",
     "message": "Gratuito. Independiente. Sin publicidad.\nAyúdanos a mantenerlo así.",
-    "button": "Apóyanos",
+    "button": "Apóyanos en Ko-fi",
     "opensInNewTab": "(abre en nueva pestaña)"
   },
   "landing": {
