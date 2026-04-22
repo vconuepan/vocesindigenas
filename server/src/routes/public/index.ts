@@ -15,6 +15,7 @@ import coverageRouter from './coverage.js'
 import trackRouter from './track.js'
 import opendataRouter from './opendata.js'
 import spotlightRouter from './spotlight.js'
+import contrastRouter from './contrast.js'
 
 const router = Router()
 
@@ -36,5 +37,6 @@ router.use('/coverage', coverageRouter)
 router.use('/track', trackRouter)
 router.use('/opendata', opendataRouter)
 router.use('/spotlight', spotlightRouter)
+router.use('/contrast', contrastRouter)
 
 export default router

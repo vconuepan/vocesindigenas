@@ -45,6 +45,8 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/compare', priority: 0.6, changefreq: 'weekly' },
   { path: '/free-api', priority: 0.6, changefreq: 'monthly' },
   { path: '/news-fatigue', priority: 0.5, changefreq: 'monthly' },
+  // Editorial contrast page — high SEO value, updated weekly
+  { path: '/por-que-importa', priority: 0.7, changefreq: 'weekly' },
 ]
 
 function formatDate(date: Date): string {

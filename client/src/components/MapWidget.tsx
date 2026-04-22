@@ -233,12 +233,19 @@ export default function MapWidget() {
                     Leer guía →
                   </a>
                 )}
-                {pueblo.communitySlug && (
+                {pueblo.communitySlug ? (
                   <a
                     href={`/comunidad/${pueblo.communitySlug}`}
                     style={{ fontSize: 11, fontWeight: 600, color: '#6366f1', textDecoration: 'none' }}
                   >
                     Ver noticias →
+                  </a>
+                ) : (
+                  <a
+                    href={`/search?q=${encodeURIComponent(pueblo.nombre)}`}
+                    style={{ fontSize: 11, fontWeight: 600, color: '#6366f1', textDecoration: 'none' }}
+                  >
+                    Buscar noticias →
                   </a>
                 )}
                 <a

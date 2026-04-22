@@ -22,6 +22,7 @@ const EmbedPage = lazy(() => import('./pages/EmbedPage'))
 const WidgetGeneratorPage = lazy(() => import('./pages/WidgetGeneratorPage'))
 const SavedPage = lazy(() => import('./pages/SavedPage'))
 const ComparePage = lazy(() => import('./pages/ComparePage'))
+const WhyItMattersPage = lazy(() => import('./pages/WhyItMattersPage'))
 const NoAdsNoTrackingPage = lazy(() => import('./pages/NoAdsNoTrackingPage'))
 const NewsFatiguePage = lazy(() => import('./pages/NewsFatiguePage'))
 const FreeApiPage = lazy(() => import('./pages/FreeApiPage'))
@@ -118,6 +119,7 @@ export default function App() {
         <Route path="/embed-widget" element={<LazyPage><WidgetGeneratorPage /></LazyPage>} />
         <Route path="/saved" element={<LazyPage><SavedPage /></LazyPage>} />
         <Route path="/compare" element={<LazyPage><ComparePage /></LazyPage>} />
+        <Route path="/por-que-importa" element={<LazyPage><WhyItMattersPage /></LazyPage>} />
         <Route path="/no-ads-no-tracking" element={<LazyPage><NoAdsNoTrackingPage /></LazyPage>} />
         <Route path="/news-fatigue" element={<LazyPage><NewsFatiguePage /></LazyPage>} />
         <Route path="/free-api" element={<LazyPage><FreeApiPage /></LazyPage>} />

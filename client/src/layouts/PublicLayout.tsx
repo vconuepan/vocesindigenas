@@ -75,6 +75,7 @@ const FOOTER_LEGAL = [
 // External distribution tools — give these pages discoverability
 const FOOTER_DISTRIBUTE = [
   { labelKey: "footer.widgetForYourSite", href: "/widgets" },
+  { labelKey: "footer.whyItMatters", href: "/por-que-importa" },
   { labelKey: "footer.comparePage", href: "/compare" },
   { labelKey: "footer.freeApi", href: "/free-api" },
   { labelKey: "footer.openData", href: "/opendata" },
@@ -524,6 +525,17 @@ function PublicLayoutInner() {
                     {t('footer.rssFeed')}
                   </a>
                 </li>
+                {ISSUE_LINKS.map((issue) => (
+                  <li key={issue.slug} className="flex items-center">
+                    <a
+                      href={`${API_BASE}/feed/${issue.slug}`}
+                      className="inline-flex items-center gap-1.5 text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                    >
+                      <span className={`w-1 h-1 rounded-full ${getCategoryColor(issue.slug).dotBg} opacity-70 shrink-0`} aria-hidden="true" />
+                      {t(issue.labelKey)}
+                    </a>
+                  </li>
+                ))}
                 <li className="flex items-center">
                   <a href={KOFI_URL} target="_blank" rel="noopener noreferrer" className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
                     {t('footer.support')}

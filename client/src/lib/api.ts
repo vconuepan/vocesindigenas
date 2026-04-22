@@ -193,6 +193,9 @@ export const publicApi = {
 
   spotlight: () =>
     request<SpotlightResponse | null>('/spotlight'),
+
+  contrast: () =>
+    request<ContrastResponse>('/contrast'),
 }
 
 // ─── Spotlight types ──────────────────────────────────────────────────────────
@@ -205,6 +208,32 @@ export interface SpotlightStory {
   datePublished: string | null
   issue:         { name: string; slug: string } | null
   source:        string | null
+}
+
+// ─── Contrast types ───────────────────────────────────────────────────────────
+
+export interface ContrastOurItem {
+  id: string
+  title: string
+  slug: string | null
+  sourceTitle: string
+  relevanceScore: number | null
+  datePublished: string | null
+  issueName: string | null
+  issueSlug: string | null
+}
+
+export interface ContrastMainstreamItem {
+  title: string
+  url: string
+  source: string | null
+  datePublished: string | null
+}
+
+export interface ContrastResponse {
+  our: ContrastOurItem[]
+  mainstream: ContrastMainstreamItem[]
+  generatedAt: string
 }
 
 export interface SpotlightResponse {
