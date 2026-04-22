@@ -25,11 +25,20 @@ export function CommonOgTags({
   title?: string
   description?: string
 }): ReactNode {
+  // Only declare width/height for the default OG image — we know its exact dimensions.
+  // For story images (scraped from external sources) the actual size is unknown,
+  // so omitting width/height prevents LinkedIn/Facebook from rejecting the card
+  // due to a dimension mismatch.
+  const isDefaultOgImage = image === SEO.ogImage
   return [
     <meta key="og:site_name" property="og:site_name" content={SEO.siteName} />,
     <meta key="og:image" property="og:image" content={image} />,
-    <meta key="og:image:width" property="og:image:width" content={SEO.ogImageWidth} />,
-    <meta key="og:image:height" property="og:image:height" content={SEO.ogImageHeight} />,
+    ...(isDefaultOgImage
+      ? [
+          <meta key="og:image:width" property="og:image:width" content={SEO.ogImageWidth} />,
+          <meta key="og:image:height" property="og:image:height" content={SEO.ogImageHeight} />,
+        ]
+      : []),
     <meta key="twitter:card" name="twitter:card" content={SEO.twitterCard} />,
     <meta key="twitter:image" name="twitter:image" content={image} />,
     ...(title ? [<meta key="twitter:title" name="twitter:title" content={title} />] : []),

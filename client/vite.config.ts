@@ -30,8 +30,9 @@ function htmlTransformPlugin(): Plugin {
 }
 
 // Only prerender the most recent stories. Older stories are served client-side
-// on first visit. 100 is enough for SEO coverage without blowing the build timeout.
-const PRERENDER_STORY_LIMIT = 100
+// on first visit. 300 covers ~3-4 months of content — enough so LinkedIn and
+// other scrapers can read OG tags for any recently-shared story.
+const PRERENDER_STORY_LIMIT = 300
 
 async function fetchStorySlugs(): Promise<string[]> {
   const apiUrl = process.env.VITE_API_URL
