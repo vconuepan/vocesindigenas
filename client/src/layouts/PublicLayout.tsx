@@ -76,6 +76,7 @@ const FOOTER_LEGAL = [
 const FOOTER_DISTRIBUTE = [
   { labelKey: "footer.widgetForYourSite", href: "/widgets" },
   { labelKey: "footer.whyItMatters", href: "/por-que-importa" },
+  { labelKey: "footer.sources", href: "/fuentes" },
   { labelKey: "footer.comparePage", href: "/compare" },
   { labelKey: "footer.freeApi", href: "/free-api" },
   { labelKey: "footer.openData", href: "/opendata" },

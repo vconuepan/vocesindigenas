@@ -174,6 +174,9 @@ export const publicApi = {
   sources: () =>
     request<{ byRegion: Record<string, string[]>; byIssue: Record<string, string[]>; totalCount: number }>('/sources'),
 
+  sourceProfiles: () =>
+    request<SourceProfile[]>('/sources/profiles'),
+
   coverage: () =>
     request<CoverageStats>('/coverage'),
 
@@ -234,6 +237,21 @@ export interface ContrastResponse {
   our: ContrastOurItem[]
   mainstream: ContrastMainstreamItem[]
   generatedAt: string
+}
+
+export interface SourceProfile {
+  id: string
+  title: string
+  displayTitle: string | null
+  url: string | null
+  language: string
+  region: string | null
+  regionLabel: string | null
+  issueName: string | null
+  issueSlug: string | null
+  avgRelevance: number | null
+  storyCount: number
+  lastPublishedAt: string | null
 }
 
 export interface SpotlightResponse {
