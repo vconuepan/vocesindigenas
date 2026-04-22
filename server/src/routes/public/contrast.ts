@@ -9,7 +9,6 @@
  * if Google News is unavailable, we return an empty mainstream array instead of a 500.
  */
 import { Router } from 'express'
-import { StoryStatus } from '@prisma/client'
 import prisma from '../../lib/prisma.js'
 import { TTLCache, cached } from '../../lib/cache.js'
 import { createLogger } from '../../lib/logger.js'
@@ -33,7 +32,7 @@ interface MainstreamItem {
 
 interface OurItem {
   id: string
-  title: string
+  title: string | null
   slug: string | null
   sourceTitle: string
   relevanceScore: number | null
@@ -53,21 +52,16 @@ router.get('/', async (_req, res) => {
     const data = await cached(contrastCache, 'contrast', async (): Promise<ContrastResponse> => {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-      // Our top stories this week
+      // Our top stories this week — use `relevance` (the final score field)
       const ourStories = await prisma.story.findMany({
         where: {
-          status: StoryStatus.PUBLISHED,
+          status: 'published',
           datePublished: { gte: sevenDaysAgo },
-          relevanceScore: { not: null },
+          relevance: { not: null },
         },
-        orderBy: { relevanceScore: 'desc' },
+        orderBy: { relevance: 'desc' },
         take: 8,
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          relevanceScore: true,
-          datePublished: true,
+        include: {
           feed: { select: { displayTitle: true, title: true } },
           issue: { select: { name: true, slug: true } },
         },
@@ -78,7 +72,7 @@ router.get('/', async (_req, res) => {
         title: s.title,
         slug: s.slug,
         sourceTitle: s.feed.displayTitle ?? s.feed.title,
-        relevanceScore: s.relevanceScore,
+        relevanceScore: s.relevance,
         datePublished: s.datePublished?.toISOString() ?? null,
         issueName: s.issue?.name ?? null,
         issueSlug: s.issue?.slug ?? null,
@@ -94,8 +88,9 @@ router.get('/', async (_req, res) => {
           source: null,
           datePublished: item.datePublished,
         }))
-      } catch (err: any) {
-        log.warn({ err: err?.message }, 'mainstream feed fetch failed — returning empty array')
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        log.warn({ err: msg }, 'mainstream feed fetch failed — returning empty array')
       }
 
       return { our, mainstream, generatedAt: new Date().toISOString() }
@@ -103,8 +98,9 @@ router.get('/', async (_req, res) => {
 
     res.setHeader('Cache-Control', 'public, max-age=1800')
     res.json(data)
-  } catch (err: any) {
-    log.error({ err: err?.message }, 'contrast endpoint failed')
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    log.error({ err: msg }, 'contrast endpoint failed')
     res.status(500).json({ error: 'Failed to generate contrast data' })
   }
 })
