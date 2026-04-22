@@ -13,6 +13,7 @@ import { runSendNewsletter } from './sendNewsletter.js'
 import { runSendPrivateNewsletter } from './sendPrivateNewsletter.js'
 import { runScrapeDOCIP } from './scrapeDOCIP.js'
 import { runSendCommunityDigest } from './sendCommunityDigest.js'
+import { runSendAlerts } from './sendAlerts.js'
 
 export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   crawl_feeds: runCrawlFeeds,
@@ -30,4 +31,5 @@ export const JOB_HANDLERS: Record<string, () => Promise<void>> = {
   send_private_newsletter: runSendPrivateNewsletter,
   scrape_docip: runScrapeDOCIP,
   send_community_digest: runSendCommunityDigest,
+  send_alerts: runSendAlerts,
 }

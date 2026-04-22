@@ -55,6 +55,9 @@ const FOOTER_NAV = [
   { labelKey: "footer.topics", href: "/issues" },
   { labelKey: "footer.communities", href: "/comunidades" },
   { labelKey: "footer.newsletter", href: "/newsletter" },
+  { labelKey: "footer.archive", href: "/archivo" },
+  { labelKey: "footer.cases", href: "/casos" },
+  { labelKey: "footer.alerts", href: "/alertas" },
   { labelKey: "footer.contact", href: "/feedback" },
 ];
 

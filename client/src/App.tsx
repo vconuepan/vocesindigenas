@@ -41,6 +41,11 @@ const MapuchePage = lazy(() => import('./pages/MapuchePage'))
 const FpicPage = lazy(() => import('./pages/FpicPage'))
 const ChileHubPage = lazy(() => import('./pages/ChileHubPage'))
 const OpenDataPage = lazy(() => import('./pages/OpenDataPage'))
+const NewsletterArchivePage = lazy(() => import('./pages/NewsletterArchivePage'))
+const NewsletterDetailPagePublic = lazy(() => import('./pages/NewsletterDetailPage'))
+const CasesPage = lazy(() => import('./pages/CasesPage'))
+const CasePage = lazy(() => import('./pages/CasePage'))
+const AlertsPage = lazy(() => import('./pages/AlertsPage'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -65,6 +70,7 @@ const MembersPage = lazy(() => import('./pages/admin/MembersPage'))
 const CommunitiesAdminPage = lazy(() => import('./pages/admin/CommunitiesAdminPage'))
 const MaintenancePage = lazy(() => import('./pages/admin/MaintenancePage'))
 const SpotlightsAdminPage = lazy(() => import('./pages/admin/SpotlightsAdminPage'))
+const CasesAdminPage = lazy(() => import('./pages/admin/CasesAdminPage'))
 const SubscribersPage = lazy(() => import('./pages/admin/SubscribersPage'))
 const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'))
 
@@ -139,6 +145,11 @@ export default function App() {
         <Route path="/guia/consulta-previa-fpic" element={<LazyPage><FpicPage /></LazyPage>} />
         <Route path="/guia/pueblos-indigenas-chile" element={<LazyPage><ChileHubPage /></LazyPage>} />
         <Route path="/opendata" element={<LazyPage><OpenDataPage /></LazyPage>} />
+        <Route path="/archivo" element={<LazyPage><NewsletterArchivePage /></LazyPage>} />
+        <Route path="/archivo/:id" element={<LazyPage><NewsletterDetailPagePublic /></LazyPage>} />
+        <Route path="/casos" element={<LazyPage><CasesPage /></LazyPage>} />
+        <Route path="/caso/:slug" element={<LazyPage><CasePage /></LazyPage>} />
+        <Route path="/alertas" element={<LazyPage><AlertsPage /></LazyPage>} />
       </Route>
 
       {/* Embed page — no layout wrapper */}
@@ -193,6 +204,7 @@ export default function App() {
         <Route path="subscribers" element={<SubscribersPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="spotlights" element={<SpotlightsAdminPage />} />
+        <Route path="casos" element={<CasesAdminPage />} />
       </Route>
 
       {/* Catch-all */}

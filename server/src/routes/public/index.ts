@@ -16,6 +16,9 @@ import trackRouter from './track.js'
 import opendataRouter from './opendata.js'
 import spotlightRouter from './spotlight.js'
 import contrastRouter from './contrast.js'
+import newslettersRouter from './newsletters.js'
+import casesRouter from './cases.js'
+import alertsRouter from './alerts.js'
 
 const router = Router()
 
@@ -38,5 +41,8 @@ router.use('/track', trackRouter)
 router.use('/opendata', opendataRouter)
 router.use('/spotlight', spotlightRouter)
 router.use('/contrast', contrastRouter)
+router.use('/newsletters', newslettersRouter)
+router.use('/cases', casesRouter)
+router.use('/alerts', alertsRouter)
 
 export default router

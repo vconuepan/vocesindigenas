@@ -614,6 +614,17 @@ export const adminApi = {
       request<void>(`/spotlights/${id}`, { method: 'DELETE' }),
   },
 
+  // Casos en curso
+  cases: {
+    list: () => request<AdminOngoingCase[]>('/cases'),
+    create: (body: AdminCaseBody) =>
+      request<AdminOngoingCase>('/cases', { method: 'POST', body: JSON.stringify(body) }),
+    update: (id: string, body: AdminCaseBody) =>
+      request<AdminOngoingCase>(`/cases/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    delete: (id: string) =>
+      request<void>(`/cases/${id}`, { method: 'DELETE' }),
+  },
+
   // Users
   users: {
     list: () => request<User[]>('/users'),
@@ -629,6 +640,28 @@ export const adminApi = {
         body: JSON.stringify({ password }),
       }),
   },
+}
+
+// ─── Casos en curso types ─────────────────────────────────────────────────────
+
+export interface AdminOngoingCase {
+  id: string
+  title: string
+  slug: string
+  description: string | null
+  keywords: string[]
+  status: string
+  imageUrl: string | null
+  createdAt: string
+}
+
+export interface AdminCaseBody {
+  title: string
+  slug: string
+  description?: string | null
+  keywords: string[]
+  status: 'active' | 'archived'
+  imageUrl?: string | null
 }
 
 // Preserve access token across Vite HMR (dev only, tree-shaken in production)

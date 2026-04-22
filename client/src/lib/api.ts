@@ -199,6 +199,32 @@ export const publicApi = {
 
   contrast: () =>
     request<ContrastResponse>('/contrast'),
+
+  newsletterArchive: () =>
+    request<NewsletterListItem[]>('/newsletters'),
+
+  newsletterById: (id: string) =>
+    request<NewsletterDetail>(`/newsletters/${id}`),
+
+  cases: () =>
+    request<CaseListItem[]>('/cases'),
+
+  caseBySlug: (slug: string) =>
+    request<CaseDetail>(`/cases/${slug}`),
+
+  subscribeAlerts: (email: string, topics: string[]) =>
+    request<{ success: boolean }>('/alerts/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, topics }),
+    }),
+
+  unsubscribeAlerts: (email: string) =>
+    request<{ success: boolean }>('/alerts/unsubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }),
 }
 
 // ─── Spotlight types ──────────────────────────────────────────────────────────
@@ -262,4 +288,53 @@ export interface SpotlightResponse {
     endsAt:   string | null
   }
   stories: SpotlightStory[]
+}
+
+// ─── Newsletter archive types ─────────────────────────────────────────────────
+
+export interface NewsletterListItem {
+  id: string
+  title: string
+  storyCount: number
+  sentAt: string | null
+}
+
+export interface NewsletterDetail {
+  id: string
+  title: string
+  html: string
+  sentAt: string | null
+  storyCount: number
+}
+
+// ─── Casos en curso types ─────────────────────────────────────────────────────
+
+export interface CaseListItem {
+  id: string
+  title: string
+  slug: string
+  description: string | null
+  imageUrl: string | null
+  keywords: string[]
+  storyCount: number
+}
+
+export interface CaseDetail {
+  id: string
+  title: string
+  slug: string
+  description: string | null
+  imageUrl: string | null
+  keywords: string[]
+  stories: CaseStory[]
+}
+
+export interface CaseStory {
+  slug: string | null
+  title: string | null
+  imageUrl: string | null
+  datePublished: string | null
+  issueName: string | null
+  issueSlug: string | null
+  source: string | null
 }

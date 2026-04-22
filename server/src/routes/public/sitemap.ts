@@ -48,6 +48,9 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   // Editorial contrast page — high SEO value, updated weekly
   { path: '/por-que-importa', priority: 0.7, changefreq: 'weekly' },
   { path: '/fuentes', priority: 0.6, changefreq: 'weekly' },
+  { path: '/archivo', priority: 0.6, changefreq: 'weekly' },
+  { path: '/casos', priority: 0.7, changefreq: 'weekly' },
+  { path: '/alertas', priority: 0.6, changefreq: 'monthly' },
 ]
 
 function formatDate(date: Date): string {
