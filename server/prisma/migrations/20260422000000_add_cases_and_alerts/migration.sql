@@ -43,6 +43,7 @@ CREATE INDEX "alert_subscriptions_token_idx" ON "alert_subscriptions"("token");
 CREATE INDEX "alert_subscriptions_active_confirmed_idx" ON "alert_subscriptions"("active", "confirmed_at");
 
 -- Seed: Job entry for daily alert sending (9am)
-INSERT INTO "job_runs" ("job_name", "cron_expression", "enabled")
-VALUES ('send_alerts', '0 9 * * *', true)
-ON CONFLICT DO NOTHING;
+-- id uses gen_random_uuid() since job_runs.id has no DB-level default (Prisma generates it)
+INSERT INTO "job_runs" ("id", "job_name", "cron_expression", "enabled", "created_at", "updated_at")
+VALUES (gen_random_uuid()::text, 'send_alerts', '0 9 * * *', true, NOW(), NOW())
+ON CONFLICT ("job_name") DO NOTHING;
