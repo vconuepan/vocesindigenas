@@ -40,6 +40,11 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: ChangeFreq }[
   { path: '/mapa', priority: 0.6, changefreq: 'monthly' },
   // Open Data API docs — for researchers and institutional users
   { path: '/opendata', priority: 0.6, changefreq: 'monthly' },
+  // Distribution & developer tools — discoverable via search
+  { path: '/widgets', priority: 0.6, changefreq: 'monthly' },
+  { path: '/compare', priority: 0.6, changefreq: 'weekly' },
+  { path: '/free-api', priority: 0.6, changefreq: 'monthly' },
+  { path: '/news-fatigue', priority: 0.5, changefreq: 'monthly' },
 ]
 
 function formatDate(date: Date): string {

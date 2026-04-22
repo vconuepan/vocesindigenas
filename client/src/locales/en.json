@@ -47,7 +47,12 @@
     "imprint": "Imprint",
     "privacy": "Privacy",
     "noTracking": "No tracking",
-    "copyright": "© {{year}} Impacto Indígena. All rights reserved."
+    "copyright": "© {{year}} Impacto Indígena. All rights reserved.",
+    "distribute": "Distribute",
+    "widgetForYourSite": "For your website",
+    "comparePage": "Compare sources",
+    "freeApi": "Free API",
+    "openData": "Open data"
   },
   "home": {
     "noStories": "No stories published yet. Check back soon."

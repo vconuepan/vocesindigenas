@@ -72,6 +72,14 @@ const FOOTER_LEGAL = [
   { labelKey: "footer.noTracking", href: "/no-ads-no-tracking" },
 ];
 
+// External distribution tools — give these pages discoverability
+const FOOTER_DISTRIBUTE = [
+  { labelKey: "footer.widgetForYourSite", href: "/widgets" },
+  { labelKey: "footer.comparePage", href: "/compare" },
+  { labelKey: "footer.freeApi", href: "/free-api" },
+  { labelKey: "footer.openData", href: "/opendata" },
+];
+
 function BrandLogo({ onClick }: { onClick?: () => void }) {
   return (
     <Link to="/" onClick={onClick} className="flex items-center shrink-0">
@@ -526,6 +534,20 @@ function PublicLayoutInner() {
                     {t('footer.contact')}
                   </Link>
                 </li>
+              </ul>
+            </div>
+
+            {/* Distribution — widget, compare, API */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3 leading-none" role="presentation">{t('footer.distribute')}</p>
+              <ul className="space-y-2">
+                {FOOTER_DISTRIBUTE.map((link) => (
+                  <li key={link.href} className="flex items-center">
+                    <Link to={link.href} className="text-sm leading-5 text-neutral-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5">
+                      {t(link.labelKey)}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
