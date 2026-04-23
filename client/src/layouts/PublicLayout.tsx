@@ -11,7 +11,7 @@ import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
   useSubscribe,
 } from "../components/SubscribeProvider";
-import FeedbackProvider from "../components/FeedbackProvider";
+import FeedbackProvider, { useFeedback } from "../components/FeedbackProvider";
 import { PositivityProvider } from "../contexts/PositivityContext";
 import { MoodDialPanel } from "../components/PositivitySlider";
 
@@ -83,6 +83,7 @@ const FOOTER_DISTRIBUTE = [
   { labelKey: "footer.comparePage", href: "/compare" },
   { labelKey: "footer.freeApi", href: "/free-api" },
   { labelKey: "footer.openData", href: "/opendata" },
+  { labelKey: "footer.newsFatigue", href: "/news-fatigue" },
 ];
 
 function BrandLogo({ onClick }: { onClick?: () => void }) {
@@ -145,6 +146,7 @@ function PublicLayoutInner() {
   const [searchQuery, setSearchQuery] = useState("");
   const [savedCount, setSavedCount] = useState(0);
   const { openSubscribe } = useSubscribe();
+  const { openFeedback } = useFeedback();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
   const navigate = useNavigate();
@@ -438,6 +440,19 @@ function PublicLayoutInner() {
       <main id="main-content" className="flex-1">
         <Outlet />
       </main>
+
+      {/* Floating feedback button */}
+      <button
+        type="button"
+        onClick={openFeedback}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-brand-800 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+        aria-label="Enviar comentarios"
+      >
+        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+        </svg>
+        <span>Comentarios</span>
+      </button>
 
       <div className="bg-white border-t border-neutral-100 py-10 md:py-14 text-center" aria-hidden="true">
         <div className="max-w-lg mx-auto px-4">
