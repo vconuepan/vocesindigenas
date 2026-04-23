@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as storyService from '../../services/story.js'
 import * as issueService from '../../services/issue.js'
+import prisma from '../../lib/prisma.js'
 import { TTLCache, cached } from '../../lib/cache.js'
 import { createLogger } from '../../lib/logger.js'
 
@@ -23,15 +24,35 @@ const HOMEPAGE_ISSUE_SLUGS = [
 router.get('/', async (req, res) => {
   try {
     const data = await cached(homepageCache, 'homepage-data', async () => {
-      // Fetch issues and stories in parallel
-      const [issues, storyData] = await Promise.all([
+      // Fetch issues, stories, and active cases in parallel
+      const [issues, storyData, activeCases] = await Promise.all([
         issueService.getPublicIssues(),
         storyService.getHomepageData(HOMEPAGE_ISSUE_SLUGS, 7),
+        prisma.ongoingCase.findMany({
+          where: { status: 'active' },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true, slug: true, description: true, imageUrl: true, keywords: true },
+        }),
       ])
+
+      // Count matching stories for each case
+      const casesWithCounts = await Promise.all(
+        activeCases.map(async (c) => {
+          const keywordConditions = c.keywords.flatMap((kw) => [
+            { title:   { contains: kw, mode: 'insensitive' as const } },
+            { summary: { contains: kw, mode: 'insensitive' as const } },
+          ])
+          const storyCount = c.keywords.length === 0 ? 0 : await prisma.story.count({
+            where: { status: 'published', slug: { not: null }, OR: keywordConditions },
+          })
+          return { ...c, storyCount }
+        })
+      )
 
       return {
         issues,
         storiesByIssue: storyData.storiesByIssue,
+        activeCases: casesWithCounts,
       }
     })
 
