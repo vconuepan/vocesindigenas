@@ -9,9 +9,9 @@ import { API_BASE } from '../lib/api'
 import { useSources } from '../hooks/useSources'
 
 const META = {
-  title: 'Free Curated News API \u2014 No Key Required | Impacto Ind\u00edgena',
+  title: 'API de noticias ind\u00edgenas \u2014 Gratis y sin clave | Impacto Ind\u00edgena',
   description:
-    'A free API serving AI-curated indigenous and global news. No API key, no ads in the data. Get pre-selected stories on indigenous rights, environment, and more.',
+    'API gratuita con noticias ind\u00edgenas y globales seleccionadas por IA. Sin clave de acceso, sin publicidad en los datos. Recibe notas sobre derechos ind\u00edgenas, medio ambiente y más.',
   url: `${SEO.siteUrl}/free-api`,
 }
 
@@ -23,9 +23,9 @@ const pageSchema = {
   url: META.url,
   mainEntity: {
     '@type': 'WebAPI',
-    name: 'Impacto Ind\u00edgena News API',
+    name: 'API de noticias de Impacto Ind\u00edgena',
     description:
-      'Free, curated news API covering indigenous rights, environment, and global issues. No authentication required.',
+      'API gratuita y curada de noticias sobre derechos ind\u00edgenas, medio ambiente y temas globales. Sin autenticación requerida.',
     url: `${SEO.siteUrl}/developers`,
     documentation: `${SEO.siteUrl}/developers`,
     provider: {
@@ -37,46 +37,46 @@ const pageSchema = {
 }
 
 const breadcrumb = buildBreadcrumbSchema([
-  { name: 'Home', url: SEO.siteUrl },
-  { name: 'Free API', url: META.url },
+  { name: 'Inicio', url: SEO.siteUrl },
+  { name: 'API gratuita', url: META.url },
 ])
 
-const COMPARISON_HEADERS = ['', 'Impacto Ind\u00edgena', 'Typical news API (NewsAPI, GNews, etc.)']
+const COMPARISON_HEADERS = ['', 'Impacto Ind\u00edgena', 'API de noticias típica (NewsAPI, GNews, etc.)']
 
 const COMPARISON_ROWS = [
   {
-    feature: 'Content',
+    feature: 'Contenido',
     cells: [
-      { text: 'Pre-curated, AI-selected for significance', check: true },
-      'Raw firehose \u2014 millions of unfiltered articles',
+      { text: 'Curado previamente, seleccionado por IA según relevancia', check: true },
+      'Flujo masivo \u2014 millones de artículos sin filtrar',
     ],
   },
   {
-    feature: 'API key',
+    feature: 'Clave API',
     cells: [
-      { text: 'Not required', check: true },
-      'Required (signup + often credit card)',
+      { text: 'No requerida', check: true },
+      'Requerida (registro + a menudo tarjeta de crédito)',
     ],
   },
   {
-    feature: 'Ads in response',
+    feature: 'Publicidad en la respuesta',
     cells: [
-      { text: 'Never', check: true },
-      'Sometimes (sponsored placements)',
+      { text: 'Nunca', check: true },
+      'A veces (espacios patrocinados)',
     ],
   },
   {
-    feature: 'Focus',
+    feature: 'Enfoque',
     cells: [
-      { text: 'Global issues (4 domains)', check: true },
-      'General (everything)',
+      { text: 'Temas globales (4 dominios)', check: true },
+      'General (de todo)',
     ],
   },
   {
-    feature: 'Cost',
+    feature: 'Coste',
     cells: [
-      { text: 'Free', check: true },
-      'Free tier + paid plans ($50\u2013$500+/month)',
+      { text: 'Gratis', check: true },
+      'Nivel gratuito + planes de pago ($50\u2013$500+/mes)',
     ],
   },
 ]
@@ -85,55 +85,55 @@ const ENDPOINTS = [
   {
     method: 'GET',
     path: '/api/stories',
-    description: "Today's curated stories (paginated)",
+    description: 'Noticias curadas del día (paginadas)',
   },
   {
     method: 'GET',
     path: '/api/stories?issueSlug=',
-    description: 'Filter by issue area (e.g., planet-climate, human-development)',
+    description: 'Filtrar por área temática (ej., planet-climate, human-development)',
   },
   {
     method: 'GET',
     path: '/api/stories/:slug',
-    description: 'Individual story by slug',
+    description: 'Noticia individual por slug',
   },
   {
     method: 'GET',
     path: '/api/issues',
-    description: 'All issue areas with metadata and source names',
+    description: 'Todas las áreas temáticas con metadatos y nombres de fuentes',
   },
   {
     method: 'GET',
     path: '/api/feed',
-    description: 'RSS feed (all issue areas)',
+    description: 'Feed RSS (todas las áreas temáticas)',
   },
 ]
 
 const USE_CASES = [
   {
-    title: 'Embed curated news on your site',
+    title: 'Incorporar noticias curadas en tu sitio',
     description:
-      'Add a "World News That Matters" section to your nonprofit site, blog, or community platform. Fetch today\'s stories and render them in your own design.',
+      'Añade una sección de "Noticias globales que importan" a tu sitio de ONG, blog o plataforma comunitaria. Obtén las noticias del día y muéstralas con tu propio diseño.',
   },
   {
-    title: 'Power a Slack or Discord bot',
+    title: 'Alimentar un bot de Slack o Discord',
     description:
-      'Send a curated digest of global news to your team channel. The API returns structured data that\u2019s easy to format for messaging platforms.',
+      'Envía un resumen curado de noticias globales al canal de tu equipo. La API devuelve datos estructurados fáciles de formatear para plataformas de mensajería.',
   },
   {
-    title: 'Feed a research dashboard',
+    title: 'Integrar en un panel de investigación',
     description:
-      'Track coverage of climate policy, global health, or security issues over time. The API includes relevance scores, issue areas, and source metadata.',
+      'Monitorea la cobertura de política climática, salud global o seguridad a lo largo del tiempo. La API incluye puntuaciones de relevancia, áreas temáticas y metadatos de fuentes.',
   },
   {
-    title: 'Build educational tools',
+    title: 'Construir herramientas educativas',
     description:
-      'Use curated, significance-scored news in media literacy curricula or classroom discussion tools.',
+      'Usa noticias curadas con puntuación de relevancia en currículos de alfabetización mediática o herramientas de debate en el aula.',
   },
   {
-    title: 'Augment your own AI pipeline',
+    title: 'Enriquecer tu propio pipeline de IA',
     description:
-      'Use our curated output as a high-quality input signal for your own analysis, summarization, or alerting systems.',
+      'Usa el resultado curado de Impacto Indígena como señal de alta calidad para tus propios sistemas de análisis, resumen o alertas.',
   },
 ]
 
@@ -162,40 +162,40 @@ export default function FreeApiPage() {
       <StructuredData data={[pageSchema, breadcrumb]} />
 
       <div className="page-section">
-        <h1 className="page-title">A Free API for News That Matters</h1>
+        <h1 className="page-title">Una API gratuita para noticias que importan</h1>
         <div className="prose max-w-none">
           <p className="text-lg text-neutral-600 leading-relaxed">
-            Most news APIs give you a firehose — millions of raw articles you have to filter
-            yourself. Impacto Ind\u00edgena gives you the signal: a curated selection of stories per
-            day, selected by AI for real-world significance
-            from{sources ? ` ${sources.totalCount}` : ''} curated sources across multiple
-            languages.
+            La mayoría de las APIs de noticias te dan un flujo masivo: millones de artículos sin
+            procesar que tienes que filtrar tú mismo. Impacto Ind\u00edgena te da la señal: una
+            selección curada de noticias al día, elegidas por IA según su relevancia real
+            desde{sources ? ` ${sources.totalCount}` : ''} fuentes curadas en múltiples idiomas.
           </p>
-          <p>No API key. No ads in the response.</p>
+          <p>Sin clave API. Sin publicidad en la respuesta.</p>
 
           {/* Quick Start */}
-          <h2 className="section-heading mt-10">Quick Start</h2>
+          <h2 className="section-heading mt-10">Inicio rápido</h2>
           <pre className="bg-neutral-900 text-neutral-100 rounded-lg p-4 overflow-x-auto text-sm leading-relaxed">
-            <code>{`# Get today's curated stories
+            <code>{`# Obtener las noticias curadas del día
 curl ${API_BASE}/stories
 
-# Filter by issue area
+# Filtrar por área temática
 curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
           </pre>
           <p className="text-sm text-neutral-500 mt-3">
-            These endpoints return JSON. Use curl, fetch(), or an API client. The responses won't
-            look nice in a browser. Response includes: title, summary, blurb, source, URL, issue
-            area, relevance scores, publication date, and more.
+            Estos endpoints devuelven JSON. Usa curl, fetch() o cualquier cliente HTTP. Las
+            respuestas no se verán bien en un navegador. La respuesta incluye: título, resumen,
+            descripción breve, fuente, URL, área temática, puntuaciones de relevancia, fecha de
+            publicación y más.
           </p>
           <p className="mt-2">
             <Link to="/developers" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              Full API documentation            </Link>
+              Documentación completa de la API            </Link>
           </p>
 
         </div>
 
         {/* What Makes This Different — colored cards */}
-        <h2 className="section-heading mt-10">What Makes This Different</h2>
+        <h2 className="section-heading mt-10">Qué la hace diferente</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {[
             {
@@ -204,8 +204,8 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
               ),
-              title: 'Pre-Curated, Not Raw',
-              description: 'Every story passes through a multi-stage AI pipeline. You get editorial judgment, not a keyword search against millions of articles.',
+              title: 'Curada, no en bruto',
+              description: 'Cada noticia pasa por un pipeline de IA en múltiples etapas. Obtienes criterio editorial, no una búsqueda por palabras clave entre millones de artículos.',
               border: 'border-l-brand-400',
             },
             {
@@ -214,8 +214,8 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                 </svg>
               ),
-              title: 'No Key Required',
-              description: 'Hit the endpoint. Get the data. No signup, no OAuth, no billing page. Built for quick integration.',
+              title: 'Sin clave requerida',
+              description: 'Llama al endpoint. Obtén los datos. Sin registro, sin OAuth, sin página de facturación. Diseñada para integraciones rápidas.',
               border: 'border-l-teal-400',
             },
             {
@@ -224,8 +224,8 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               ),
-              title: 'No Ads in the Data',
-              description: 'Clean JSON. No sponsored placements, no affiliate links, no promoted stories. What you get is what we curated.',
+              title: 'Sin publicidad en los datos',
+              description: 'JSON limpio. Sin espacios patrocinados, sin enlaces de afiliado, sin noticias promovidas. Lo que recibes es lo que curamos.',
               border: 'border-l-amber-400',
             },
             {
@@ -234,8 +234,8 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ),
-              title: 'Global Issues Focus',
-              description: 'Four domains: Human Development, Planet & Climate, Existential Threats, and Science & Technology.',
+              title: 'Enfoque en temas globales',
+              description: 'Cuatro dominios: Desarrollo Humano, Planeta y Clima, Amenazas Existenciales y Ciencia y Tecnología.',
               border: 'border-l-indigo-400',
             },
           ].map((card) => (
@@ -254,13 +254,13 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
         <div className="prose max-w-none mt-4">
           <p>
             <Link to="/methodology" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              Learn how our curation works
+              Conoce cómo funciona nuestra curación
             </Link>
           </p>
         </div>
 
         {/* Use Cases — Accordions */}
-        <h2 className="section-heading mt-10">Use Cases</h2>
+        <h2 className="section-heading mt-10">Casos de uso</h2>
         <div className="mt-4 space-y-2">
           {USE_CASES.map((uc) => (
             <Disclosure key={uc.title} as="div" className="border border-neutral-200 rounded-lg">
@@ -276,7 +276,7 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
         </div>
 
         {/* What's Available — Styled Endpoint Cards */}
-        <h2 className="section-heading mt-10">What's Available</h2>
+        <h2 className="section-heading mt-10">Qué está disponible</h2>
         <div className="mt-4 space-y-3">
           {ENDPOINTS.map((ep) => (
             <div key={ep.path} className="flex items-start gap-3 border border-neutral-200 rounded-lg px-5 py-4">
@@ -292,13 +292,13 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
         </div>
         <div className="prose max-w-none">
           <p className="mt-4">
-            For the full OpenAPI specification, endpoint details, and response schemas:{' '}
+            Para la especificación OpenAPI completa, detalles de endpoints y esquemas de respuesta:{' '}
             <Link to="/developers" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              API Documentation            </Link>
+              Documentación de la API            </Link>
           </p>
 
           {/* Comparison */}
-          <h2 className="section-heading mt-10">How This Compares to Other News APIs</h2>
+          <h2 className="section-heading mt-10">Cómo se compara con otras APIs de noticias</h2>
           <div className="mt-4 mb-4">
             <ComparisonTable
               headers={COMPARISON_HEADERS}
@@ -308,36 +308,36 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
           </div>
           <p>
             <Link to="/compare" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              See how we compare to other news services overall            </Link>
+              Ver cómo nos comparamos con otros servicios de noticias            </Link>
           </p>
 
           {/* RSS Feeds */}
-          <h2 className="section-heading mt-10">RSS Feeds</h2>
+          <h2 className="section-heading mt-10">Feeds RSS</h2>
           <p>
-            Prefer RSS? We publish feeds per issue area. Add them to any RSS reader, use them in
-            automation workflows (Zapier, n8n, IFTTT), or build your own integration.
+            ¿Prefieres RSS? Publicamos feeds por área temática. Agrégalos a cualquier lector RSS,
+            úsalos en flujos de automatización (Zapier, n8n, IFTTT) o construye tu propia integración.
           </p>
           <ul className="list-disc pl-6 space-y-1 mt-3 font-mono text-sm">
             <li>
-              Human Development:{' '}
+              Desarrollo Humano:{' '}
               <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=human-development
               </span>
             </li>
             <li>
-              Planet & Climate:{' '}
+              Planeta y Clima:{' '}
               <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=planet-climate
               </span>
             </li>
             <li>
-              Existential Threats:{' '}
+              Amenazas Existenciales:{' '}
               <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=existential-threats
               </span>
             </li>
             <li>
-              Science & Technology:{' '}
+              Ciencia y Tecnología:{' '}
               <span className="text-brand-800">
                 {API_BASE}/feed?issueSlug=science-technology
               </span>
@@ -345,14 +345,14 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
           </ul>
 
           {/* Widgets */}
-          <h2 className="section-heading mt-10">Embeddable Widgets</h2>
+          <h2 className="section-heading mt-10">Widgets integrables</h2>
           <p>
-            Want to embed curated stories directly on your website? Use our widget generator to
-            create a customizable news widget — no backend required.
+            ¿Quieres mostrar noticias curadas directamente en tu sitio web? Usa nuestro generador
+            de widgets para crear un widget de noticias personalizable — sin necesidad de backend.
           </p>
           <p className="mt-2">
             <Link to="/widgets" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              Build a widget
+              Crear un widget
             </Link>
           </p>
         </div>
@@ -360,24 +360,24 @@ curl "${API_BASE}/stories?issueSlug=planet-climate"`}</code>
         {/* CTA */}
         <section className="mt-16 pt-10 border-t border-neutral-200 text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-3">
-            Start building with curated news.
+            Empieza a construir con noticias curadas.
           </h2>
           <p className="text-lg text-neutral-600 mb-8 max-w-xl mx-auto">
-            No signup, no key, no cost. Hit the API and see what you get.
+            Sin registro, sin clave, sin coste. Llama a la API y descubre lo que obtienes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/developers"
               className="inline-flex items-center gap-2 px-6 py-3 bg-brand-700 text-white font-medium rounded-lg hover:bg-brand-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
             >
-              Read the API docs            </Link>
+              Leer la documentación de la API            </Link>
             <a
               href={`${API_BASE}/stories`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 border border-brand-700 text-brand-800 font-medium rounded-lg hover:bg-brand-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
             >
-              Try it now: /api/stories              <span className="sr-only">(opens in new tab)</span>
+              Probarlo ahora: /api/stories              <span className="sr-only">(se abre en nueva pestaña)</span>
             </a>
           </div>
         </section>

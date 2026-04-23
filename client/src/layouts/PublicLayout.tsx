@@ -72,6 +72,7 @@ const FOOTER_GUIDES = [
 const FOOTER_LEGAL = [
   { labelKey: "footer.imprint", href: "/imprint" },
   { labelKey: "footer.privacy", href: "/privacy" },
+  { labelKey: "footer.noTracking", href: "/no-ads-no-tracking" },
 ];
 
 // External distribution tools — give these pages discoverability
@@ -79,6 +80,9 @@ const FOOTER_DISTRIBUTE = [
   { labelKey: "footer.widgetForYourSite", href: "/widgets" },
   { labelKey: "footer.whyItMatters", href: "/por-que-importa" },
   { labelKey: "footer.sources", href: "/fuentes" },
+  { labelKey: "footer.comparePage", href: "/compare" },
+  { labelKey: "footer.freeApi", href: "/free-api" },
+  { labelKey: "footer.openData", href: "/opendata" },
 ];
 
 function BrandLogo({ onClick }: { onClick?: () => void }) {

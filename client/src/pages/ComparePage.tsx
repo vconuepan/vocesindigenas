@@ -10,9 +10,9 @@ import { publicApi } from '../lib/api'
 import type { RegionStat } from '../lib/api'
 
 const META = {
-  title: 'Google News Alternatives Compared \u2014 Impacto Ind\u00edgena',
+  title: 'Comparar fuentes de noticias \u2014 Impacto Ind\u00edgena',
   description:
-    'Side-by-side comparison of Google News, Flipboard, Ground News, News Minimalist, and more. See how AI curation, privacy, source transparency, and cost stack up.',
+    'Comparación directa entre Google News, Flipboard, Ground News, News Minimalist y más. Descubre cómo se diferencian en curación por IA, privacidad, transparencia de fuentes y coste.',
   url: `${SEO.siteUrl}/compare`,
 }
 
@@ -56,113 +56,113 @@ function CellContent({ cell }: { cell: CellValue }) {
 // Sources: pm/references/marketing/competitors/*.md
 const ROWS: { us: CellValue; them: CellValue[] }[] = [
   {
-    us: { text: 'Multi-stage AI curation', check: true },
+    us: { text: 'Curación por IA en múltiples etapas', check: true },
     them: [
-      'ML-personalized by interest and location',
-      'Hybrid human + AI, 20 curators',
-      'Story clustering + third-party bias ratings',
-      { text: 'GPT-4 significance scoring', check: true },
-      'Leo AI assistant (Pro+ only, $8.25/mo)',
-      'AI + human editors',
+      'Personalización ML por interés y ubicación',
+      'Híbrido humano + IA, 20 curadores',
+      'Agrupación de notas + clasificación de sesgos de terceros',
+      { text: 'Puntuación de relevancia con GPT-4', check: true },
+      'Asistente Leo IA (solo Pro+, $8.25/mes)',
+      'IA + editores humanos',
     ],
   },
   {
-    us: { text: 'Only what matters to humanity', check: true },
+    us: { text: 'Solo lo que importa a la humanidad', check: true },
     them: [
-      'General, personalized by user behavior',
-      '30,000+ topics, lifestyle-heavy',
-      'General with bias/perspective focus',
-      'General, significance-filtered',
-      'User-defined (any RSS source)',
-      'General + local news',
+      'General, personalizado por comportamiento del usuario',
+      'Más de 30.000 temas, con mucho contenido de estilo de vida',
+      'General con foco en sesgo/perspectiva',
+      'General, filtrado por relevancia',
+      'Definido por el usuario (cualquier fuente RSS)',
+      'Noticias generales + locales',
     ],
   },
   {
-    us: { text: 'All sources named publicly', check: true },
+    us: { text: 'Todas las fuentes nombradas públicamente', check: true },
     them: [
-      'Sources named, algorithm proprietary',
-      'Sources named, publisher list not public',
-      { text: 'Bias ratings from AllSides / Ad Fontes / MBFC', check: true },
-      { text: 'Sources named, scoring criteria public', check: true },
-      { text: 'User selects all sources', check: true },
-      'Sources named, algorithm proprietary',
+      'Fuentes nombradas, algoritmo propietario',
+      'Fuentes nombradas, lista de editores no pública',
+      { text: 'Clasificaciones de sesgo de AllSides / Ad Fontes / MBFC', check: true },
+      { text: 'Fuentes nombradas, criterios de puntuación públicos', check: true },
+      { text: 'El usuario selecciona todas las fuentes', check: true },
+      'Fuentes nombradas, algoritmo propietario',
     ],
   },
   {
-    us: { text: 'No ads', check: true },
+    us: { text: 'Sin publicidad', check: true },
     them: [
-      { text: 'No ads in feed', check: true },
-      'Native ads in feed',
-      { text: 'No ads (subscription-funded)', check: true },
-      { text: 'No ads', check: true },
-      { text: 'No ads (freemium)', check: true },
-      'Native + video ads',
+      { text: 'Sin publicidad en el feed', check: true },
+      'Publicidad nativa en el feed',
+      { text: 'Sin publicidad (financiado por suscripción)', check: true },
+      { text: 'Sin publicidad', check: true },
+      { text: 'Sin publicidad (freemium)', check: true },
+      'Publicidad nativa + video',
     ],
   },
   {
-    us: { text: 'No tracking', check: true },
+    us: { text: 'Sin rastreo', check: true },
     them: [
-      'Google account + cross-product tracking',
-      'Device data + ad targeting',
-      'Account-based, limited details public',
-      'Newsletter platform includes ad pixels',
-      'Standard SaaS analytics',
-      'Cross-device + geolocation',
+      'Cuenta Google + rastreo entre productos',
+      'Datos del dispositivo + segmentación publicitaria',
+      'Basado en cuenta, detalles limitados públicos',
+      'Plataforma de newsletter incluye píxeles publicitarios',
+      'Analítica SaaS estándar',
+      'Rastreo entre dispositivos + geolocalización',
     ],
   },
   {
-    us: { text: 'AI summary for every story', check: true },
+    us: { text: 'Resumen IA para cada noticia', check: true },
     them: [
-      'Headlines + snippets',
-      'Headlines + image previews',
-      'Multi-source headlines + bias breakdown',
-      { text: 'Brief summary + significance score ($15/mo for extended)', check: true },
-      'Summaries via Leo (paid only)',
-      'Headlines + snippets',
+      'Titulares + fragmentos',
+      'Titulares + vistas previas con imagen',
+      'Titulares de múltiples fuentes + análisis de sesgo',
+      { text: 'Resumen breve + puntuación de relevancia ($15/mes para versión extendida)', check: true },
+      'Resúmenes vía Leo (solo de pago)',
+      'Titulares + fragmentos',
     ],
   },
   {
-    us: { text: 'Multi-factor relevance analysis', check: true },
+    us: { text: 'Análisis de relevancia multifactor', check: true },
     them: [
-      'Proprietary ranking, no public score',
-      'No public score',
-      'Coverage volume + bias score',
-      { text: '0\u201310 significance score (4 criteria)', check: true },
-      'Leo prioritization (paid, user-trained)',
-      'No public score',
+      'Clasificación propietaria, sin puntuación pública',
+      'Sin puntuación pública',
+      'Volumen de cobertura + puntuación de sesgo',
+      { text: 'Puntuación de relevancia 0\u201310 (4 criterios)', check: true },
+      'Priorización Leo (de pago, entrenado por el usuario)',
+      'Sin puntuación pública',
     ],
   },
   {
-    us: { text: 'Free API, no key required', check: true },
+    us: { text: 'API gratuita, sin clave requerida', check: true },
     them: [
-      'Shut down in 2011',
+      'Cerrado en 2011',
       'No',
       'No',
       'No',
-      'Limited dev API (250 requests)',
-      'Advertiser API only',
+      'API de desarrollo limitada (250 solicitudes)',
+      'Solo API para anunciantes',
     ],
   },
   {
-    us: { text: 'RSS feeds', check: true },
+    us: { text: 'Feeds RSS', check: true },
     them: [
-      'Unofficial, unsupported',
-      { text: 'Magazine RSS available', check: true },
-      { text: 'Via Open RSS', check: true },
-      { text: 'Via newsletter platform', check: true },
-      'N/A (is an RSS reader)',
+      'No oficial, sin soporte',
+      { text: 'RSS de revistas disponible', check: true },
+      { text: 'Vía Open RSS', check: true },
+      { text: 'Vía plataforma de newsletter', check: true },
+      'No aplica (es un lector RSS)',
       'No',
     ],
   },
   {
-    us: { text: 'Methodology published', check: true },
+    us: { text: 'Metodología publicada', check: true },
     them: [
-      'High-level principles only',
-      'High-level blog posts only',
-      { text: 'Bias rating methodology documented', check: true },
-      { text: 'Scoring criteria + threshold documented', check: true },
-      'Leo features documented, algorithms not',
-      'Undocumented',
+      'Solo principios generales',
+      'Solo publicaciones de blog generales',
+      { text: 'Metodología de clasificación de sesgos documentada', check: true },
+      { text: 'Criterios de puntuación + umbral documentados', check: true },
+      'Funciones de Leo documentadas, algoritmos no',
+      'Sin documentar',
     ],
   },
 ]
@@ -174,9 +174,9 @@ const DIFFERENTIATORS: { icon: ReactNode; title: string; description: string; bo
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
       </svg>
     ),
-    title: 'Significance Over Engagement',
+    title: 'Relevancia sobre engagement',
     description:
-      'AI selects 10\u201320 stories daily by real-world importance, not click potential.',
+      'La IA selecciona entre 10\u201320 noticias diarias por importancia real, no por potencial de clics.',
     border: 'border-l-brand-400',
   },
   {
@@ -185,9 +185,9 @@ const DIFFERENTIATORS: { icon: ReactNode; title: string; description: string; bo
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: 'Global Coverage',
+    title: 'Cobertura global',
     description:
-      '82+ sources across five languages, including regions most aggregators ignore.',
+      'Más de 82 fuentes en cinco idiomas, incluidas regiones que la mayoría de los agregadores ignora.',
     border: 'border-l-teal-400',
   },
   {
@@ -196,9 +196,9 @@ const DIFFERENTIATORS: { icon: ReactNode; title: string; description: string; bo
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
       </svg>
     ),
-    title: 'No Ads, No Tracking',
+    title: 'Sin publicidad, sin rastreo',
     description:
-      'No ads, no cookies, no third-party trackers. Privacy-first analytics only.',
+      'Sin anuncios, sin cookies, sin rastreadores de terceros. Solo analítica con privacidad como prioridad.',
     border: 'border-l-amber-400',
   },
   {
@@ -207,40 +207,40 @@ const DIFFERENTIATORS: { icon: ReactNode; title: string; description: string; bo
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>
     ),
-    title: 'Non-Commercial',
+    title: 'Sin ánimo de lucro',
     description:
-      'Donation-supported, no investors, no engagement metrics. Built to inform, not monetize.',
+      'Financiado por donaciones, sin inversores, sin métricas de engagement. Creado para informar, no para monetizar.',
     border: 'border-l-indigo-400',
   },
 ]
 
 const PERSONAS: { title: string; description: string; link: string; linkText: string; border: string }[] = [
   {
-    title: 'News-fatigued readers',
-    description: 'Fewer, better stories instead of an endless scroll.',
+    title: 'Lectores con fatiga informativa',
+    description: 'Menos noticias, pero mejores, en lugar de un scroll interminable.',
     link: '/news-fatigue',
-    linkText: 'Our approach',
+    linkText: 'Nuestra propuesta',
     border: 'border-l-brand-400',
   },
   {
-    title: 'Developers and organizations',
-    description: 'Curated news data without building your own pipeline.',
+    title: 'Desarrolladores y organizaciones',
+    description: 'Datos de noticias curadas sin necesidad de construir tu propio pipeline.',
     link: '/free-api',
-    linkText: 'Explore the free API',
+    linkText: 'Explora la API gratuita',
     border: 'border-l-teal-400',
   },
   {
-    title: 'Privacy-conscious readers',
-    description: 'No ads, no tracking, no data harvesting.',
+    title: 'Lectores preocupados por su privacidad',
+    description: 'Sin publicidad, sin rastreo, sin recolección de datos.',
     link: '/no-ads-no-tracking',
-    linkText: 'Our commitment',
+    linkText: 'Nuestro compromiso',
     border: 'border-l-amber-400',
   },
   {
-    title: 'Globally minded readers',
-    description: 'Coverage beyond Western headlines.',
+    title: 'Lectores con visión global',
+    description: 'Cobertura más allá de los titulares occidentales.',
     link: '/methodology',
-    linkText: 'Sources and methodology',
+    linkText: 'Fuentes y metodología',
     border: 'border-l-indigo-400',
   },
 ]
@@ -249,17 +249,17 @@ const pageSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
   name: META.title,
-  description: 'Side-by-side comparison of news aggregators including Google News, Flipboard, Ground News, and more.',
+  description: 'Comparación directa entre agregadores de noticias: Google News, Flipboard, Ground News y más.',
   url: META.url,
   mainEntity: {
     '@type': 'Table',
-    about: 'News aggregator comparison',
+    about: 'Comparación de agregadores de noticias',
   },
 }
 
 const breadcrumb = buildBreadcrumbSchema([
-  { name: 'Home', url: SEO.siteUrl },
-  { name: 'Compare', url: META.url },
+  { name: 'Inicio', url: SEO.siteUrl },
+  { name: 'Comparar', url: META.url },
 ])
 
 export default function ComparePage() {
@@ -281,11 +281,12 @@ export default function ComparePage() {
       <StructuredData data={[pageSchema, breadcrumb]} />
 
       <div className="page-section">
-        <h1 className="page-title">How Does Impacto Indígena Compare?</h1>
+        <h1 className="page-title">¿Cómo se compara Impacto Indígena?</h1>
         <p className="text-lg text-neutral-600 leading-relaxed">
-          Most news aggregators optimize for engagement. More clicks, more time on site, more ad
-          impressions. Impacto Indígena does something different: it uses AI to find the stories
-          that matter most to humanity, with no ads, no tracking, and full source transparency.
+          La mayoría de los agregadores de noticias optimizan para el engagement: más clics, más
+          tiempo en el sitio, más impresiones publicitarias. Impacto Indígena hace algo distinto:
+          usa IA para encontrar las noticias que más importan a la humanidad, sin publicidad, sin
+          rastreo y con plena transparencia de fuentes.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
@@ -304,7 +305,7 @@ export default function ComparePage() {
         </div>
 
         {/* Comparison table — 2-column, AR vs selected competitor */}
-        <h2 className="section-heading mt-12">Side-by-Side Comparison</h2>
+        <h2 className="section-heading mt-12">Comparación directa</h2>
         <table className="w-full text-sm border-collapse mt-6 table-fixed">
           <thead>
             <tr>
@@ -316,7 +317,7 @@ export default function ComparePage() {
                   value={competitor}
                   onChange={(e) => setCompetitor(e.target.value)}
                   className="font-bold text-sm bg-transparent text-neutral-700 border-none outline-none cursor-pointer underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-500 focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                  aria-label="Select competitor to compare"
+                  aria-label="Seleccionar fuente para comparar"
                 >
                   {COMPETITORS.map((name) => (
                     <option key={name} value={name}>{name}</option>
@@ -338,10 +339,10 @@ export default function ComparePage() {
             ))}
           </tbody>
         </table>
-        <p className="text-xs text-neutral-400 mt-2">As of February 2026.</p>
+        <p className="text-xs text-neutral-400 mt-2">A febrero de 2026.</p>
 
         {/* Who We're Best For — colored cards */}
-        <h2 className="section-heading mt-12">Who We're Best For</h2>
+        <h2 className="section-heading mt-12">Para quién es Impacto Indígena</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {PERSONAS.map((card) => (
             <div
@@ -362,8 +363,8 @@ export default function ComparePage() {
         <CoverageSection />
 
         <LandingCta
-          heading="Ready to try news that's actually relevant?"
-          description="Visit impactoindigena.news or subscribe to the newsletter for a curated digest in your inbox."
+          heading="¿Listo para leer noticias que realmente importan?"
+          description="Visita impactoindigena.news o suscríbete al boletín para recibir un resumen seleccionado editorialmente en tu bandeja de entrada."
         />
       </div>
     </>
@@ -398,11 +399,11 @@ function CoverageSection() {
 
   return (
     <section className="mt-16">
-      <h2 className="section-heading">Coverage by Region</h2>
+      <h2 className="section-heading">Cobertura por región</h2>
       <p className="text-neutral-600 mt-2 mb-6 text-sm leading-relaxed max-w-2xl">
-        Impacto Indígena indexes {data?.totalFeeds ?? '—'} active sources across {rows.length} regions.
-        Average relevance scores reflect how well each region's media covers indigenous and human rights topics
-        — higher scores mean more focused, substantive coverage.
+        Impacto Indígena indexa {data?.totalFeeds ?? '—'} fuentes activas en {rows.length} regiones.
+        Las puntuaciones de relevancia promedio reflejan qué tan bien cubre cada región los temas indígenas
+        y de derechos humanos: puntuaciones más altas indican una cobertura más enfocada y sustantiva.
       </p>
 
       {isLoading && (
@@ -414,7 +415,7 @@ function CoverageSection() {
       )}
 
       {isError && (
-        <p className="text-sm text-neutral-400 italic">Coverage data temporarily unavailable.</p>
+        <p className="text-sm text-neutral-400 italic">Datos de cobertura temporalmente no disponibles.</p>
       )}
 
       {!isLoading && !isError && rows.length > 0 && (
@@ -423,10 +424,10 @@ function CoverageSection() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-neutral-50 border-b border-neutral-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide">Region</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wide w-20">Sources</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wide w-24">Stories (30d)</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide w-48">Avg Relevance</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide">Región</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wide w-20">Fuentes</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wide w-24">Noticias (30d)</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wide w-48">Relevancia media</th>
                 </tr>
               </thead>
               <tbody>
@@ -447,7 +448,7 @@ function CoverageSection() {
             </table>
           </div>
           <p className="text-xs text-neutral-400 mt-2">
-            Relevance scored 1–10 by AI against indigenous and human rights topics. Last {data?.periodDays} days.
+            Relevancia puntuada del 1 al 10 por IA en temas indígenas y de derechos humanos. Últimos {data?.periodDays} días.
           </p>
         </>
       )}

@@ -6,9 +6,9 @@ import StructuredData from '../components/StructuredData'
 import LandingCta from '../components/LandingCta'
 
 const META = {
-  title: 'News Without Ads or Tracking \u2014 Impacto Indígena',
+  title: 'Sin publicidad, sin rastreo \u2014 Impacto Ind\u00edgena',
   description:
-    'A daily news digest with zero ads, zero tracking, and zero clickbait. No cookies, no analytics profiles, no engagement optimization. Just the stories that matter.',
+    'Un resumen diario de noticias sin publicidad, sin rastreo y sin cebo de clics. Sin cookies, sin perfiles analíticos, sin optimización por engagement. Solo las notas que importan.',
   url: `${SEO.siteUrl}/no-ads-no-tracking`,
 }
 
@@ -27,16 +27,16 @@ const pageSchema = {
 }
 
 const breadcrumb = buildBreadcrumbSchema([
-  { name: 'Home', url: SEO.siteUrl },
-  { name: 'No Ads, No Tracking', url: META.url },
+  { name: 'Inicio', url: SEO.siteUrl },
+  { name: 'Sin publicidad, sin rastreo', url: META.url },
 ])
 
 const COMPARISON = [
-  { us: 'No ads', them: 'Display, native, and sponsored ads' },
-  { us: 'No tracking*', them: 'Dozens of third-party trackers' },
-  { us: 'No clickbait', them: 'Engagement-optimized headlines' },
-  { us: 'Funded by donations', them: 'Funded by advertising' },
-  { us: 'Never sells data', them: 'Data often sold or shared' },
+  { us: 'Sin publicidad', them: 'Anuncios de display, nativos y patrocinados' },
+  { us: 'Sin rastreo*', them: 'Decenas de rastreadores de terceros' },
+  { us: 'Sin cebo de clics', them: 'Titulares optimizados para el engagement' },
+  { us: 'Financiado por donaciones', them: 'Financiado por publicidad' },
+  { us: 'Nunca vende datos', them: 'Datos frecuentemente vendidos o compartidos' },
 ]
 
 function HeartIcon({ className }: { className?: string }) {
@@ -62,11 +62,11 @@ export default function NoAdsNoTrackingPage() {
       <StructuredData data={[pageSchema, breadcrumb]} />
 
       <div className="page-section">
-        <h1 className="page-title">News Without Ads, Tracking, or Clickbait</h1>
+        <h1 className="page-title">Noticias sin publicidad, sin rastreo, sin cebo de clics</h1>
         <div className="prose max-w-none">
           <p className="text-lg text-neutral-600 leading-relaxed">
-            Most free news services make money from your data. Here's how Impacto Indígena is
-            different.
+            La mayoría de los servicios de noticias gratuitos ganan dinero con tus datos. Así es como
+            Impacto Indígena es diferente.
           </p>
 
           {/* Two-column comparison */}
@@ -77,7 +77,7 @@ export default function NoAdsNoTrackingPage() {
                   Impacto Indígena
                 </th>
                 <th className="text-left py-3 px-4 font-bold bg-neutral-50 text-neutral-700 border-b border-neutral-300 rounded-tr-lg">
-                  Typical news aggregator
+                  Agregador de noticias típico
                 </th>
               </tr>
             </thead>
@@ -95,24 +95,25 @@ export default function NoAdsNoTrackingPage() {
             </tbody>
           </table>
           <p className="text-xs text-neutral-400 mt-1">
-            * Our newsletter provider tracks email opens and link clicks. We cannot disable this.
-            We do not use this data for profiling or advertising. See our{' '}
+            * Nuestro proveedor de newsletter registra aperturas de correo y clics en enlaces. No
+            podemos desactivar esto. No usamos estos datos para perfiles ni publicidad. Consulta
+            nuestra{' '}
             <Link to="/privacy" className="underline hover:text-neutral-300">
-              privacy policy
+              política de privacidad
             </Link>{' '}
-            for details.
+            para más detalles.
           </p>
           <p className="mt-4">
-            Want the full comparison?{' '}
+            ¿Quieres la comparación completa?{' '}
             <Link to="/compare" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              See all aggregators side by side
+              Ver todos los agregadores comparados
             </Link>
           </p>
 
         </div>
 
         {/* What We Don't Show — 2x2 cards */}
-        <h2 className="section-heading mt-10">What We Don't Show</h2>
+        <h2 className="section-heading mt-10">Lo que no mostramos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {[
             {
@@ -121,8 +122,8 @@ export default function NoAdsNoTrackingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               ),
-              title: 'No Ads',
-              description: 'Not now, not ever. No display ads, sponsored content, or "recommended" links.',
+              title: 'Sin publicidad',
+              description: 'Ni ahora ni nunca. Sin anuncios de display, contenido patrocinado ni enlaces "recomendados".',
               border: 'border-l-brand-400',
             },
             {
@@ -131,8 +132,8 @@ export default function NoAdsNoTrackingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                 </svg>
               ),
-              title: 'No Clickbait',
-              description: 'Stories selected by significance, not click potential. Headlines inform, not bait.',
+              title: 'Sin cebo de clics',
+              description: 'Noticias seleccionadas por relevancia, no por potencial de clics. Los titulares informan, no engañan.',
               border: 'border-l-teal-400',
             },
             {
@@ -141,8 +142,8 @@ export default function NoAdsNoTrackingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               ),
-              title: 'No Paywalls',
-              description: 'Everything is free. The site, the API, the RSS feeds. No premium tiers.',
+              title: 'Sin muros de pago',
+              description: 'Todo es gratuito. El sitio, la API, los feeds RSS. Sin niveles premium.',
               border: 'border-l-amber-400',
             },
             {
@@ -151,8 +152,8 @@ export default function NoAdsNoTrackingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               ),
-              title: 'No Filter Bubble',
-              description: 'Everyone sees the same curated stories. No personalization, no algorithmic profiling.',
+              title: 'Sin burbuja de filtro',
+              description: 'Todos ven las mismas noticias curadas. Sin personalización, sin perfiles algorítmicos.',
               border: 'border-l-indigo-400',
             },
           ].map((card) => (
@@ -170,9 +171,9 @@ export default function NoAdsNoTrackingPage() {
         </div>
         <div className="prose max-w-none mt-4">
           <p>
-            For details on what data we collect (or rather don't collect), see our{' '}
+            Para más detalles sobre qué datos recopilamos (o más bien no recopilamos), consulta nuestra{' '}
             <Link to="/privacy" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              privacy policy
+              política de privacidad
             </Link>
             .
           </p>
@@ -185,15 +186,15 @@ export default function NoAdsNoTrackingPage() {
             <HeartIcon className="w-5 h-5 text-brand-300" />
             <span className="flex-1 border-t border-neutral-200" aria-hidden="true" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">How We Stay Free</h2>
+          <h2 className="text-2xl font-bold mb-3">Cómo nos mantenemos gratuitos</h2>
           <p className="text-lg text-neutral-600 leading-relaxed mb-4 max-w-xl mx-auto">
-            Free. Independent. Without ads.
+            Gratis. Independientes. Sin publicidad.
           </p>
         </div>
 
         <LandingCta
-          heading="Read the news without being the product."
-          description="Visit impactoindigena.news — or subscribe to the newsletter for a clean, ad-free digest."
+          heading="Lee las noticias sin ser el producto."
+          description="Visita impactoindigena.news — o suscríbete al boletín para recibir un resumen limpio y sin publicidad."
         />
       </div>
     </>
