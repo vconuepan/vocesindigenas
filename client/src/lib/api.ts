@@ -69,6 +69,7 @@ export interface CoverageStats {
 export interface HomepageData {
   issues: PublicIssue[]
   storiesByIssue: Record<string, { uplifting: PublicStory[]; calm: PublicStory[]; negative: PublicStory[] }>
+  activeCases?: CaseListItem[]
 }
 
 // --- Member auth helpers ---

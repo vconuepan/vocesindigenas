@@ -16,6 +16,7 @@ import { SEO, CommonOgTags } from '../lib/seo'
 import { buildWebSiteSchema, buildOrganizationSchema } from '../lib/structured-data'
 import SupportBanner from '../components/SupportBanner'
 import SpotlightBand from '../components/SpotlightBand'
+import CasosSection from '../components/CasosSection'
 import DailySnippet from '../components/DailySnippet'
 import { usePositivity } from '../contexts/PositivityContext'
 import { mixHomepageStories, pickHero } from '../lib/mix-stories'
@@ -279,6 +280,7 @@ export default function HomePage() {
 
   const issues = data?.issues ?? []
   const storiesByIssueBuckets = data?.storiesByIssue ?? {}
+  const activeCases = data?.activeCases ?? []
 
   // Pick hero client-side from the issue buckets based on positivity
   const heroStory = pickHero(storiesByIssueBuckets, positivity)
@@ -313,6 +315,9 @@ export default function HomePage() {
 
       {/* En Foco — spotlight band (renders only when an active spotlight exists) */}
       <SpotlightBand />
+
+      {/* Casos en curso — editorial case groupings (renders only when active cases exist) */}
+      <CasosSection cases={activeCases} />
 
       {/* Issue sections with rotating layouts */}
       <div className="page-section-wide md:-mt-14 min-h-screen">
