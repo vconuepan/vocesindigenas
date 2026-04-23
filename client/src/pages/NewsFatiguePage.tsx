@@ -7,16 +7,16 @@ import LandingCta from '../components/LandingCta'
 import { getCategoryColor } from '../lib/category-colors'
 
 const META = {
-  title: 'News Fatigue Is a Design Problem \u2014 Here\u2019s a Better Way | Impacto Indígena',
+  title: 'El Cansancio Informativo Es un Problema de Diseño — Hay una Mejor Manera | Impacto Indígena',
   description:
-    'Nearly 40% of people actively avoid the news. The problem isn\u2019t you \u2014 it\u2019s how news is delivered. A curated digest of 10-20 stories that matter, with no noise.',
+    'Casi el 40% de las personas evita activamente las noticias. El problema no eres tú — es cómo se entregan. Un resumen curado de las historias que importan, sin ruido.',
   url: `${SEO.siteUrl}/news-fatigue`,
 }
 
 const pageSchema = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'News Fatigue Is a Design Problem \u2014 Here\u2019s a Better Way',
+  headline: 'El Cansancio Informativo Es un Problema de Diseño — Hay una Mejor Manera',
   description: META.description,
   url: META.url,
   author: {
@@ -25,15 +25,15 @@ const pageSchema = {
     url: SEO.siteUrl,
   },
   about: [
-    { '@type': 'Thing', name: 'News fatigue' },
-    { '@type': 'Thing', name: 'News avoidance' },
-    { '@type': 'Thing', name: 'Media literacy' },
+    { '@type': 'Thing', name: 'Cansancio informativo' },
+    { '@type': 'Thing', name: 'Evitar las noticias' },
+    { '@type': 'Thing', name: 'Alfabetización mediática' },
   ],
 }
 
 const breadcrumb = buildBreadcrumbSchema([
-  { name: 'Home', url: SEO.siteUrl },
-  { name: 'News Fatigue', url: META.url },
+  { name: 'Inicio', url: SEO.siteUrl },
+  { name: 'Cansancio Informativo', url: META.url },
 ])
 
 const PROBLEM_CARDS = [
@@ -43,8 +43,8 @@ const PROBLEM_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>
     ),
-    title: 'Volume overload',
-    description: 'Hundreds of stories per day, most of them noise. No signal, no stopping point.',
+    title: 'Sobrecarga de volumen',
+    description: 'Cientos de historias por día, la mayoría son ruido. Sin señal clara, sin punto de parada.',
   },
   {
     icon: (
@@ -52,8 +52,8 @@ const PROBLEM_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
       </svg>
     ),
-    title: 'Negativity bias',
-    description: 'Outrage and fear drive clicks. Progress and nuance don\u2019t.',
+    title: 'Sesgo hacia lo negativo',
+    description: 'La indignación y el miedo generan clics. El progreso y la complejidad, no.',
   },
   {
     icon: (
@@ -61,8 +61,8 @@ const PROBLEM_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: 'Infinite scroll',
-    description: 'No natural stopping point. You either doom-scroll or force yourself to quit.',
+    title: 'Scroll infinito',
+    description: 'Sin punto de parada natural. O te pierdes en el abismo del scroll o te fuerzas a cerrar la pantalla.',
   },
   {
     icon: (
@@ -70,8 +70,8 @@ const PROBLEM_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
     ),
-    title: 'Guilt cycle',
-    description: 'Avoid the news \u2192 feel uninformed \u2192 try again \u2192 get overwhelmed \u2192 repeat.',
+    title: 'El ciclo de culpa',
+    description: 'Evitas las noticias → te sientes desinformado/a → lo vuelves a intentar → te abrumas → repites.',
   },
 ]
 
@@ -82,9 +82,9 @@ const APPROACH_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
       </svg>
     ),
-    title: 'Fewer, Better Stories',
+    title: 'Menos historias, más relevantes',
     description:
-      'AI reads 82+ sources and selects 10\u201320 stories by real-world significance. No filler, no rage-bait.',
+      'La IA analiza 82+ fuentes y selecciona 10–20 historias por su importancia real. Sin relleno, sin cebo emocional.',
     border: 'border-l-brand-400',
   },
   {
@@ -93,9 +93,9 @@ const APPROACH_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: 'A Natural Stopping Point',
+    title: 'Un punto de parada natural',
     description:
-      'When you\u2019ve read today\u2019s curated stories, you\u2019re done. No infinite feed, no algorithmic rabbit holes. You get informed and move on.',
+      'Cuando has leído las historias curadas del día, terminaste. Sin feed infinito, sin espirales algorítmicas. Te informas y sigues con tu vida.',
     border: 'border-l-teal-400',
   },
   {
@@ -104,9 +104,9 @@ const APPROACH_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg>
     ),
-    title: 'The Positivity Dial',
+    title: 'El control de tono emocional',
     description:
-      'A 5-position dial lets you filter stories by emotional tone. You control what you see, not an algorithm.',
+      'Un selector de 5 posiciones te permite filtrar historias por tono emocional. Tú decides lo que ves, no un algoritmo.',
     border: 'border-l-amber-400',
   },
   {
@@ -115,33 +115,33 @@ const APPROACH_CARDS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: 'Global Coverage',
+    title: 'Perspectiva indígena',
     description:
-      'Instead of the same Western-centric stories recycled everywhere, you\u2019ll see reporting from Sub-Saharan Africa, Southeast Asia, Latin America, and the Middle East.',
+      'En lugar de las mismas narrativas dominantes repetidas en todos lados, aquí encontrarás reportajes desde comunidades y medios indígenas de toda América.',
     border: 'border-l-indigo-400',
   },
 ]
 
 const ISSUE_CARDS = [
   {
-    slug: 'human-development',
-    title: 'Human Development',
-    description: 'Health, migration, poverty, education, human rights',
+    slug: 'cambio-climatico',
+    title: 'Cambio Climático',
+    description: 'Impactos ambientales en territorios indígenas, defensores de la tierra, crisis hídrica',
   },
   {
-    slug: 'planet-climate',
-    title: 'Planet & Climate',
-    description: 'Climate change, biodiversity, energy, environment',
+    slug: 'derechos-indigenas',
+    title: 'Derechos Indígenas',
+    description: 'Consulta previa, CLPI, autodeterminación, derechos territoriales',
   },
   {
-    slug: 'existential-threats',
-    title: 'Existential Threats',
-    description: 'Nuclear risk, conflict, AI safety',
+    slug: 'reconciliacion-y-paz',
+    title: 'Reconciliación y Paz',
+    description: 'Procesos de paz, justicia transicional, reparaciones históricas',
   },
   {
-    slug: 'science-technology',
-    title: 'Science & Technology',
-    description: 'Research breakthroughs, innovation, AI policy',
+    slug: 'chile-indigena',
+    title: 'Chile Indígena',
+    description: 'Conflicto mapuche, pueblos originarios de Chile, política indígena nacional',
   },
 ]
 
@@ -160,31 +160,31 @@ export default function NewsFatiguePage() {
       <StructuredData data={[pageSchema, breadcrumb]} />
 
       <div className="page-section">
-        <h1 className="page-title">You're Not Avoiding the News Because You Don't Care</h1>
+        <h1 className="page-title">No Evitas las Noticias Porque No Te Importa</h1>
         <div className="prose max-w-none">
           <p className="text-lg text-neutral-600 leading-relaxed">
-            You care about the world. Climate change, global health, conflicts that affect
-            millions — you know these things matter. But every time you open a news app, you're hit
-            with walls of outrage, clickbait, and an algorithm designed to keep you scrolling. So you
-            close it. And then you feel guilty for not staying informed.
+            Te importa el mundo. El cambio climático, los derechos indígenas, los conflictos que afectan a
+            millones — sabes que estas cosas importan. Pero cada vez que abres una app de noticias, te encuentras
+            con paredes de indignación, clickbait y un algoritmo diseñado para mantenerte enganchado/a. Así que
+            la cierras. Y luego te sientes culpable por no estar informado/a.
           </p>
           <p>
-            You're not alone. According to the{' '}
+            No estás solo/a. Según el{' '}
             <a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener noreferrer">
-              Reuters Institute
+              Instituto Reuters
             </a>
-            , nearly 40% of people now actively avoid the news. Not because they're apathetic —
-            because the way news is delivered is exhausting.
+            , casi el 40% de las personas evita activamente las noticias. No porque sean apáticas —
+            sino porque la forma en que se entregan las noticias es agotadora.
           </p>
         </div>
 
-        {/* The Problem — 2x2 card grid */}
+        {/* El Problema — cuadrícula 2x2 */}
         <h2 className="section-heading mt-10">
-          The Problem Isn't the News. It's the Delivery.
+          El Problema No Son las Noticias. Es la Forma de Entregarlas.
         </h2>
         <p className="text-neutral-600 mt-2 leading-relaxed">
-          Traditional news platforms sell ads, which means they need your attention, which means
-          they need to trigger emotional reactions. The result:
+          Las plataformas de noticias tradicionales venden publicidad, lo que significa que necesitan tu
+          atención, lo que significa que necesitan provocar reacciones emocionales. El resultado:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {PROBLEM_CARDS.map((card) => (
@@ -201,11 +201,11 @@ export default function NewsFatiguePage() {
           ))}
         </div>
 
-        {/* A Different Approach — feature cards */}
-        <h2 className="section-heading mt-12">A Different Approach</h2>
+        {/* Un Enfoque Diferente — tarjetas de características */}
+        <h2 className="section-heading mt-12">Un Enfoque Diferente</h2>
         <p className="text-neutral-600 mt-2 leading-relaxed">
-          Impacto Indígena is built around a simple idea: what if you could stay informed about
-          the things that matter without the noise?
+          Impacto Indígena se construye en torno a una idea simple: ¿qué pasaría si pudieras mantenerte
+          informado/a sobre lo que importa sin el ruido?
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {APPROACH_CARDS.map((card) => (
@@ -222,20 +222,20 @@ export default function NewsFatiguePage() {
           ))}
         </div>
 
-        {/* What Staying Informed Looks Like */}
-        <h2 className="section-heading mt-12">Stay Informed in 5 Minutes</h2>
+        {/* Cómo Mantenerse Informado */}
+        <h2 className="section-heading mt-12">Infórmate en 5 Minutos</h2>
         <p className="text-neutral-600 mt-3 leading-relaxed">
-          Open Impacto Indígena or the newsletter. Scan 10–20 curated stories organized by
-          issue area. Read the ones that interest you — each links to the original source. Done.
-          Five minutes, and you're genuinely informed about what happened in the world today.
+          Abre Impacto Indígena o el boletín. Revisa 10–20 historias curadas organizadas por
+          área temática. Lee las que te interesen — cada una enlaza a la fuente original. Listo.
+          Cinco minutos, y estás genuinamente informado/a sobre lo que pasó hoy.
         </p>
 
-        {/* Built for People Who Care — issue cards */}
-        <h2 className="section-heading mt-12">Built for People Who Care</h2>
+        {/* Construido para Quienes les Importa — tarjetas de temas */}
+        <h2 className="section-heading mt-12">Construido para Quienes les Importa</h2>
         <p className="text-neutral-600 mt-2 leading-relaxed">
-          We focus on four issue areas that define our era, deliberately skipping celebrity news,
-          sports, stock picks, and partisan commentary. If these are the things you worry about
-          when you avoid the news, this is the digest built for you.
+          Nos enfocamos en áreas temáticas que definen la realidad indígena de nuestro tiempo, omitiendo
+          deliberadamente noticias de farándula, deporte, bolsa y comentario partidista. Si estas son
+          las cosas que te preocupan cuando evitas las noticias, este es el resumen para ti.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           {ISSUE_CARDS.map((card) => {
@@ -254,36 +254,36 @@ export default function NewsFatiguePage() {
           })}
         </div>
 
-        {/* No Tricks, No Traps */}
-        <h2 className="section-heading mt-12">No Tricks, No Traps</h2>
+        {/* Sin Trucos, Sin Trampas */}
+        <h2 className="section-heading mt-12">Sin Trucos, Sin Trampas</h2>
         <div className="prose max-w-none">
           <ul className="list-disc pl-6 space-y-2 mt-3">
             <li>
-              <strong>No ads.</strong> No revenue depends on keeping you engaged.{' '}
+              <strong>Sin publicidad.</strong> No hay ingresos que dependan de mantenerte enganchado/a.{' '}
               <Link to="/no-ads-no-tracking" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-                Read our commitment
+                Lee nuestro compromiso
               </Link>
             </li>
             <li>
-              <strong>No tracking.</strong> No cookies, no analytics profiles, no third-party
-              trackers.
+              <strong>Sin rastreo.</strong> Sin cookies, sin perfiles de análisis, sin rastreadores de terceros.
             </li>
             <li>
-              <strong>No personalization bubbles.</strong> Everyone sees the same curated stories.
+              <strong>Sin burbujas de personalización.</strong> Todo el mundo ve las mismas historias curadas.
             </li>
             <li>
-              <strong>Non-commercial.</strong> This is a social-good project, not a media business.
+              <strong>No comercial.</strong> Este es un proyecto de bien social, no un negocio mediático.
             </li>
           </ul>
           <p className="mt-4">
             <Link to="/methodology" className="text-brand-800 hover:text-brand-700 underline focus-visible:ring-2 focus-visible:ring-brand-500 rounded">
-              See how we select stories            </Link>
+              Cómo seleccionamos las historias
+            </Link>
           </p>
         </div>
 
         <LandingCta
-          heading="Stay informed without the burnout."
-          description="Visit impactoindigena.news for today's stories — or get the digest delivered to your inbox."
+          heading="Infórmate sin el agotamiento."
+          description="Visita impactoindigena.news para las historias de hoy — o recibe el resumen en tu bandeja de entrada."
         />
       </div>
     </>
