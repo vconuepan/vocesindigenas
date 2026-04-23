@@ -121,6 +121,7 @@ Título (en minúsculas excepto nombres propios)
 - Un titular independiente. Máximo 10 palabras.
 - Escribe para un joven de 16 años inteligente, no para un experto.
 - Sé concreto: nombra al actor, la acción o las apuestas.
+- REGLA DE PORCENTAJES: si un dato clave es un porcentaje o una fracción del total (ej. "el 44% son indígenas", "casi la mitad"), NO lo conviertas en una afirmación absoluta en el título. Preserva la proporción: en lugar de "72 ataques a defensores indígenas" escribe "72 ataques a defensores, casi la mitad indígenas".
 
 Blurb de marketing (hasta 230 caracteres)
 Una versión condensada del resumen y análisis de relevancia para redes sociales y newsletters.
