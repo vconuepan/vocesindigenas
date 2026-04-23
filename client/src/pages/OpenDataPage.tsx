@@ -8,12 +8,12 @@ export default function OpenDataPage() {
   return (
     <>
       <Helmet>
-        <title>Open Data API - {SEO.siteName}</title>
+        <title>Datos abiertos \u2014 {SEO.siteName}</title>
         <meta
           name="description"
           content="API pública de Impacto Indígena para investigadores, periodistas y ONGs. Acceso libre a datos sobre pueblos indígenas en América Latina."
         />
-        <meta property="og:title" content={`Open Data API - ${SEO.siteName}`} />
+        <meta property="og:title" content={`Datos abiertos \u2014 ${SEO.siteName}`} />
         <meta
           property="og:description"
           content="API pública para investigadores y ONGs. Datos sobre pueblos indígenas en América Latina, libre acceso con atribución."

@@ -15,7 +15,7 @@ Static file that rarely changes. Points crawlers to the sitemap.
 User-agent: *
 Allow: /
 
-Sitemap: https://actuallyrelevant.news/sitemap.xml
+Sitemap: https://impactoindigena.news/sitemap.xml
 ```
 
 ## sitemap.xml

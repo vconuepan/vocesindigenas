@@ -1,7 +1,7 @@
 # Impacto Indígena News
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Looking for Maintainer](https://img.shields.io/badge/looking%20for-maintainer-orange)](https://actuallyrelevant.news/stewardship)
+[![Looking for Maintainer](https://img.shields.io/badge/looking%20for-maintainer-orange)](https://impactoindigena.news/stewardship)
 
 Noticias, iniciativas y tendencias relevantes para los pueblos indígenas, 
 seleccionadas con apoyo de inteligencia artificial.
@@ -100,7 +100,7 @@ The build generates the Prisma client, applies any pending database migrations, 
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | Internal PostgreSQL connection string from step 1 |
 | `OPENAI_API_KEY` | Yes | OpenAI API key for LLM analysis |
-| `FRONTEND_URL` | Yes | Frontend URL for CORS (e.g. `https://actuallyrelevant.news`) |
+| `FRONTEND_URL` | Yes | Frontend URL for CORS (e.g. `https://impactoindigena.news`) |
 | `JWT_SECRET` | Yes | Random string (32+ chars) for signing auth tokens |
 | `NODE_ENV` | Yes | Set to `production` (enables secure cross-origin cookies) |
 | `PORT` | No | Render sets this automatically (defaults to 10000) |
@@ -139,7 +139,7 @@ The sitemap rewrite proxies requests to the backend, which generates the sitemap
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | Yes | Backend URL (e.g. `https://api.actuallyrelevant.news`) |
+| `VITE_API_URL` | Yes | Backend URL (e.g. `https://api.impactoindigena.news`) |
 
 ### Post-deploy Steps
 
@@ -181,11 +181,11 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ## Stewardship
 
-Actually Relevant is actively seeking a long-term institutional owner in journalism, civic tech, or effective altruism. If your organization could give this project a home, visit [actuallyrelevant.news/stewardship](https://actuallyrelevant.news/stewardship) to learn more.
+Actually Relevant is actively seeking a long-term institutional owner in journalism, civic tech, or effective altruism. If your organization could give this project a home, visit [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship) to learn more.
 
 ## License
 
-This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). Organizations interested in running actuallyrelevant.news as a long-term steward can receive more accommodating license terms — see [Stewardship](https://actuallyrelevant.news/stewardship).
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). Organizations interested in running impactoindigena.news as a long-term steward can receive more accommodating license terms — see [Stewardship](https://impactoindigena.news/stewardship).
 
 ## Troubleshooting
 

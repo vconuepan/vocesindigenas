@@ -47,7 +47,7 @@ Write clear, descriptive commit messages. Keep changes focused — one logical c
 
 ## Contributor License Agreement
 
-Actually Relevant is licensed under [AGPL v3](LICENSE). The project is exploring transfer to a long-term institutional steward (like a nonprofit, news, or civic tech organization) — see [actuallyrelevant.news/stewardship](https://actuallyrelevant.news/stewardship) for background on this model.
+Actually Relevant is licensed under [AGPL v3](LICENSE). The project is exploring transfer to a long-term institutional steward (like a nonprofit, news, or civic tech organization) — see [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship) for background on this model.
 
 To preserve the ability to offer a future steward flexible licensing terms as part of that transfer, we use a lightweight contributor agreement:
 
@@ -59,7 +59,7 @@ To preserve the ability to offer a future steward flexible licensing terms as pa
 
 This is similar to a Developer Certificate of Origin (DCO). No separate form or CLA signing process is required.
 
-**Note for potential stewards:** Organizations interested in running actuallyrelevant.news long-term can receive more accommodating license terms directly from the copyright holder. See [actuallyrelevant.news/stewardship](https://actuallyrelevant.news/stewardship).
+**Note for potential stewards:** Organizations interested in running impactoindigena.news long-term can receive more accommodating license terms directly from the copyright holder. See [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship).
 
 ## Code of Conduct
 
@@ -74,4 +74,4 @@ Harassment, personal attacks, and bad-faith behavior won't be tolerated.
 
 ## Questions?
 
-Open a [GitHub Issue](../../issues) or email [contact@actuallyrelevant.news](mailto:contact@actuallyrelevant.news).
+Open a [GitHub Issue](../../issues) or email [contact@impactoindigena.news](mailto:contact@impactoindigena.news).

@@ -11,8 +11,8 @@
     title: script.getAttribute('data-title') || 'Impacto Indígena',
   }
 
-  var API_BASE = 'https://api.actuallyrelevant.news/api'
-  var SITE_URL = 'https://actuallyrelevant.news'
+  var API_BASE = 'https://api.impactoindigena.news/api'
+  var SITE_URL = 'https://impactoindigena.news'
 
   // Create container with shadow DOM for style isolation
   var container = document.createElement('div')
