@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import { usePublicStories } from '../hooks/usePublicStories'
@@ -12,6 +12,8 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams()
   const q = searchParams.get('q') || ''
   const [page, setPage] = useState(1)
+  const navigate = useNavigate()
+  const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
     setPage(1)
   }, [q])
@@ -50,7 +52,32 @@ export default function SearchPage() {
           )}
         </header>
         {!q ? (
-          <p className="text-neutral-500 text-center py-8">{t('search.empty')}</p>
+          <form
+            className="max-w-xl mx-auto py-8"
+            onSubmit={(e) => {
+              e.preventDefault()
+              const val = inputRef.current?.value.trim()
+              if (val) navigate(`/search?q=${encodeURIComponent(val)}`)
+            }}
+          >
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                type="search"
+                autoFocus
+                placeholder={t('nav.searchPlaceholder')}
+                aria-label={t('nav.searchLabel')}
+                className="flex-1 px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
+              />
+              <button
+                type="submit"
+                className="px-5 py-3 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+              >
+                {t('search.label')}
+              </button>
+            </div>
+            <p className="text-xs text-neutral-400 mt-2 text-center">{t('nav.searchHint')}</p>
+          </form>
         ) : isLoading ? (
           <SearchResultsSkeleton />
         ) : stories.length === 0 ? (

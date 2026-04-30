@@ -138,5 +138,28 @@
   "language": {
     "toggle": "EN",
     "current": "Idioma actual: Español"
+  },
+  "spotlight": {
+    "label": "En Foco",
+    "dotNavLabel": "Ver titular {{current}} de {{total}}"
+  },
+  "feedback": {
+    "title": "Enviar comentarios",
+    "categoryLegend": "Categoría",
+    "category_general": "Comentario",
+    "category_bug": "Error",
+    "category_suggestion": "Sugerencia",
+    "category_other": "Otro",
+    "messageLegend": "Mensaje",
+    "messagePlaceholder": "¿Qué tienes en mente?",
+    "emailLabel": "Correo electrónico",
+    "emailOptional": "(opcional)",
+    "emailPlaceholder": "tu@correo.com — si quieres una respuesta",
+    "submit": "Enviar comentarios",
+    "sending": "Enviando...",
+    "error": "Algo salió mal. Por favor intenta de nuevo.",
+    "successTitle": "¡Gracias por tu comentario!",
+    "successMessage": "Apreciamos que te hayas tomado el tiempo de compartir tu opinión.",
+    "done": "Listo"
   }
 }

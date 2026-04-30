@@ -9,6 +9,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { publicApi } from '../lib/api'
 import type { SpotlightStory } from '../lib/api'
@@ -17,6 +18,7 @@ import { getCategoryColor } from '../lib/category-colors'
 const ROTATION_INTERVAL = 5000 // ms between story transitions
 
 export default function SpotlightBand() {
+  const { t } = useTranslation()
   const { data, isLoading } = useQuery({
     queryKey: ['spotlight'],
     queryFn: () => publicApi.spotlight(),
@@ -74,7 +76,7 @@ export default function SpotlightBand() {
     <div
       className="w-full bg-neutral-900 border-b border-neutral-700/50"
       role="region"
-      aria-label={`En Foco: ${spotlight.label}`}
+      aria-label={`${t('spotlight.label')}: ${spotlight.label}`}
     >
       <div className="max-w-5xl mx-auto px-4 py-3 md:py-4">
         <div className="flex items-start gap-3 md:gap-4 min-h-[3rem]">
@@ -86,7 +88,7 @@ export default function SpotlightBand() {
                 style={{ backgroundColor: '#4ade80' }}
                 aria-hidden="true"
               />
-              En Foco
+              {t('spotlight.label')}
             </span>
             <p className="text-xs text-neutral-400 font-medium mt-0.5 leading-tight max-w-[130px] md:max-w-none">
               {spotlight.label}
@@ -134,7 +136,7 @@ export default function SpotlightBand() {
                 <button
                   key={idx}
                   onClick={() => goTo(idx)}
-                  aria-label={`Ver titular ${idx + 1} de ${total}`}
+                  aria-label={t('spotlight.dotNavLabel', { current: idx + 1, total })}
                   className={`w-1.5 h-1.5 rounded-full transition-all duration-200 focus-visible:ring-2 focus-visible:ring-brand-400 ${
                     idx === activeIdx
                       ? 'bg-brand-400 scale-125'

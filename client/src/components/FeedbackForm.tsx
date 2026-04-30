@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { publicApi } from '../lib/api'
 
 interface FeedbackFormProps {
@@ -12,12 +13,8 @@ interface FeedbackFormProps {
   hideHeading?: boolean
 }
 
-const CATEGORIES = [
-  { value: 'general', label: 'Feedback' },
-  { value: 'bug', label: 'Bug' },
-  { value: 'suggestion', label: 'Suggestion' },
-  { value: 'other', label: 'Other' },
-] as const
+const CATEGORY_VALUES = ['general', 'bug', 'suggestion', 'other'] as const
+type CategoryValue = typeof CATEGORY_VALUES[number]
 
 // Must match config.feedback.messageMaxLength on the server
 const MAX_MESSAGE_LENGTH = 2000
@@ -28,7 +25,8 @@ export default function FeedbackForm({
   idPrefix = 'feedback',
   hideHeading = false,
 }: FeedbackFormProps) {
-  const [category, setCategory] = useState<string>('general')
+  const { t } = useTranslation()
+  const [category, setCategory] = useState<CategoryValue>('general')
   const [message, setMessage] = useState('')
   const [email, setEmail] = useState('')
   const [website, setWebsite] = useState('') // honeypot
@@ -58,7 +56,7 @@ export default function FeedbackForm({
       setStatus('success')
     } catch {
       setStatus('error')
-      setErrorMessage('Something went wrong. Please try again.')
+      setErrorMessage(t('feedback.error'))
     }
   }
 
@@ -70,16 +68,16 @@ export default function FeedbackForm({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-neutral-900 mb-2">Thanks for your feedback!</h2>
+        <h2 className="text-xl font-bold text-neutral-900 mb-2">{t('feedback.successTitle')}</h2>
         <p className="text-neutral-600 text-sm mb-6">
-          We appreciate you taking the time to share your thoughts.
+          {t('feedback.successMessage')}
         </p>
         {onSuccess && (
           <button
             onClick={onSuccess}
             className="px-6 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           >
-            Done
+            {t('feedback.done')}
           </button>
         )}
       </div>
@@ -91,7 +89,7 @@ export default function FeedbackForm({
       {!hideHeading && (
         <div className="text-center mb-6">
           <h2 id={`${idPrefix}-title`} className="text-xl font-bold text-neutral-900">
-            Send feedback
+            {t('feedback.title')}
           </h2>
         </div>
       )}
@@ -99,13 +97,13 @@ export default function FeedbackForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Category */}
         <fieldset>
-          <legend className="sr-only">Category</legend>
+          <legend className="sr-only">{t('feedback.categoryLegend')}</legend>
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => (
+            {CATEGORY_VALUES.map((val) => (
               <label
-                key={cat.value}
+                key={val}
                 className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors border ${
-                  category === cat.value
+                  category === val
                     ? 'bg-brand-50 border-brand-300 text-brand-800 font-medium'
                     : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100'
                 }`}
@@ -113,12 +111,12 @@ export default function FeedbackForm({
                 <input
                   type="radio"
                   name={`${idPrefix}-category`}
-                  value={cat.value}
-                  checked={category === cat.value}
-                  onChange={() => setCategory(cat.value)}
+                  value={val}
+                  checked={category === val}
+                  onChange={() => setCategory(val)}
                   className="sr-only"
                 />
-                {cat.label}
+                {t(`feedback.category_${val}`)}
               </label>
             ))}
           </div>
@@ -126,13 +124,13 @@ export default function FeedbackForm({
 
         {/* Message */}
         <div>
-          <label htmlFor={`${idPrefix}-message`} className="sr-only">Message</label>
+          <label htmlFor={`${idPrefix}-message`} className="sr-only">{t('feedback.messageLegend')}</label>
           <textarea
             ref={messageRef}
             id={`${idPrefix}-message`}
             value={message}
             onChange={(e) => setMessage(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
-            placeholder="What's on your mind?"
+            placeholder={t('feedback.messagePlaceholder')}
             required
             rows={4}
             className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors resize-y"
@@ -146,14 +144,14 @@ export default function FeedbackForm({
         {/* Email (optional) */}
         <div>
           <label htmlFor={`${idPrefix}-email`} className="block text-sm font-medium text-neutral-700 mb-1">
-            Email <span className="font-normal text-neutral-500">(optional)</span>
+            {t('feedback.emailLabel')} <span className="font-normal text-neutral-500">{t('feedback.emailOptional')}</span>
           </label>
           <input
             id={`${idPrefix}-email`}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com — if you'd like a response"
+            placeholder={t('feedback.emailPlaceholder')}
             autoComplete="email"
             className="w-full px-4 py-3 text-base border border-neutral-300 rounded-lg bg-neutral-50 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-colors"
           />
@@ -184,7 +182,7 @@ export default function FeedbackForm({
           aria-describedby={status === 'error' ? `${idPrefix}-error` : undefined}
           className="w-full py-3 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {status === 'loading' ? 'Sending...' : 'Send feedback'}
+          {status === 'loading' ? t('feedback.sending') : t('feedback.submit')}
         </button>
       </form>
     </>

@@ -138,5 +138,28 @@
   "language": {
     "toggle": "ES",
     "current": "Current language: English"
+  },
+  "spotlight": {
+    "label": "In Focus",
+    "dotNavLabel": "View headline {{current}} of {{total}}"
+  },
+  "feedback": {
+    "title": "Send feedback",
+    "categoryLegend": "Category",
+    "category_general": "Feedback",
+    "category_bug": "Bug",
+    "category_suggestion": "Suggestion",
+    "category_other": "Other",
+    "messageLegend": "Message",
+    "messagePlaceholder": "What's on your mind?",
+    "emailLabel": "Email",
+    "emailOptional": "(optional)",
+    "emailPlaceholder": "your@email.com — if you'd like a response",
+    "submit": "Send feedback",
+    "sending": "Sending...",
+    "error": "Something went wrong. Please try again.",
+    "successTitle": "Thanks for your feedback!",
+    "successMessage": "We appreciate you taking the time to share your thoughts.",
+    "done": "Done"
   }
 }
