@@ -151,7 +151,7 @@ router.get('/magic/verify', async (req, res) => {
     const link = await prisma.magicLink.findUnique({ where: { token } })
 
     if (!link || link.usedAt || link.expiresAt < new Date()) {
-      log.warn({ token }, 'magic link invalid or expired')
+      log.warn({ tokenPrefix: token?.slice(0, 8) }, 'magic link invalid or expired')
       const errorUrl = buildErrorUrl(redirect_to ?? link?.redirectTo ?? undefined)
       res.redirect(303, errorUrl)
       return
@@ -186,7 +186,7 @@ router.get('/magic/verify', async (req, res) => {
     log.info({ userId: user.id, email: user.email }, 'magic link verified, member cookie set')
     res.redirect(303, redirectUrl)
   } catch (err) {
-    log.error({ err, token }, 'magic link verification failed')
+    log.error({ err, tokenPrefix: token?.slice(0, 8) }, 'magic link verification failed')
     res.redirect(303, buildErrorUrl())
   }
 })
