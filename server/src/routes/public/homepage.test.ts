@@ -10,8 +10,12 @@ const mockPrisma = vi.hoisted(() => ({
   story: {
     findMany: vi.fn(),
     findFirst: vi.fn(),
+    count: vi.fn(),
   },
   issue: {
+    findMany: vi.fn(),
+  },
+  ongoingCase: {
     findMany: vi.fn(),
   },
   $disconnect: vi.fn(),
@@ -87,6 +91,8 @@ const mockStory = {
 describe('Homepage API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPrisma.ongoingCase.findMany.mockResolvedValue([])
+    mockPrisma.story.count.mockResolvedValue(0)
   })
 
   describe('GET /api/homepage', () => {

@@ -30,9 +30,9 @@ describe('runSelectStories', () => {
 
     await runSelectStories()
 
-    // First call: snapshot with no filters; second: with relevanceMin from config (3)
+    // First call: snapshot with no filters; second: with relevanceMin from config (5)
     expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('analyzed')
-    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('analyzed', { relevanceMin: 3 })
+    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('analyzed', { relevanceMin: 5 })
     expect(mockSelectStoriesInGroups).toHaveBeenCalledWith(['story-1', 'story-2'])
   })
 
@@ -44,7 +44,7 @@ describe('runSelectStories', () => {
     await runSelectStories()
 
     expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('analyzed')
-    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('analyzed', { relevanceMin: 3 })
+    expect(mockGetStoryIdsByStatus).toHaveBeenCalledWith('analyzed', { relevanceMin: 5 })
     expect(mockSelectStoriesInGroups).not.toHaveBeenCalled()
   })
 

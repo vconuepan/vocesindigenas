@@ -94,7 +94,7 @@ describe('subscribe service', () => {
 
       expect(mockBrevo.createContact).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ firstName: 'John' }),
+          data: expect.objectContaining({ NOMBRE: 'John' }),
         }),
       )
     })
