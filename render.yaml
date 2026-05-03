@@ -32,9 +32,22 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-      # OpenAI
+      # OpenAI (required for embeddings regardless of LLM_PROVIDER)
       - key: OPENAI_API_KEY
         sync: false
+
+      # OpenRouter — routes chat models through OpenRouter (cheaper than OpenAI direct).
+      # OPENAI_API_KEY is still required for embeddings.
+      - key: LLM_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENAI_MODEL_SMALL
+        value: deepseek/deepseek-v3.2
+      - key: OPENAI_MODEL_MEDIUM
+        value: deepseek/deepseek-v3.2
+      - key: OPENAI_MODEL_LARGE
+        value: deepseek/deepseek-v3.2
 
       # Newsletter (Brevo)
       - key: BREVO_API_KEY

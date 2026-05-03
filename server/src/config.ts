@@ -2,16 +2,24 @@ export const config = {
   /** Canonical public URL for the site — used in social media posts, RSS feeds, sitemaps, etc. */
   siteUrl: process.env.SITE_URL || 'https://impactoindigena.news',
   llm: {
+    // Set LLM_PROVIDER=openrouter and OPENROUTER_API_KEY to route chat through OpenRouter.
+    // OPENAI_API_KEY is still required for embeddings regardless of provider.
+    provider: (process.env.LLM_PROVIDER || 'openai') as 'openai' | 'openrouter',
+    openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
     models: {
       small: {
+        // OpenRouter example: deepseek/deepseek-chat-v3-5
         name: process.env.OPENAI_MODEL_SMALL || "gpt-5.4-mini",
+        // reasoningEffort only applies to OpenAI reasoning models (ignored for OpenRouter)
         reasoningEffort: "medium" as const,
       },
       medium: {
+        // OpenRouter example: deepseek/deepseek-chat-v3-5
         name: process.env.OPENAI_MODEL_MEDIUM || "gpt-5.4-mini",
         reasoningEffort: "medium" as const,
       },
       large: {
+        // OpenRouter example: deepseek/deepseek-chat-v3-5 or openai/gpt-4.1
         name: process.env.OPENAI_MODEL_LARGE || "gpt-5.4",
         reasoningEffort: "medium" as const,
       },

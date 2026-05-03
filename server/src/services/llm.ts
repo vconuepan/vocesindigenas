@@ -13,40 +13,62 @@ export async function rateLimitDelay(): Promise<void> {
   }
 }
 
+/**
+ * Creates a ChatOpenAI instance configured for the active provider.
+ *
+ * - provider=openai (default): uses OPENAI_API_KEY directly with reasoning support.
+ * - provider=openrouter: uses OPENROUTER_API_KEY with OpenRouter base URL.
+ *   Reasoning effort is skipped — OpenRouter models ignore it and some reject it.
+ *   Set model names to OpenRouter IDs via env vars, e.g.:
+ *     OPENAI_MODEL_SMALL=deepseek/deepseek-chat-v3-5
+ *     OPENAI_MODEL_MEDIUM=deepseek/deepseek-chat-v3-5
+ *     OPENAI_MODEL_LARGE=deepseek/deepseek-chat-v3-5
+ *
+ * OPENAI_API_KEY is always required for embeddings regardless of provider.
+ */
+function createLLM(tier: 'small' | 'medium' | 'large'): ChatOpenAI {
+  const modelConfig = config.llm.models[tier]
+  const useOpenRouter =
+    config.llm.provider === 'openrouter' && config.llm.openrouterApiKey
+
+  if (useOpenRouter) {
+    return new ChatOpenAI({
+      model: modelConfig.name,
+      maxRetries: 3,
+      openAIApiKey: config.llm.openrouterApiKey,
+      configuration: {
+        baseURL: 'https://openrouter.ai/api/v1',
+        defaultHeaders: {
+          'HTTP-Referer': 'https://impactoindigena.news',
+          'X-Title': 'Impacto Indígena',
+        },
+      },
+    })
+  }
+
+  return new ChatOpenAI({
+    model: modelConfig.name,
+    reasoning: { effort: modelConfig.reasoningEffort },
+    maxRetries: 3,
+  })
+}
+
 let _smallLLM: ChatOpenAI | null = null
 let _mediumLLM: ChatOpenAI | null = null
 let _largeLLM: ChatOpenAI | null = null
 
 export function getSmallLLM(): ChatOpenAI {
-  if (!_smallLLM) {
-    _smallLLM = new ChatOpenAI({
-      model: config.llm.models.small.name,
-      reasoning: { effort: config.llm.models.small.reasoningEffort },
-      maxRetries: 3,
-    })
-  }
+  if (!_smallLLM) _smallLLM = createLLM('small')
   return _smallLLM
 }
 
 export function getMediumLLM(): ChatOpenAI {
-  if (!_mediumLLM) {
-    _mediumLLM = new ChatOpenAI({
-      model: config.llm.models.medium.name,
-      reasoning: { effort: config.llm.models.medium.reasoningEffort },
-      maxRetries: 3,
-    })
-  }
+  if (!_mediumLLM) _mediumLLM = createLLM('medium')
   return _mediumLLM
 }
 
 export function getLargeLLM(): ChatOpenAI {
-  if (!_largeLLM) {
-    _largeLLM = new ChatOpenAI({
-      model: config.llm.models.large.name,
-      reasoning: { effort: config.llm.models.large.reasoningEffort },
-      maxRetries: 3,
-    })
-  }
+  if (!_largeLLM) _largeLLM = createLLM('large')
   return _largeLLM
 }
 
