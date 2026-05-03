@@ -61,14 +61,15 @@ function JoinBlock({ slug, communityName }: { slug: string; communityName: strin
   const leaveMutation = useLeaveCommunity(slug)
 
   // If authenticated and membership loaded, join automatically (first visit after magic link)
+  const joinMutate = joinMutation.mutate
   useEffect(() => {
     if (memberAuth.isAuthenticated() && membership !== undefined && !membership.isMember) {
-      joinMutation.mutate()
+      joinMutate()
     }
     if (membership?.isMember) {
       setJoinState('member')
     }
-  }, [membership])
+  }, [membership, joinMutate])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
