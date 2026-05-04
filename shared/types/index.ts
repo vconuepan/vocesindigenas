@@ -221,6 +221,16 @@ export interface PendingSubscription {
 }
 
 
+export interface Editorial {
+  id: string
+  title: string
+  content: string
+  status: 'draft' | 'published'
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Podcast {
   id: string
   title: string

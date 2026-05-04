@@ -593,6 +593,22 @@ model OngoingCase {
   @@map("ongoing_cases")
 }
 
+// --- Voces Indígenas Editorial ---
+// Weekly editorial column in Venancio Coñuepan's voice. Generated from published
+// stories of the week; admin reviews, edits, and publishes manually.
+
+model Editorial {
+  id          String        @id @default(uuid())
+  title       String
+  content     String        @default("")      // markdown ~444 words
+  status      ContentStatus @default(draft)
+  publishedAt DateTime?     @map("published_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("editorials")
+}
+
 // --- Topic Alerts ---
 // Users can subscribe to email alerts for specific topics (pueblos, issues, keywords).
 // Confirmed via double opt-in. Daily job checks new published stories against topics.

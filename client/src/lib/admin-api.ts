@@ -20,6 +20,7 @@ import type {
   MastodonFeedResponse,
   InstagramPost,
   LinkedInPost,
+  Editorial,
 } from '@shared/types'
 
 export interface CommunityRef {
@@ -367,6 +368,22 @@ export const adminApi = {
     update: (id: string, data: Partial<Issue>) =>
       request<Issue>(`/issues/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/issues/${id}`, { method: 'DELETE' }),
+  },
+
+  // Editorials
+  editorials: {
+    list: (params?: { status?: string }) =>
+      request<PaginatedResponse<Editorial>>(`/editorials${toQueryString((params || {}) as Record<string, unknown>)}`),
+    get: (id: string) => request<Editorial>(`/editorials/${id}`),
+    create: (data: { title: string }) =>
+      request<Editorial>('/editorials', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Editorial>) =>
+      request<Editorial>(`/editorials/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: string) => request<void>(`/editorials/${id}`, { method: 'DELETE' }),
+    generate: (id: string) => request<Editorial>(`/editorials/${id}/generate`, { method: 'POST' }),
+    publish: (id: string) => request<Editorial>(`/editorials/${id}/publish`, { method: 'POST' }),
+    unpublish: (id: string) => request<Editorial>(`/editorials/${id}/unpublish`, { method: 'POST' }),
+    linkedin: (id: string) => request<{ text: string }>(`/editorials/${id}/linkedin`),
   },
 
   // Newsletters

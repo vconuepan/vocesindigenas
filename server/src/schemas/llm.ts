@@ -260,3 +260,10 @@ export type NewsletterSelectResult = z.infer<
 >;
 export type NewsletterIntro = z.infer<typeof newsletterIntroSchema>;
 export type PodcastScript = z.infer<typeof podcastScriptSchema>;
+
+export const editorialSchema = z.object({
+  title: z.string().describe('Título de la editorial, máximo 12 palabras, sin punto final'),
+  content: z.string().describe('Cuerpo de la editorial: 5 párrafos (~444 palabras) separados por líneas en blanco, más la firma al final. Sin markdown.'),
+})
+
+export type EditorialResult = z.infer<typeof editorialSchema>;

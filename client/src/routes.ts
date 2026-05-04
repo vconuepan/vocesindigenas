@@ -38,6 +38,8 @@ export const routes: RouteConfig[] = [
   { path: '/guia/pueblo-mapuche', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia/consulta-previa-fpic', priority: 0.8, changefreq: 'monthly' },
   { path: '/guia/pueblos-indigenas-chile', priority: 0.8, changefreq: 'monthly' },
+  // Voces Indígenas editorial
+  { path: '/voces-indigenas', priority: 0.9, changefreq: 'weekly' },
   // Dynamic routes (issues, communities, stories) added at build time
   // by vite.config.ts (prerender) and scripts/generate-sitemap.ts
 ]

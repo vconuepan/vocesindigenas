@@ -46,6 +46,8 @@ const NewsletterDetailPagePublic = lazy(() => import('./pages/NewsletterDetailPa
 const CasesPage = lazy(() => import('./pages/CasesPage'))
 const CasePage = lazy(() => import('./pages/CasePage'))
 const AlertsPage = lazy(() => import('./pages/AlertsPage'))
+const VocesIndigenasPage = lazy(() => import('./pages/VocesIndigenas'))
+const VocesIndigenasDetailPage = lazy(() => import('./pages/VocesIndigenasDetail'))
 
 // Admin pages — lazy-loaded so public visitors never download admin code
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -73,6 +75,8 @@ const SpotlightsAdminPage = lazy(() => import('./pages/admin/SpotlightsAdminPage
 const CasesAdminPage = lazy(() => import('./pages/admin/CasesAdminPage'))
 const SubscribersPage = lazy(() => import('./pages/admin/SubscribersPage'))
 const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'))
+const EditorialsPage = lazy(() => import('./pages/admin/EditorialsPage'))
+const EditorialDetailPage = lazy(() => import('./pages/admin/EditorialDetailPage'))
 
 /** Preload the admin layout and dashboard chunks (call from LoginPage). */
 export function preloadAdminChunks() {
@@ -150,6 +154,8 @@ export default function App() {
         <Route path="/casos" element={<LazyPage><CasesPage /></LazyPage>} />
         <Route path="/caso/:slug" element={<LazyPage><CasePage /></LazyPage>} />
         <Route path="/alertas" element={<LazyPage><AlertsPage /></LazyPage>} />
+        <Route path="/voces-indigenas" element={<LazyPage><VocesIndigenasPage /></LazyPage>} />
+        <Route path="/voces-indigenas/:id" element={<LazyPage><VocesIndigenasDetailPage /></LazyPage>} />
       </Route>
 
       {/* Embed page — no layout wrapper */}
@@ -192,6 +198,8 @@ export default function App() {
         <Route path="newsletters/:id" element={<NewsletterDetailPage />} />
         <Route path="podcasts" element={<PodcastsPage />} />
         <Route path="podcasts/:id" element={<PodcastDetailPage />} />
+        <Route path="editorials" element={<EditorialsPage />} />
+        <Route path="editorials/:id" element={<EditorialDetailPage />} />
         <Route path="jobs" element={<JobsPage />} />
         <Route path="clusters" element={<ClustersPage />} />
         <Route path="instagram" element={<InstagramPage />} />

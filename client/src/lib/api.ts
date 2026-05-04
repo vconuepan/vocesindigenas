@@ -248,6 +248,31 @@ export const publicApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     }),
+
+  editorials: {
+    list: (params?: { page?: number; pageSize?: number }) =>
+      request<{ data: EditorialSummary[]; total: number; page: number; pageSize: number }>(
+        `/editorials${toQueryString((params || {}) as Record<string, unknown>)}`
+      ),
+    get: (id: string) => request<EditorialFull>(`/editorials/${id}`),
+  },
+}
+
+export interface EditorialSummary {
+  id: string
+  title: string
+  publishedAt: string | null
+  createdAt: string
+}
+
+export interface EditorialFull {
+  id: string
+  title: string
+  content: string
+  status: 'published'
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 // ─── Spotlight types ──────────────────────────────────────────────────────────

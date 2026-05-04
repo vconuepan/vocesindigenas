@@ -20,6 +20,7 @@ import subscribersRouter from './subscribers.js'
 import analyticsRouter from './analytics.js'
 import spotlightsRouter from './spotlights.js'
 import casesRouter from './cases.js'
+import editorialsRouter from './editorials.js'
 
 const router = Router()
 
@@ -46,5 +47,6 @@ router.use('/subscribers', subscribersRouter)
 router.use('/analytics', analyticsRouter)
 router.use('/spotlights', spotlightsRouter)
 router.use('/cases', casesRouter)
+router.use('/editorials', editorialsRouter)
 
 export default router

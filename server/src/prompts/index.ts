@@ -21,3 +21,5 @@ export { buildBlueskyPostPrompt, buildBlueskyPickBestPrompt } from './bluesky.js
 export type { StoryForBlueskyPost, StoryForBlueskyPick } from './bluesky.js'
 export { buildMastodonPostPrompt } from './mastodon.js'
 export type { StoryForMastodonPost } from './mastodon.js'
+export { buildEditorialPrompt } from './editorial.js'
+export type { StoryForEditorial } from './editorial.js'

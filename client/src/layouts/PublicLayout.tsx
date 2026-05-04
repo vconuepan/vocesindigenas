@@ -59,6 +59,7 @@ const FOOTER_NAV = [
   { labelKey: "footer.cases", href: "/casos" },
   { labelKey: "footer.alerts", href: "/alertas" },
   { labelKey: "footer.contact", href: "/feedback" },
+  { labelKey: "footer.voces", href: "/voces-indigenas" },
 ];
 
 const FOOTER_GUIDES = [

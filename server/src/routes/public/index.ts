@@ -19,6 +19,7 @@ import contrastRouter from './contrast.js'
 import newslettersRouter from './newsletters.js'
 import casesRouter from './cases.js'
 import alertsRouter from './alerts.js'
+import editorialsRouter from './editorials.js'
 
 const router = Router()
 
@@ -44,5 +45,6 @@ router.use('/contrast', contrastRouter)
 router.use('/newsletters', newslettersRouter)
 router.use('/cases', casesRouter)
 router.use('/alerts', alertsRouter)
+router.use('/editorials', editorialsRouter)
 
 export default router
