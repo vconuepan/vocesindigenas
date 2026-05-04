@@ -180,7 +180,10 @@ router.get('/magic/verify', async (req, res) => {
     // Non-httpOnly indicator so the frontend can detect auth state without an API call
     res.cookie('member_email', user.email, MEMBER_EMAIL_COOKIE_OPTS)
 
-    const targetPath = redirect_to ?? link.redirectTo ?? '/'
+    // Strip header-injection characters (CR, LF, NUL) before building the redirect URL.
+    // CLIENT_URL prefix already prevents cross-origin open redirect.
+    const rawPath = redirect_to ?? link.redirectTo ?? '/'
+    const targetPath = rawPath.replace(/[\r\n\0]/g, '').trim()
     const redirectUrl = `${CLIENT_URL}${targetPath.startsWith('/') ? targetPath : '/' + targetPath}`
 
     log.info({ userId: user.id, email: user.email }, 'magic link verified, member cookie set')

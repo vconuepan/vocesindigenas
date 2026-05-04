@@ -130,10 +130,12 @@ router.get('/stories/:slug', async (req, res) => {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Cache-Control', 'public, max-age=3600')
-    // Override helmet's restrictive CSP — this page is served to browsers via
-    // Render rewrite from impactoindigena.news, so the React app needs to
-    // connect to the backend and load assets from impactoindigena.news.
-    res.removeHeader('Content-Security-Policy')
+    // Scoped CSP for this bot-facing OG proxy page. We can't use 'self' alone
+    // because the React shell's scripts and assets come from SITE_URL, which
+    // may differ from the backend origin (Render.com multi-service setup).
+    // Permissive enough for the shell to hydrate; more restrictive than no CSP.
+    res.setHeader('Content-Security-Policy',
+      `default-src 'self' ${SITE_URL}; script-src 'self' ${SITE_URL}; style-src 'self' ${SITE_URL} 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self' ${SITE_URL} https:`)
     res.removeHeader('Cross-Origin-Resource-Policy')
     res.send(html)
   } catch (err) {
