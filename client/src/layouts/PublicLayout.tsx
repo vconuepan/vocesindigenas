@@ -5,7 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { getCategoryColor } from "../lib/category-colors";
 import { API_BASE, memberAuth } from "../lib/api";
-import { BRAND, GITHUB_REPO_URL } from "../config";
+import { BRAND, GITHUB_REPO_URL, ECOSYSTEM_AI_URL } from "../config";
 import { SEO } from "../lib/seo";
 import { getSavedSlugs } from "../lib/preferences";
 import SubscribeProvider, {
@@ -221,6 +221,22 @@ function PublicLayoutInner() {
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500">
         {t('nav.skipToContent')}
       </a>
+
+      {/* Ecosystem bar */}
+      <div className="bg-neutral-950 text-neutral-400 text-xs py-1.5 px-4 text-center">
+        <span className="hidden sm:inline">Parte del Ecosistema Impacto Indígena · </span>
+        <a
+          href={ECOSYSTEM_AI_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-brand-400 hover:text-brand-300 font-medium transition-colors focus-visible:ring-1 focus-visible:ring-brand-400 rounded"
+        >
+          impactoindigena.ai
+          <span className="sr-only"> (abre en nueva pestaña)</span>
+          {' '}↗
+        </a>
+        <span className="hidden sm:inline"> — Índice de Relacionamiento Indígena</span>
+      </div>
 
       <header>
         <div className="bg-white border-b border-neutral-100">
@@ -479,6 +495,15 @@ function PublicLayoutInner() {
               <p className="text-sm text-neutral-400 leading-relaxed max-w-sm">
                 {t('footer.description')}
               </p>
+              <a
+                href={ECOSYSTEM_AI_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-3 text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors focus-visible:ring-1 focus-visible:ring-brand-400 rounded"
+              >
+                impactoindigena.ai ↗
+                <span className="sr-only"> (abre en nueva pestaña)</span>
+              </a>
               <div className="flex gap-2 mt-4">
                 {/* Instagram */}
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-500" aria-label={t('footer.followInstagram')}>

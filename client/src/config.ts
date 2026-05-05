@@ -1,4 +1,6 @@
 // Centralized brand copy used across the site
+export const ECOSYSTEM_AI_URL = 'https://impactoindigena.ai'
+
 export const BRAND = {
   claim: 'Noticias que importan a los pueblos indígenas.',
   claimSupport: 'Curado con cuidado por IA.',
