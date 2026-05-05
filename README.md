@@ -30,8 +30,8 @@ y desarrollo sostenible.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/OdinMB/actually-relevant.git
-   cd actually-relevant
+   git clone https://github.com/vconuepan/vocesindigenas.git
+   cd vocesindigenas
    ```
 
 2. Install dependencies:
@@ -43,10 +43,10 @@ y desarrollo sostenible.
 3. Set up the database:
    ```bash
    # Create the database
-   createdb actually_relevant
+   createdb impactoindigena_news
 
    # Enable pgvector extension (connect to DB first)
-   psql actually_relevant -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+   psql impactoindigena_news -c 'CREATE EXTENSION IF NOT EXISTS vector;'
    ```
 
 4. Configure environment variables:
@@ -156,7 +156,7 @@ The sitemap rewrite proxies requests to the backend, which generates the sitemap
 ## Project Structure
 
 ```
-actually-relevant/
+vocesindigenas/
 ├── client/          # React frontend
 │   ├── src/         # Source code
 │   ├── scripts/     # Build scripts (sitemap, images)
@@ -181,7 +181,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ## Stewardship
 
-Actually Relevant is actively seeking a long-term institutional owner in journalism, civic tech, or effective altruism. If your organization could give this project a home, visit [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship) to learn more.
+Impacto Indígena es un proyecto sin fines de lucro que busca un custodio institucional a largo plazo en periodismo indígena, tecnología cívica, o ecosistema de derechos. Si tu organización puede darle un hogar permanente a esta plataforma, visita [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship).
 
 ## License
 

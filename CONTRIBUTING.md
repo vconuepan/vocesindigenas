@@ -1,6 +1,6 @@
-# Contributing to Actually Relevant
+# Contributing to Impacto Indígena
 
-Thanks for your interest in contributing to Actually Relevant! This is a non-commercial, AI-curated news platform built to surface stories that matter to humanity. The project is open source under AGPL v3 and is actively seeking a long-term institutional steward. Whether you're fixing a bug, suggesting a feature, or improving documentation, your help is welcome.
+Thanks for your interest in contributing to Impacto Indígena! This is a non-commercial, AI-curated news platform built to surface stories that matter to indigenous peoples. The project is open source under AGPL v3 and is actively seeking a long-term institutional steward. Whether you're fixing a bug, suggesting a feature, or improving documentation, your help is welcome.
 
 ## Getting Started
 
@@ -47,7 +47,7 @@ Write clear, descriptive commit messages. Keep changes focused — one logical c
 
 ## Contributor License Agreement
 
-Actually Relevant is licensed under [AGPL v3](LICENSE). The project is exploring transfer to a long-term institutional steward (like a nonprofit, news, or civic tech organization) — see [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship) for background on this model.
+Impacto Indígena is licensed under [AGPL v3](LICENSE). The project is exploring transfer to a long-term institutional steward (like a nonprofit, indigenous organization, or civic tech entity) — see [impactoindigena.news/stewardship](https://impactoindigena.news/stewardship) for background on this model.
 
 To preserve the ability to offer a future steward flexible licensing terms as part of that transfer, we use a lightweight contributor agreement:
 
