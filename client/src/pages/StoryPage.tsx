@@ -17,6 +17,7 @@ import AlsoCoveredBy from '../components/AlsoCoveredBy'
 import { StoryPageSkeleton } from '../components/skeletons'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildArticleSchema, buildBreadcrumbSchema } from '../lib/structured-data'
+import { ECOSYSTEM_AI_URL } from '../config'
 
 // ---------------------------------------------------------------------------
 // Guide links shown below related stories for specific issue areas
@@ -34,6 +35,9 @@ const STORY_GUIDES: Record<string, { label: string; href: string }[]> = {
     { label: 'Consulta Previa y CLPI', href: '/guia/consulta-previa-fpic' },
   ],
 }
+
+// Issues where corporate territorial impact is high — show IRI widget
+const IRI_ISSUES = new Set(['derechos-indigenas', 'cambio-climatico', 'desarrollo-sostenible-y-autodeterminado'])
 
 // ---------------------------------------------------------------------------
 // Analysis section with ruled heading + numbered points
@@ -366,6 +370,31 @@ export default function StoryPage() {
                   </Link>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* IRI widget — corporate territorial impact CTA */}
+          {IRI_ISSUES.has(issueSlug) && (
+            <div className="mt-6 p-4 bg-neutral-950 border border-neutral-800 rounded-lg flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1">
+                  Impacto Indígena · IRI Verify
+                </p>
+                <p className="text-sm text-neutral-200 leading-snug">
+                  ¿Tu empresa opera en territorio indígena? Conoce el{' '}
+                  <strong className="text-white">Índice de Relacionamiento Indígena</strong>{' '}
+                  y gestiona el riesgo antes de que escale.
+                </p>
+              </div>
+              <a
+                href={ECOSYSTEM_AI_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 whitespace-nowrap"
+              >
+                Ver IRI <span aria-hidden="true">↗</span>
+                <span className="sr-only">(abre en nueva pestaña)</span>
+              </a>
             </div>
           )}
 
