@@ -1,5 +1,16 @@
 import type { PublicStory, PaginatedResponse, Community } from '@shared/types'
 
+export interface CommunitySignals {
+  community: { slug: string; name: string }
+  period: string
+  coverage: { stories7d: number; stories30d: number; totalIndexed: number }
+  relevance: { high: number; medium: number; low: number }
+  topics: Array<{ issueSlug: string; issueName: string; _count: { id: number } }>
+  emotion: Array<{ emotionTag: string; _count: { id: number } }>
+  recentHeadlines: Array<{ id: string; slug: string; headline: string; publishedAt: string }>
+  generatedAt: string
+}
+
 export const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api'
 
 export class ApiError extends Error {
@@ -156,6 +167,8 @@ export const publicApi = {
       memberRequest<{ isMember: boolean }>(`/communities/${slug}/join`, { method: 'POST' }),
     leave: (slug: string) =>
       memberRequest<{ isMember: boolean }>(`/communities/${slug}/leave`, { method: 'DELETE' }),
+    signals: (slug: string, period = '30d') =>
+      request<CommunitySignals>(`/communities/${slug}/signals?period=${period}`),
   },
 
   profile: {

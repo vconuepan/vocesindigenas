@@ -54,3 +54,13 @@ export function useLeaveCommunity(slug: string) {
     },
   })
 }
+
+export function useCommunitySignals(slug: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['community-signals', slug],
+    queryFn: () => publicApi.communities.signals(slug),
+    enabled: !!slug && enabled,
+    staleTime: 60 * 60 * 1000, // 1h — matches server cache
+    retry: false,
+  })
+}

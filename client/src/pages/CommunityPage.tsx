@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { useCommunity, useCommunityStories, useMembership, useJoinCommunity, useLeaveCommunity } from '../hooks/useCommunities'
+import { useCommunity, useCommunityStories, useMembership, useJoinCommunity, useLeaveCommunity, useCommunitySignals } from '../hooks/useCommunities'
 import StoryCard from '../components/StoryCard'
 import Pagination from '../components/Pagination'
 import { SEO, CommonOgTags } from '../lib/seo'
@@ -136,6 +136,142 @@ function JoinBlock({ slug, communityName }: { slug: string; communityName: strin
   )
 }
 
+const EMOTION_LABEL: Record<string, string> = {
+  uplifting: 'Alentador',
+  frustrating: 'Frustrante',
+  scary: 'Preocupante',
+  calm: 'Informativo',
+}
+
+const EMOTION_COLOR: Record<string, string> = {
+  uplifting: '#059669',
+  frustrating: '#d97706',
+  scary: '#dc2626',
+  calm: '#6366f1',
+}
+
+function CommunitySignalPanel({ slug }: { slug: string }) {
+  const { data: signals, isLoading } = useCommunitySignals(slug, true)
+
+  if (isLoading) {
+    return (
+      <div className="mb-8 rounded-xl border border-brand-100 bg-brand-50 p-5 animate-pulse">
+        <div className="h-3 w-32 bg-brand-100 rounded mb-4" />
+        <div className="grid grid-cols-3 gap-4 mb-5">
+          {[1, 2, 3].map((i) => <div key={i} className="h-12 bg-brand-100 rounded-lg" />)}
+        </div>
+        <div className="h-3 w-24 bg-brand-100 rounded" />
+      </div>
+    )
+  }
+
+  if (!signals) return null
+
+  const { coverage, relevance, topics, emotion, recentHeadlines } = signals
+  const totalRelevance = relevance.high + relevance.medium + relevance.low || 1
+  const topTopics = topics.slice(0, 3)
+  const totalEmotion = emotion.reduce((sum, e) => sum + e._count.id, 0) || 1
+
+  return (
+    <div className="mb-8 rounded-xl border border-brand-100 bg-brand-50 p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-2 h-2 rounded-full bg-brand-500" aria-hidden="true" />
+          <p className="text-xs font-semibold text-brand-800 uppercase tracking-wider">
+            Panel de miembro · últimos 30 días
+          </p>
+        </div>
+        <span className="text-xs text-brand-600 bg-brand-100 px-2.5 py-0.5 rounded-full font-medium">
+          Miembro
+        </span>
+      </div>
+
+      {/* Coverage stats */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-white rounded-lg p-3 border border-brand-100 text-center">
+          <p className="text-2xl font-bold text-neutral-900">{coverage.stories30d}</p>
+          <p className="text-xs text-neutral-500 mt-0.5 leading-tight">noticias este mes</p>
+        </div>
+        <div className="bg-white rounded-lg p-3 border border-brand-100 text-center">
+          <p className="text-2xl font-bold text-neutral-900">{coverage.stories7d}</p>
+          <p className="text-xs text-neutral-500 mt-0.5 leading-tight">esta semana</p>
+        </div>
+        <div className="bg-white rounded-lg p-3 border border-brand-100 text-center">
+          <p className="text-2xl font-bold text-emerald-600">
+            {Math.round((relevance.high / totalRelevance) * 100)}%
+          </p>
+          <p className="text-xs text-neutral-500 mt-0.5 leading-tight">alta relevancia</p>
+        </div>
+      </div>
+
+      {/* Topics */}
+      {topTopics.length > 0 && (
+        <div className="mb-5">
+          <p className="text-xs font-medium text-neutral-500 mb-2">Principales temas cubiertos</p>
+          <div className="flex flex-wrap gap-2">
+            {topTopics.map((t) => (
+              <Link
+                key={t.issueSlug}
+                to={`/issues/${t.issueSlug}`}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-800 bg-white border border-brand-200 hover:border-brand-400 hover:bg-brand-100 px-3 py-1 rounded-full transition-colors"
+              >
+                {t.issueName}
+                <span className="text-brand-500">({t._count.id})</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Emotion distribution */}
+      {emotion.length > 0 && (
+        <div className="mb-5">
+          <p className="text-xs font-medium text-neutral-500 mb-2">Tono de la cobertura</p>
+          <div className="space-y-1.5">
+            {emotion.map((e) => {
+              const pct = Math.round((e._count.id / totalEmotion) * 100)
+              const color = EMOTION_COLOR[e.emotionTag] ?? '#6b7280'
+              const label = EMOTION_LABEL[e.emotionTag] ?? e.emotionTag
+              return (
+                <div key={e.emotionTag} className="flex items-center gap-2">
+                  <span className="text-xs text-neutral-500 w-24 shrink-0">{label}</span>
+                  <div className="flex-1 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: color }}
+                    />
+                  </div>
+                  <span className="text-xs text-neutral-400 w-8 text-right">{pct}%</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Recent headlines */}
+      {recentHeadlines.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-neutral-500 mb-2">Titulares recientes</p>
+          <ul className="space-y-1.5">
+            {recentHeadlines.slice(0, 3).map((h) => (
+              <li key={h.id}>
+                <Link
+                  to={`/s/${h.slug}`}
+                  className="text-xs text-neutral-700 hover:text-brand-700 transition-colors line-clamp-1"
+                >
+                  {h.headline}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function StoryGrid({ stories }: { stories: PublicStory[] }) {
   if (stories.length === 0) return null
   const [first, ...rest] = stories
@@ -175,6 +311,7 @@ export default function CommunityPage() {
 
   const { data: community, isLoading: communityLoading, isError: communityError } = useCommunity(slug ?? '')
   const { data: storiesData, isLoading: storiesLoading } = useCommunityStories(slug ?? '', { page, pageSize: PAGE_SIZE })
+  const { data: membership } = useMembership(slug ?? '')
 
   const isLoading = communityLoading || storiesLoading
   const stories = storiesData?.data ?? []
@@ -249,6 +386,9 @@ export default function CommunityPage() {
             <ShareBar communityName={community.name} />
           </header>
         )}
+
+        {/* Member signal panel — only shown to authenticated members */}
+        {membership?.isMember && slug && <CommunitySignalPanel slug={slug} />}
 
         {/* Stories */}
         {storiesLoading && (
