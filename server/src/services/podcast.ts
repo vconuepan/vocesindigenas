@@ -2,7 +2,7 @@
 import prisma from '../lib/prisma.js'
 import { createLogger } from '../lib/logger.js'
 import { uploadImageToR2 } from '../lib/imageStorage.js'
-import OpenAI from 'openai'
+import OpenAI, { AzureOpenAI } from 'openai'
 import { config } from '../config.js'
 
 const log = createLogger('podcast-service')
@@ -11,11 +11,35 @@ const INTRO = `Bienvenidos a Impacto Indígena, el podcast donde cubrimos las no
 
 const OUTRO = `Eso es todo por hoy en Impacto Indígena. Si quieres leer estas noticias completas, visita impactoindigena.news. Gracias por escucharnos y hasta la próxima.`
 
+function createOpenAIClient(): OpenAI {
+  if (config.llm.provider === 'azure') {
+    return new AzureOpenAI({
+      endpoint: config.llm.azure.endpoint,
+      apiKey: config.llm.azure.apiKey,
+      apiVersion: config.llm.azure.apiVersion,
+      deployment: config.llm.azure.deployments.large,
+    })
+  }
+  return new OpenAI()
+}
+
+function createTTSClient(): OpenAI {
+  if (config.llm.provider === 'azure') {
+    return new AzureOpenAI({
+      endpoint: config.llm.azure.endpoint,
+      apiKey: config.llm.azure.apiKey,
+      apiVersion: config.llm.azure.apiVersion,
+      deployment: config.llm.azure.deployments.tts,
+    })
+  }
+  return new OpenAI()
+}
+
 async function generateEpisodeScript(
   stories: Array<{ title: string; summary: string; relevanceReasons: string }>,
   episodeNumber: number,
 ): Promise<{ title: string; description: string; script: string }> {
-  const openai = new OpenAI()
+  const openai = createOpenAIClient()
 
   const storiesText = stories
     .map(
@@ -69,7 +93,7 @@ Responde SOLO en JSON sin markdown:
 }
 
 async function generateAudio(script: string): Promise<Buffer> {
-  const openai = new OpenAI()
+  const openai = createTTSClient()
 
   const fullScript = `${INTRO}\n\n${script}\n\n${OUTRO}`
 

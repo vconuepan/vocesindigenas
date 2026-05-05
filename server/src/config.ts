@@ -2,10 +2,24 @@ export const config = {
   /** Canonical public URL for the site — used in social media posts, RSS feeds, sitemaps, etc. */
   siteUrl: process.env.SITE_URL || 'https://impactoindigena.news',
   llm: {
-    // Set LLM_PROVIDER=openrouter and OPENROUTER_API_KEY to route chat through OpenRouter.
-    // OPENAI_API_KEY is still required for embeddings regardless of provider.
-    provider: (process.env.LLM_PROVIDER || 'openai') as 'openai' | 'openrouter',
+    // Set LLM_PROVIDER to switch providers:
+    //   openai (default) — uses OPENAI_API_KEY directly
+    //   openrouter      — uses OPENROUTER_API_KEY with OpenRouter base URL
+    //   azure           — uses Azure OpenAI (AZURE_OPENAI_* vars); no OPENAI_API_KEY needed
+    provider: (process.env.LLM_PROVIDER || 'openai') as 'openai' | 'openrouter' | 'azure',
     openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
+    azure: {
+      endpoint: process.env.AZURE_OPENAI_ENDPOINT || '',       // e.g. https://my-resource.openai.azure.com
+      apiKey: process.env.AZURE_OPENAI_API_KEY || '',
+      apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2025-01-01-preview',
+      deployments: {
+        small:     process.env.AZURE_OPENAI_DEPLOYMENT_SMALL     || 'gpt-4o-mini',
+        medium:    process.env.AZURE_OPENAI_DEPLOYMENT_MEDIUM    || 'gpt-4o-mini',
+        large:     process.env.AZURE_OPENAI_DEPLOYMENT_LARGE     || 'gpt-4o',
+        embedding: process.env.AZURE_OPENAI_DEPLOYMENT_EMBEDDING || 'text-embedding-3-small',
+        tts:       process.env.AZURE_OPENAI_DEPLOYMENT_TTS       || 'tts-1-hd',
+      },
+    },
     models: {
       small: {
         // OpenRouter example: deepseek/deepseek-chat-v3-5

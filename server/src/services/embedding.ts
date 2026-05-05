@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import OpenAI from 'openai'
+import OpenAI, { AzureOpenAI } from 'openai'
 import { withRetry } from '../lib/retry.js'
 import { createLogger } from '../lib/logger.js'
 import { config } from '../config.js'
@@ -12,7 +12,14 @@ import {
 
 const log = createLogger('embedding')
 
-const openai = new OpenAI()
+const openai: OpenAI = config.llm.provider === 'azure'
+  ? new AzureOpenAI({
+      endpoint: config.llm.azure.endpoint,
+      apiKey: config.llm.azure.apiKey,
+      apiVersion: config.llm.azure.apiVersion,
+      deployment: config.llm.azure.deployments.embedding,
+    })
+  : new OpenAI()
 
 export type StoryForEmbedding = StoryEmbeddingRow
 

@@ -1,4 +1,4 @@
-import { ChatOpenAI } from '@langchain/openai'
+import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai'
 import { config } from '../config.js'
 
 let nextAvailableTime = 0
@@ -14,24 +14,34 @@ export async function rateLimitDelay(): Promise<void> {
 }
 
 /**
- * Creates a ChatOpenAI instance configured for the active provider.
+ * Creates an LLM instance for the active provider.
  *
- * - provider=openai (default): uses OPENAI_API_KEY directly with reasoning support.
- * - provider=openrouter: uses OPENROUTER_API_KEY with OpenRouter base URL.
- *   Reasoning effort is skipped — OpenRouter models ignore it and some reject it.
- *   Set model names to OpenRouter IDs via env vars, e.g.:
- *     OPENAI_MODEL_SMALL=deepseek/deepseek-chat-v3-5
- *     OPENAI_MODEL_MEDIUM=deepseek/deepseek-chat-v3-5
- *     OPENAI_MODEL_LARGE=deepseek/deepseek-chat-v3-5
- *
- * OPENAI_API_KEY is always required for embeddings regardless of provider.
+ * - provider=openai (default): OPENAI_API_KEY, supports reasoning effort.
+ * - provider=openrouter: OPENROUTER_API_KEY + OpenRouter base URL.
+ *   Set model names via OPENAI_MODEL_* env vars to OpenRouter IDs.
+ * - provider=azure: Azure OpenAI Service.
+ *   Requires AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY.
+ *   Uses AZURE_OPENAI_DEPLOYMENT_{SMALL,MEDIUM,LARGE} for deployment names.
+ *   No OPENAI_API_KEY needed when using Azure.
  */
 function createLLM(tier: 'small' | 'medium' | 'large'): ChatOpenAI {
   const modelConfig = config.llm.models[tier]
-  const useOpenRouter =
-    config.llm.provider === 'openrouter' && config.llm.openrouterApiKey
 
-  if (useOpenRouter) {
+  // ── Azure OpenAI ─────────────────────────────────────────────────────────
+  if (config.llm.provider === 'azure') {
+    return new AzureChatOpenAI({
+      azureOpenAIEndpoint: config.llm.azure.endpoint,
+      azureOpenAIApiKey: config.llm.azure.apiKey,
+      azureOpenAIApiDeploymentName: config.llm.azure.deployments[tier],
+      azureOpenAIApiVersion: config.llm.azure.apiVersion,
+      maxRetries: 3,
+      // Note: reasoning effort is not used — Azure deployments have their own
+      // reasoning settings configured in Azure AI Studio.
+    }) as unknown as ChatOpenAI
+  }
+
+  // ── OpenRouter ───────────────────────────────────────────────────────────
+  if (config.llm.provider === 'openrouter' && config.llm.openrouterApiKey) {
     return new ChatOpenAI({
       model: modelConfig.name,
       maxRetries: 3,
@@ -46,6 +56,7 @@ function createLLM(tier: 'small' | 'medium' | 'large'): ChatOpenAI {
     })
   }
 
+  // ── OpenAI (default) ─────────────────────────────────────────────────────
   return new ChatOpenAI({
     model: modelConfig.name,
     reasoning: { effort: modelConfig.reasoningEffort },
