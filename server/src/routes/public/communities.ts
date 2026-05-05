@@ -138,6 +138,162 @@ router.get('/:slug/stories', async (req, res) => {
   }
 })
 
+// GET /api/communities/:slug/signals?period=90d
+// IRI signal feed — aggregated relevance data for this community.
+// period: 7d | 30d | 90d | 365d (default: 90d). Only published stories, relevance >= 3.
+router.get('/:slug/signals', async (req, res) => {
+  try {
+    const rows = await prisma.$queryRaw<Array<{ id: string; name: string; type: string; region: string | null; issue_ids: string[]; keywords: string[] }>>`
+      SELECT id, name, type, region, issue_ids, keywords FROM communities WHERE slug = ${req.params.slug} AND active = true LIMIT 1
+    `
+    if (!rows.length) {
+      res.status(404).json({ error: 'Community not found' })
+      return
+    }
+
+    const community = rows[0]
+    const keywords: string[] = community.keywords ?? []
+    const issueIds: string[] = community.issue_ids ?? []
+
+    const VALID_PERIODS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '365d': 365 }
+    const periodParam = (req.query.period as string) ?? '90d'
+    const periodDays = VALID_PERIODS[periodParam] ?? 90
+    const periodStart = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000)
+    const now7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    const now30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
+    const keywordFilter = keywords.length > 0
+      ? {
+          OR: keywords.flatMap((kw) => [
+            { title: { contains: kw, mode: 'insensitive' as const } },
+            { summary: { contains: kw, mode: 'insensitive' as const } },
+            { sourceTitle: { contains: kw, mode: 'insensitive' as const } },
+          ]),
+        }
+      : {}
+
+    const baseWhere = {
+      status: StoryStatus.published,
+      issueId: { in: issueIds },
+      relevance: { gte: 3 },
+      ...keywordFilter,
+    }
+
+    const [
+      allStories,
+      count7d,
+      count30d,
+      byIssue,
+      byEmotion,
+      headlines,
+    ] = await Promise.all([
+      // All stories in period: id, relevance, issueId for aggregation
+      prisma.story.findMany({
+        where: { ...baseWhere, datePublished: { gte: periodStart } },
+        select: { relevance: true, issueId: true, emotionTag: true },
+      }),
+      // Count last 7d
+      prisma.story.count({ where: { ...baseWhere, datePublished: { gte: now7d } } }),
+      // Count last 30d
+      prisma.story.count({ where: { ...baseWhere, datePublished: { gte: now30d } } }),
+      // Group by issueId
+      prisma.story.groupBy({
+        by: ['issueId'],
+        where: { ...baseWhere, datePublished: { gte: periodStart } },
+        _count: { _all: true },
+      }),
+      // Group by emotionTag
+      prisma.story.groupBy({
+        by: ['emotionTag'],
+        where: { ...baseWhere, datePublished: { gte: periodStart } },
+        _count: { _all: true },
+      }),
+      // Recent headlines
+      prisma.story.findMany({
+        where: { ...baseWhere, datePublished: { gte: periodStart } },
+        select: {
+          slug: true,
+          title: true,
+          datePublished: true,
+          relevance: true,
+          issue: { select: { slug: true, name: true } },
+        },
+        orderBy: { datePublished: 'desc' },
+        take: 5,
+      }),
+    ])
+
+    // Fetch issue metadata for topic breakdown
+    const issueIdsSeen = [...new Set(byIssue.map((r) => r.issueId).filter(Boolean))] as string[]
+    const issues = issueIdsSeen.length
+      ? await prisma.issue.findMany({ where: { id: { in: issueIdsSeen } }, select: { id: true, slug: true, name: true } })
+      : []
+    const issueMap = new Map(issues.map((i) => [i.id, i]))
+
+    // Aggregate relevance
+    const relevances = allStories.map((s) => s.relevance ?? 0).filter((r) => r > 0)
+    const avgRelevance = relevances.length > 0
+      ? Math.round((relevances.reduce((a, b) => a + b, 0) / relevances.length) * 10) / 10
+      : null
+
+    const topics = byIssue
+      .map((r) => {
+        const issue = r.issueId ? issueMap.get(r.issueId) : null
+        return { slug: issue?.slug ?? null, name: issue?.name ?? null, count: r._count._all }
+      })
+      .filter((t) => t.slug)
+      .sort((a, b) => b.count - a.count)
+
+    const emotionMap: Record<string, number> = {}
+    for (const r of byEmotion) {
+      const key = r.emotionTag ?? 'untagged'
+      emotionMap[key] = r._count._all
+    }
+
+    res.set('Cache-Control', 'public, max-age=3600')
+    res.json({
+      community: {
+        slug: req.params.slug,
+        name: community.name,
+        type: community.type,
+        region: community.region,
+      },
+      period: periodParam,
+      periodDays,
+      coverage: {
+        total: allStories.length,
+        last7d: count7d,
+        last30d: count30d,
+      },
+      relevance: {
+        avg: avgRelevance,
+        high: relevances.filter((r) => r >= 7).length,
+        medium: relevances.filter((r) => r >= 4 && r < 7).length,
+        low: relevances.filter((r) => r < 4).length,
+      },
+      topics,
+      emotion: {
+        uplifting: emotionMap['uplifting'] ?? 0,
+        frustrating: emotionMap['frustrating'] ?? 0,
+        scary: emotionMap['scary'] ?? 0,
+        calm: emotionMap['calm'] ?? 0,
+        untagged: emotionMap['untagged'] ?? 0,
+      },
+      recentHeadlines: headlines.map((h) => ({
+        slug: h.slug,
+        title: h.title,
+        publishedAt: h.datePublished,
+        relevance: h.relevance,
+        issueSlug: h.issue?.slug ?? null,
+      })),
+      generatedAt: new Date().toISOString(),
+    })
+  } catch (err) {
+    log.error({ err, slug: req.params.slug }, 'failed to fetch community signals')
+    res.status(500).json({ error: 'Failed to fetch signals' })
+  }
+})
+
 // GET /api/communities/:slug/membership — check if current user is a member
 router.get('/:slug/membership', requireMember, async (req, res) => {
   try {
