@@ -1,27 +1,43 @@
-import OpenAI from 'openai'
+import OpenAI, { AzureOpenAI } from 'openai'
+import { config } from '../config.js'
 import { createLogger } from './logger.js'
 import { uploadImageToR2 } from './imageStorage.js'
 
 const log = createLogger('image-gen')
 
+function createImageClient(): OpenAI {
+  if (config.llm.provider === 'azure') {
+    return new AzureOpenAI({
+      endpoint: config.llm.azure.endpoint,
+      apiKey: config.llm.azure.apiKey,
+      apiVersion: config.llm.azure.apiVersion,
+      deployment: config.llm.azure.deployments.dalle,
+    })
+  }
+  return new OpenAI()
+}
+
 /**
  * Genera una imagen con DALL-E 3 para una historia y la sube a R2.
  * Retorna la URL pública de la imagen.
+ *
+ * Soporta OpenAI directo y Azure OpenAI (LLM_PROVIDER=azure).
+ * En Azure, requiere un deployment DALL-E 3 configurado con
+ * AZURE_OPENAI_DEPLOYMENT_DALLE (default: 'dall-e-3').
  */
 export async function generateStoryImage(
   storyId: string,
   title: string,
   summary: string,
 ): Promise<string> {
-  const openai = new OpenAI()
+  const openai = createImageClient()
 
-  // Prompt optimizado para noticias indígenas
   const prompt = `
 Create a powerful, respectful editorial illustration for an indigenous news story.
 Title: "${title}"
 Summary: "${summary}"
 
-Style: Bold, modern editorial photography style. Dignified and respectful representation. 
+Style: Bold, modern editorial photography style. Dignified and respectful representation.
 Use warm earth tones, natural landscapes, or symbolic indigenous elements.
 NO text, NO words, NO letters in the image.
 Cinematic composition, high contrast, visually striking.
@@ -33,7 +49,7 @@ Cinematic composition, high contrast, visually striking.
     model: 'dall-e-3',
     prompt,
     n: 1,
-    size: '1792x1024', // Formato horizontal ideal para Twitter
+    size: '1792x1024',
     quality: 'standard',
     response_format: 'b64_json',
   })

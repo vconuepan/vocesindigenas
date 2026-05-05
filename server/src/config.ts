@@ -18,6 +18,7 @@ export const config = {
         large:     process.env.AZURE_OPENAI_DEPLOYMENT_LARGE     || 'gpt-4o',
         embedding: process.env.AZURE_OPENAI_DEPLOYMENT_EMBEDDING || 'text-embedding-3-small',
         tts:       process.env.AZURE_OPENAI_DEPLOYMENT_TTS       || 'tts-1-hd',
+        dalle:     process.env.AZURE_OPENAI_DEPLOYMENT_DALLE     || 'dall-e-3',
       },
     },
     models: {
