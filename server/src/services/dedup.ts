@@ -83,7 +83,7 @@ export async function confirmDuplicates(
 
   await rateLimitDelay()
   const llm = getLLMByTier(config.dedup.modelTier)
-  const structuredLlm = llm.withStructuredOutput(dedupConfirmationSchema)
+  const structuredLlm = llm.withStructuredOutput(dedupConfirmationSchema, { method: 'functionCalling' })
   const response = await structuredLlm.invoke([new HumanMessage(prompt)])
 
   const confirmed = response.assessments.filter(a => a.isDuplicate).length

@@ -67,7 +67,9 @@ async function runBatchClassification<T extends { articleId: string; issueSlug: 
 
   log.info({ batchCount: idBatches.length, storyCount: storyIds.length }, `${label} batches prepared`)
 
-  const structuredLlm = llm.withStructuredOutput(schema)
+  // Force functionCalling — Azure doesn't support jsonSchema (Structured Outputs strict mode)
+  // for non-gpt-4o models, causing "fetch failed" / connection errors at the network level.
+  const structuredLlm = llm.withStructuredOutput(schema, { method: 'functionCalling' })
   const semaphore = new Semaphore(concurrency)
   const totalBatches = idBatches.length
   let batchesDone = 0
@@ -270,7 +272,8 @@ export async function assessStory(storyId: string): Promise<void> {
 
   await rateLimitDelay()
   const llm = getLLMByTier(config.assess.modelTier)
-  const structuredLlm = llm.withStructuredOutput(assessResultSchema)
+  // Force functionCalling — same reason as batchLlmProcess above
+  const structuredLlm = llm.withStructuredOutput(assessResultSchema, { method: 'functionCalling' })
   let parsed: Awaited<ReturnType<typeof structuredLlm.invoke>>
   try {
     parsed = await withRetry(() => structuredLlm.invoke([new HumanMessage(prompt)]))
@@ -435,7 +438,7 @@ export async function selectStories(storyIds: string[]): Promise<{ selected: str
 
   await rateLimitDelay()
   const llm = getLLMByTier(config.selection.modelTier)
-  const structuredLlm = llm.withStructuredOutput(selectResultSchema)
+  const structuredLlm = llm.withStructuredOutput(selectResultSchema, { method: 'functionCalling' })
   const response = await withRetry(() => structuredLlm.invoke([new HumanMessage(prompt)]))
 
   log.info({ selectedCount: response.selectedIds.length }, 'LLM selection response received')

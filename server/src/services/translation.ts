@@ -56,7 +56,7 @@ export async function translateStory(storyId: string): Promise<void> {
 
   const prompt = buildTranslationPrompt(story)
   const llm = getSmallLLM()
-  const structuredLlm = llm.withStructuredOutput(translationSchema)
+  const structuredLlm = llm.withStructuredOutput(translationSchema, { method: 'functionCalling' })
 
   await rateLimitDelay()
   log.info({ storyId }, 'translating story to English')

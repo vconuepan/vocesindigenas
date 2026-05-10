@@ -111,7 +111,7 @@ export async function generateEditorialContent(id: string) {
 
   await rateLimitDelay()
   const llm = getLLMByTier(config.newsletter.contentModelTier)
-  const structuredLlm = llm.withStructuredOutput(editorialSchema)
+  const structuredLlm = llm.withStructuredOutput(editorialSchema, { method: 'functionCalling' })
 
   log.info({ editorialId: id }, 'generating editorial content')
 

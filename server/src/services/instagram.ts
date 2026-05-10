@@ -38,7 +38,7 @@ export async function generateDraft(storyId: string) {
   // Caption para Instagram generada con LLM
   await rateLimitDelay()
   const llm = getMediumLLM()
-  const structuredLlm = llm.withStructuredOutput(instagramCaptionSchema)
+  const structuredLlm = llm.withStructuredOutput(instagramCaptionSchema, { method: 'functionCalling' })
 
   const prompt = buildInstagramCaptionPrompt({
     title: story.title,

@@ -127,7 +127,7 @@ export async function generateDraft(storyId: string) {
 
   const prompt = buildMastodonPostPrompt(storyForPrompt)
   const llm = getLLMByTier(config.mastodon.postModelTier)
-  const structuredLlm = llm.withStructuredOutput(mastodonPostTextSchema)
+  const structuredLlm = llm.withStructuredOutput(mastodonPostTextSchema, { method: 'functionCalling' })
 
   await rateLimitDelay()
   log.info({ storyId, maxChars }, 'generating Mastodon post draft')

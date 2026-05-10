@@ -34,7 +34,7 @@ export async function generateDraft(storyId: string) {
 
   await rateLimitDelay()
   const llm = getMediumLLM()
-  const structuredLlm = llm.withStructuredOutput(linkedInDraftSchema)
+  const structuredLlm = llm.withStructuredOutput(linkedInDraftSchema, { method: 'functionCalling' })
 
   const prompt = buildLinkedInPostPrompt({
     title: story.title,

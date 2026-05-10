@@ -90,7 +90,7 @@ export async function pickBestStoryForSocial(storyIds: string[]): Promise<{ stor
   // broad relevance, shareability, uniqueness) are universal across social platforms.
   const prompt = buildBlueskyPickBestPrompt(storiesForPrompt)
   const llm = getLLMByTier(config.socialAutoPost.pickModelTier)
-  const structuredLlm = llm.withStructuredOutput(blueskyPickBestSchema)
+  const structuredLlm = llm.withStructuredOutput(blueskyPickBestSchema, { method: 'functionCalling' })
 
   await rateLimitDelay()
   log.info({ candidateCount: stories.length }, 'picking best story for social media')

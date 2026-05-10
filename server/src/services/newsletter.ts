@@ -151,7 +151,7 @@ export async function selectStoriesForNewsletter(newsletterId: string) {
 
   await rateLimitDelay()
   const llm = getLLMByTier(config.newsletter.selectModelTier)
-  const structuredLlm = llm.withStructuredOutput(newsletterSelectResultSchema)
+  const structuredLlm = llm.withStructuredOutput(newsletterSelectResultSchema, { method: 'functionCalling' })
   const response = await withRetry(
     () => structuredLlm.invoke([new HumanMessage(prompt)]),
     { retries: 3 },
@@ -239,7 +239,7 @@ export async function generateContent(newsletterId: string) {
     const introPrompt = buildNewsletterIntroPrompt(storiesForIntro, issueNames)
     await rateLimitDelay()
     const llm = getLLMByTier(config.newsletter.contentModelTier)
-    const structuredLlm = llm.withStructuredOutput(newsletterIntroSchema)
+    const structuredLlm = llm.withStructuredOutput(newsletterIntroSchema, { method: 'functionCalling' })
     const introResult = await withRetry(
       () => structuredLlm.invoke([new HumanMessage(introPrompt)]),
       { retries: 3 },

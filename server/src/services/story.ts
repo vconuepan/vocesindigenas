@@ -890,7 +890,7 @@ export async function getRelatedStories(slug: string, limit: number = config.rel
 
       await rateLimitDelay()
       const llm = getLLMByTier(config.relatedStories.modelTier)
-      const structuredLlm = llm.withStructuredOutput(relatedStoriesResultSchema)
+      const structuredLlm = llm.withStructuredOutput(relatedStoriesResultSchema, { method: 'functionCalling' })
       const response = await structuredLlm.invoke([new HumanMessage(prompt)])
 
       // Validate returned IDs against candidate pool
