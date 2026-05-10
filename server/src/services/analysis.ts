@@ -271,7 +271,13 @@ export async function assessStory(storyId: string): Promise<void> {
   await rateLimitDelay()
   const llm = getLLMByTier(config.assess.modelTier)
   const structuredLlm = llm.withStructuredOutput(assessResultSchema)
-  const parsed = await withRetry(() => structuredLlm.invoke([new HumanMessage(prompt)]))
+  let parsed: Awaited<ReturnType<typeof structuredLlm.invoke>>
+  try {
+    parsed = await withRetry(() => structuredLlm.invoke([new HumanMessage(prompt)]))
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(`LLM call failed: ${msg}`)
+  }
 
   log.info({ storyId, rating: parsed.conservativeRating, title: parsed.relevanceTitle?.slice(0, 60) }, 'assessment complete')
 
@@ -300,12 +306,18 @@ export async function assessStory(storyId: string): Promise<void> {
   }
 
   // Generate embedding from analysis results BEFORE saving — throws on failure
-  const embeddingData = await generateEmbeddingForContent({
-    title: analysisData.title,
-    titleLabel: analysisData.titleLabel,
-    summary: analysisData.summary,
-    embeddingContentHash: null, // force generation
-  })
+  let embeddingData: Awaited<ReturnType<typeof generateEmbeddingForContent>> | undefined
+  try {
+    embeddingData = await generateEmbeddingForContent({
+      title: analysisData.title,
+      titleLabel: analysisData.titleLabel,
+      summary: analysisData.summary,
+      embeddingContentHash: null, // force generation
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(`Embedding failed: ${msg}`)
+  }
 
   // Save analysis + embedding atomically
   await prisma.$transaction(async (tx) => {
