@@ -276,12 +276,22 @@ export async function assessStory(storyId: string): Promise<void> {
     parsed = await withRetry(() => structuredLlm.invoke([new HumanMessage(prompt)]))
   } catch (err) {
     const status = (err as any)?.status
-    const cause = (err as any)?.cause
+    const cause = (err as any)?.cause                        // e.g. TypeError "fetch failed"
     const causeMsg = cause instanceof Error ? cause.message : cause ? String(cause) : undefined
     const causeCode = (cause as any)?.code
+    const rootCause = (cause as any)?.cause                  // e.g. actual network Error
+    const rootMsg = rootCause instanceof Error ? rootCause.message : rootCause ? String(rootCause) : undefined
+    const rootCode = (rootCause as any)?.code                // e.g. ECONNRESET, ETIMEDOUT, ENOTFOUND
     const msg = err instanceof Error ? err.message : String(err)
-    log.error({ storyId, status, causeMsg, causeCode, err }, 'assess LLM call failed')
-    throw new Error(`LLM call failed: ${msg}${status ? ` [status=${status}]` : ''}${causeMsg ? ` [cause=${causeMsg}]` : ''}${causeCode ? ` [code=${causeCode}]` : ''}`)
+    log.error({ storyId, status, causeMsg, causeCode, rootMsg, rootCode, err }, 'assess LLM call failed')
+    const detail = [
+      status ? `status=${status}` : '',
+      causeMsg ? `cause=${causeMsg}` : '',
+      causeCode ? `causeCode=${causeCode}` : '',
+      rootMsg  ? `root=${rootMsg}` : '',
+      rootCode ? `rootCode=${rootCode}` : '',
+    ].filter(Boolean).join(' ')
+    throw new Error(`LLM call failed: ${msg}${detail ? ` [${detail}]` : ''}`)
   }
 
   log.info({ storyId, rating: parsed.conservativeRating, title: parsed.relevanceTitle?.slice(0, 60) }, 'assessment complete')
