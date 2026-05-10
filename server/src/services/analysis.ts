@@ -333,7 +333,7 @@ export async function assessStory(storyId: string): Promise<void> {
 export async function assessStories(
   storyIds: string[],
   onProgress?: ProgressCallback,
-): Promise<{ completed: number; errors: number }> {
+): Promise<{ completed: number; errors: number; firstError: string[] }> {
   const semaphore = new Semaphore(config.concurrency.assess)
   let completed = 0
   let errors = 0
@@ -348,16 +348,18 @@ export async function assessStories(
     ),
   )
 
+  const firstError: string[] = []
   for (const result of settled) {
     if (result.status === 'rejected') {
       errors++
-      const msg = result.reason instanceof Error ? result.reason.message : 'Unknown error'
+      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason)
       log.error({ storyId: storyIds[settled.indexOf(result)], err: result.reason }, 'story assessment failed')
       onProgress?.({ type: 'failed', count: 1, error: msg })
+      if (firstError.length < 3) firstError.push(msg)
     }
   }
 
-  return { completed, errors }
+  return { completed, errors, firstError }
 }
 
 export async function selectStories(storyIds: string[]): Promise<{ selected: string[]; rejected: string[] }> {

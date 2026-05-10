@@ -65,7 +65,8 @@ export async function runAssessStories(): Promise<void> {
 
   // Surface errors to job_runs.last_error so they're visible in the admin panel
   if (result.errors > 0 && result.completed === 0) {
-    throw new Error(`All ${result.errors} story assessments failed — check server logs for root cause (LLM/embedding error)`)
+    const sample = result.firstError?.join(' | ') || 'unknown'
+    throw new Error(`All ${result.errors} story assessments failed. Sample error: ${sample}`)
   }
   if (result.errors > 0) {
     log.warn({ errors: result.errors, completed: result.completed }, 'partial assessment failures — check server logs')
