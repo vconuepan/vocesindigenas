@@ -440,16 +440,21 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
 
     const slugMap = await generateUniqueSlugs(storiesNeedingSlugs)
 
+    // Persist slugs before the transaction — slug writes are idempotent and don't
+    // need to be atomic with the status update. Keeping them inside caused
+    // transaction timeouts with large batches (25+ individual updates in 5s).
+    await Promise.all(
+      Array.from(slugMap.entries()).map(([storyId, slug]) =>
+        prisma.story.update({ where: { id: storyId }, data: { slug } })
+      )
+    )
+
     // Ensure all stories have embeddings (no-op for already-embedded stories)
     await ensureEmbeddings(ids)
 
+    // Fast transaction: only two bulk updates, well within the 5s timeout
     const now = new Date()
     await prisma.$transaction(async (tx) => {
-      await Promise.all(
-        Array.from(slugMap.entries()).map(([storyId, slug]) =>
-          tx.story.update({ where: { id: storyId }, data: { slug } })
-        )
-      )
       await tx.story.updateMany({
         where: { id: { in: ids }, datePublished: { not: null } },
         data: { status: status as StoryStatus },
