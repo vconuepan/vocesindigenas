@@ -275,8 +275,13 @@ export async function assessStory(storyId: string): Promise<void> {
   try {
     parsed = await withRetry(() => structuredLlm.invoke([new HumanMessage(prompt)]))
   } catch (err) {
+    const status = (err as any)?.status
+    const cause = (err as any)?.cause
+    const causeMsg = cause instanceof Error ? cause.message : cause ? String(cause) : undefined
+    const causeCode = (cause as any)?.code
     const msg = err instanceof Error ? err.message : String(err)
-    throw new Error(`LLM call failed: ${msg}`)
+    log.error({ storyId, status, causeMsg, causeCode, err }, 'assess LLM call failed')
+    throw new Error(`LLM call failed: ${msg}${status ? ` [status=${status}]` : ''}${causeMsg ? ` [cause=${causeMsg}]` : ''}${causeCode ? ` [code=${causeCode}]` : ''}`)
   }
 
   log.info({ storyId, rating: parsed.conservativeRating, title: parsed.relevanceTitle?.slice(0, 60) }, 'assessment complete')
