@@ -82,11 +82,24 @@ export async function assignStories(newsletterId: string) {
   const newsletter = await prisma.newsletter.findUnique({ where: { id: newsletterId } })
   if (!newsletter) throw new Error('Newsletter not found')
 
-  // Find recently published stories from the last N days
+  // Collect story IDs already used in newsletters published in the last 7 days
+  // (covers both sends in a Mon+Thu schedule) to prevent repetition across editions.
+  const recentlySent = await prisma.newsletter.findMany({
+    where: {
+      id: { not: newsletterId },
+      status: ContentStatus.published,
+      createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+    },
+    select: { selectedStoryIds: true },
+  })
+  const usedStoryIds = new Set(recentlySent.flatMap(n => n.selectedStoryIds))
+
+  // Find recently published stories from the last N days, excluding already-used ones
   const stories = await prisma.story.findMany({
     where: {
       status: StoryStatus.published,
       dateCrawled: { gte: new Date(Date.now() - config.content.storyAssignmentDays * 24 * 60 * 60 * 1000) },
+      ...(usedStoryIds.size > 0 ? { id: { notIn: [...usedStoryIds] } } : {}),
     },
     orderBy: { dateCrawled: 'desc' },
     select: { id: true },
@@ -94,6 +107,8 @@ export async function assignStories(newsletterId: string) {
 
   const storyIds = stories.map(s => s.id)
   if (storyIds.length === 0) throw new Error('No recent stories to assign')
+
+  log.info({ newsletterId, usedStoryIds: usedStoryIds.size, available: storyIds.length }, 'stories assigned (excluding recent sends)')
 
   return prisma.newsletter.update({
     where: { id: newsletterId },

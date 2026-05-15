@@ -99,12 +99,12 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
   const imageUrl = story.imageUrl ?? null
   const headlineText = getHeadline(localizedStory)
 
-  // === FEATURED variant — image with dark overlay, title on top ===
+  // === FEATURED variant — full-bleed image, meta flush inside card ===
   if (variant === 'featured') {
     return (
       <article className={`group relative overflow-hidden rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 ${readClass}`}>
         <Link to={`/stories/${story.slug}`} className="block focus-visible:ring-2 focus-visible:ring-brand-500 rounded-xl">
-          {/* Image area */}
+          {/* Image area — extended gradient covers the meta row below */}
           <div className="relative aspect-video overflow-hidden bg-neutral-100">
             {imageUrl ? (
               <CardImage
@@ -117,10 +117,10 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
                 {Pattern && <Pattern opacity={0.25} />}
               </div>
             )}
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-            {/* Text on overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-5">
+            {/* Gradient overlay — heavier at bottom to seat the meta strip */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+            {/* Headline + category */}
+            <div className="absolute bottom-0 left-0 right-0 px-5 pt-5 pb-3">
               {issueName && <CategoryPill name={issueName} hex={colors.hex} />}
               {getTitleLabel(localizedStory) && (
                 <span className="block text-xs font-bold uppercase tracking-wider text-white/70 mb-1">{getTitleLabel(localizedStory)}</span>
@@ -131,8 +131,8 @@ export default function StoryCard({ story, variant = 'featured' }: StoryCardProp
             </div>
           </div>
         </Link>
-        {/* Meta below */}
-        <div className="bg-white px-5 py-3 flex items-center justify-between gap-2 border border-t-0 border-neutral-100 rounded-b-xl">
+        {/* Meta strip — no border, neutral-50 background for seamless step-down */}
+        <div className="bg-neutral-50 px-5 py-3 flex items-center justify-between gap-2 rounded-b-xl">
           <StoryMeta story={story} size="xs" />
           {story.slug && <BookmarkButton slug={story.slug} size="sm" hoverReveal className="shrink-0" />}
         </div>

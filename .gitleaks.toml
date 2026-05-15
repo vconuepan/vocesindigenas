@@ -27,3 +27,17 @@ regexes = [
 paths = [
   '\.github/workflows/',
 ]
+
+[[allowlists]]
+description = "Test files — fake secrets in fixtures and mocks"
+paths = [
+  '\.test\.ts$',
+  '\.spec\.ts$',
+]
+
+[[allowlists]]
+description = "Compiled output and dependencies — not source of truth"
+paths = [
+  'dist/',
+  'node_modules/',
+]

@@ -95,7 +95,7 @@ export const config = {
   },
   newsletter: {
     storiesPerIssue: parseInt(
-      process.env.NEWSLETTER_STORIES_PER_ISSUE || "2",
+      process.env.NEWSLETTER_STORIES_PER_ISSUE || "4",
       10
     ),
     selectModelTier: "large" as const,

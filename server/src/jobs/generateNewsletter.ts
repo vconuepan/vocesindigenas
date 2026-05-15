@@ -36,12 +36,15 @@ export async function runGenerateNewsletter(): Promise<void> {
     return
   }
 
-  const title = getWeekTitle(new Date())
+  const today = new Date()
+  const title = `Impacto Indígena — ${today.toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
 
-  // Skip if a newsletter with this title already exists (e.g. from a previous partial run)
-  const existing = await prisma.newsletter.findFirst({ where: { title } })
+  // Skip if a newsletter was already generated today (e.g. from a partial run retry)
+  const startOfDay = new Date(today)
+  startOfDay.setHours(0, 0, 0, 0)
+  const existing = await prisma.newsletter.findFirst({ where: { createdAt: { gte: startOfDay } } })
   if (existing) {
-    log.info({ title, newsletterId: existing.id }, 'newsletter already exists for this week, skipping')
+    log.info({ title, newsletterId: existing.id }, 'newsletter already generated today, skipping')
     return
   }
 

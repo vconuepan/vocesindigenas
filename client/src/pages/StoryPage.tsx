@@ -15,6 +15,7 @@ import ShareButtons from '../components/ShareButtons'
 import RelatedStories from '../components/RelatedStories'
 import AlsoCoveredBy from '../components/AlsoCoveredBy'
 import { StoryPageSkeleton } from '../components/skeletons'
+import ReadingProgress from '../components/ReadingProgress'
 import { SEO, CommonOgTags } from '../lib/seo'
 import { buildArticleSchema, buildBreadcrumbSchema } from '../lib/structured-data'
 import { ECOSYSTEM_AI_URL } from '../config'
@@ -152,7 +153,6 @@ export default function StoryPage() {
   const displayTitle = titleLabel ? `${titleLabel}: ${headline}` : headline
   const ageMonths = story.sourceDatePublished ? storyAgeMonths(story.sourceDatePublished) : 0
   const isOld = ageMonths >= 3
-  const hasSourceDate = !!story.sourceDatePublished
   // Show the original article date first; fall back to platform publication date
   const displayDate = story.sourceDatePublished || story.datePublished || story.dateCrawled
   const dateLocale = i18n.language === 'en' ? 'en-US' : 'es-CL'
@@ -161,8 +161,6 @@ export default function StoryPage() {
     day: 'numeric',
     year: 'numeric',
   })
-  // sourceDateStr now unused (displayDate already uses sourceDatePublished)
-  const sourceDateStr = null
 
   const description = loc.summary || displayTitle
   const issueSlug = story.issue?.slug ?? story.feed?.issue?.slug ?? 'general-news'
@@ -197,6 +195,8 @@ export default function StoryPage() {
         </script>
       </Helmet>
 
+      <ReadingProgress color={colors.hex} />
+
       <article>
         {/* Article header with category accent */}
         <header className="border-b border-neutral-100 pb-10 mb-8">
@@ -221,60 +221,58 @@ export default function StoryPage() {
               {headline}
             </h1>
 
-            {/* Metadata + share */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500 font-dm-sans">
-              {isOld && (
-                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
-                  Noticia antigua
+            {/* Metadata — two rows: provenance above, actions below */}
+            <div className="space-y-2 font-dm-sans">
+              {/* Row 1: date · source · article link · methodology */}
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-neutral-500">
+                {isOld && (
+                  <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
+                    Noticia antigua
+                  </span>
+                )}
+                <time dateTime={displayDate}>{dateStr}</time>
+                <span className="text-neutral-300" aria-hidden="true">·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <FeedFavicon feedId={story.feed.id} />
+                  <a
+                    href={story.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
+                  >
+                    {story.feed.displayTitle || story.feed.title}
+                    <span className="sr-only"> (opens in new tab)</span>
+                  </a>
                 </span>
-              )}
-              <time dateTime={displayDate}>{dateStr}</time>
-              <span className="text-neutral-300">|</span>
-              <span className="inline-flex items-center gap-1.5">
-                <FeedFavicon feedId={story.feed.id} />
+                <span className="text-neutral-300" aria-hidden="true">·</span>
                 <a
                   href={story.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
                 >
-                  {story.feed.displayTitle || story.feed.title}
-                  <span className="sr-only"> (opens in new tab)</span>
+                  {t('storyPage.originalArticle')}
+                  <span className="sr-only"> {t('storyPage.opensInNewTab')}</span>
                 </a>
-              </span>
-              <span className="text-neutral-300">|</span>
-              <a
-                href={story.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-              >
-                {t('storyPage.originalArticle')}
-                {hasSourceDate && (
-                  <span className="text-neutral-400 font-normal"> · {sourceDateStr}</span>
-                )}
-                <span className="sr-only"> {t('storyPage.opensInNewTab')}</span>
-              </a>
-              <span className="text-neutral-300">|</span>
-              <Link
-                to="/methodology"
-                className="text-brand-800 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5"
-              >
-                {t('storyPage.generatedByAI')}
-              </Link>
+                <span className="text-neutral-300" aria-hidden="true">·</span>
+                <Link
+                  to="/methodology"
+                  className="text-neutral-400 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 rounded px-0.5 text-xs"
+                >
+                  {t('storyPage.generatedByAI')}
+                </Link>
+              </div>
+              {/* Row 2: actions (bookmark + share) — visually lighter */}
               {story.slug && (
-                <>
-                  <span className="text-neutral-300">|</span>
+                <div className="flex items-center gap-3">
                   <BookmarkButton slug={story.slug} size="sm" className="!pt-0.5 !pb-0.5" />
-                  <span className="text-neutral-300">|</span>
-                  <span className="inline-flex items-center gap-0.5">
-                    <ShareButtons
-                      url={`${SEO.siteUrl}/stories/${story.slug}`}
-                      title={displayTitle}
-                      description={loc.marketingBlurb || loc.summary || displayTitle}
-                    />
-                  </span>
-                </>
+                  <span className="text-neutral-200" aria-hidden="true">·</span>
+                  <ShareButtons
+                    url={`${SEO.siteUrl}/stories/${story.slug}`}
+                    title={displayTitle}
+                    description={loc.marketingBlurb || loc.summary || displayTitle}
+                  />
+                </div>
               )}
             </div>
 

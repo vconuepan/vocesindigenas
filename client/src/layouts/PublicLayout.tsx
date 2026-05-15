@@ -101,7 +101,7 @@ function BrandLogo({ onClick }: { onClick?: () => void }) {
 
 function CategoryColorStrip({ className }: { className?: string }) {
   return (
-    <div className={`flex h-0.5 ${className ?? ""}`} aria-hidden="true">
+    <div className={`flex h-1 ${className ?? ""}`} aria-hidden="true">
       <div className="flex-1" style={{ backgroundColor: '#34d399' }} />
       <div className="flex-1" style={{ backgroundColor: '#fb923c' }} />
       <div className="flex-1" style={{ backgroundColor: '#fbbf24' }} />
