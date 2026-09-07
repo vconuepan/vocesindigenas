@@ -193,7 +193,7 @@ export default function AboutPage() {
             recursos junto a:
           </p>
           <ul>
-            <li>Fundación Konwepang-Millakir por el respeto del mapu</li>
+            <li>Fundación Coñuepan-Millaquir por el respeto del mapu</li>
             <li>Fundación Empresas Indígenas</li>
             <li>Sociedad de Profesionales Conuepan y Millaquir Limitada</li>
             <li>Voces Indígenas SpA</li>

@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import PrivacyPage from './PrivacyPage'
 import TermsPage from './TermsPage'
 import CookiesPage from './CookiesPage'
@@ -55,6 +57,23 @@ describe('un solo operador del Sitio, y es el que tiene RUT', () => {
       expect(screen.getAllByText(/Fundación Coñuepan-Millaquir/).length).toBeGreaterThan(0)
     })
   }
+
+  it('el nombre de la Fundacion se escribe igual en todo el sitio', () => {
+    // Hasta el 7-sep-2026 la lista de la Red Indigena Colaborativa la llamaba
+    // «Fundacion Konwepang-Millakir por el respeto del mapu» —la grafia en
+    // grafemario mapuche— mientras los seis lugares legales decian «Coñuepan-
+    // Millaquir». El director confirmo que es la MISMA entidad. Dos grafias del
+    // responsable del tratamiento en una sola sesion de navegacion debilitan la
+    // cadena de a quien se le reclama, asi que el sitio usa una sola.
+    //
+    // Se lee del fuente y no del render porque el nombre aparece en paginas
+    // distintas; lo que se vigila es el repositorio entero.
+    const paginas = path.resolve(__dirname)
+    for (const archivo of ['AboutPage.tsx', 'MethodologyPage.tsx', 'ImprintPage.tsx', 'TermsPage.tsx', 'PrivacyPage.tsx', 'CookiesPage.tsx']) {
+      const fuente = readFileSync(path.join(paginas, archivo), 'utf8')
+      expect(fuente, `${archivo} usa la grafia antigua del nombre de la Fundacion`).not.toMatch(/Konwepang|Millakir/)
+    }
+  })
 
   it('ninguna de las tres presenta a la SpA como operadora del Sitio', () => {
     // El 7-sep el sitio declaraba dos personas juridicas distintas como
