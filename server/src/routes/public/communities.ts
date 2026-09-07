@@ -525,9 +525,12 @@ async function sendWelcomeEmail(
 </body>
 </html>`
 
+  // El asunto NO nombra la comunidad: si es de tipo PUEBLO, revelaria el origen
+  // etnico del destinatario —dato sensible, Ley 19.628 art. 10— en los metadatos
+  // del proveedor de correo. El cuerpo si la nombra.
   await sendTransactional({
     to: email,
-    subject: `Bienvenido/a a ${community.name} — Voces Indígenas`,
+    subject: 'Te damos la bienvenida — Voces Indígenas',
     body: html,
   })
 }

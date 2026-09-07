@@ -261,8 +261,11 @@ export async function runSendCommunityDigest(): Promise<void> {
       continue
     }
 
-    const communityNames = sections.map((s) => s.community.name).join(', ')
-    const subject = `Tu resumen semanal — ${communityNames}`
+    // El asunto NO nombra las comunidades. Una de tipo PUEBLO revela el origen
+    // etnico del destinatario, que es dato sensible (Ley 19.628, art. 10), y el
+    // asunto queda en los metadatos del proveedor de correo. El cuerpo si las
+    // nombra: va cifrado en transito y es lo que el titular pidio recibir.
+    const subject = 'Tu resumen semanal'
     const html = buildDigestHtml(user.name, sections)
 
     try {
