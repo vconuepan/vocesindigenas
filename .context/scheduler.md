@@ -24,6 +24,13 @@ On server startup, `initScheduler()`:
 
 **Hot reload**: When a job's cron expression or enabled flag is updated via the admin API (`PUT /api/admin/jobs/:jobName`), the scheduler automatically reloads — stopping all current cron tasks and re-registering from the database. No server restart needed.
 
+**Where the live schedule lives**: in the `job_runs` table, not in the code. `seed-jobs.ts` carries `update: {}` on purpose, so it only inserts jobs that do not exist yet -- editing the seed changes nothing in an environment that already ran it. Two consequences:
+
+- **A cron in `seed-jobs.ts` can silently differ from what production runs.** On 2026-09-07 `social_auto_post` had been re-scheduled from the admin panel months earlier and the file never found out. Read the table before assuming the file is the truth.
+- **Hot reload only covers the admin API path.** A schedule written straight to the database -- SQL, a Prisma script -- is invisible to the running process, because `initScheduler()` reads the table once at startup and never re-reads. Such a change needs a process restart; a backend deploy does one. Prefer the admin API, which reprograms in place.
+
+**Cron expressions run in UTC.** Both `cron.schedule()` calls in `jobs/scheduler.ts` omit the timezone option, so the server clock decides. The admin panel displays `America/Santiago`, which makes it easy to type an hour meaning local time and land three or four hours off.
+
 **Manual triggers**: Every job can be triggered via `POST /api/admin/jobs/:jobName/run`, which runs the job in the background regardless of schedule.
 
 ## Registered Jobs
