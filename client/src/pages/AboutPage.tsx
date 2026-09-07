@@ -166,9 +166,18 @@ export default function AboutPage() {
             jurisprudencia que estos marcos generan y su implementación en los países signatarios.
           </p>
 
-          <h3 className="section-heading mt-8">Voces Indígenas SpA</h3>
+          <h3 className="section-heading mt-8">Quién opera esta plataforma</h3>
           <p>
-            Esta plataforma es parte de{" "}
+            El Sitio lo opera la <strong>Fundación Coñuepan-Millaquir</strong>, RUT
+            65.191.983-5, organización sin fines de lucro domiciliada en Chile. Es la
+            responsable del tratamiento de datos y la contraparte de los{" "}
+            <Link to="/terminos" className="text-brand-800 hover:text-brand-700 font-normal">
+              Términos y Condiciones
+            </Link>
+            .
+          </p>
+          <p>
+            El trabajo se apoya en una red de organizaciones indígenas, entre ellas{" "}
             <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700 underline">
               Voces Indígenas SpA
             </a>

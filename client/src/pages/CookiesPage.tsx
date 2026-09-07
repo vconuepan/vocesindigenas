@@ -27,7 +27,7 @@ export default function CookiesPage() {
 
         <div className="prose max-w-none">
           <p className="text-sm text-neutral-500 not-prose mb-6">
-            Versión 1.2 · vigente desde el 4 de septiembre de 2026.
+            Versión 1.3 · vigente desde el 7 de septiembre de 2026.
           </p>
           <h2 className="section-heading mt-8">Responsable</h2>
           <p>
@@ -163,6 +163,23 @@ export default function CookiesPage() {
               Política de Privacidad
             </Link>
             .
+          </p>
+
+          <h2 className="section-heading mt-8">Contenido de terceros: el mapa</h2>
+          <p>
+            Una sola página del Sitio carga contenido servido por un tercero. El{" "}
+            <Link to="/mapa" className="text-brand-800 hover:text-brand-700">mapa de comunidades</Link>{" "}
+            dibuja su fondo cartográfico con teselas de la <strong>Fundación
+            OpenStreetMap</strong> (Reino Unido), que tu navegador pide
+            directamente a sus servidores. Esa conexión <strong>no instala
+            cookies</strong>, pero, como cualquier petición en internet, le
+            expone tu dirección IP y tu navegador. Nosotros no le entregamos
+            ningún dato tuyo, y si no abres esa página no se contacta.
+          </p>
+          <p className="mt-3">
+            Es la única excepción a lo descrito arriba, y por eso figura también
+            en la tabla de encargados de la{" "}
+            <Link to="/privacy" className="text-brand-800 hover:text-brand-700">Política de Privacidad</Link>.
           </p>
 
           <h2 className="section-heading mt-8">Cómo gestionar cookies</h2>

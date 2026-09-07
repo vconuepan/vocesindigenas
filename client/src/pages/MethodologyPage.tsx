@@ -279,13 +279,13 @@ export default function MethodologyPage() {
           <p>
             Voces Indígenas News es una iniciativa de{' '}
             <a href="https://www.linkedin.com/in/vconuepan/" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700">
-              Venancio Conuepan Mesias
+              Venancio Coñuepan Mesías
             </a>
             , fundador de{' '}
             <a href="https://www.impactoindigena.com" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700">
               Voces Indígenas SpA
             </a>
-            , la empresa matriz de esta plataforma. El prototipo fue desarrollado en el marco de la
+            . El Sitio lo opera la <strong>Fundación Coñuepan-Millaquir</strong>. El prototipo fue desarrollado en el marco de la
             cohorte <strong>LatAm AI 2025</strong> de{' '}
             <a href="https://changemakerxchange.ai" target="_blank" rel="noopener noreferrer" className="text-brand-800 hover:text-brand-700">
               Changemakerxchange.ai

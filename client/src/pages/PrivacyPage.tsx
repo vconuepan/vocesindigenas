@@ -42,7 +42,7 @@ export default function PrivacyPage() {
       <div className="page-section">
         <div className="prose max-w-none">
           <p className="text-sm text-neutral-500 not-prose mb-6">
-            Versión 2.9 · vigente desde el 4 de septiembre de 2026.
+            Versión 3.0 · vigente desde el 7 de septiembre de 2026.
           </p>
 
           {/* 1. Responsable */}
@@ -230,15 +230,21 @@ export default function PrivacyPage() {
                 </tr>
                 <tr className="border-b border-neutral-100">
                   <td className="align-top py-2 pr-4">Cloudflare R2</td>
-                  <td className="align-top py-2 pr-4">Almacenamiento de imágenes</td>
+                  <td className="align-top py-2 pr-4">Almacenamiento y entrega de las imágenes del sitio</td>
                   <td className="align-top py-2 pr-4">EE.&nbsp;UU. / global</td>
-                  <td className="align-top py-2">Imágenes editoriales (sin datos de lectores)</td>
+                  <td className="align-top py-2">Imágenes editoriales. Tu navegador las pide directamente a este servicio, así que la conexión le expone tu dirección IP; no le entregamos ningún otro dato tuyo</td>
                 </tr>
-                <tr>
+                <tr className="border-b border-neutral-100">
                   <td className="align-top py-2 pr-4">Diffbot</td>
                   <td className="align-top py-2 pr-4">Extracción del texto de noticias de fuentes de acceso público</td>
                   <td className="align-top py-2 pr-4">EE.&nbsp;UU.</td>
                   <td className="align-top py-2">Texto de los artículos de fuentes públicas, que puede incluir nombres, cargos y citas de terceros mencionados en la noticia (sin datos de lectores)</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-2 pr-4">OpenStreetMap</td>
+                  <td className="align-top py-2 pr-4">Teselas del mapa de comunidades, solo en la página <em>Mapa</em></td>
+                  <td className="align-top py-2 pr-4">Reino Unido / global</td>
+                  <td className="align-top py-2">Si abres el mapa, tu navegador pide las imágenes del fondo cartográfico a la Fundación OpenStreetMap y esa conexión le expone tu dirección IP y tu navegador. No le entregamos ningún dato tuyo ni instala cookies. Si no abres esa página, no se contacta</td>
                 </tr>
               </tbody>
             </table>
@@ -255,9 +261,10 @@ export default function PrivacyPage() {
             entrega no involucra datos de suscriptores. Los demás servicios
             auxiliares operan fuera de Chile según la tabla anterior: en{" "}
             <strong>EE.&nbsp;UU.</strong> los servicios de IA de Azure OpenAI,
-            Cloudflare (imágenes) y Diffbot (extracción); y en la{" "}
+            Cloudflare (imágenes) y Diffbot (extracción); en la{" "}
             <strong>Unión Europea</strong> Brevo y la generación de imágenes en
-            Suecia. Para los destinos respecto de los cuales no exista una
+            Suecia; y en el <strong>Reino Unido</strong> las teselas del mapa,
+            que solo se piden si abres esa página. Para los destinos respecto de los cuales no exista una
             declaración de nivel adecuado de protección, las transferencias se
             amparan en garantías idóneas, en particular las{" "}
             <strong>cláusulas contractuales tipo</strong> aprobadas por la
