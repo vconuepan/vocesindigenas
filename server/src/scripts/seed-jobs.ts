@@ -39,9 +39,14 @@ const JOB_SEEDS: Array<{ jobName: string; cronExpression: string; enabled?: bool
   { jobName: 'select_stories',          cronExpression: '0 10,22 * * *' },
   { jobName: 'publish_stories',         cronExpression: '0 11,23 * * *' },
   // --- Social ---
-  // Media hora despues de publicar, en las dos franjas. No repite: los
-  // candidatos excluyen lo ya posteado en cada canal (socialMedia.ts).
-  { jobName: 'social_auto_post',        cronExpression: '30 11,23 * * *' },
+  // Dos franjas, y ya estaba asi en produccion antes de tocar nada: el 7-sep se
+  // leyo la base y decia `0 9,18`, no lo que este archivo declaraba. Alguien lo
+  // habia escalonado desde el panel y el seed nunca se entero — `update: {}`.
+  // Se copia el valor real en vez de imponer otro.
+  //
+  // No repite posts: los candidatos excluyen lo ya posteado en cada canal
+  // (socialMedia.ts, `findAutoPostCandidates`).
+  { jobName: 'social_auto_post',        cronExpression: '0 9,18 * * *' },
   { jobName: 'bluesky_update_metrics',  cronExpression: '0 */6 * * *' },
   { jobName: 'mastodon_update_metrics', cronExpression: '0 4 * * *' },
   { jobName: 'instagram_update_metrics',cronExpression: '0 */6 * * *' },

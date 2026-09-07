@@ -60,16 +60,27 @@ describe('la cadena del pipeline mantiene su orden', () => {
     }
   })
 
-  it('el posteo social va despues de publicar, no antes', () => {
-    // Postear antes de publicar deja los enlaces apuntando a nada.
-    const publish = horasDe(cronDe('publish_stories'))
+  it('el posteo social corre, y su ventana cubre mas de un dia', () => {
+    // Este test empezo exigiendo que cada posteo tuviera una publicacion previa
+    // EL MISMO DIA, y produccion lo desmintio: el social corre a las 9 y 18 UTC
+    // mientras la primera publicacion es a las 11. No esta roto —
+    // `findAutoPostCandidates` mira `lookbackHours`, que vale 25, asi que el
+    // posteo de las 9 toma lo publicado el dia anterior—.
+    //
+    // La leccion vale mas que el test: la suposicion era mia, no del sistema.
+    // Lo que si importa es que el social corra y que la ventana siga cubriendo
+    // mas de 24 horas; si alguien la bajara a 12, el orden intradia pasaria a
+    // ser critico y este test tendria que volverse estricto.
     const social = horasDe(cronDe('social_auto_post'))
-    for (const h of social) {
-      expect(
-        publish.some((p) => p <= h),
-        `el posteo social a las ${h} UTC no tiene una publicacion previa`,
-      ).toBe(true)
-    }
+    expect(social.length).toBeGreaterThan(0)
+
+    const config = readFileSync(path.resolve(__dirname, '../config.ts'), 'utf8')
+    const m = config.match(/SOCIAL_LOOKBACK_HOURS[^)]*?'(\d+)'/)
+    expect(m, 'no se encontro el valor por defecto de SOCIAL_LOOKBACK_HOURS').not.toBeNull()
+    expect(
+      Number(m![1]),
+      'la ventana bajo de 24 h: ahora el orden intradia del posteo SI importa',
+    ).toBeGreaterThan(24)
   })
 
   it('se publica mas de una vez al dia', () => {
