@@ -27,7 +27,7 @@ export default function TermsPage() {
 
         <div className="prose max-w-none">
           <p className="text-sm text-neutral-500 not-prose mb-6">
-            Versión 1.4 · vigente desde el 23 de agosto de 2026.
+            Versión 1.5 · vigente desde el 7 de septiembre de 2026.
           </p>
           <h2 className="section-heading mt-8">1. Aceptación</h2>
           <p>
@@ -92,7 +92,16 @@ export default function TermsPage() {
               <Link to="/methodology" className="text-brand-800 hover:text-brand-700">Metodología</Link>).
             </li>
             <li>El contenido de IA puede ser inexacto, incompleto, estar desactualizado o contener sesgos. No constituye asesoría profesional, legal ni de inversión.</li>
-            <li>Las imágenes que acompañan las noticias en el Sitio y las publicaciones en redes sociales pueden ser generadas con IA y están etiquetadas como tales; son ilustraciones editoriales, no fotografías reales de personas o hechos específicos.</li>
+            <li>
+              Las imágenes que acompañan las noticias tienen tres orígenes y cada una
+              se etiqueta con el suyo: las <strong>generadas con IA</strong>, que son
+              ilustraciones editoriales y no fotografías reales de personas o hechos
+              específicos; las <strong>del medio citado</strong>, que se muestran con
+              crédito a su fuente al amparo del derecho de cita; y las{" "}
+              <strong>compuestas</strong>, que añaden nuestra marca sobre la imagen del
+              medio y también lo acreditan. Si eres titular de una imagen y quieres que
+              la retiremos, escríbenos y lo haremos.
+            </li>
             <li>Para información definitiva, consulta siempre la fuente original enlazada.</li>
           </ul>
 

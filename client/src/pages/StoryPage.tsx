@@ -9,6 +9,7 @@ import { getCategoryColor, shiftHex } from '../lib/category-colors'
 import { parsePoints } from '../lib/parse-points'
 import { getTitleLabel, getHeadline } from '../lib/title-label'
 import { markAsRead } from '../lib/reading-history'
+import { origenDeImagen, claveDeRotulo } from '../lib/story-image'
 import { storyAgeMonths } from '../lib/format'
 import FeedFavicon from '../components/FeedFavicon'
 import BookmarkButton from '../components/BookmarkButton'
@@ -305,8 +306,10 @@ export default function StoryPage() {
         </header>
 
         {/* Hero image — full-width, between header and article body.
-            Images hosted on our R2 bucket are AI-generated editorial
-            illustrations and must be labeled as such (Términos §5). */}
+            El rotulo depende del ORIGEN, no del dominio: al bucket suben tanto
+            nuestras ilustraciones de IA como la fotografia del medio citado.
+            Rotularlas todas como IA le quitaba la autoria al medio en la misma
+            pagina que invoca el art. 71 B para citarlo. Ver `lib/story-image`. */}
         {story.imageUrl && (
           <figure className="m-0">
             <div className="overflow-hidden" style={{ maxHeight: '480px' }}>
@@ -319,11 +322,15 @@ export default function StoryPage() {
                 onError={(e) => { (e.target as HTMLImageElement).closest('figure')!.style.display = 'none' }}
               />
             </div>
-            {/\.r2\.dev\//.test(story.imageUrl) && (
-              <figcaption className="px-4 mt-1.5 text-right text-[11px] uppercase tracking-wider text-neutral-400">
-                {t('storyPage.aiImage')}
-              </figcaption>
-            )}
+            {(() => {
+              const clave = claveDeRotulo(origenDeImagen(story.imageUrl))
+              if (!clave) return null
+              return (
+                <figcaption className="px-4 mt-1.5 text-right text-[11px] uppercase tracking-wider text-neutral-400">
+                  {t(clave, { publisher: publisherFromUrl(story.sourceUrl, story.feed.displayTitle || story.feed.title) })}
+                </figcaption>
+              )
+            })()}
           </figure>
         )}
 

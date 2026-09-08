@@ -111,6 +111,8 @@
     "originalArticle": "Artículo original",
     "generatedByAI": "Generado por IA",
     "aiImage": "Ilustración generada con IA",
+    "sourceImage": "Imagen: {{publisher}}",
+    "composedImage": "Imagen: {{publisher}} · composición de Voces Indígenas",
     "whyItMatters": "Por qué importa",
     "caveats": "Advertencias",
     "searchSimilar": "Buscar noticias similares →",
