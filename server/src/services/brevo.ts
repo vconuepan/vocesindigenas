@@ -219,8 +219,15 @@ export async function updateContact(id: string, updates: Partial<CreateContactOp
       if (updates.subscribed !== undefined) {
         payload.listIds = updates.subscribed ? [2] : []
         payload.unlinkListIds = updates.subscribed ? [] : [2]
+        // Volver a la lista no basta si el contacto quedó en la lista de
+        // supresión: Brevo no le envía campañas aunque figure en la lista, y la
+        // baja resultaba irreversible. `emailBlacklisted: false` la levanta
+        // —«Set/unset this field to blacklist/allow the contact for emails»— y
+        // solo se hace al re-suscribir, nunca al dar de baja.
+        if (updates.subscribed) payload.emailBlacklisted = false
       }
-      await client.put(`/contacts/${id}`, payload)
+      // El identificador admite id o correo; encodear no altera un id numérico.
+      await client.put(`/contacts/${encodeURIComponent(id)}`, payload)
       return {
         id,
         email: '',

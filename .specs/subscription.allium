@@ -127,25 +127,59 @@ rule ConfirmSubscription {
 
     -- Update Plunk contact to subscribed (graceful degradation —
     -- if Plunk fails, still mark as confirmed locally)
-    if pending.plunk_contact_id != null:
-        ensures: try_update_plunk_contact(pending.plunk_contact_id,
-            subscribed: true)
+    -- El identificador cae al correo cuando no hay id: quien vuelve tras
+    -- darse de baja ya tiene contacto en Brevo, asi que el alta fallo por
+    -- duplicado y dejo el id en null. Re-suscribir tambien levanta la lista
+    -- de supresion, sin la cual la baja seria irreversible.
+    ensures: try_update_contact(pending.plunk_contact_id or subscriber.email,
+        subscribed: true, suppressed: false)
 
     ensures: pending.confirmed_at = now
 }
 
 -- ─── Cleanup ──────────────────────────────────────────────────────
--- Storage limitation (Ley 21.719, conservación limitada): an abandoned
--- double opt-in lingers with the visitor's email but can never be
--- confirmed once its token expires (ConfirmSubscription requires
--- not is_expired). A daily job purges these. Confirmed subscriptions
--- are deliberately retained — they back the idempotency check in
--- Subscribe and represent active, consented data subjects.
+-- Storage limitation (Ley 19.628 hoy, Ley 21.719 desde el 1-dic-2026):
+-- an abandoned double opt-in lingers with the visitor's email but can
+-- never be confirmed once its token expires (ConfirmSubscription
+-- requires not is_expired). A daily job purges these.
+--
+-- Una suscripcion CONFIRMADA se conserva mientras siga activa: respalda
+-- el chequeo de idempotencia de Subscribe y representa a alguien que
+-- consintio. Deja de estar activa cuando esa persona se da de baja, y
+-- entonces se borra.
+--
+-- OJO CON DONDE VIVE LA BAJA. El boletin se envia como campaña, con un
+-- HTML unico para todos los destinatarios, asi que el enlace del pie es
+-- el de Brevo y la baja se registra ALLA, no aqui. Por eso el estado de
+-- la suscripcion no es observable desde esta base: hay que ir a
+-- buscarlo. Hasta el 8-sep-2026 esta spec decia que la fila confirmada
+-- se retenia «deliberately», lo que contradecia a la Politica de
+-- Privacidad —«se eliminan o anonimizan tras la baja»— y le daba
+-- cobertura documental a un defecto: la direccion se quedaba
+-- indefinidamente.
 
 rule CleanupExpiredPendingSubscriptions {
     when: SubscriptionCleanupJobRuns()
 
     for entry in PendingSubscriptions where is_expired:
+        ensures: not exists entry
+}
+
+-- La baja ocurre en el proveedor de correo, asi que la unica forma de
+-- enterarse es preguntarle. Se reconcilia a diario, no al instante: la
+-- Politica declara ese plazo («dentro de las 24 horas siguientes»).
+--
+-- No se borra nada si el recorrido del proveedor no termina completo.
+-- Media lista leida haria pasar por activos a los no leidos y borraria
+-- solo a los leidos; un fallo de red no puede volverse un borrado
+-- parcial de suscriptores vivos.
+rule ReconcileUnsubscribed {
+    when: SubscriptionCleanupJobRuns()
+
+    requires: contact_listing_completed
+
+    for entry in PendingSubscriptions where confirmed
+        and contact_unsubscribed_upstream(entry.email):
         ensures: not exists entry
 }
 

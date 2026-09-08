@@ -172,15 +172,21 @@ export async function confirmSubscription(token: string, email: string) {
     throw new Error('Confirmation link has expired')
   }
 
-  // Update Brevo contact to subscribed
-  if (pending.plunkContactId) {
-    try {
-      await brevo.updateContact(pending.plunkContactId, {
-        subscribed: true,
-      })
-    } catch (err) {
-      log.warn({ err, email: maskEmail(email) }, 'failed to update Brevo contact, marking as confirmed anyway')
-    }
+  // Update Brevo contact to subscribed.
+  //
+  // Se cae al correo como identificador cuando no hay id, que es justo el caso
+  // de quien vuelve tras darse de baja: su contacto YA existe en Brevo, asi que
+  // el `createContact` del alta fallo por duplicado y dejo `plunkContactId` en
+  // null. Sin esto, esa persona confirmaba su re-alta y no volvia a recibir
+  // nada — y el job de reconciliacion le borraba la fila al dia siguiente,
+  // dejandola en un ciclo silencioso.
+  const identificador = pending.plunkContactId || email
+  try {
+    await brevo.updateContact(identificador, {
+      subscribed: true,
+    })
+  } catch (err) {
+    log.warn({ err, email: maskEmail(email) }, 'failed to update Brevo contact, marking as confirmed anyway')
   }
 
   // Mark as confirmed

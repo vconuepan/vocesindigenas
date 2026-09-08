@@ -124,6 +124,46 @@ describe('Brevo API client', () => {
         expect.objectContaining({ listIds: [2], unlinkListIds: [] }),
       )
     })
+
+    it('al re-suscribir levanta la lista de supresion, o la baja seria irreversible', async () => {
+      // Volver a la lista no basta: si el contacto quedo con emailBlacklisted
+      // —que es lo que hace el enlace de baja del pie de la campaña— Brevo no le
+      // envia aunque figure en la lista. Sin esta linea, quien se da de baja no
+      // puede volver nunca, y el sitio le responde «revisa tu correo».
+      mockAxiosInstance.put.mockResolvedValue({ data: {} })
+
+      await updateContact('contact-1', { subscribed: true })
+
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith(
+        '/contacts/contact-1',
+        expect.objectContaining({ emailBlacklisted: false }),
+      )
+    })
+
+    it('al dar de baja NO toca la lista de supresion', async () => {
+      // Solo se levanta al re-suscribir. Escribir emailBlacklisted en la baja
+      // seria decidir por la persona en la direccion contraria.
+      mockAxiosInstance.put.mockResolvedValue({ data: {} })
+
+      await updateContact('contact-1', { subscribed: false })
+
+      const payload = mockAxiosInstance.put.mock.calls.at(-1)![1] as Record<string, unknown>
+      expect(payload).not.toHaveProperty('emailBlacklisted')
+      expect(payload).toMatchObject({ listIds: [], unlinkListIds: [2] })
+    })
+
+    it('acepta el correo como identificador y lo encodea', async () => {
+      // Es el camino de quien vuelve tras darse de baja: su contacto ya existe
+      // en Brevo, asi que el alta fallo por duplicado y no hay id que usar.
+      mockAxiosInstance.put.mockResolvedValue({ data: {} })
+
+      await updateContact('vuelve+etiqueta@example.com', { subscribed: true })
+
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith(
+        '/contacts/vuelve%2Betiqueta%40example.com',
+        expect.objectContaining({ emailBlacklisted: false }),
+      )
+    })
   })
 
   describe('verifyEmail', () => {

@@ -6,11 +6,13 @@ const mockPrisma = {
     findFirst: vi.fn(),
     create: vi.fn(),
     deleteMany: vi.fn(),
+    update: vi.fn(),
   },
 }
 
 const mockBrevo = {
   createContact: vi.fn(),
+  updateContact: vi.fn(),
   sendTransactional: vi.fn(),
   verifyEmail: vi.fn(),
   listContacts: vi.fn(),
@@ -19,7 +21,7 @@ const mockBrevo = {
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 vi.mock('./brevo.js', () => mockBrevo)
 
-const { subscribe, EmailValidationError, cleanupExpiredPendingSubscriptions, reconcileUnsubscribedFromBrevo } = await import('./subscribe.js')
+const { subscribe, EmailValidationError, cleanupExpiredPendingSubscriptions, reconcileUnsubscribedFromBrevo, confirmSubscription } = await import('./subscribe.js')
 
 describe('subscribe service', () => {
   beforeEach(() => {
@@ -27,10 +29,12 @@ describe('subscribe service', () => {
     mockPrisma.pendingSubscription.findFirst.mockResolvedValue(null)
     mockPrisma.pendingSubscription.create.mockResolvedValue({ id: '1' })
     mockPrisma.pendingSubscription.deleteMany.mockResolvedValue({ count: 0 })
+    mockPrisma.pendingSubscription.update.mockResolvedValue({ id: '1' })
     mockBrevo.createContact.mockResolvedValue({ id: 'contact-1' })
     mockBrevo.sendTransactional.mockResolvedValue(undefined)
     mockBrevo.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: false })
     mockBrevo.listContacts.mockResolvedValue({ items: [], nextCursor: null, hasMore: false, total: 0 })
+    mockBrevo.updateContact.mockResolvedValue({ id: 'contact-1' })
   })
 
   describe('email verification', () => {
@@ -291,6 +295,47 @@ describe('subscribe service', () => {
       expect(r.borrados).toBe(0)
       expect(r.omitidoPorSalvaguarda).toBe(false)
       expect(mockPrisma.pendingSubscription.deleteMany).not.toHaveBeenCalled()
+    })
+  })
+  describe('confirmSubscription y la re-alta despues de una baja', () => {
+    /**
+     * Quien vuelve tras darse de baja YA tiene contacto en Brevo, asi que el
+     * createContact del alta falla por duplicado y deja plunkContactId en null.
+     * Antes eso significaba confirmar la re-alta y no volver a recibir nada,
+     * con el job de reconciliacion borrandole la fila al dia siguiente: un
+     * ciclo silencioso. Ahora se usa el correo como identificador.
+     */
+    const pendiente = (plunkContactId: string | null) => ({
+      id: 'p1', email: 'vuelve@example.com', token: 'tok', plunkContactId,
+      confirmedAt: null, expiresAt: new Date(Date.now() + 3600_000),
+    })
+
+    it('re-suscribe usando el correo cuando no hay id de contacto', async () => {
+      mockPrisma.pendingSubscription.findFirst.mockResolvedValue(pendiente(null))
+
+      await confirmSubscription('tok', 'vuelve@example.com')
+
+      expect(mockBrevo.updateContact).toHaveBeenCalledWith('vuelve@example.com', { subscribed: true })
+    })
+
+    it('usa el id cuando si existe', async () => {
+      mockPrisma.pendingSubscription.findFirst.mockResolvedValue(pendiente('contact-9'))
+
+      await confirmSubscription('tok', 'vuelve@example.com')
+
+      expect(mockBrevo.updateContact).toHaveBeenCalledWith('contact-9', { subscribed: true })
+    })
+
+    it('confirma igual si el proveedor falla: la baja no puede dejar a nadie en el limbo', async () => {
+      mockPrisma.pendingSubscription.findFirst.mockResolvedValue(pendiente(null))
+      mockBrevo.updateContact.mockRejectedValue(new Error('brevo caido'))
+
+      await confirmSubscription('tok', 'vuelve@example.com')
+
+      expect(mockPrisma.pendingSubscription.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { confirmedAt: expect.any(Date) },
+      })
     })
   })
 })
