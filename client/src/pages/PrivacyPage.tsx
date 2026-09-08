@@ -42,7 +42,7 @@ export default function PrivacyPage() {
       <div className="page-section">
         <div className="prose max-w-none">
           <p className="text-sm text-neutral-500 not-prose mb-6">
-            Versión 3.0 · vigente desde el 7 de septiembre de 2026.
+            Versión 3.1 · vigente desde el 8 de septiembre de 2026.
           </p>
 
           {/* 1. Responsable */}
@@ -275,7 +275,7 @@ export default function PrivacyPage() {
           {/* 8. Conservación */}
           <h2 className="section-heading mt-10">Conservación</h2>
           <ul className="list-disc pl-6 space-y-1 mt-2">
-            <li>Suscriptores del boletín o alertas: mientras la suscripción esté activa; se eliminan o anonimizan tras la baja.</li>
+            <li>Suscriptores del boletín o alertas: mientras la suscripción esté activa. Al darte de baja dejas de recibir correos de inmediato, y tu registro se elimina de nuestra base dentro de las 24 horas siguientes.</li>
             <li>Registros del servidor: hasta 14 días, luego se eliminan automáticamente.</li>
             <li>Métricas de audiencia: el registro diario de visitantes (país, categoría de dispositivo e identificador diario no reversible) se conserva hasta <strong>12 meses</strong> y luego se suprime automáticamente, para poder comparar la audiencia año contra año. El conteo de páginas vistas se conserva como estadística histórica: es un dato agregado, sin identificación de personas.</li>
             <li>Tokens de sesión y enlaces mágicos: se purgan automáticamente al expirar.</li>

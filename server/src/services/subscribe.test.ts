@@ -13,12 +13,13 @@ const mockBrevo = {
   createContact: vi.fn(),
   sendTransactional: vi.fn(),
   verifyEmail: vi.fn(),
+  listContacts: vi.fn(),
 }
 
 vi.mock('../lib/prisma.js', () => ({ default: mockPrisma }))
 vi.mock('./brevo.js', () => mockBrevo)
 
-const { subscribe, EmailValidationError, cleanupExpiredPendingSubscriptions } = await import('./subscribe.js')
+const { subscribe, EmailValidationError, cleanupExpiredPendingSubscriptions, reconcileUnsubscribedFromBrevo } = await import('./subscribe.js')
 
 describe('subscribe service', () => {
   beforeEach(() => {
@@ -29,6 +30,7 @@ describe('subscribe service', () => {
     mockBrevo.createContact.mockResolvedValue({ id: 'contact-1' })
     mockBrevo.sendTransactional.mockResolvedValue(undefined)
     mockBrevo.verifyEmail.mockResolvedValue({ valid: true, domainExists: true, isDisposable: false })
+    mockBrevo.listContacts.mockResolvedValue({ items: [], nextCursor: null, hasMore: false, total: 0 })
   })
 
   describe('email verification', () => {
@@ -191,6 +193,104 @@ describe('subscribe service', () => {
       expect(mockPrisma.pendingSubscription.deleteMany).toHaveBeenCalledWith({
         where: { confirmedAt: null, expiresAt: { lt: expect.any(Date) } },
       })
+    })
+  })
+  describe('reconcileUnsubscribedFromBrevo (la baja del boletin)', () => {
+    /**
+     * La Politica promete borrar la fila «tras la baja», pero el enlace del pie
+     * de la campaña es el merge tag de Brevo: da de baja alla y no toca esta
+     * base. Esto lo reconcilia. Lo que se prueba aqui es sobre todo CUANDO NO
+     * debe borrar: un borrado de mas aqui elimina suscriptores vivos.
+     */
+
+    const contacto = (email: string, subscribed: boolean) => ({
+      id: email, email, subscribed, data: {}, createdAt: '', updatedAt: '',
+    })
+
+    it('borra las filas confirmadas de quienes se dieron de baja en Brevo', async () => {
+      mockBrevo.listContacts.mockResolvedValue({
+        items: [contacto('baja@example.com', false), contacto('activo@example.com', true)],
+        nextCursor: null, hasMore: false, total: 2,
+      })
+      mockPrisma.pendingSubscription.deleteMany.mockResolvedValue({ count: 1 })
+
+      const r = await reconcileUnsubscribedFromBrevo()
+
+      expect(r.borrados).toBe(1)
+      expect(r.omitidoPorSalvaguarda).toBe(false)
+      // Solo el dado de baja, y solo filas CONFIRMADAS: las no confirmadas son
+      // asunto del otro barrido y borrarlas aqui pisaria un opt-in en curso.
+      expect(mockPrisma.pendingSubscription.deleteMany).toHaveBeenCalledWith({
+        where: { email: { in: ['baja@example.com'] }, confirmedAt: { not: null } },
+      })
+    })
+
+    it('normaliza el correo a minusculas antes de comparar', async () => {
+      mockBrevo.listContacts.mockResolvedValue({
+        items: [contacto('Baja@Example.COM', false)],
+        nextCursor: null, hasMore: false, total: 1,
+      })
+      await reconcileUnsubscribedFromBrevo()
+      expect(mockPrisma.pendingSubscription.deleteMany).toHaveBeenCalledWith({
+        where: { email: { in: ['baja@example.com'] }, confirmedAt: { not: null } },
+      })
+    })
+
+    it('recorre todas las paginas antes de borrar', async () => {
+      mockBrevo.listContacts
+        .mockResolvedValueOnce({ items: [contacto('uno@example.com', false)], nextCursor: '50', hasMore: true, total: 2 })
+        .mockResolvedValueOnce({ items: [contacto('dos@example.com', false)], nextCursor: null, hasMore: false, total: 2 })
+      mockPrisma.pendingSubscription.deleteMany.mockResolvedValue({ count: 2 })
+
+      const r = await reconcileUnsubscribedFromBrevo()
+
+      expect(mockBrevo.listContacts).toHaveBeenCalledTimes(2)
+      expect(mockBrevo.listContacts).toHaveBeenNthCalledWith(2, '50')
+      expect(r.revisados).toBe(2)
+      expect(mockPrisma.pendingSubscription.deleteMany).toHaveBeenCalledWith({
+        where: { email: { in: ['uno@example.com', 'dos@example.com'] }, confirmedAt: { not: null } },
+      })
+    })
+
+    it('NO borra nada si el listado falla a mitad de camino', async () => {
+      // Media lista leida es peor que ninguna: los contactos no leidos se verian
+      // como «no dados de baja», pero los leidos si borrarian. Un fallo de red
+      // no puede traducirse en un borrado parcial.
+      mockBrevo.listContacts
+        .mockResolvedValueOnce({ items: [contacto('uno@example.com', false)], nextCursor: '50', hasMore: true, total: 2 })
+        .mockRejectedValueOnce(new Error('brevo caido'))
+
+      const r = await reconcileUnsubscribedFromBrevo()
+
+      expect(r.borrados).toBe(0)
+      expect(r.omitidoPorSalvaguarda).toBe(true)
+      expect(mockPrisma.pendingSubscription.deleteMany).not.toHaveBeenCalled()
+    })
+
+    it('NO borra nada si el recorrido se corta por el tope de paginas', async () => {
+      // Un `hasMore` que nunca baja dejaria el recorrido incompleto; tampoco ahi
+      // se borra.
+      mockBrevo.listContacts.mockResolvedValue({
+        items: [contacto('uno@example.com', false)], nextCursor: '50', hasMore: true, total: 99999,
+      })
+
+      const r = await reconcileUnsubscribedFromBrevo()
+
+      expect(r.borrados).toBe(0)
+      expect(r.omitidoPorSalvaguarda).toBe(true)
+      expect(mockPrisma.pendingSubscription.deleteMany).not.toHaveBeenCalled()
+    })
+
+    it('no toca la base cuando nadie se dio de baja', async () => {
+      mockBrevo.listContacts.mockResolvedValue({
+        items: [contacto('activo@example.com', true)], nextCursor: null, hasMore: false, total: 1,
+      })
+
+      const r = await reconcileUnsubscribedFromBrevo()
+
+      expect(r.borrados).toBe(0)
+      expect(r.omitidoPorSalvaguarda).toBe(false)
+      expect(mockPrisma.pendingSubscription.deleteMany).not.toHaveBeenCalled()
     })
   })
 })

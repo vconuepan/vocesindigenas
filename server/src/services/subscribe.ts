@@ -206,3 +206,79 @@ export async function cleanupExpiredPendingSubscriptions(): Promise<number> {
   })
   return result.count
 }
+
+/**
+ * Borra las suscripciones confirmadas de quienes ya se dieron de baja en Brevo.
+ *
+ * EL HUECO QUE ESTO CIERRA. La Política declara «Suscriptores del boletín o
+ * alertas: mientras la suscripción esté activa; se eliminan o anonimizan tras
+ * la baja», y señala como mecanismo el enlace del pie de cada correo. Ese
+ * enlace es el merge tag de Brevo: da de baja allá y no toca esta base. El
+ * único job de purga que existía borra solo las NO confirmadas, así que quien
+ * se daba de baja dejaba de recibir correos y su dirección se quedaba aquí de
+ * forma indefinida, sin plazo ni proceso que la alcanzara.
+ *
+ * POR QUÉ RECONCILIAR Y NO UN ENLACE PROPIO. El boletín se envía como campaña
+ * (`createCampaign` + `sendCampaign`), no como transaccional: el HTML es el
+ * mismo para todos los destinatarios y no se le puede incrustar un token
+ * distinto por persona desde acá, que es como sí funcionan las alertas
+ * (`alerts.ts`). La alternativa era un webhook, que obliga a abrir una ruta
+ * pública que borra filas. Esto no abre nada.
+ *
+ * BORRAR NO PIERDE LA MEMORIA DE LA BAJA: esa memoria vive en la lista de
+ * supresión de Brevo (`emailBlacklisted`), que es quien envía. Aquí la fila solo
+ * respalda el chequeo de idempotencia de `subscribe()`, y que desaparezca es lo
+ * correcto — si esa persona vuelve a suscribirse, debe poder.
+ */
+export async function reconcileUnsubscribedFromBrevo(): Promise<{
+  borrados: number
+  revisados: number
+  omitidoPorSalvaguarda: boolean
+}> {
+  const dadosDeBaja: string[] = []
+  let revisados = 0
+  let recorridoCompleto = false
+
+  try {
+    let cursor: string | undefined
+    // El tope existe para que un `hasMore` que nunca baje no deje el job
+    // girando: a 50 por página cubre 50.000 contactos, muy por encima de la
+    // lista real. Si se alcanza, el recorrido NO cuenta como completo.
+    for (let pagina = 0; pagina < 1000; pagina++) {
+      const { items, nextCursor, hasMore } = await brevo.listContacts(cursor)
+      revisados += items.length
+      for (const c of items) {
+        if (!c.subscribed && c.email) dadosDeBaja.push(c.email.toLowerCase())
+      }
+      if (!hasMore || !nextCursor) {
+        recorridoCompleto = true
+        break
+      }
+      cursor = nextCursor
+    }
+  } catch (err) {
+    // Media lista leída es peor que ninguna: se aborta sin borrar nada. El job
+    // corre a diario, así que el siguiente intento lo recupera.
+    log.warn({ err, revisados }, 'brevo reconcile: listing failed, nothing deleted')
+    return { borrados: 0, revisados, omitidoPorSalvaguarda: true }
+  }
+
+  if (!recorridoCompleto) {
+    log.warn({ revisados }, 'brevo reconcile: listing did not finish, nothing deleted')
+    return { borrados: 0, revisados, omitidoPorSalvaguarda: true }
+  }
+
+  if (dadosDeBaja.length === 0) return { borrados: 0, revisados, omitidoPorSalvaguarda: false }
+
+  const { count } = await prisma.pendingSubscription.deleteMany({
+    where: { email: { in: dadosDeBaja }, confirmedAt: { not: null } },
+  })
+
+  if (count > 0) {
+    log.info(
+      { borrados: count, dadosDeBajaEnBrevo: dadosDeBaja.length, revisados },
+      'brevo reconcile: deleted local rows for contacts unsubscribed upstream',
+    )
+  }
+  return { borrados: count, revisados, omitidoPorSalvaguarda: false }
+}
